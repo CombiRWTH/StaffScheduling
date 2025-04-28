@@ -1,0 +1,41 @@
+{
+    "requirements": [
+      {
+        "day": 0,
+        "shift": 0,
+        "required": {
+          "Fachkraft": 1,
+          "Azubi": 1,
+          "Hilfskraft": 1
+        }
+      },
+      {
+        "day": 0,
+        "shift": 1,
+        "required": {
+          "Fachkraft": 1,
+          "Azubi": 1,
+          "Hilfskraft": 1
+        }
+      },
+      {
+        "day": 0,
+        "shift": 2,
+        "required": {
+          "Fachkraft": 1,
+          "Azubi": 0,
+          "Hilfskraft": 1
+        }
+      },
+      {
+        "day": 1,
+        "shift": 0,
+        "required": {
+          "Fachkraft": 1,
+          "Azubi": 1,
+          "Hilfskraft": 1
+        }
+      }
+    ]
+  }
+  

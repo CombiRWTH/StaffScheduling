@@ -1,0 +1,4 @@
+*.pyc
+tempCodeRunnerFile.py
+src/__pycache__/*
+.DS_store
