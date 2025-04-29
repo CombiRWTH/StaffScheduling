@@ -1,0 +1,5 @@
+*.pyc
+tempCodeRunnerFile.py
+.DS_store
+found_solutions
+algorihtm/__pycache__
