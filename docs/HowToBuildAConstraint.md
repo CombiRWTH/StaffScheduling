@@ -78,7 +78,7 @@ Example:
 }
 ```
 
-3. Import Your Functions in `solving.py`
+### 3. Import Your Functions in `solving.py`
 
 Inside `algorithm/solving.py`, import your new constraint functions:
 ```python
@@ -88,7 +88,7 @@ from building_constraints.free_shifts_and_vacation_days import (
 )
 ````
 
-4. Add Your Constraint to add_all_constraints
+### 4. Add Your Constraint to add_all_constraints
 
 Extend the add_all_constraints() function by calling your load and add functions:
 
