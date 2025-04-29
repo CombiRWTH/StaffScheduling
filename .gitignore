@@ -1,4 +1,5 @@
 *.pyc
 tempCodeRunnerFile.py
-src/__pycache__/*
 .DS_store
+found_solutions
+algorihtm/__pycache__
