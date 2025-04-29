@@ -3,7 +3,7 @@ from handlers import UnifiedSolutionHandler
 from building_constraints.initial_constraints import (
     create_shift_variables,
     add_basic_constraints,
-    load_employees
+    load_employees,
 )
 from building_constraints.free_shifts_and_vacation_days import (
     load_free_shifts_and_vacation_days,
@@ -50,7 +50,7 @@ def add_all_constraints(
     - Free shifts and vacation day constraints
     - Target working hours constraints
 
-    Additional constraint modules can be easily added to this function to 
+    Additional constraint modules can be easily added to this function to
     extend the model.
 
     Args:
@@ -117,7 +117,12 @@ def main():
     )
 
     add_all_constraints(
-        model, shifts, employees, CASE_ID, NUM_DAYS, NUM_SHIFTS
+        model=model, 
+        shifts=shifts, 
+        employees=employees, 
+        case_id=CASE_ID,
+        num_days=NUM_DAYS, 
+        num_shifts=NUM_SHIFTS
     )
 
     # Solving
