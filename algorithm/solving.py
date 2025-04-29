@@ -7,7 +7,7 @@ from building_constraints.initial_constraints import (
 )
 from building_constraints.free_shifts_and_vacation_days import (
     load_free_shifts_and_vacation_days,
-    add_free_shifts_and_vacatian_days,
+    add_free_shifts_and_vacation_days,
 )
 from building_constraints.target_working_hours import (
     load_target_working_hours,
@@ -74,7 +74,7 @@ def add_all_constraints(
     free_shifts_and_vacation_days = load_free_shifts_and_vacation_days(
         f"./cases/{case_id}/free_shifts_and_vacation_days.json"
     )
-    add_free_shifts_and_vacatian_days(
+    add_free_shifts_and_vacation_days(
         model,
         employees,
         shifts,
