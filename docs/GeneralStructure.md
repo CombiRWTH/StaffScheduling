@@ -9,6 +9,12 @@ This is the **main script** for solving the scheduling problem.
 It defines and initializes the model, adds constraints, and calls the solver.  
 All constraint logic is built up here by calling helper functions.
 
+As solver we currently use the CP SAT Solver from Google's OR Tools.
+> ! We do not know if this Solver is going to be suffient for all the 
+> differnt kinds of constraints. That is why it is important that we 
+> check the feasibility of all constraints as fast as possible. Alternative
+> method we could explore is the use of gurobi.
+
 ---
 
 ## Constraint Modules
