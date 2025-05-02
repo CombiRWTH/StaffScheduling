@@ -30,9 +30,8 @@ If we have more stuff available:
 ### Free shifts or days (1)
 Vacation days, free days on the weekend must remain free.
 The day before a vacation day or a free weekend, there is no night shift allowed.
-### Mathematical Representation
-### Implementation Idea
-Implementation should be easy. We just iterate through all free days and shifts and set the variables to zero:
+- **Mathematical Representation:**
+- **Implementation Idea:** Implementation should be easy. We just iterate through all free days and shifts and set the variables to zero:
 ```python
 model.Add(shift == 0)
 ```
@@ -41,9 +40,8 @@ model.Add(shift == 0)
 per month a larger deviation than one day shift is not allowed (+/- 7.67 h)
 addtionally in the next month this should be cons
 !!! Problem here: CP Solver does only work with integers? Maybe scale hours up?
-### Mathematical Representation
-### Implementation Idea 
-First get the current work time per employee depending on the shifts variables
+- **Mathematical Representation:**
+- **Implementation Idea:** First get the current work time per employee depending on the shifts variables
 ```python
 model.Add(current_work_time_per_employee <= target_minuts + 7.67 * 60)
 model.Add(current_work_time_per_employee >= target_minuts - 7.67 * 60)
