@@ -1,7 +1,22 @@
 {
-    "time_off": [
-      {"name": "Pauline", "days_off": [1], "shifts_off": [[4,2]]},
-      {"name": "Marie", "days_off": [2]}
-    ]
-  }
-  
+  "time_off": [
+    {
+      "days_off": [
+        1
+      ],
+      "name": "Pauline",
+      "shifts_off": [
+        [
+          4,
+          2
+        ]
+      ]
+    },
+    {
+      "days_off": [
+        2
+      ],
+      "name": "Marie"
+    }
+  ]
+}
