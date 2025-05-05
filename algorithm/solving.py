@@ -13,6 +13,12 @@ from building_constraints.target_working_hours import (
     load_target_working_hours,
     add_target_working_hours,
 )
+from building_constraints.minimize_number_of_consecutive_night_shifts import (
+    add_minimize_number_of_consecutive_night_shifts
+)
+from building_constraints.day_no_shift_after_night_shift import (
+    add_day_no_shift_after_night_shift
+)
 
 
 def solve_cp_problem(
@@ -92,6 +98,16 @@ def add_all_constraints(
         shift_durations,
         target_hours,
         tolerance_hours,
+    )
+
+    # Minimize number of consevutive night shifts
+    add_minimize_number_of_consecutive_night_shifts(
+        model, employees, shifts, num_days
+    )
+
+    # Day no shift after night shift
+    add_day_no_shift_after_night_shift(
+        model, employees, shifts, num_days
     )
 
 
