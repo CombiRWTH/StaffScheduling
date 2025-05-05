@@ -29,9 +29,7 @@ def solve_cp_problem(
     print(f"  - Conflicts     : {solver.num_conflicts}")
     print(f"  - Branches      : {solver.num_branches}")
     print(f"  - Wall time     : {solver.wall_time:.2f}s")
-    print(
-        f"  - Solutions found: {handler.solution_count() if handler else 0}"
-    )
+    print(f"  - Solutions found: {handler.solution_count() if handler else 0}")
 
 
 def add_all_constraints(
@@ -66,9 +64,7 @@ def add_all_constraints(
     """
 
     # Inital Constraints
-    add_basic_constraints(
-        model, employees, shifts, num_days, num_shifts
-    )
+    add_basic_constraints(model, employees, shifts, num_days, num_shifts)
 
     # Free Shifts and Vacation Days
     free_shifts_and_vacation_days = load_free_shifts_and_vacation_days(
@@ -83,11 +79,9 @@ def add_all_constraints(
     )
 
     # Target Working Hours
-    target_hours, shift_durations, tolerance_hours = (
-        load_target_working_hours(
-            f"./cases/{case_id}/target_working_hours.json",
-            f"./cases/{case_id}/general_settings.json",
-        )
+    target_hours, shift_durations, tolerance_hours = load_target_working_hours(
+        f"./cases/{case_id}/target_working_hours.json",
+        f"./cases/{case_id}/general_settings.json",
     )
     add_target_working_hours(
         model,
@@ -112,17 +106,15 @@ def main():
     model = cp_model.CpModel()
 
     employees = load_employees(f"./cases/{CASE_ID}/employees.json")
-    shifts = create_shift_variables(
-        model, employees, NUM_DAYS, NUM_SHIFTS
-    )
+    shifts = create_shift_variables(model, employees, NUM_DAYS, NUM_SHIFTS)
 
     add_all_constraints(
-        model=model, 
-        shifts=shifts, 
-        employees=employees, 
+        model=model,
+        shifts=shifts,
+        employees=employees,
         case_id=CASE_ID,
-        num_days=NUM_DAYS, 
-        num_shifts=NUM_SHIFTS
+        num_days=NUM_DAYS,
+        num_shifts=NUM_SHIFTS,
     )
 
     # Solving

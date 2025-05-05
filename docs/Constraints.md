@@ -1,8 +1,8 @@
 # Constraints
-This is an incomplete list of all constraints that we need keep track of in this project. 
+This is an incomplete list of all constraints that we need keep track of in this project.
 An ideal constraint would contain a short description, an indicator on where this constrain
 comes from (see "Sources of Information"), a mathematical representation, notes about
-potential problems and a proposal how to implement such a constraint. For the latest, see 
+potential problems and a proposal how to implement such a constraint. For the latest, see
 [Documentation OR Tools](https://developers.google.com/optimization/reference/python/sat/python/cp_model#cp_model.CpModel).
 
 _This list is not ideal._
@@ -13,7 +13,7 @@ _This list is not ideal._
 3. Guidelines for Shift Work
 
 ## Idea for all soft constraints
-It is not possible to set multiple maximize or minimize constraints. But we could think about the idea of combining all "soft constraints" to one minimize functions. Give a penalty for each shift that does not match a specific constraint (e.g. rotating fowards). Then we could build a global penalty function that we wanna minimize, where we can also weight the different constraints. 
+It is not possible to set multiple maximize or minimize constraints. But we could think about the idea of combining all "soft constraints" to one minimize functions. Give a penalty for each shift that does not match a specific constraint (e.g. rotating fowards). Then we could build a global penalty function that we wanna minimize, where we can also weight the different constraints.
 
 ## All Constraints
 
@@ -52,7 +52,7 @@ model.Add(current_work_time_per_employee >= target_minuts - 7.67 * 60)
 ### 24h no shift after phase of Night Shifts (3.2)
 
 ### Free days near weekend (3.3)
-Free days should come in pairs (two) and include at least one weekend day: 
+Free days should come in pairs (two) and include at least one weekend day:
 - Friday and Saturday
 - Saturday and Sunday
 - Sunday and Monday
@@ -61,7 +61,7 @@ Free days should come in pairs (two) and include at least one weekend day:
 Not sure if this is applicable for our case
 
 ### Shifts should "rotate forward" (3.5)
-Meaning early, late, night and not night, late, early. This maximizes the time to rest between shifts. 
+Meaning early, late, night and not night, late, early. This maximizes the time to rest between shifts.
 
 ### Not to long shifts (3.9)
 > Die Massierung von Arbeitstagen oder Arbeitszeiten auf einen Tag sollte begrenzt sein.
@@ -70,5 +70,3 @@ Essentially that means that longs shifts (12h plus) should be restricted.
 
 ### Weekend Rhythm (Kickoff Meeting)
 Some kind of regularity for the free weekends
-
-

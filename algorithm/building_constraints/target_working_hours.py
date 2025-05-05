@@ -1,6 +1,7 @@
 import json
 import StateManager
 
+
 def load_target_working_hours(filename, settings_filename):
     with open(filename, "r") as f:
         data = json.load(f)
@@ -9,9 +10,9 @@ def load_target_working_hours(filename, settings_filename):
         general_settings = json.load(f)
 
     data["shift_durations_with_index"] = {
-        general_settings["SHIFT_NAME_TO_INDEX"][shift_name]: data[
-            "shift_durations"
-        ][shift_name]
+        general_settings["SHIFT_NAME_TO_INDEX"][shift_name]: data["shift_durations"][
+            shift_name
+        ]
         for shift_name in data["shift_durations"].keys()
     }
 
@@ -56,11 +57,8 @@ def add_target_working_hours(
         for d in all_days:
             for s in all_shifts:
                 var = shifts[(n, d, s)]  # this is a BoolVar (0 or 1)
-                duration = shift_durations[
-                    s
-                ]  # duration in hours for shift s
+                duration = shift_durations[s]  # duration in hours for shift s
                 work_time_terms.append(var * duration)
-
 
         total_work_time = model.NewIntVar(
             0,
