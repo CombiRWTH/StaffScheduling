@@ -19,6 +19,9 @@ from building_constraints.minimize_number_of_consecutive_night_shifts import (
 from building_constraints.day_no_shift_after_night_shift import (
     add_day_no_shift_after_night_shift
 )
+from building_constraints.free_days_near_weekend import (
+    add_free_days_near_weekend
+)
 
 
 def solve_cp_problem(
@@ -108,6 +111,12 @@ def add_all_constraints(
     # Day no shift after night shift
     add_day_no_shift_after_night_shift(
         model, employees, shifts, num_days
+    )
+
+    # Free day near weekend
+    # here we need the date of the first day in the month, need to connect with the database
+    add_free_days_near_weekend(
+        model, employees, shifts, num_shifts, num_days
     )
 
 

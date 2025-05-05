@@ -63,3 +63,4 @@ def add_basic_constraints(
             model.add_at_most_one(shifts[(n, d, s)] for s in all_shifts)
 
     StateManager.state.constraints.append("Initial")
+

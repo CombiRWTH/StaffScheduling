@@ -48,14 +48,34 @@ model.Add(current_work_time_per_employee >= target_minuts - 7.67 * 60)
 ```
 
 ### Minimize Number of Consecutive Night Shifts (3.1)
+The number of consecutive night shifts should be as few as possible.
+In order to count the consecutive night shifts, we introduce a new variable "consecutive", whcih should be set to 1 only iff
+the worker works at the night at day d and d+1, then set the constraint to limit sum of "consecutive"
+- **Implementation Idea:** Set "consecutive" to 1 iff night_today && night_tomorrow == 1 
+```python
+model.AddBoolAnd([night_today, night_tomorrow]).OnlyEnforceIf(consecutive)
+model.AddBoolOr([night_today.Not(), night_tomorrow.Not()]).OnlyEnforceIf(consecutive.Not())
+```
 
 ### 24h no shift after phase of Night Shifts (3.2)
 
 ### Free days near weekend (3.3)
 Free days should come in pairs (two) and include at least one weekend day:
-- Friday and Saturday
-- Saturday and Sunday
-- Sunday and Monday
+
+We consider this constraint as two parts, we also consider them as rewards in the model:
+1. the free days come in pair
+2. the free days include weekend day
+
+Our basic idea is to add a variable "objective_terms", and append all the point as a list in the variable. The plan have two ways
+to earn the point and one way to lose the point.
+1. Everytime when there is a free days come in pair, the variable will get 1 point
+2. If the free day include weekend day, the variable will also get 1 point
+3. Everytime when there is a free day comes alone, then the variable will get -1 point
+
+Finally, we calculate the sum of the points and maximize it using the following constraint
+```python
+model.Maximize(sum(objective_terms))
+```
 
 ### More free days for people with many night shifts (3.4)
 Not sure if this is applicable for our case
