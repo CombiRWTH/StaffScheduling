@@ -1,6 +1,5 @@
 repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
-    # uv version.
     rev: 0.7.2
     hooks:
       - id: uv-lock
@@ -15,3 +14,9 @@ repos:
       - id: pretty-format-json
         args: [ '--autofix' ]
       - id: trailing-whitespace
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.8
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format
