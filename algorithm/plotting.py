@@ -49,15 +49,9 @@ def plot_schedule(
 
     for n_idx, employee in enumerate(employees):
         for d in range(num_days):
-            shifts_today = [
-                s
-                for s in range(3)
-                if schedule.get((n_idx, d, s), False)
-            ]
+            shifts_today = [s for s in range(3) if schedule.get((n_idx, d, s), False)]
             if shifts_today:
-                shift = (
-                    shifts_today[0] if len(shifts_today) == 1 else None
-                )
+                shift = shifts_today[0] if len(shifts_today) == 1 else None
                 if shift is not None:
                     ax.add_patch(
                         plt.Rectangle(
@@ -82,11 +76,7 @@ def plot_schedule(
                     color="black",
                 )
             else:
-                ax.add_patch(
-                    plt.Rectangle(
-                        (d, n_idx), 1, 1, color="white", ec="black"
-                    )
-                )
+                ax.add_patch(plt.Rectangle((d, n_idx), 1, 1, color="white", ec="black"))
 
     ax.set_xlim(0, num_days)
     ax.set_ylim(0, num_employees)
@@ -109,8 +99,7 @@ def plot_schedule(
 
     # Create legends for job types and shift types
     job_patches = [
-        mpatches.Patch(color=color, label=label)
-        for label, color in job_colors.items()
+        mpatches.Patch(color=color, label=label) for label, color in job_colors.items()
     ]
     shift_patches = [
         mpatches.Patch(color=color, label=f"Shift {shift_symbols[s]}")
