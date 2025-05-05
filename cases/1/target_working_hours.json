@@ -1,9 +1,9 @@
 {
-    "shift_durations":{
-        "Early": 8,
-        "Late": 7,
-        "Night": 6
-    },
-    "target_hours": 150,
-    "tolerance_hours": 8
+  "shift_durations": {
+    "Early": 8,
+    "Late": 7,
+    "Night": 6
+  },
+  "target_hours": 150,
+  "tolerance_hours": 8
 }
