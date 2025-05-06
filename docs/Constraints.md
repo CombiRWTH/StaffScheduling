@@ -53,11 +53,13 @@ In order to count the consecutive night shifts, we introduce a new variable "con
 the worker works at the night at day d and d+1, then set the constraint to limit sum of "consecutive"
 - **Implementation Idea:** Set "consecutive" to 1 iff night_today && night_tomorrow == 1 
 ```python
-model.AddBoolAnd([night_today, night_tomorrow]).OnlyEnforceIf(consecutive)
-model.AddBoolOr([night_today.Not(), night_tomorrow.Not()]).OnlyEnforceIf(consecutive.Not())
+model.AddBoolAnd([night_today, night_after_tomorrow]).OnlyEnforceIf(consecutive)
+model.AddBoolOr([night_today.Not(), night_after_tomorrow.Not()]).OnlyEnforceIf(consecutive.Not())
 ```
 
 ### 24h no shift after phase of Night Shifts (3.2)
+According to the recommendations for the healthy organization of night and shift work, after the night shift, the worker should have
+longer free time at least 24h, which means the worker who worked for the night shift should be free in the next three shifts.
 
 ### Free days near weekend (3.3)
 Free days should come in pairs (two) and include at least one weekend day:
@@ -78,13 +80,29 @@ model.Maximize(sum(objective_terms))
 ```
 
 ### More free days for people with many night shifts (3.4)
-Not sure if this is applicable for our case
+### !!! This constraint may lead to the case that the night shift worker has too much free days, we need to add more constraint to adjust it
+This constraint is feasible for our project, we achieve it by the following way:
+1. Calculate the night shift times for each worker and denote it as "num_night_shifts" in the model
+2. Calculate the free days for each worker and denote it as "num_rest_days" in the model
+3. Calculate "surplus" using the following code
+```python
+model.Add(surplus == num_rest_days - num_night_shifts)
+```
+4. Add the constraint to maximaize the surplus to ensure night shift worker has more free days
 
 ### Shifts should "rotate forward" (3.5)
 Meaning early, late, night and not night, late, early. This maximizes the time to rest between shifts.
 
 ### Not to long shifts (3.9)
-> Die Massierung von Arbeitstagen oder Arbeitszeiten auf einen Tag sollte begrenzt sein.
+This constraint means: Die Massierung von Arbeitstagen oder Arbeitszeiten auf einen Tag sollte begrenzt sein.
+
+The way we achieve it is to create a window to watch if every worker consecutive works in 5 days, then we punish the situation that worker consevutive works.
+When in the window of 5 days, the worker consecutive works, we set the overwork to 1, and we try to minimize the value of overwork
+```python
+window = [work[(n, d + i)] for i in range(MAX_CONSECUTIVE_WORK_DAYS + 1)]
+model.Add(sum(window) == MAX_CONSECUTIVE_WORK_DAYS + 1).OnlyEnforceIf(overwork)
+model.Add(sum(window) != MAX_CONSECUTIVE_WORK_DAYS + 1).OnlyEnforceIf(overwork.Not())
+```
 
 Essentially that means that longs shifts (12h plus) should be restricted.
 
