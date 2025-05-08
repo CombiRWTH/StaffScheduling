@@ -93,6 +93,20 @@ model.Add(surplus == num_rest_days - num_night_shifts)
 ### Shifts should "rotate forward" (3.5)
 Meaning early, late, night and not night, late, early. This maximizes the time to rest between shifts.
 
+To achieve this constraint, we first need to fix the list of shift workers and limit their shifts. 
+We then introduce the variable bad_rotation, which defines several shift sequences for non-forward shifts, 
+and if a shift sequence contained therein occurs, the penalty is noted as plus one point, and finally a constraint is added to minimize the value of the penalty.
+```python
+bad_rotations = [(0, 2), (1, 0), (2, 1)]  # non-forward rotate
+for d in range(num_days - 1):
+    for (prev_s, next_s) in bad_rotations:
+        b = model.NewBoolVar(f'bad_rot_n{n}_d{d}_from{prev_s}to{next_s}')
+        model.AddBoolAnd([shifts[(n, d, prev_s)], shifts[(n, d + 1, next_s)]]).OnlyEnforceIf(b)
+        model.AddBoolOr([shifts[(n, d, prev_s)].Not(), shifts[(n, d + 1, next_s)].Not()]).OnlyEnforceIf(b.Not())
+        penalties.append(b)
+model.Minimize(sum(penalties))
+```
+
 ### Not to long shifts (3.9)
 This constraint means: Die Massierung von Arbeitstagen oder Arbeitszeiten auf einen Tag sollte begrenzt sein.
 

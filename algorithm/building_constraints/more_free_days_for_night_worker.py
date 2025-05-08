@@ -31,5 +31,5 @@ def add_more_free_days_for_night_worker(
         objective_terms.append(surplus)
 
     model.Maximize(sum(objective_terms))
-    StateManager.state.constraints.append("more free days for night worker")
+    StateManager.state.constraints.append("Shift should forward forward")
 
