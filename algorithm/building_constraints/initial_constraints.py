@@ -2,6 +2,7 @@ import json
 import StateManager
 from ortools.sat.python import cp_model
 
+
 def load_general_settings(filename):
     with open(filename, "r") as f:
         config = json.load(f)
@@ -15,10 +16,7 @@ def load_employees(filename):
 
 
 def create_shift_variables(
-    model: cp_model.CpModel,
-    employees: list[dict],
-    num_days: int,
-    num_shifts: int
+    model: cp_model.CpModel, employees: list[dict], num_days: int, num_shifts: int
 ) -> dict[tuple, cp_model.IntVar]:
     """
     Creates shift assignment variables for each employee, day, and shift.
@@ -38,11 +36,11 @@ def add_basic_constraints(
     employees: list[dict],
     shifts: dict[tuple, cp_model.IntVar],
     num_days: int,
-    num_shifts: int
+    num_shifts: int,
 ) -> None:
     """
     Adds fundamental scheduling constraints:
-    
+
     - Each shift on each day is assigned to exactly one employee.
     - Each employee can work at most one shift per day.
 
@@ -57,9 +55,7 @@ def add_basic_constraints(
     # one employee per (name, day, shift) tuple
     for d in all_days:
         for s in all_shifts:
-            model.add_exactly_one(
-                shifts[(n, d, s)] for n in all_employees
-            )
+            model.add_exactly_one(shifts[(n, d, s)] for n in all_employees)
 
     # one shift per employee per day at most
     for n in all_employees:

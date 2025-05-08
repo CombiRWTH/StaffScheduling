@@ -5,13 +5,13 @@ This document describes the overall structure and purpose of the components in t
 ## Core Entry Point
 
 ### `solving.py`
-This is the **main script** for solving the scheduling problem.  
-It defines and initializes the model, adds constraints, and calls the solver.  
+This is the **main script** for solving the scheduling problem.
+It defines and initializes the model, adds constraints, and calls the solver.
 All constraint logic is built up here by calling helper functions.
 
 As solver we currently use the CP SAT Solver from Google's OR Tools.
-> ! We do not know if this Solver is going to be suffient for all the 
-> differnt kinds of constraints. That is why it is important that we 
+> ! We do not know if this Solver is going to be suffient for all the
+> differnt kinds of constraints. That is why it is important that we
 > check the feasibility of all constraints as fast as possible. Alternative
 > method we could explore is the use of gurobi.
 
@@ -47,7 +47,7 @@ Currently, there's one unified handler class that supports **multiple output mod
 ## Plotting (WIP)
 
 ### `plotting.py`
-Contains functions for **visualizing the solution** (e.g., Gantt charts or shift tables).  
+Contains functions for **visualizing the solution** (e.g., Gantt charts or shift tables).
 This is **not yet fully implemented**, but planned to allow human-readable views of schedules.
 
 ---
@@ -55,8 +55,8 @@ This is **not yet fully implemented**, but planned to allow human-readable views
 ## Global Program State
 
 ### `StateManager.py`
-Contains a global `state` object used to store runtime-shared data.  
-Currently, it's used to track which constraints have been added.  
+Contains a global `state` object used to store runtime-shared data.
+Currently, it's used to track which constraints have been added.
 Useful for handlers (e.g., saving metadata like applied constraints).
 
 ---
@@ -64,7 +64,7 @@ Useful for handlers (e.g., saving metadata like applied constraints).
 ## Test Cases
 
 ### `cases/`
-Holds different **example scenarios** (folders named by `case_id` like `1/`, `2/`, ...).  
+Holds different **example scenarios** (folders named by `case_id` like `1/`, `2/`, ...).
 Each folder contains:
 - Employee definitions
 - Constraint settings
@@ -115,4 +115,3 @@ Automatically created folder to store output JSON files with solved schedules, b
 | `docs/`           | Markdown documentation and structure             |
 
 ---
-

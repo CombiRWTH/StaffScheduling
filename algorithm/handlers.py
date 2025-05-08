@@ -4,9 +4,13 @@ import StateManager
 from datetime import datetime
 from ortools.sat.python import cp_model
 
+
 class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
     """Unified handler for solutions (save, print, plot, etc.)."""
-    def __init__(self, shifts, employees, num_days, num_shifts, limit, case_id, solution_dir):
+
+    def __init__(
+        self, shifts, employees, num_days, num_shifts, limit, case_id, solution_dir
+    ):
         super().__init__()
         self._shifts = shifts
         self._employees = employees
@@ -18,7 +22,9 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
         self._solution_dir = solution_dir
         self._constraints = StateManager.state.constraints
         self._solutions = []
-        self._employee_name_to_index = {employee['name']: idx for idx, employee in enumerate(employees)}
+        self._employee_name_to_index = {
+            employee["name"]: idx for idx, employee in enumerate(employees)
+        }
 
         # Ensure the output directory exists
         os.makedirs(solution_dir, exist_ok=True)
@@ -43,20 +49,18 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
     def solution_count(self):
         return self._solution_count
 
-
     def json(self):
         """Save all collected solutions to a JSON file."""
         output = {
             "caseID": self._case_id,
-            "employees": {
-                "name_to_index": self._employee_name_to_index
-            },
+            "employees": {"name_to_index": self._employee_name_to_index},
             "constraints": self._constraints,
             "numOfSolutions": len(self._solutions),
             "givenSolutionLimit": self._solution_limit,
             "solutions": [
-                {str(key): value for key, value in solution.items()} for solution in self._solutions
-            ]
+                {str(key): value for key, value in solution.items()}
+                for solution in self._solutions
+            ],
         }
 
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
