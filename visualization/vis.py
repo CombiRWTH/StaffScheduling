@@ -1,40 +1,8 @@
-import streamlit as st
 import matplotlib.pyplot as plt
 import io
-import json
 
 
-SOLUTION_FILENAME = "solutions_2025-05-06_09-21-49.json"
-
-
-# ===== Load your JSON data (replace this with your real JSON load) =====
-
-with open(f"found_solutions/{SOLUTION_FILENAME}", "r") as f:
-    data = json.load(f)
-
-employees = list(data["employees"]["name_to_index"].keys())
-name_to_index = data["employees"]["name_to_index"]
-# qualifications = data["employees"]["name_to_qualification"]
-# shift_minutes = data["constraints"]["Target Working Hours"]["shift_idx_to_min"]
-solutions = data["solutions"]
-
-num_days = max(int(k.split(",")[1]) for sol in solutions for k in sol.keys()) + 1
-
-# free_days = {}
-# free_shifts = {}
-
-# for entry in data["constraints"]["Free Shifts and Vacation Days"]["days_off"]:
-#     name = entry["name"]
-#     free_days[name] = set(entry["days"])
-
-# for entry in data["constraints"]["Free Shifts and Vacation Days"]["shifts_off"]:
-#     name = entry["name"]
-#     for day, shift in entry["shifts"]:
-#         free_shifts.setdefault(name, {}).setdefault(day, set()).add(shift)
-
-
-# ===== Create duty roster figure =====
-def create_roster_table(solution):
+def create_roster_table(solution, employees, name_to_index, num_days):
     shift_code = {0: "E", 1: "L", 2: "N"}
     shift_color = {"E": "yellow", "L": "skyblue", "N": "black"}
     qual_color = {
@@ -165,14 +133,3 @@ def create_roster_table(solution):
     fig.savefig(buf, format="png", dpi=200, bbox_inches="tight", pad_inches=0.2)
     plt.close(fig)
     return buf
-
-
-# ===== Streamlit UI =====
-st.set_page_config(layout="wide", page_title="Duty Roaster Viewer")
-
-st.title("📅 Duty Roaster Viewer")
-
-for i, solution in enumerate(solutions):
-    st.markdown(f"## Solution #{i + 1}")
-    image_buffer = create_roster_table(solution)
-    st.image(image_buffer)
