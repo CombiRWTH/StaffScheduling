@@ -23,6 +23,14 @@ uv run pre-commit install
 
 3. **Done**
 
+## Documentation 📖
+
+- **Running the Documentation 📚**
+
+```shell
+uv run mkdocs serve
+```
+
 ## Usage 🚀
 
 - **Running the Solver 🧩**
