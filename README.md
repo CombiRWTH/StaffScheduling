@@ -18,10 +18,18 @@ uv sync
 3. **Activate pre-commit 🔄**
 
 ```shell
-uvx pre-commit install
+uv run pre-commit install
 ```
 
 3. **Done**
+
+## Documentation 📖
+
+- **Running the Documentation 📚**
+
+```shell
+uv run mkdocs serve
+```
 
 ## Usage 🚀
 
