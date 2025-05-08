@@ -9,3 +9,8 @@ dependencies = [
     "numpy>=2.2.5",
     "ortools>=9.12.4544",
 ]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+]
