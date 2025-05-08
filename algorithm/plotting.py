@@ -1,119 +1,114 @@
-import numpy as np
-import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
-
-def plot_schedule(
-    employees,
-    schedule,
-    num_days,
-    shift_symbols=None,
-    job_colors=None,
-    shift_colors=None,
-):
-    if shift_symbols is None:
-        shift_symbols = {0: "F", 1: "S", 2: "N"}
-
-    if job_colors is None:
-        job_colors = {
-            "Fachkraft": "#ADD8E6",
-            "Hilfskraft": "#90EE90",
-            "Azubi": "#FFDAB9",
+# Sample simplified data (you should replace with full data input)
+data = {
+    "employees": {
+        "name_to_index": {"Pauline": 0, "Jonas": 1, "Marie": 2},
+        "name_to_qualification": {
+            "Pauline": "Azubi",
+            "Jonas": "Azubi",
+            "Marie": "Azubi",
+        },
+    },
+    "constraints": {"Target Working Hours": {"shift_idx_to_min": [600, 700, 500]}},
+    "solutions": [
+        {
+            "(0, 0, 0)": 1,
+            "(0, 1, 1)": 0,
+            "(1, 0, 2)": 1,
+            "(1, 1, 0)": 1,
+            "(2, 0, 0)": 1,
+            "(2, 1, 2)": 1,
         }
+    ],
+}
 
-    if shift_colors is None:
-        shift_colors = {
-            0: "#FFCCCC",  # Morning shift (F)
-            1: "#CCCCFF",  # Evening shift (S)
-            2: "#CCFFCC",  # Night shift (N)
-        }
+# Extract info
+employees = list(data["employees"]["name_to_index"].keys())
+name_to_index = data["employees"]["name_to_index"]
+qualifications = data["employees"]["name_to_qualification"]
+shift_minutes = data["constraints"]["Target Working Hours"]["shift_idx_to_min"]
+solution = data["solutions"][0]
 
-    employeenames = [employee["name"] for employee in employees]
-    employeejobs = [employee["type"] for employee in employees]
+num_days = max(int(k.split(",")[1]) for k in solution.keys()) + 1
+num_employees = len(employees)
 
-    num_employees = len(employees)
+# Define color maps
+qual_color = {
+    "Azubi": "#ADD8E6",  # light blue
+    "Fachkraft": "#90EE90",  # light green
+    "Praktikant": "#D3D3D3",  # light gray
+}
+shift_code = {0: "E", 1: "L", 2: "N"}
+shift_color = {"E": "yellow", "L": "skyblue", "N": "black"}
 
-    fig, ax = plt.subplots(figsize=(num_days * 1.2, num_employees * 0.8))
+# Create table data
+cell_text = []
+cell_colors = []
+hours_column = []
 
-    # Set the background for employee names area
-    for i, job in enumerate(employeejobs):
-        ax.axhspan(
-            i,
-            i + 1,
-            xmin=0,
-            xmax=-0.01,
-            facecolor=job_colors.get(job, "white"),
-            edgecolor="black",
-            alpha=1,
-        )
+for name in employees:
+    idx = name_to_index[name]
+    qual = qualifications[name]
+    row = []
+    colors = []
 
-    for n_idx, employee in enumerate(employees):
-        for d in range(num_days):
-            shifts_today = [s for s in range(3) if schedule.get((n_idx, d, s), False)]
-            if shifts_today:
-                shift = shifts_today[0] if len(shifts_today) == 1 else None
-                if shift is not None:
-                    ax.add_patch(
-                        plt.Rectangle(
-                            (d, n_idx),
-                            1,
-                            1,
-                            color=shift_colors.get(shift, "white"),
-                            ec="black",
-                        )
-                    )
-                    symbol = shift_symbols[shift]
-                else:
-                    symbol = "?"
-                ax.text(
-                    d + 0.5,
-                    n_idx + 0.5,
-                    symbol,
-                    ha="center",
-                    va="center",
-                    fontsize=12,
-                    fontweight="bold",
-                    color="black",
-                )
-            else:
-                ax.add_patch(plt.Rectangle((d, n_idx), 1, 1, color="white", ec="black"))
+    total_minutes = 0
 
-    ax.set_xlim(0, num_days)
-    ax.set_ylim(0, num_employees)
-    ax.set_xticks(np.arange(num_days) + 0.5)
-    ax.set_yticks(np.arange(num_employees) + 0.5)
-    ax.set_xticklabels(
-        [f"Day {d}" for d in range(num_days)],
-        rotation=90,
-        ha="center",
-        va="center",
-        fontsize=10,
-    )
-    ax.set_yticklabels(employeenames, fontsize=10)
-    ax.invert_yaxis()
-    ax.xaxis.tick_top()
+    # Employee cell
+    row.append(f"{name}\n({qual})")
+    colors.append(qual_color.get(qual, "white"))
 
-    ax.set_xticks(np.arange(num_days), minor=True)
-    ax.set_yticks(np.arange(num_employees), minor=True)
-    ax.grid(which="minor", color="black", linestyle="-", linewidth=0.5)
+    for day in range(num_days):
+        shift_char = ""
+        color = "white"
+        text_color = "black"
+        for s in range(3):
+            key = f"({idx}, {day}, {s})"
+            if solution.get(key, 0) == 1:
+                shift_char = shift_code[s]
+                color = shift_color[shift_char]
+                if shift_char == "N":
+                    text_color = "white"
+                total_minutes += shift_minutes[s]
+                break
 
-    # Create legends for job types and shift types
-    job_patches = [
-        mpatches.Patch(color=color, label=label) for label, color in job_colors.items()
-    ]
-    shift_patches = [
-        mpatches.Patch(color=color, label=f"Shift {shift_symbols[s]}")
-        for s, color in shift_colors.items()
-    ]
-    all_patches = job_patches + shift_patches
+        row.append(shift_char)
+        colors.append(color)
 
-    ax.legend(
-        handles=all_patches,
-        loc="lower center",
-        bbox_to_anchor=(0.5, -0.3),
-        ncol=len(all_patches),
-    )
+    row.append(str(total_minutes))
+    colors.append("lightgray")
 
-    ax.set_title("employee Scheduling Overview", pad=20)
-    plt.tight_layout()
-    plt.show()
+    cell_text.append(row)
+    cell_colors.append(colors)
+
+# Table column labels
+columns = ["Employee"] + [f"D{d}" for d in range(num_days)] + ["Total Min"]
+
+fig, ax = plt.subplots(figsize=(0.6 * len(columns), 0.5 * len(employees)))
+table = ax.table(
+    cellText=cell_text,
+    colLabels=columns,
+    cellColours=cell_colors,
+    loc="center",
+    cellLoc="center",
+)
+
+table.auto_set_font_size(False)
+table.set_fontsize(10)
+table.scale(1.2, 1.2)
+
+# Style adjustments
+for key, cell in table.get_celld().items():
+    row, col = key
+    if row == 0:
+        cell.set_text_props(weight="bold", color="black")
+    elif col == 0:
+        cell.set_text_props(fontsize=9)
+    if row > 0 and col > 0:
+        if cell.get_text().get_text() == "N":
+            cell.get_text().set_color("white")
+
+ax.axis("off")
+plt.tight_layout()
+plt.show()
