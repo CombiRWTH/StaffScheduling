@@ -22,11 +22,11 @@ def create_shift_variables(
     Creates shift assignment variables for each employee, day, and shift.
     """
     shifts = {}
-    for n_idx, employee in enumerate(employees):
-        for d in range(num_days):
-            for s in range(num_shifts):
-                shifts[(n_idx, d, s)] = model.new_bool_var(
-                    f"shift_{employee['name']}_d{d}_s{s}"
+    for employee_idx, _ in enumerate(employees):
+        for day_idx in range(num_days):
+            for shift_idx in range(num_shifts):
+                shifts[(employee_idx, day_idx, shift_idx)] = model.new_bool_var(
+                    f"shift_e{employee_idx}_d{day_idx}_s{shift_idx}"
                 )
     return shifts
 

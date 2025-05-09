@@ -63,10 +63,10 @@ def add_all_constraints(
         None
     """
 
-    # Inital Constraints
+    # Initial Constraints
     add_basic_constraints(model, employees, shifts, num_days, num_shifts)
 
-    # Free Shifts and Vacation Days
+    # Free shifts and vacation days
     free_shifts_and_vacation_days = load_free_shifts_and_vacation_days(
         f"./cases/{case_id}/free_shifts_and_vacation_days.json"
     )

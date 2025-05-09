@@ -16,7 +16,6 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
         self._employees = employees
         self._num_days = num_days
         self._num_shifts = num_shifts
-        self._solution_count = 0
         self._solution_limit = limit
         self._case_id = case_id
         self._solution_dir = solution_dir
@@ -27,24 +26,23 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
         os.makedirs(solution_dir, exist_ok=True)
 
     def on_solution_callback(self):
-        self._solution_count += 1
         self.handle_solution()
 
-        if self._solution_limit and self._solution_count >= self._solution_limit:
+        if self._solution_limit and len(self._solutions) >= self._solution_limit:
             self.stop_search()
 
     def handle_solution(self):
-        """Collects the solution triples (n, d, s) for each solution."""
+        """Collects the solution triples (employee_idx, day_idx, shift_idx) for each solution."""
         solution = {}
-        for n_idx in range(len(self._employees)):
-            for d in range(self._num_days):
-                for s in range(self._num_shifts):
-                    value = self.Value(self._shifts[(n_idx, d, s)])
-                    solution[(n_idx, d, s)] = int(value)
+        for employee_idx in range(len(self._employees)):
+            for day_idx in range(self._num_days):
+                for shift_idx in range(self._num_shifts):
+                    value = self.Value(self._shifts[(employee_idx, day_idx, shift_idx)])
+                    solution[(employee_idx, day_idx, shift_idx)] = int(value)
         self._solutions.append(solution)
 
     def solution_count(self):
-        return self._solution_count
+        return len(self._solutions)
 
     def json(self):
         """Save all collected solutions to a JSON file."""
@@ -55,7 +53,6 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
                 for idx, employee in enumerate(self._employees)
             },
             "constraints": self._constraints,
-            "numOfSolutions": len(self._solutions),
             "givenSolutionLimit": self._solution_limit,
             "solutions": [
                 {str(key): value for key, value in solution.items()}
