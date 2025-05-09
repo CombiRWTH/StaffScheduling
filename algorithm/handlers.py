@@ -22,9 +22,6 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
         self._solution_dir = solution_dir
         self._constraints = StateManager.state.constraints
         self._solutions = []
-        self._employee_name_to_index = {
-            employee["name"]: idx for idx, employee in enumerate(employees)
-        }
 
         # Ensure the output directory exists
         os.makedirs(solution_dir, exist_ok=True)
@@ -53,7 +50,10 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
         """Save all collected solutions to a JSON file."""
         output = {
             "caseID": self._case_id,
-            "employees": {"name_to_index": self._employee_name_to_index},
+            "employees": {
+                idx: (employee["name"], employee["type"])
+                for idx, employee in enumerate(self._employees)
+            },
             "constraints": self._constraints,
             "numOfSolutions": len(self._solutions),
             "givenSolutionLimit": self._solution_limit,

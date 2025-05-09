@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import io
 
 
-def create_roster_table(solution, employees, name_to_index, num_days):
+def create_roster_table(solution, employees, num_days):
     shift_code = {0: "E", 1: "L", 2: "N"}
     shift_color = {"E": "yellow", "L": "skyblue", "N": "black"}
     qual_color = {
@@ -21,11 +21,7 @@ def create_roster_table(solution, employees, name_to_index, num_days):
     cell_colors = []
     cell_borders = []
 
-    for name in employees:
-        idx = name_to_index[name]
-        # qual = qualifications[name]
-        qual = "Unknown"
-
+    for idx, [name, qual] in employees.items():
         if len(name) > MAX_NAME_LENGTH:
             short_name = name[: MAX_NAME_LENGTH - len(PLACEHOLDER)] + PLACEHOLDER
         else:
