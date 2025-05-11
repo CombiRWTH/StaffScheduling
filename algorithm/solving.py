@@ -82,9 +82,8 @@ def add_all_constraints(
     )
 
     min_number_of_staff = load_min_number_of_staff(
-        f"./cases/{case_id}/minimal_number_of_staff copy.json",
+        f"./cases/{case_id}/minimal_number_of_staff.json",
     )
-    print(min_number_of_staff)
     add_min_number_of_staff(
         model, employees, shifts, min_number_of_staff, first_weekday_of_month, num_days
     )
