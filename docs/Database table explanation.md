@@ -4,7 +4,7 @@
 TPlan describes the set of working schedule managed in TIMEOFFICE. A working schedule is always assigned to a planning unit (Planungseinheit) and a time period. The time period is determined by the planning interval of the underlying planning unit.
 
 | Attribute    | Description | Data type |
-| -------- | ------- | ------- | 
+| -------- | ------- | ------- |
 | Prim  | Unique numeric primary key    | int |
 | RefPlanungseinheiten | Reference to the underlying planning unit, TPlanungseinheiten.Prim | int |
 | VonDat    | Start time of planning    | datetime |
@@ -17,7 +17,7 @@ TPlan describes the set of working schedule managed in TIMEOFFICE. A working sch
 TPlanPersonal describes the assignment of an employee to a specific work schedule.
 
 | Attribute    | Description | Data type |
-| -------- | ------- | ------- | 
+| -------- | ------- | ------- |
 | Prim  | Unique numeric primary key    | int |
 | RefPlan  | Reference to the underlying work schedule, TPlan.Prim    | int |
 | RefPersonal  | Reference to the underlying employee, TPersonal.Prim    | int |
@@ -126,5 +126,3 @@ TEinrichtungen describes the different facilities managed in a database. These f
 | AktivJN  | Boolflag, which indicates whether the facility is still actively in operation    | bit |
 | AktivVon  | Spans a period in which the facility is in operation with AktivBis    | datetime |
 | AktivBis  | Spans a period in which the facility is in operation with AktivVon    | datetime |
-
-
