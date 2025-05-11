@@ -47,7 +47,7 @@ def add_all_constraints(
     Includes:
     - Basic constraints
     - Free shifts and vacation day constraints
-    - Target working hours constraints
+    - Minimal Number of Staff
 
     Additional constraint modules can be easily added to this function to
     extend the model.
@@ -59,6 +59,8 @@ def add_all_constraints(
         case_id (int): Scheduling case ID.
         num_days (int): Number of days.
         num_shifts (int): Number of shifts per day.
+        first_weekday_of_month (str): Starting day of a month, e.g. 'Di' for
+        Tuesday.
 
     Returns:
         None
