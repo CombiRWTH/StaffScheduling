@@ -52,11 +52,6 @@ def add_basic_constraints(
     all_shifts = range(num_shifts)
     all_days = range(num_days)
 
-    # one employee per (name, day, shift) tuple
-    for d in all_days:
-        for s in all_shifts:
-            model.add_exactly_one(shifts[(n, d, s)] for n in all_employees)
-
     # one shift per employee per day at most
     for n in all_employees:
         for d in all_days:
