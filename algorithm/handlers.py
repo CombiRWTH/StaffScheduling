@@ -9,13 +9,22 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
     """Unified handler for solutions (save, print, plot, etc.)."""
 
     def __init__(
-        self, shifts, employees, num_days, num_shifts, limit, case_id, solution_dir
+        self,
+        shifts,
+        employees,
+        num_days,
+        num_shifts,
+        dates,
+        limit,
+        case_id,
+        solution_dir,
     ):
         super().__init__()
         self._shifts = shifts
         self._employees = employees
         self._num_days = num_days
         self._num_shifts = num_shifts
+        self._dates = dates
         self._solution_count = 0
         self._solution_limit = limit
         self._case_id = case_id
@@ -37,14 +46,18 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
             self.stop_search()
 
     def handle_solution(self):
-        """Collects the solution triples (n, d, s) for each solution."""
         solution = {}
         for n_idx in range(len(self._employees)):
             for d in range(self._num_days):
+                date_str = self._dates[d].isoformat()
                 for s in range(self._num_shifts):
                     value = self.Value(self._shifts[(n_idx, d, s)])
-                    solution[(n_idx, d, s)] = int(value)
+                    solution[(n_idx, date_str, s)] = int(value)
         self._solutions.append(solution)
+
+        self._solution_count += 1
+        if self._solution_count >= self._solution_limit:
+            self.StopSearch()
 
     def solution_count(self):
         return self._solution_count
@@ -74,7 +87,3 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
     def print(self):
         """Print collected solutions (not implemented yet)."""
         raise NotImplementedError("Printing solutions is not implemented yet.")
-
-    def plot(self):
-        """Plot collected solutions (not implemented yet)."""
-        raise NotImplementedError("Plotting solutions is not implemented yet.")

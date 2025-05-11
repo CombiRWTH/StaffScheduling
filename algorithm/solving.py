@@ -13,6 +13,9 @@ from building_constraints.target_working_hours import (
     load_target_working_hours,
     add_target_working_hours,
 )
+import argparse
+from datetime import date, timedelta
+# from data_loading import load_employees, create_shift_variables, add_all_constraints, solve_cp_problem
 
 
 def solve_cp_problem(
@@ -96,15 +99,40 @@ def add_all_constraints(
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Staff scheduling over a rolling horizon."
+    )
+    parser.add_argument(
+        "--case_id", "-c", type=int, default=1, help="ID of the cases folder to load"
+    )
+    parser.add_argument(
+        "--num_days",
+        "-n",
+        type=int,
+        default=30,
+        help="Number of days to plan (rolling horizon)",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        nargs="+",
+        default=["json"],
+        help="Output formats (e.g. json, plot, print)",
+    )
+    args = parser.parse_args()
+
     SOLUTION_DIR = "found_solutions"
-    CASE_ID = 1
-    NUM_DAYS = 30
+    CASE_ID = args.case_id
+    NUM_DAYS = args.num_days
     NUM_SHIFTS = 3
     SOLUTION_LIMIT = 10
-    OUTPUT = ["json"]
+    OUTPUT = args.output
+
+    # Calendar Date
+    start_date = date.today()
+    dates = [start_date + timedelta(days=i) for i in range(NUM_DAYS)]
 
     model = cp_model.CpModel()
-
     employees = load_employees(f"./cases/{CASE_ID}/employees.json")
     shifts = create_shift_variables(model, employees, NUM_DAYS, NUM_SHIFTS)
 
@@ -117,12 +145,12 @@ def main():
         num_shifts=NUM_SHIFTS,
     )
 
-    # Solving
     unified = UnifiedSolutionHandler(
         shifts=shifts,
         employees=employees,
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
+        dates=dates,
         limit=SOLUTION_LIMIT,
         case_id=CASE_ID,
         solution_dir=SOLUTION_DIR,
