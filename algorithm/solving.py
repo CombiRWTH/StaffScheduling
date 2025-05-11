@@ -9,9 +9,9 @@ from building_constraints.free_shifts_and_vacation_days import (
     load_free_shifts_and_vacation_days,
     add_free_shifts_and_vacation_days,
 )
-from building_constraints.target_working_hours import (
-    load_target_working_hours,
-    add_target_working_hours,
+from building_constraints.minimal_number_of_staff import (
+    load_min_number_of_staff,
+    add_min_number_of_staff,
 )
 
 
@@ -39,6 +39,7 @@ def add_all_constraints(
     case_id: int,
     num_days: int,
     num_shifts: int,
+    first_weekday_of_month: str,
 ) -> None:
     """
     Adds constraints to the scheduling model.
@@ -78,20 +79,12 @@ def add_all_constraints(
         num_shifts,
     )
 
-    # Target Working Hours
-    target_hours, shift_durations, tolerance_hours = load_target_working_hours(
-        f"./cases/{case_id}/target_working_hours.json",
-        f"./cases/{case_id}/general_settings.json",
+    min_number_of_staff = load_min_number_of_staff(
+        f"./cases/{case_id}/minimal_number_of_staff copy.json",
     )
-    add_target_working_hours(
-        model,
-        employees,
-        shifts,
-        num_days,
-        num_shifts,
-        shift_durations,
-        target_hours,
-        tolerance_hours,
+    print(min_number_of_staff)
+    add_min_number_of_staff(
+        model, employees, shifts, min_number_of_staff, first_weekday_of_month, num_days
     )
 
 
@@ -99,6 +92,7 @@ def main():
     SOLUTION_DIR = "found_solutions"
     CASE_ID = 1
     NUM_DAYS = 30
+    FIRST_WEEKDAY_OF_MONTH = "Mo"
     NUM_SHIFTS = 3
     SOLUTION_LIMIT = 10
     OUTPUT = ["json"]
@@ -115,6 +109,7 @@ def main():
         case_id=CASE_ID,
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
+        first_weekday_of_month=FIRST_WEEKDAY_OF_MONTH,
     )
 
     # Solving

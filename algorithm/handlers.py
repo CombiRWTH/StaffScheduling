@@ -42,8 +42,8 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
         for n_idx in range(len(self._employees)):
             for d in range(self._num_days):
                 for s in range(self._num_shifts):
-                    value = self.Value(self._shifts[(n_idx, d, s)])
-                    solution[(n_idx, d, s)] = int(value)
+                    value = self.Value(self._shifts[(n_idx, d + 1, s)])
+                    solution[(n_idx, d + 1, s)] = int(value)
         self._solutions.append(solution)
 
     def solution_count(self):
