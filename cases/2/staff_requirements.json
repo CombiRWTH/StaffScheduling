@@ -1,0 +1,193 @@
+{
+  "requirements": [
+    {
+      "day": 0,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 3,
+        "Hilfskraft": 2
+      },
+      "shift": 0
+    },
+    {
+      "day": 0,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 2,
+        "Hilfskraft": 2
+      },
+      "shift": 1
+    },
+    {
+      "day": 0,
+      "required": {
+        "Azubi": 0,
+        "Fachkraft": 2,
+        "Hilfskraft": 0
+      },
+      "shift": 2
+    },
+    {
+      "day": 1,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 3,
+        "Hilfskraft": 2
+      },
+      "shift": 0
+    },
+    {
+      "day": 1,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 2,
+        "Hilfskraft": 2
+      },
+      "shift": 1
+    },
+    {
+      "day": 1,
+      "required": {
+        "Azubi": 0,
+        "Fachkraft": 2,
+        "Hilfskraft": 0
+      },
+      "shift": 2
+    },
+    {
+      "day": 2,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 4,
+        "Hilfskraft": 2
+      },
+      "shift": 0
+    },
+    {
+      "day": 2,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 2,
+        "Hilfskraft": 2
+      },
+      "shift": 1
+    },
+    {
+      "day": 2,
+      "required": {
+        "Azubi": 0,
+        "Fachkraft": 2,
+        "Hilfskraft": 0
+      },
+      "shift": 2
+    },
+    {
+      "day": 3,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 3,
+        "Hilfskraft": 2
+      },
+      "shift": 0
+    },
+    {
+      "day": 3,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 2,
+        "Hilfskraft": 2
+      },
+      "shift": 1
+    },
+    {
+      "day": 3,
+      "required": {
+        "Azubi": 0,
+        "Fachkraft": 2,
+        "Hilfskraft": 0
+      },
+      "shift": 2
+    },
+    {
+      "day": 4,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 3,
+        "Hilfskraft": 2
+      },
+      "shift": 0
+    },
+    {
+      "day": 4,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 2,
+        "Hilfskraft": 2
+      },
+      "shift": 1
+    },
+    {
+      "day": 4,
+      "required": {
+        "Azubi": 0,
+        "Fachkraft": 2,
+        "Hilfskraft": 0
+      },
+      "shift": 2
+    },
+    {
+      "day": 5,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 2,
+        "Hilfskraft": 2
+      },
+      "shift": 0
+    },
+    {
+      "day": 5,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 2,
+        "Hilfskraft": 2
+      },
+      "shift": 1
+    },
+    {
+      "day": 5,
+      "required": {
+        "Azubi": 0,
+        "Fachkraft": 1,
+        "Hilfskraft": 1
+      },
+      "shift": 2
+    },
+    {
+      "day": 6,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 2,
+        "Hilfskraft": 2
+      },
+      "shift": 0
+    },
+    {
+      "day": 6,
+      "required": {
+        "Azubi": 1,
+        "Fachkraft": 2,
+        "Hilfskraft": 2
+      },
+      "shift": 1
+    },
+    {
+      "day": 6,
+      "required": {
+        "Azubi": 0,
+        "Fachkraft": 1,
+        "Hilfskraft": 1
+      },
+      "shift": 2
+    }
+  ]
+}
