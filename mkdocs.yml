@@ -1,0 +1,10 @@
+site_name: Staff Scheduling
+
+nav:
+  - Home: index.md
+  - Constraints: Constraints.md
+  - General structure: GeneralStructure.md
+  - How to build a constraint: HowToBuildAConstraint.md
+
+theme:
+  name: material
