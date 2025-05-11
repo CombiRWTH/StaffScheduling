@@ -3,6 +3,7 @@ import os
 import StateManager
 from datetime import datetime
 from ortools.sat.python import cp_model
+from plotting import plot_schedule
 
 
 class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
@@ -84,6 +85,22 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
 
         print(f"Solutions saved to {filename}")
 
-    def print(self):
-        """Print collected solutions (not implemented yet)."""
-        raise NotImplementedError("Printing solutions is not implemented yet.")
+    def plot(self, solution_index: int = 0):
+        """Plot one of the collected solutions by index (default: first)."""
+
+        if not self._solutions:
+            raise ValueError("No solutions available to plot.")
+        if not (0 <= solution_index < len(self._solutions)):
+            raise IndexError(
+                f"solution_index must be between 0 and {len(self._solutions) - 1}"
+            )
+
+        # Select the solution dict for plotting
+        solution = self._solutions[solution_index]
+
+        # Delegate to the schedule-plotting utility
+        plot_schedule(
+            employees=self._employees,
+            schedule=solution,
+            dates=self._dates,
+        )
