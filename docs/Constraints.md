@@ -64,8 +64,8 @@ Meaning early, late, night and not night, late, early. This maximizes the time t
 Some kind of regularity for the free weekends
 
 ### No Late to Early Shifts (from Rest Time (2) (§5 (1,2)))
-This is the essence of the "Rest Time Constraint" below adjusted to our case. 
-No Late to Early Shifts means that it is not allowed that an early shift follows a late shift, because then the rest time would not be long enough. 
+This is the essence of the "Rest Time Constraint" below adjusted to our case.
+No Late to Early Shifts means that it is not allowed that an early shift follows a late shift, because then the rest time would not be long enough.
 
 ### At least 15 Sundays free per year (2) (§11 (1))
 That is a compensation for the work on sundays and holidays
