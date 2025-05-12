@@ -63,6 +63,71 @@ TPlanPersonalKommtGeht describes the individual assignments of an employee on a 
 | BereitBis  | If it is an on-call duty, the hours worked can be documented within a planned on-call duty. In these cases, ReadyFrom / ReadyTo is filled    | datetime |
 
 
+## TPersonalKontenJeTag:
+TPersonalKontenJeTag describes the different daily account types per employee. Holiday days, night shifts and other important data can be taken from here via the external key RefPersonal (for example, the holiday as key number 85 or night shift as key 20 in the RefAccounts field).
+
+| Attribute    | Description | Data type |
+| -------- | ------- | ------- |
+| RefPersonal  | Reference to the underlying employee, TPersonal.Prim    | int |
+| Datum  | Date of the referring account    | datetime |
+| RefKonten  | Reference to the specific account, TKonten.Prim    | int |
+| Wert  | Count of hours within the referred account for the employee    | float |
+| RefPlanungsEinheiten  | Reference to which planning entity the account belongs to    | int |
+| RefBerufe  | Reference to the belonging profession    | int |
+| RefKstNr  | Reference to the cost centre (old)    | nvarchar (255) |
+| RefKostenStellen  | Reference to the cost centre (new)    | int |
+| WertSoll  | The calculated VBA value of the account when the plan was < status 40    | float |
+
+
+## TPersonalKontenJeWoche:
+TPersonalKontenJeWoche describes the different weekly account types per employee. The count of working hours can be accessed with key 19. The count of total services can be accessed with key 67. The important value for each week is then written in column Wert2.
+
+| Attribute    | Description | Data type |
+| -------- | ------- | ------- |
+| RefPersonal  | Reference to the underlying employee, TPersonal.Prim    | int |
+| Woche  | Corresponding week of the account in the format year-week (202435)    | int |
+| RefKonten  | Reference to the specific account, TKonten.Prim    | int |
+| Wert1  | Count within the referred account of the specific week in state 1 for the employee    | float |
+| Wert2  | Count within the referred account of the specific week in state 2 for the employee    | float |
+| Wert3  | Count within the referred account of the specific week in state 3 for the employee    | float |
+| Wert4  | Count within the referred account of the specific week in state 4 for the employee    | float |
+| Wert5  | Count within the referred account of the specific week in state 5 for the employee    | float |
+| Wert6  | Count within the referred account of the specific week in state 6 for the employee    | float |
+| Wert7  | Count within the referred account of the specific week in state 7 for the employee    | float |
+| Wert8  | Count within the referred account of the specific week in state 8 for the employee (new)    | float |
+| Wert8Alt  | Count within the referred account of the specific week in state 8 for the employee (old)    | float |
+| SumWert1  | Cumulative count within the referred account of the specific week in state 1 for the employee    | float |
+| SumWert2  | Cumulative count within the referred account of the specific week in state 2 for the employee    | float |
+| SumWert3  | Cumulative count within the referred account of the specific week in state 3 for the employee    | float |
+| SumWert4  | Cumulative count within the referred account of the specific week in state 4 for the employee    | float |
+| SumWert5  | Cumulative count within the referred account of the specific week in state 5 for the employee    | float |
+| SumWert6  | Cumulative count within the referred account of the specific week in state 6 for the employee    | float |
+| SumWert7  | Cumulative count within the referred account of the specific week in state 7 for the employee    | float |
+| SumWert8  | Cumulative count within the referred account of the specific week in state 8 for the employee (new)    | float |
+| SumWert8Alt  | Cumulative count within the referred account of the specific week in state 8 for the employee (old)    | float |
+| RefStationOnSave  | Reference to the state    | int |
+
+
+## TPersonalKontenJeMonat:
+TPersonalKontenJeWoche describes the different monthly account types per employee. The count of target working hours can be accessed with key 1 and the important value for each month is then written in column Wert2.
+
+| Attribute    | Description | Data type |
+| -------- | ------- | ------- |
+| RefPersonal  | Reference to the underlying employee, TPersonal.Prim    | int |
+| Monat  | Corresponding month of the account in the format year-month (202411)    | int |
+| RefKonten  | Reference to the specific account, TKonten.Prim    | int |
+| Wert1  | Count within the referred account of the specific week in state 1 for the employee    | float |
+| Wert2  | Count within the referred account of the specific week in state 2 for the employee    | float |
+| Wert3  | Count within the referred account of the specific week in state 3 for the employee    | float |
+| Wert4  | Count within the referred account of the specific week in state 4 for the employee    | float |
+| Wert5  | Count within the referred account of the specific week in state 5 for the employee    | float |
+| Wert6  | Count within the referred account of the specific week in state 6 for the employee    | float |
+| Wert7  | Count within the referred account of the specific week in state 7 for the employee    | float |
+| Wert8  | Count within the referred account of the specific week in state 8 for the employee (new)    | float |
+| Wert8Alt  | Count within the referred account of the specific week in state 8 for the employee (old)    | float |
+| RefStationOnSave  | Reference to the state    | int |
+
+
 ## TDienste:
 TDienste describes the shifts that can be entered in the work schedule. In combination with TDiensteSollzeiten, this results in the working times scheduled for an employee.
 
@@ -73,6 +138,22 @@ TDienste describes the shifts that can be entered in the work schedule. In combi
 | Bezeichnung  | Long name of the shift    | nvarchar(255) |
 | RefDienstTypen  | Refers to the service type from STDienstTypen.  1 = normal, 100 = absence, ...    | int |
 | RefDiensteStatistikGruppen  | Group in which a service is classified.  Reference to TDiensteStatistikGruppen.Prim. Highly relevant for calculation. Classics are 1 = early shift, 2 = late shift, 3 = night shift    | int |
+
+
+## TDiensteSollzeiten:
+TDiensteSollzeiten describes the given target times of various services. Different types become important within the internship, which can be selected using the connection to TDienste via RefDienste: Late shift (2947), early shift (2939), night shift (2953) and intermediate shift (2906). The times and breaks can be calculated via Kommt and Geht.
+
+| Attribute    | Description | Data type |
+| -------- | ------- | ------- |
+| RefTagTypGruppen  | Reference to weekday    | int |
+| RefDienste  | Reference to a specific service type    | int |
+| Kommt  | Time when the shift starts    | datetime |
+| ZusatzOption  | Additional information (e.g. different handling before other days)    | int |
+| Geht  | Time when shift ends    | datetime |
+| Minuten  | Total time in minutes    | int |
+| Tag  | Count of total days within shift    | nvarchar (255) |
+| IstBereitschaft  | Whether the shift is standby    | bit |
+| Wert  | Fixed rate for standby duties    | float |
 
 
 ## TPlanungseinheiten:
