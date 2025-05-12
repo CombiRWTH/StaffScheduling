@@ -89,7 +89,7 @@ TEMPLATE = """
 </head>
 <body class="bg-light">
   <div class="container bg-white p-4 rounded shadow-sm" style="overflow-x:auto;">
-    <h1 class="text-primary">Staff Schedule (Case {{ case_id }})</h1>
+    <h1 class="text-primary">Staff Schedule</h1>
 
     <div class="row mb-3">
       <div class="col-md-6">
