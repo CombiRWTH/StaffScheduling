@@ -5,6 +5,7 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "flask>=3.1.0",
     "matplotlib>=3.10.1",
     "numpy>=2.2.5",
     "ortools>=9.12.4544",
