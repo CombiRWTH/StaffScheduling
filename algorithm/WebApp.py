@@ -6,7 +6,7 @@ import os
 import re
 import ast
 from datetime import datetime
-from flask import Flask, render_template_string, abort, request
+from flask import Flask, render_template, abort, request
 
 # Base directory of the project
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -58,99 +58,6 @@ def load_employees(case_id=CASE_ID):
 
 
 # HTML template using Jinja2 and Bootstrap for styling
-TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Staff Schedule - Case {{ case_id }}</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { padding: 20px; }
-    h1, h2 { margin-top: 20px; }
-    th, td { text-align: center; vertical-align: middle; white-space: nowrap; }
-    .shift-0 { background: #FFCCCC; }
-    .shift-1 { background: #CCCCFF; }
-    .shift-2 { background: #CCFFCC; }
-  </style>
-  <script>
-    function changeFile(sel) {
-      const file = encodeURIComponent(sel.value);
-      const idx = document.getElementById('solSelect').value - 1;
-      window.location.href = `/?file=${file}&solution_index=${idx}`;
-    }
-    function changeSolution(sel) {
-      const sol = sel.value - 1;
-      const file = encodeURIComponent(document.getElementById('fileSelect').value);
-      window.location.href = `/?file=${file}&solution_index=${sol}`;
-    }
-  </script>
-</head>
-<body class="bg-light">
-  <div class="container bg-white p-4 rounded shadow-sm" style="overflow-x:auto;">
-    <h1 class="text-primary">Staff Schedule</h1>
-
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="fileSelect" class="form-label">Lösung Datei</label>
-        <select id="fileSelect" class="form-select" onchange="changeFile(this)">
-          {% for f in solution_files %}
-            <option value="{{ f }}" {% if f == current_file %}selected{% endif %}>{{ f }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label for="solSelect" class="form-label">Lösung Nummer</label>
-        <select id="solSelect" class="form-select" onchange="changeSolution(this)">
-          {% for i in range(1, total_solutions + 1) %}
-            <option value="{{ i }}" {% if i-1 == solution_index %}selected{% endif %}>{{ i }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
-
-    <h2>Ansicht {{ solution_index + 1 }} von {{ total_solutions }}</h2>
-
-    <div class="table-responsive">
-      <table class="table table-striped table-hover table-bordered">
-        <thead class="table-light">
-          <tr>
-            <th scope="col">Mitarbeiter</th>
-            {% for date in dates %}<th scope="col">{{ date }}</th>{% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for emp in employees %}
-            {% set idx = loop.index0 %}
-            <tr>
-              <td title="{{ shift_counts[idx] }} Schichten">{{ emp['name'] }}</td>
-              {% for date in dates %}
-                {% set shift = schedule_map[idx].get(date) %}
-                <td class="shift-{{ shift if shift is not none else '' }}">
-                  {{ shift_symbols[shift] if shift is not none else '' }}
-                </td>
-              {% endfor %}
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <h2>Debug & Parameter</h2>
-    <ul>
-      <li>Fall ID: {{ case_id }}</li>
-      <li>Geplante Tage: {{ num_days }}</li>
-      <li>Mitarbeiter: {{ num_employees }}</li>
-      <li>Schichten pro Tag: {{ num_shifts }}</li>
-      <li>Geladen um: {{ loaded_time }}</li>
-      <li>Constraints: {{ constraints | join(', ') }}</li>
-      <li>Anzahl Lösungen: {{ total_solutions }}</li>
-    </ul>
-  </div>
-</body>
-</html>
-"""
 
 app = Flask(__name__)
 
@@ -214,8 +121,28 @@ def index():
 
     shift_counts = {i: len(schedule_map[i]) for i in schedule_map}
 
-    return render_template_string(
-        TEMPLATE,
+    # shift_labels für die Beschriftung
+    shift_labels = {0: "Frühschichten", 1: "Spätschichten", 2: "Nachtschichten"}
+
+    # 1) Zähle die Schichten pro Tag
+    date_counts = {d: {s: 0 for s in range(num_shifts)} for d in dates}
+    for emp_idx, shifts in schedule_map.items():
+        for d, s in shifts.items():
+            date_counts[d][s] += 1
+
+    # 2) Tooltip-Texte pro Datum zusammenbauen
+    date_tooltips = {}
+    for date, counts in date_counts.items():
+        lines = []
+        for s, cnt in counts.items():
+            if cnt:
+                label = shift_labels.get(s, f"Schicht {s}")
+                lines.append(f"{label}: {cnt}")
+        # mehreren Zeilen durch newline trennen
+        date_tooltips[date] = "\n".join(lines)
+
+    return render_template(
+        "index.html",
         case_id=CASE_ID,
         solution_files=files,
         current_file=current_file,
@@ -224,6 +151,7 @@ def index():
         employees=employees,
         schedule_map=schedule_map,
         dates=dates,
+        date_tooltips=date_tooltips,
         num_days=num_days,
         num_shifts=num_shifts,
         num_employees=num_employees,
