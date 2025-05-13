@@ -1,6 +1,6 @@
 import json
 from ortools.sat.python import cp_model
-import algorithm.StateManager as StateManager
+import StateManager
 
 
 def load_shift_rotate_forward(filename):
@@ -15,13 +15,13 @@ def add_shift_rotate_forward(
     shifts: dict[tuple, cp_model.IntVar],
     num_shifts,
     fixed_shift_workers: dict,
-    num_days
+    num_days,
 ) -> None:
     num_employees = len(employees)
     for n, fixed_shift in fixed_shift_workers.items():
         for d in range(num_days):
             # if the worker works that day
-            is_working = model.NewBoolVar(f'is_working_n{n}_d{d}')
+            is_working = model.NewBoolVar(f"is_working_n{n}_d{d}")
             model.Add(is_working == shifts[(n, d, fixed_shift)])
 
             # All non-fixed shifts are set to 0
@@ -38,10 +38,14 @@ def add_shift_rotate_forward(
             continue  # ignore fixed shifts worker
 
         for d in range(num_days - 1):
-            for (prev_s, next_s) in bad_rotations:
-                b = model.NewBoolVar(f'bad_rot_n{n}_d{d}_from{prev_s}to{next_s}')
-                model.AddBoolAnd([shifts[(n, d, prev_s)], shifts[(n, d + 1, next_s)]]).OnlyEnforceIf(b)
-                model.AddBoolOr([shifts[(n, d, prev_s)].Not(), shifts[(n, d + 1, next_s)].Not()]).OnlyEnforceIf(b.Not())
+            for prev_s, next_s in bad_rotations:
+                b = model.NewBoolVar(f"bad_rot_n{n}_d{d}_from{prev_s}to{next_s}")
+                model.AddBoolAnd(
+                    [shifts[(n, d, prev_s)], shifts[(n, d + 1, next_s)]]
+                ).OnlyEnforceIf(b)
+                model.AddBoolOr(
+                    [shifts[(n, d, prev_s)].Not(), shifts[(n, d + 1, next_s)].Not()]
+                ).OnlyEnforceIf(b.Not())
                 penalties.append(b)
     model.Minimize(sum(penalties))
     StateManager.state.constraints.append("Shift should rotate forward")
