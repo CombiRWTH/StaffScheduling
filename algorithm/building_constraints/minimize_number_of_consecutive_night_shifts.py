@@ -1,6 +1,8 @@
 from ortools.sat.python import cp_model
 import StateManager
 
+NAME_OF_CONSTRAINT = "Minimize number of consecutive night shifts"
+
 
 def add_minimize_number_of_consecutive_night_shifts(
     model: cp_model.CpModel,
@@ -8,31 +10,48 @@ def add_minimize_number_of_consecutive_night_shifts(
     shifts: dict[tuple, cp_model.IntVar],
     num_days,
 ) -> None:
-    num_employees = len(employees)
-    consecutive_night_shifts = []
+    # penalties increases for longer night shift phases
+    weights = {
+        2: 1,
+        3: 3,
+        4: 6,
+        5: 10,  # 5 or more
+    }
 
-    cumulateve_total = 0
+    penalties = []
 
-    for n in range(num_employees):
-        for d in range(num_days - 1):  # up to second-last day
-            night_today = shifts[(n, d, 2)]
-            night_after_tomorrow = shifts[(n, d + 1, 2)]
+    for n in range(len(employees)):
+        for d in range(num_days - 1):  # for length 2
+            if d + 1 >= num_days:
+                continue
+            nights = [shifts[(n, d + i, 2)] for i in range(2)]
+            var = model.NewBoolVar(f"night_phase_2_n{n}_d{d}")
+            model.AddBoolAnd(nights).OnlyEnforceIf(var)
+            model.AddBoolOr([n.Not() for n in nights]).OnlyEnforceIf(var.Not())
+            penalties.append((var, weights[2]))
 
-            # Define a Boolean variable that is 1 if both days are night shifts
-            consecutive = model.NewBoolVar(f"consec_night_n{n}_d{d}")
-            model.AddBoolAnd([night_today, night_after_tomorrow]).OnlyEnforceIf(
-                consecutive
-            )
-            model.AddBoolOr(
-                [night_today.Not(), night_after_tomorrow.Not()]
-            ).OnlyEnforceIf(consecutive.Not())
+        for d in range(num_days - 2):  # for length 3
+            nights = [shifts[(n, d + i, 2)] for i in range(3)]
+            var = model.NewBoolVar(f"night_phase_3_n{n}_d{d}")
+            model.AddBoolAnd(nights).OnlyEnforceIf(var)
+            model.AddBoolOr([n.Not() for n in nights]).OnlyEnforceIf(var.Not())
+            penalties.append((var, weights[3]))
 
-            if consecutive:
-                cumulateve_total += consecutive
-            else:
-                cumulateve_total = 0
+        for d in range(num_days - 3):  # for length 4
+            nights = [shifts[(n, d + i, 2)] for i in range(4)]
+            var = model.NewBoolVar(f"night_phase_4_n{n}_d{d}")
+            model.AddBoolAnd(nights).OnlyEnforceIf(var)
+            model.AddBoolOr([n.Not() for n in nights]).OnlyEnforceIf(var.Not())
+            penalties.append((var, weights[4]))
 
-            consecutive_night_shifts.append(cumulateve_total)
+        for d in range(num_days - 4):  # for length 5+
+            nights = [shifts[(n, d + i, 2)] for i in range(5)]
+            var = model.NewBoolVar(f"night_phase_5plus_n{n}_d{d}")
+            model.AddBoolAnd(nights).OnlyEnforceIf(var)
+            model.AddBoolOr([n.Not() for n in nights]).OnlyEnforceIf(var.Not())
+            penalties.append((var, weights[5]))
 
-    model.Minimize(sum(consecutive_night_shifts))
-    StateManager.state.constraints.append("Minimize number of cnosecutive night shifts")
+    StateManager.state.objectives.append(
+        (sum(weight * var for var, weight in penalties), NAME_OF_CONSTRAINT)
+    )
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)

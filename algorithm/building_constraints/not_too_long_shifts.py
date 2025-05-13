@@ -1,6 +1,8 @@
 from ortools.sat.python import cp_model
 import StateManager
 
+NAME_OF_CONSTRAINT = "Not to long shifts"
+
 
 def add_not_too_long_shifts(
     model: cp_model.CpModel,
@@ -36,5 +38,6 @@ def add_not_too_long_shifts(
             # Addition of targeted penalties
             # The less punishment the better
             objective_terms.append(overwork.Not())
-    model.Minimize(sum(objective_terms))
-    StateManager.state.constraints.append("not too long shifts")
+
+    StateManager.state.objectives.append((sum(objective_terms)), NAME_OF_CONSTRAINT)
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)

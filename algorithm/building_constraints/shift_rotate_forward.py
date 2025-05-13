@@ -2,6 +2,8 @@ import json
 from ortools.sat.python import cp_model
 import StateManager
 
+NAME_OF_CONSTRAINT = "Shifts rotate fowards"
+
 
 def load_shift_rotate_forward(filename):
     with open(filename, "r") as f:
@@ -47,5 +49,6 @@ def add_shift_rotate_forward(
                     [shifts[(n, d, prev_s)].Not(), shifts[(n, d + 1, next_s)].Not()]
                 ).OnlyEnforceIf(b.Not())
                 penalties.append(b)
-    model.Minimize(sum(penalties))
-    StateManager.state.constraints.append("Shift should rotate forward")
+
+    StateManager.state.objectives.append((sum(penalties), NAME_OF_CONSTRAINT))
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
