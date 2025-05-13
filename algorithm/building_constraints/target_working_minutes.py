@@ -2,7 +2,12 @@ import json
 import StateManager
 
 
-def load_target_working_hours(filename, settings_filename):
+# Idee: Einbau erstmal nur von Obergrenze
+# Dann wenn zu noch Stunden übrig, Zwischendienst auffüllen
+# ist ein ein Problem VIELE zwischendienste aufzufüllen und dann später manuell aufzuteilen
+
+
+def load_target_working_minutes(filename, settings_filename):
     with open(filename, "r") as f:
         data = json.load(f)
 
@@ -23,7 +28,7 @@ def load_target_working_hours(filename, settings_filename):
     )
 
 
-def add_target_working_hours(
+def add_target_working_minutes(
     model,
     employees,
     shifts,

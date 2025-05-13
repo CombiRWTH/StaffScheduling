@@ -1,0 +1,26 @@
+{
+  "employees": [
+    {
+      "firstname": "",
+      "name": "Pauline",
+      "target": 480
+    },
+    {
+      "firstname": "",
+      "name": "Marie",
+      "target": 480
+    },
+    {
+      "firstname": "",
+      "name": "Dumbledore",
+      "target": 240
+    }
+  ],
+  "shift_durations": {
+    "F": 480,
+    "N": 450,
+    "S": 480
+  },
+  "tolerance_less": 960,
+  "tolerance_more": 480
+}

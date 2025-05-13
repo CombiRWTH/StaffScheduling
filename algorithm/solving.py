@@ -9,9 +9,9 @@ from building_constraints.free_shifts_and_vacation_days import (
     load_free_shifts_and_vacation_days,
     add_free_shifts_and_vacation_days,
 )
-from building_constraints.target_working_hours import (
-    load_target_working_hours,
-    add_target_working_hours,
+from algorithm.building_constraints.target_working_minutes import (
+    load_target_working_minutes,
+    add_target_working_minutes,
 )
 
 
@@ -79,11 +79,11 @@ def add_all_constraints(
     )
 
     # Target Working Hours
-    target_hours, shift_durations, tolerance_hours = load_target_working_hours(
+    target_hours, shift_durations, tolerance_hours = load_target_working_minutes(
         f"./cases/{case_id}/target_working_hours.json",
         f"./cases/{case_id}/general_settings.json",
     )
-    add_target_working_hours(
+    add_target_working_minutes(
         model,
         employees,
         shifts,
