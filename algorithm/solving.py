@@ -14,20 +14,18 @@ from building_constraints.target_working_hours import (
     add_target_working_hours,
 )
 from building_constraints.minimize_number_of_consecutive_night_shifts import (
-    add_minimize_number_of_consecutive_night_shifts
+    add_minimize_number_of_consecutive_night_shifts,
 )
 from building_constraints.day_no_shift_after_night_shift import (
-    add_day_no_shift_after_night_shift
+    add_day_no_shift_after_night_shift,
 )
-from building_constraints.free_days_near_weekend import (
-    add_free_days_near_weekend
-)
+from building_constraints.free_days_near_weekend import add_free_days_near_weekend
 from building_constraints.more_free_days_for_night_worker import (
-    add_more_free_days_for_night_worker
+    add_more_free_days_for_night_worker,
 )
 from building_constraints.shift_rotate_forward import (
     load_shift_rotate_forward,
-    add_shift_rotate_forward
+    add_shift_rotate_forward,
 )
 
 
@@ -111,25 +109,17 @@ def add_all_constraints(
     )
 
     # Minimize number of consevutive night shifts
-    add_minimize_number_of_consecutive_night_shifts(
-        model, employees, shifts, num_days
-    )
+    add_minimize_number_of_consecutive_night_shifts(model, employees, shifts, num_days)
 
     # Day no shift after night shift
-    add_day_no_shift_after_night_shift(
-        model, employees, shifts, num_days
-    )
+    add_day_no_shift_after_night_shift(model, employees, shifts, num_days)
 
     # Free day near weekend
     # here we need the date of the first day in the month, need to connect with the database
-    add_free_days_near_weekend(
-        model, employees, shifts, num_shifts, num_days
-    )
+    add_free_days_near_weekend(model, employees, shifts, num_shifts, num_days)
 
     # More free days for night worker
-    add_more_free_days_for_night_worker(
-        model, employees, shifts, num_shifts, num_days
-    )
+    add_more_free_days_for_night_worker(model, employees, shifts, num_shifts, num_days)
 
     # Shift rotate forward
     fixed_shift_workers = load_shift_rotate_forward(

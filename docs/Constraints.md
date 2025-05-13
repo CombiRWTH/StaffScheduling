@@ -51,7 +51,7 @@ model.Add(current_work_time_per_employee >= target_minuts - 7.67 * 60)
 The number of consecutive night shifts should be as few as possible.
 In order to count the consecutive night shifts, we introduce a new variable "consecutive", whcih should be set to 1 only iff
 the worker works at the night at day d and d+1, then set the constraint to limit sum of "consecutive"
-- **Implementation Idea:** Set "consecutive" to 1 iff night_today && night_tomorrow == 1 
+- **Implementation Idea:** Set "consecutive" to 1 iff night_today && night_tomorrow == 1
 ```python
 model.AddBoolAnd([night_today, night_after_tomorrow]).OnlyEnforceIf(consecutive)
 model.AddBoolOr([night_today.Not(), night_after_tomorrow.Not()]).OnlyEnforceIf(consecutive.Not())
@@ -83,8 +83,8 @@ model.Maximize(sum(objective_terms))
 ### Shifts should "rotate forward" (3.5)
 Meaning early, late, night and not night, late, early. This maximizes the time to rest between shifts.
 
-To achieve this constraint, we first need to fix the list of shift workers and limit their shifts. 
-We then introduce the variable bad_rotation, which defines several shift sequences for non-forward shifts, 
+To achieve this constraint, we first need to fix the list of shift workers and limit their shifts.
+We then introduce the variable bad_rotation, which defines several shift sequences for non-forward shifts,
 and if a shift sequence contained therein occurs, the penalty is noted as plus one point, and finally a constraint is added to minimize the value of the penalty.
 ```python
 bad_rotations = [(0, 2), (1, 0), (2, 1)]  # non-forward rotate
