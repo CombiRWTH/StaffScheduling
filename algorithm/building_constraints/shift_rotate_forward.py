@@ -44,4 +44,4 @@ def add_shift_rotate_forward(
                 model.AddBoolOr([shifts[(n, d, prev_s)].Not(), shifts[(n, d + 1, next_s)].Not()]).OnlyEnforceIf(b.Not())
                 penalties.append(b)
     model.Minimize(sum(penalties))
-
+    StateManager.state.constraints.append("Shift should rotate forward")

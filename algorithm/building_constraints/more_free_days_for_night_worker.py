@@ -1,5 +1,5 @@
 from ortools.sat.python import cp_model
-import algorithm.StateManager as StateManager
+import StateManager
 
 
 def add_more_free_days_for_night_worker(
@@ -31,5 +31,5 @@ def add_more_free_days_for_night_worker(
         objective_terms.append(surplus)
 
     model.Maximize(sum(objective_terms))
-    StateManager.state.constraints.append("Shift should forward forward")
+    StateManager.state.constraints.append("More free days for night worker")
 

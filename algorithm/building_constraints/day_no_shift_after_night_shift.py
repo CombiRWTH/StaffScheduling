@@ -1,5 +1,5 @@
 from ortools.sat.python import cp_model
-import algorithm.StateManager as StateManager
+import StateManager
 
 
 def add_day_no_shift_after_night_shift(

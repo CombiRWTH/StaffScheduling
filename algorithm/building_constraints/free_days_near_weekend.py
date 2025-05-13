@@ -1,5 +1,5 @@
 from ortools.sat.python import cp_model
-import algorithm.StateManager as StateManager
+import StateManager
 
 
 def add_free_days_near_weekend(

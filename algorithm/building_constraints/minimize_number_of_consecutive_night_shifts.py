@@ -1,5 +1,5 @@
 from ortools.sat.python import cp_model
-import algorithm.StateManager as StateManager
+import StateManager
 
 
 def add_minimize_number_of_consecutive_night_shifts(
