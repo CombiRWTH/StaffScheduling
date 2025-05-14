@@ -2,6 +2,8 @@ import json
 import StateManager
 from ortools.sat.python import cp_model
 
+NAME_OF_CONSTRAINT = "free shifts and vacation days"
+
 
 def load_free_shifts_and_vacation_days(filename):
     with open(filename, "r") as f:
@@ -25,15 +27,19 @@ def add_free_shifts_and_vacation_days(
         for request in constraints["time_off"]:
             employee_idx = name_to_index[request["name"]]
             if "days_off" in request:
-                for day in request["days_off"]:
+                for day_int in request[
+                    "days_off"
+                ]:  # day_int is real day, starts at 1 not zero
                     for s in range(num_shifts):
-                        model.Add(shifts[(employee_idx, day, s)] == 0)
+                        model.Add(
+                            shifts[(employee_idx, day_int - 1, s)] == 0
+                        )  # day_int needs to be changed to day_idx
                     model.Add(
-                        shifts[(employee_idx, day, 2)] == 0
+                        shifts[(employee_idx, day_int - 1, 2)] == 0
                     )  # no night shift before vacation
 
             if "shifts_off" in request:
-                for shift in request["shifts_off"]:
-                    model.Add(shifts[(employee_idx, shift[0], shift[1])] == 0)
+                for day_int, shift in request["shifts_off"]:
+                    model.Add(shifts[(employee_idx, day_int - 1, shift)] == 0)
 
-    StateManager.state.constraints.append("Free Shifts and Vacation Days")
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)

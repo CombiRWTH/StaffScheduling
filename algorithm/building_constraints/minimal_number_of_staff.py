@@ -1,6 +1,8 @@
 import json
 import StateManager
 
+NAME_OF_CONSTRAINT = "Minimal Number of Staff"
+
 
 def load_min_number_of_staff(filename):
     with open(filename, "r") as f:
@@ -20,22 +22,17 @@ def add_min_number_of_staff(
     if first_weekday_of_month not in weekday_mapping:
         raise ValueError("Invalid weekday provided.")
     weekday_index = weekday_mapping.index(first_weekday_of_month)
-    for day in range(1, last_day_of_month + 1):
-        current_weekday_index = (weekday_index + (day - 1)) % len(weekday_mapping)
+    for day_idx in range(0, last_day_of_month):
+        current_weekday_index = (weekday_index + day_idx) % len(weekday_mapping)
         current_weekday = weekday_mapping[current_weekday_index]
         for staff_type in requirements.keys():
             relevant_employees = employee_idx_by_type[staff_type]
             for shift in requirements[staff_type][current_weekday].keys():
                 shift_index = shift_mapping.index(shift)
                 required_count = requirements[staff_type][current_weekday][shift]
-                work_vars = [shifts[(n, day, shift_index)] for n in relevant_employees]
+                work_vars = [
+                    shifts[(n, day_idx, shift_index)] for n in relevant_employees
+                ]
                 model.Add(sum(work_vars) >= required_count)
 
-    # for staff_type, days_of_week in requirements.items():
-    #     relevant_employees = employee_idx_by_type[staff_type]
-    #     for day, number_per_shift in days_of_week.items():
-    #         for shift, required_count in number_per_shift.items():
-    #             work_vars = [shifts[(n, day, shift)] for n in relevant_employees]
-    #             model.Add(sum(work_vars) >= required_count)
-
-    StateManager.state.constraints.append("Minimal Number of Staff")
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)

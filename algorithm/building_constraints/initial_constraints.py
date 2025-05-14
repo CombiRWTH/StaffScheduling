@@ -23,10 +23,10 @@ def create_shift_variables(
     """
     shifts = {}
     for n_idx, employee in enumerate(employees):
-        for d in range(num_days):
+        for d_idx in range(num_days):
             for s in range(num_shifts):
-                shifts[(n_idx, d + 1, s)] = model.new_bool_var(
-                    f"shift_{employee['name']}_d{d}_s{s}"
+                shifts[(n_idx, d_idx, s)] = model.new_bool_var(
+                    f"shift_{employee['name']}_d{d_idx}_s{s}"
                 )
     return shifts
 
@@ -54,7 +54,7 @@ def add_basic_constraints(
 
     # one shift per employee per day at most
     for n in all_employees:
-        for d in all_days:
-            model.add_at_most_one(shifts[(n, d + 1, s)] for s in all_shifts)
+        for d_idx in all_days:
+            model.add_at_most_one(shifts[(n, d_idx, s)] for s in all_shifts)
 
     StateManager.state.constraints.append("Initial")
