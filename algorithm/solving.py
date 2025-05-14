@@ -13,6 +13,9 @@ from building_constraints.minimal_number_of_staff import (
     load_min_number_of_staff,
     add_min_number_of_staff,
 )
+import argparse
+import calendar
+from datetime import date, timedelta
 
 
 def solve_cp_problem(
@@ -66,7 +69,7 @@ def add_all_constraints(
         None
     """
 
-    # Inital Constraints
+    # Initial Constraints
     add_basic_constraints(model, employees, shifts, num_days, num_shifts)
 
     # Free Shifts and Vacation Days
@@ -90,16 +93,52 @@ def add_all_constraints(
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Staff scheduling for a given month and year."
+    )
+    parser.add_argument(
+        "--case_id", "-c", type=int, default=1, help="ID of the cases folder to load"
+    )
+    parser.add_argument(
+        "--month",
+        "-m",
+        type=int,
+        choices=range(1, 13),
+        default=11,
+        help="Month to plan (1-12), default: November",
+    )
+    parser.add_argument(
+        "--year", "-y", type=int, default=2025, help="Year to plan, default: 2025"
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        nargs="+",
+        default=["json"],
+        help="Output formats (e.g. json, plot, print)",
+    )
+    args = parser.parse_args()
+
+    # Scheduling parameters based on month and year
     SOLUTION_DIR = "found_solutions"
-    CASE_ID = 1
-    NUM_DAYS = 30
-    FIRST_WEEKDAY_OF_MONTH = "Mo"
+
+    CASE_ID = args.case_id
     NUM_SHIFTS = 3
     SOLUTION_LIMIT = 10
-    OUTPUT = ["json"]
+    OUTPUT = args.output
+    
+    year = args.year
+    month = args.month
+    # First day of the given month
+    start_date = date(year, month, 1)
+    # Number of days in that month
+    NUM_DAYS = calendar.monthrange(year, month)[1]
+    first_weekday_name_of_month = calendar.day_name[start_date.weekday()]
+
+    # Generate list of dates for planning horizon
+    dates = [start_date + timedelta(days=i) for i in range(NUM_DAYS)]
 
     model = cp_model.CpModel()
-
     employees = load_employees(f"./cases/{CASE_ID}/employees.json")
     shifts = create_shift_variables(model, employees, NUM_DAYS, NUM_SHIFTS)
 
@@ -110,15 +149,15 @@ def main():
         case_id=CASE_ID,
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
-        first_weekday_of_month=FIRST_WEEKDAY_OF_MONTH,
+        first_weekday_of_month=first_weekday_name_of_month,
     )
 
-    # Solving
     unified = UnifiedSolutionHandler(
         shifts=shifts,
         employees=employees,
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
+        dates=dates,
         limit=SOLUTION_LIMIT,
         case_id=CASE_ID,
         solution_dir=SOLUTION_DIR,
