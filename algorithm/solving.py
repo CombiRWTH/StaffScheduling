@@ -31,6 +31,7 @@ from building_constraints.more_free_days_for_night_worker import (
 from building_constraints.not_too_many_consecutive_shifts import (
     add_not_too_many_consecutive_shifts,
 )
+from building_constraints.shift_rotate_forward import add_shift_rotate_forward
 
 
 def solve_cp_problem(
@@ -160,9 +161,7 @@ def add_all_constraints(
     # fixed_shift_workers = load_shift_rotate_forward(
     #     f"./cases/{case_id}/fixed_shift_workers.json"
     # )
-    # add_shift_rotate_forward(
-    #     model, employees, shifts, num_shifts, fixed_shift_workers, num_days
-    # )
+    add_shift_rotate_forward(model, employees, shifts, num_days)
 
 
 def main():
