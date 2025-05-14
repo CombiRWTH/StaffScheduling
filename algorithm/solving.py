@@ -25,6 +25,9 @@ from building_constraints.free_days_near_weekend import add_free_days_near_weeke
 from building_constraints.more_free_days_for_night_worker import (
     add_more_free_days_for_night_worker,
 )
+from building_constraints.not_too_many_consecutive_shifts import (
+    add_not_too_many_consecutive_shifts,
+)
 
 
 def solve_cp_problem(
@@ -72,6 +75,7 @@ def add_all_constraints(
     num_days: int,
     num_shifts: int,
     start_weekday: int,
+    max_consecutive_work_days: int,
 ) -> None:
     """
     Adds constraints to the scheduling model.
@@ -144,7 +148,10 @@ def add_all_constraints(
     # # More free days for night worker
     add_more_free_days_for_night_worker(model, employees, shifts, work_on_day, num_days)
 
-    # add_not_too_long_shifts
+    # Not to many consecutive shifts
+    add_not_too_many_consecutive_shifts(
+        model, employees, work_on_day, num_days, max_consecutive_work_days
+    )
 
     # Shift rotate forward
     # fixed_shift_workers = load_shift_rotate_forward(
@@ -163,6 +170,7 @@ def main():
     SOLUTION_LIMIT = 10
     OUTPUT = ["json"]
     START_WEEKDAY = 4  # Friday
+    MAX_CONSECUTIVE_WORK_DAYS = 5
 
     model = cp_model.CpModel()
 
@@ -181,6 +189,7 @@ def main():
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
         start_weekday=START_WEEKDAY,
+        max_consecutive_work_days=MAX_CONSECUTIVE_WORK_DAYS,
     )
 
     # Solving
@@ -201,6 +210,7 @@ def main():
             "Minimize number of consecutive night shifts": 1,
             "free day near weekend": 1,
             "More Free Days for Night Workers": 1,
+            "Not too many Consecutive Shifts": 1,
         }
         add_objective_function(model, weights)
 
