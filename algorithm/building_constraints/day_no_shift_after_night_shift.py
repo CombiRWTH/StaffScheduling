@@ -1,6 +1,8 @@
 from ortools.sat.python import cp_model
 import StateManager
 
+NAME_OF_CONSTRAINT = "24h no shift after night shift phase"
+
 
 def add_day_no_shift_after_night_shift(
     model: cp_model.CpModel,
@@ -21,4 +23,4 @@ def add_day_no_shift_after_night_shift(
                 [night_today, not_night_tomorrow]
             )
 
-    StateManager.state.constraints.append("day no shift after night shift")
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
