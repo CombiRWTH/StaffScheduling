@@ -1,4 +1,7 @@
 import StateManager
+import argparse
+import calendar
+from datetime import date, timedelta
 from ortools.sat.python import cp_model
 from handlers import UnifiedSolutionHandler
 from building_constraints.initial_constraints import (
@@ -102,7 +105,7 @@ def add_all_constraints(
         None
     """
 
-    # Inital Constraints
+    # Initial Constraints
     add_basic_constraints(model, employees, shifts, num_days, num_shifts)
 
     # Free Shifts and Vacation Days
@@ -163,17 +166,52 @@ def add_all_constraints(
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Staff scheduling for a given month and year."
+    )
+    parser.add_argument(
+        "--case_id", "-c", type=int, default=1, help="ID of the cases folder to load"
+    )
+    parser.add_argument(
+        "--month",
+        "-m",
+        type=int,
+        choices=range(1, 13),
+        default=11,
+        help="Month to plan (1-12), default: November",
+    )
+    parser.add_argument(
+        "--year", "-y", type=int, default=2025, help="Year to plan, default: 2025"
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        nargs="+",
+        default=["json"],
+        help="Output formats (e.g. json, plot, print)",
+    )
+    args = parser.parse_args()
+
+    # Scheduling parameters based on month and year
     SOLUTION_DIR = "found_solutions"
-    CASE_ID = 1
-    NUM_DAYS = 30
+    CASE_ID = args.case_id
+    year = args.year
+    month = args.month
+    # First day of the given month
+    start_date = date(year, month, 1)
+    # Number of days in that month
+    NUM_DAYS = calendar.monthrange(year, month)[1]
+    first_weekday_idx_of_month = start_date.weekday()  # 0 for Monday, 6 for Sunday
+
     NUM_SHIFTS = 3
     SOLUTION_LIMIT = 10
-    OUTPUT = ["json"]
-    START_WEEKDAY = 4  # Friday
     MAX_CONSECUTIVE_WORK_DAYS = 5
+    OUTPUT = args.output
+
+    # Generate list of dates for planning horizon
+    dates = [start_date + timedelta(days=i) for i in range(NUM_DAYS)]
 
     model = cp_model.CpModel()
-
     employees = load_employees(f"./cases/{CASE_ID}/employees.json")
     shifts = create_shift_variables(model, employees, NUM_DAYS, NUM_SHIFTS)
     work_on_day = create_work_on_days_variables(
@@ -188,16 +226,16 @@ def main():
         case_id=CASE_ID,
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
-        start_weekday=START_WEEKDAY,
+        start_weekday=first_weekday_idx_of_month,
         max_consecutive_work_days=MAX_CONSECUTIVE_WORK_DAYS,
     )
 
-    # Solving
     unified = UnifiedSolutionHandler(
         shifts=shifts,
         employees=employees,
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
+        dates=dates,
         limit=SOLUTION_LIMIT,
         case_id=CASE_ID,
         solution_dir=SOLUTION_DIR,
