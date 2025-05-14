@@ -20,10 +20,12 @@ def add_minimize_number_of_consecutive_night_shifts(
 
     penalties = []
 
+    # this is currently not ideal
+    # a night shift of length 4 is also counted (multiple times) in night shift
+    # if len 2 and 3.
+    # This counteracts to the defined weights.
     for n in range(len(employees)):
         for d in range(num_days - 1):  # for length 2
-            if d + 1 >= num_days:
-                continue
             nights = [shifts[(n, d + i, 2)] for i in range(2)]
             var = model.NewBoolVar(f"night_phase_2_n{n}_d{d}")
             model.AddBoolAnd(nights).OnlyEnforceIf(var)
