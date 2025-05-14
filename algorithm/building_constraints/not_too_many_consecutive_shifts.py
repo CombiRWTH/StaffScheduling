@@ -33,7 +33,7 @@ def add_not_too_many_consecutive_shifts(
 
             # Addition of targeted penalties
             # The less punishment the better
-            objective_terms.append(overwork.Not())
+            objective_terms.append(overwork)
 
     StateManager.state.objectives.append((sum(objective_terms), NAME_OF_CONSTRAINT))
     StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
