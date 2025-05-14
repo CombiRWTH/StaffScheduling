@@ -1,6 +1,8 @@
 from ortools.sat.python import cp_model
 import StateManager
 
+NAME_OF_CONSTRAINT = "free day near weekend"
+
 
 def add_free_days_near_weekend(
     model: cp_model.CpModel,
@@ -57,6 +59,9 @@ def add_free_days_near_weekend(
                 model.Add(work[(n, d)] == 0).OnlyEnforceIf(rest_weekend)
                 model.Add(work[(n, d)] == 1).OnlyEnforceIf(rest_weekend.Not())
                 objective_terms.append(rest_weekend)
+        # Maximize sum(objective_terms)
 
-        model.Maximize(sum(objective_terms))
-        StateManager.state.constraints.append("free day near weekend")
+        StateManager.state.objectives.append(
+            (-sum(objective_terms), NAME_OF_CONSTRAINT)
+        )
+        StateManager.state.constraints.append(NAME_OF_CONSTRAINT)

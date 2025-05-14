@@ -17,6 +17,10 @@ from building_constraints.target_working_hours import (
 from building_constraints.minimize_number_of_consecutive_night_shifts import (
     add_minimize_number_of_consecutive_night_shifts,
 )
+from building_constraints.day_no_shift_after_night_shift import (
+    add_day_no_shift_after_night_shift,
+)
+from building_constraints.free_days_near_weekend import add_free_days_near_weekend
 
 
 def solve_cp_problem(
@@ -121,13 +125,11 @@ def add_all_constraints(
     add_minimize_number_of_consecutive_night_shifts(model, employees, shifts, num_days)
 
     # Day no shift after night shift
-    # add_day_no_shift_after_night_shift(model, employees, shifts, num_days)
+    add_day_no_shift_after_night_shift(model, employees, shifts, num_days)
 
-    # # Free day near weekend
-    # # here we need the date of the first day in the month, need to connect with the database
-    # add_free_days_near_weekend(
-    #     model, employees, shifts, num_shifts, num_days
-    # )
+    # Free day near weekend
+    # here we need the date of the first day in the month, need to connect with the database
+    add_free_days_near_weekend(model, employees, shifts, num_shifts, num_days)
 
     # # More free days for night worker
     # add_more_free_days_for_night_worker(model, employees, shifts, num_shifts, num_days)
@@ -179,10 +181,13 @@ def main():
             "Shifts rotate fowards": 1,
             "Not to long shifts": 1,
             "Minimize number of consecutive night shifts": 1,
+            "free day near weekend": 1,
         }
         add_objective_function(model, weights)
+
         enumerate_all_solutions = False
     else:
+        print("No objective function.")
         enumerate_all_solutions = True
 
     solve_cp_problem(
