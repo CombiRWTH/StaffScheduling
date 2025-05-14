@@ -3,6 +3,7 @@ from ortools.sat.python import cp_model
 from handlers import UnifiedSolutionHandler
 from building_constraints.initial_constraints import (
     create_shift_variables,
+    create_work_on_days_variables,
     add_basic_constraints,
     load_employees,
 )
@@ -65,6 +66,7 @@ def add_objective_function(model: cp_model.CpModel, weights: dict):
 def add_all_constraints(
     model: cp_model.CpModel,
     shifts: dict[tuple, cp_model.IntVar],
+    work_on_day: dict[tuple, cp_model.IntVar],
     employees: list[dict],
     case_id: int,
     num_days: int,
@@ -85,6 +87,8 @@ def add_all_constraints(
     Args:
         model (cp_model.CpModel): The constraint programming model.
         shifts (dict[tuple, cp_model.IntVar]): Shift assignment variables.
+        work_on_day (dict[tuple, cp_model.IntVar]): Whether employees work
+            any shift at specific day or not
         employees (list[dict]): List of employee data.
         case_id (int): Scheduling case ID.
         num_days (int): Number of days.
@@ -134,11 +138,13 @@ def add_all_constraints(
     # Free day near weekend
     # here we need the date of the first day in the month, need to connect with the database
     add_free_days_near_weekend(
-        model, employees, shifts, num_shifts, num_days, start_weekday=start_weekday
+        model, employees, work_on_day, num_days, start_weekday=start_weekday
     )
 
     # # More free days for night worker
-    add_more_free_days_for_night_worker(model, employees, shifts, num_shifts, num_days)
+    add_more_free_days_for_night_worker(model, employees, shifts, work_on_day, num_days)
+
+    # add_not_too_long_shifts
 
     # Shift rotate forward
     # fixed_shift_workers = load_shift_rotate_forward(
@@ -162,10 +168,14 @@ def main():
 
     employees = load_employees(f"./cases/{CASE_ID}/employees.json")
     shifts = create_shift_variables(model, employees, NUM_DAYS, NUM_SHIFTS)
+    work_on_day = create_work_on_days_variables(
+        model, employees, NUM_DAYS, NUM_SHIFTS, shifts
+    )  # whether employee works any shift at specific day
 
     add_all_constraints(
         model=model,
         shifts=shifts,
+        work_on_day=work_on_day,
         employees=employees,
         case_id=CASE_ID,
         num_days=NUM_DAYS,
