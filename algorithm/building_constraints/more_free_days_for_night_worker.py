@@ -15,11 +15,11 @@ def add_more_free_days_for_night_worker(
     objective_terms = []
     for n in range(num_employees):
         # calculate the night shift times
-        night_shifts = [shifts[(n, d, 2)] for d in range(num_days)]
+        night_shifts = [shifts[(n, d_idx, 2)] for d_idx in range(num_days)]
         num_night_shifts = model.NewIntVar(0, num_days, f"night_count_n{n}")
         model.Add(num_night_shifts == sum(night_shifts))
 
-        rest_days = [work_on_day[(n, d)].Not() for d in range(num_days)]
+        rest_days = [work_on_day[(n, d_idx)].Not() for d_idx in range(num_days)]
         num_rest_days = model.NewIntVar(0, num_days, f"rest_count_n{n}")
         model.Add(num_rest_days == sum(rest_days))
 
