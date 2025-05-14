@@ -12,6 +12,12 @@ def add_free_days_near_weekend(
     num_days,
     start_weekday,
 ) -> None:
+    weights = {
+        "consecutive_2_days_rest": 1,
+        "single-day rest penalty": 1,
+        "rest_weekend": 1,
+    }
+
     num_employees = len(employees)
     work = {}
     for n in range(num_employees):
@@ -32,7 +38,7 @@ def add_free_days_near_weekend(
             model.Add(work[(n, d)] + work[(n, d + 1)] != 0).OnlyEnforceIf(
                 rest_pair.Not()
             )
-            objective_terms.append(rest_pair)
+            objective_terms.append(weights["consecutive_2_days_rest"] * rest_pair)
 
         for d in range(1, num_days - 1):
             # isolated single-day rest penalty (working before and after)
@@ -47,7 +53,7 @@ def add_free_days_near_weekend(
                 sum([work[(n, d - 1)], work[(n, d)], work[(n, d + 1)]]) != 2
             ).OnlyEnforceIf(solo_rest.Not())
             objective_terms.append(
-                -solo_rest
+                -solo_rest * weights["single-day rest penalty"]
             )  # Extra points when there is no isolation
 
         for d in range(num_days):
@@ -57,7 +63,7 @@ def add_free_days_near_weekend(
                 rest_weekend = model.NewBoolVar(f"rest_weekend_n{n}_d{d}")
                 model.Add(work[(n, d)] == 0).OnlyEnforceIf(rest_weekend)
                 model.Add(work[(n, d)] == 1).OnlyEnforceIf(rest_weekend.Not())
-                objective_terms.append(rest_weekend)
+                objective_terms.append(rest_weekend * weights["rest_weekend"])
         # Maximize sum(objective_terms)
 
         StateManager.state.objectives.append(
