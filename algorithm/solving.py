@@ -42,7 +42,7 @@ def add_all_constraints(
     case_id: int,
     num_days: int,
     num_shifts: int,
-    first_weekday_of_month: str,
+    first_weekday_of_month: int,
 ) -> None:
     """
     Adds constraints to the scheduling model.
@@ -62,8 +62,8 @@ def add_all_constraints(
         case_id (int): Scheduling case ID.
         num_days (int): Number of days.
         num_shifts (int): Number of shifts per day.
-        first_weekday_of_month (str): Starting day of a month, e.g. 'Di' for
-        Tuesday.
+        first_weekday_of_month (int): Starting day of a month, 0 for monday,
+        6 for sunday.
 
     Returns:
         None
@@ -126,14 +126,14 @@ def main():
     NUM_SHIFTS = 3
     SOLUTION_LIMIT = 10
     OUTPUT = args.output
-    
+
     year = args.year
     month = args.month
     # First day of the given month
     start_date = date(year, month, 1)
     # Number of days in that month
     NUM_DAYS = calendar.monthrange(year, month)[1]
-    first_weekday_name_of_month = calendar.day_name[start_date.weekday()]
+    first_weekday_idx_of_month = start_date.weekday()  # 0 for Monday, 6 for Sunday
 
     # Generate list of dates for planning horizon
     dates = [start_date + timedelta(days=i) for i in range(NUM_DAYS)]
@@ -149,7 +149,7 @@ def main():
         case_id=CASE_ID,
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
-        first_weekday_of_month=first_weekday_name_of_month,
+        first_weekday_of_month=first_weekday_idx_of_month,
     )
 
     unified = UnifiedSolutionHandler(

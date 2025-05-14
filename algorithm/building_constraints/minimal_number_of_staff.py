@@ -10,7 +10,12 @@ def load_min_number_of_staff(filename):
 
 
 def add_min_number_of_staff(
-    model, employees, shifts, requirements, first_weekday_of_month, last_day_of_month
+    model,
+    employees,
+    shifts,
+    requirements,
+    first_weekday_idx_of_month,
+    last_day_of_month,
 ):
     employee_idx_by_type = {}
     for idx, employee in enumerate(employees):
@@ -19,11 +24,10 @@ def add_min_number_of_staff(
     weekday_mapping = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
     shift_mapping = ["F", "S", "N"]
 
-    if first_weekday_of_month not in weekday_mapping:
-        raise ValueError("Invalid weekday provided.")
-    weekday_index = weekday_mapping.index(first_weekday_of_month)
     for day_idx in range(0, last_day_of_month):
-        current_weekday_index = (weekday_index + day_idx) % len(weekday_mapping)
+        current_weekday_index = (first_weekday_idx_of_month + day_idx) % len(
+            weekday_mapping
+        )
         current_weekday = weekday_mapping[current_weekday_index]
         for staff_type in requirements.keys():
             relevant_employees = employee_idx_by_type[staff_type]
