@@ -56,7 +56,7 @@ def add_objective_function(model: cp_model.CpModel, weights: dict):
         if constraint_name in weights:
             weight = weights[constraint_name]
         else:
-            raise KeyError(f"The weight of {constraint_name} is missing.")
+            raise KeyError(f"The weight of `{constraint_name}` is missing.")
         weighted_objective_terms.append(weight * penalty_var)
 
     model.Minimize(sum(weighted_objective_terms))
@@ -190,6 +190,7 @@ def main():
             "Not to long shifts": 1,
             "Minimize number of consecutive night shifts": 1,
             "free day near weekend": 1,
+            "More Free Days for Night Workers": 1,
         }
         add_objective_function(model, weights)
 

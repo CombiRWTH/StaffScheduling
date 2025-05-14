@@ -34,5 +34,7 @@ def add_more_free_days_for_night_worker(
         model.Add(surplus == num_rest_days - num_night_shifts)
         objective_terms.append(surplus)
 
-    model.Maximize(sum(objective_terms))
+    # Maximize sum(objective_terms)
+
+    StateManager.state.objectives.append((-sum(objective_terms), NAME_OF_CONSTRAINT))
     StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
