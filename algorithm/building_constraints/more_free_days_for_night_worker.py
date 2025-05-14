@@ -1,6 +1,8 @@
 from ortools.sat.python import cp_model
 import StateManager
 
+NAME_OF_CONSTRAINT = "More Free Days for Night Workers"
+
 
 def add_more_free_days_for_night_worker(
     model: cp_model.CpModel,
@@ -33,4 +35,4 @@ def add_more_free_days_for_night_worker(
         objective_terms.append(surplus)
 
     model.Maximize(sum(objective_terms))
-    StateManager.state.constraints.append("More free days for night worker")
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)

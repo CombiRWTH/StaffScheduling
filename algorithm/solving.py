@@ -21,6 +21,9 @@ from building_constraints.day_no_shift_after_night_shift import (
     add_day_no_shift_after_night_shift,
 )
 from building_constraints.free_days_near_weekend import add_free_days_near_weekend
+from building_constraints.more_free_days_for_night_worker import (
+    add_more_free_days_for_night_worker,
+)
 
 
 def solve_cp_problem(
@@ -135,7 +138,7 @@ def add_all_constraints(
     )
 
     # # More free days for night worker
-    # add_more_free_days_for_night_worker(model, employees, shifts, num_shifts, num_days)
+    add_more_free_days_for_night_worker(model, employees, shifts, num_shifts, num_days)
 
     # Shift rotate forward
     # fixed_shift_workers = load_shift_rotate_forward(
