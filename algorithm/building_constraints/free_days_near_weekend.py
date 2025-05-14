@@ -64,4 +64,4 @@ def add_free_days_near_weekend(
         StateManager.state.objectives.append(
             (-sum(objective_terms), NAME_OF_CONSTRAINT)
         )
-        StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
