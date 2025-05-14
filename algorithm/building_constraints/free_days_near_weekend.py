@@ -10,9 +10,8 @@ def add_free_days_near_weekend(
     shifts: dict[tuple, cp_model.IntVar],
     num_shifts,
     num_days,
+    start_weekday,
 ) -> None:
-    # here we assume that the start of the month is Friday, but we need further adjust
-    start_weekday = 4
     num_employees = len(employees)
     work = {}
     for n in range(num_employees):

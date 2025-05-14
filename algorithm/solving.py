@@ -66,6 +66,7 @@ def add_all_constraints(
     case_id: int,
     num_days: int,
     num_shifts: int,
+    start_weekday: int,
 ) -> None:
     """
     Adds constraints to the scheduling model.
@@ -129,7 +130,9 @@ def add_all_constraints(
 
     # Free day near weekend
     # here we need the date of the first day in the month, need to connect with the database
-    add_free_days_near_weekend(model, employees, shifts, num_shifts, num_days)
+    add_free_days_near_weekend(
+        model, employees, shifts, num_shifts, num_days, start_weekday=start_weekday
+    )
 
     # # More free days for night worker
     # add_more_free_days_for_night_worker(model, employees, shifts, num_shifts, num_days)
@@ -150,6 +153,7 @@ def main():
     NUM_SHIFTS = 3
     SOLUTION_LIMIT = 10
     OUTPUT = ["json"]
+    START_WEEKDAY = 4  # Friday
 
     model = cp_model.CpModel()
 
@@ -163,6 +167,7 @@ def main():
         case_id=CASE_ID,
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
+        start_weekday=START_WEEKDAY,
     )
 
     # Solving
