@@ -14,8 +14,8 @@ from building_constraints.target_working_hours import (
     add_target_working_hours,
 )
 import argparse
+import calendar
 from datetime import date, timedelta
-# from data_loading import load_employees, create_shift_variables, add_all_constraints, solve_cp_problem
 
 
 def solve_cp_problem(
@@ -66,7 +66,7 @@ def add_all_constraints(
         None
     """
 
-    # Inital Constraints
+    # Initial Constraints
     add_basic_constraints(model, employees, shifts, num_days, num_shifts)
 
     # Free Shifts and Vacation Days
@@ -100,17 +100,21 @@ def add_all_constraints(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Staff scheduling over a rolling horizon."
+        description="Staff scheduling for a given month and year."
     )
     parser.add_argument(
         "--case_id", "-c", type=int, default=1, help="ID of the cases folder to load"
     )
     parser.add_argument(
-        "--num_days",
-        "-n",
+        "--month",
+        "-m",
         type=int,
-        default=30,
-        help="Number of days to plan (rolling horizon)",
+        choices=range(1, 13),
+        default=11,
+        help="Month to plan (1-12), default: November",
+    )
+    parser.add_argument(
+        "--year", "-y", type=int, default=2025, help="Year to plan, default: 2025"
     )
     parser.add_argument(
         "--output",
@@ -121,15 +125,20 @@ def main():
     )
     args = parser.parse_args()
 
+    # Scheduling parameters based on month and year
     SOLUTION_DIR = "found_solutions"
     CASE_ID = args.case_id
-    NUM_DAYS = args.num_days
+    year = args.year
+    month = args.month
+    # First day of the given month
+    start_date = date(year, month, 1)
+    # Number of days in that month
+    NUM_DAYS = calendar.monthrange(year, month)[1]
     NUM_SHIFTS = 3
     SOLUTION_LIMIT = 10
     OUTPUT = args.output
 
-    # Calendar Date
-    start_date = date.today()
+    # Generate list of dates for planning horizon
     dates = [start_date + timedelta(days=i) for i in range(NUM_DAYS)]
 
     model = cp_model.CpModel()
