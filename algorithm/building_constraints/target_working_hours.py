@@ -68,5 +68,6 @@ def add_target_working_hours(
 
         model.Add(total_work_time == sum(work_time_terms))
         model.Add(total_work_time <= target_hours + tolerance_hours)
+        model.Add(total_work_time > 10)
 
     StateManager.state.constraints.append("Target Working Hours")
