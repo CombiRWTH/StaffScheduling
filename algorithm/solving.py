@@ -139,7 +139,7 @@ def add_all_constraints(
     # Free day near weekend
     # here we need the date of the first day in the month, need to connect with the database
     add_free_days_near_weekend(
-        model, employees, work_on_day, num_days, start_weekday=start_weekday
+        model, employees, work_on_day, num_days, start_weekday=first_weekday_of_month
     )
 
     # # More free days for night worker
