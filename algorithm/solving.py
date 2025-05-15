@@ -14,6 +14,8 @@ from building_constraints.target_working_hours import (
     add_target_working_hours,
 )
 
+from building_constraints.weekend_rhythm import add_weekend_rhythm
+
 
 def solve_cp_problem(
     model: cp_model.CpModel, handler: cp_model.CpSolverSolutionCallback
@@ -94,6 +96,7 @@ def add_all_constraints(
         tolerance_hours,
     )
 
+     add_weekend_rhythm(model, employees, shifts, num_days, num_shifts)
 
 def main():
     SOLUTION_DIR = "found_solutions"
