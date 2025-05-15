@@ -1,7 +1,12 @@
+import StateManager
+import argparse
+import calendar
+from datetime import date, timedelta
 from ortools.sat.python import cp_model
 from handlers import UnifiedSolutionHandler
 from building_constraints.initial_constraints import (
     create_shift_variables,
+    create_work_on_days_variables,
     add_basic_constraints,
     load_employees,
 )
@@ -13,17 +18,32 @@ from building_constraints.minimal_number_of_staff import (
     load_min_number_of_staff,
     add_min_number_of_staff,
 )
-import argparse
-import calendar
-from datetime import date, timedelta
+from building_constraints.minimize_number_of_consecutive_night_shifts import (
+    add_minimize_number_of_consecutive_night_shifts,
+)
+from building_constraints.day_no_shift_after_night_shift import (
+    add_day_no_shift_after_night_shift,
+)
+from building_constraints.free_days_near_weekend import add_free_days_near_weekend
+from building_constraints.more_free_days_for_night_worker import (
+    add_more_free_days_for_night_worker,
+)
+from building_constraints.not_too_many_consecutive_shifts import (
+    add_not_too_many_consecutive_shifts,
+)
+from building_constraints.shift_rotate_forward import add_shift_rotate_forward
 
 
 def solve_cp_problem(
-    model: cp_model.CpModel, handler: cp_model.CpSolverSolutionCallback
+    model: cp_model.CpModel,
+    handler: cp_model.CpSolverSolutionCallback,
+    enumerate_all_solutions: bool,
 ) -> None:
     """Solve CP model and output basic statistics."""
     solver = cp_model.CpSolver()
-    solver.parameters.enumerate_all_solutions = True
+    solver.parameters.enumerate_all_solutions = (
+        enumerate_all_solutions  # overwrites objective function if true
+    )
     solver.parameters.linearization_level = 0
 
     solver.SolveWithSolutionCallback(model, handler)
@@ -35,14 +55,31 @@ def solve_cp_problem(
     print(f"  - Solutions found: {handler.solution_count() if handler else 0}")
 
 
+def add_objective_function(model: cp_model.CpModel, weights: dict):
+    objective_terms = StateManager.state.objectives
+    weighted_objective_terms = []
+
+    # Assuming each module appends a tuple: (penalty_var, 'constraint_name')
+    for penalty_var, constraint_name in objective_terms:
+        if constraint_name in weights:
+            weight = weights[constraint_name]
+        else:
+            raise KeyError(f"The weight of `{constraint_name}` is missing.")
+        weighted_objective_terms.append(weight * penalty_var)
+
+    model.Minimize(sum(weighted_objective_terms))
+
+
 def add_all_constraints(
     model: cp_model.CpModel,
     shifts: dict[tuple, cp_model.IntVar],
+    work_on_day: dict[tuple, cp_model.IntVar],
     employees: list[dict],
     case_id: int,
     num_days: int,
     num_shifts: int,
     first_weekday_of_month: int,
+    max_consecutive_work_days: int,
 ) -> None:
     """
     Adds constraints to the scheduling model.
@@ -58,6 +95,8 @@ def add_all_constraints(
     Args:
         model (cp_model.CpModel): The constraint programming model.
         shifts (dict[tuple, cp_model.IntVar]): Shift assignment variables.
+        work_on_day (dict[tuple, cp_model.IntVar]): Whether employees work
+            any shift at specific day or not
         employees (list[dict]): List of employee data.
         case_id (int): Scheduling case ID.
         num_days (int): Number of days.
@@ -90,6 +129,32 @@ def add_all_constraints(
     add_min_number_of_staff(
         model, employees, shifts, min_number_of_staff, first_weekday_of_month, num_days
     )
+
+    # Minimize number of consevutive night shifts
+    add_minimize_number_of_consecutive_night_shifts(model, employees, shifts, num_days)
+
+    # Day no shift after night shift
+    add_day_no_shift_after_night_shift(model, employees, shifts, num_days)
+
+    # Free day near weekend
+    # here we need the date of the first day in the month, need to connect with the database
+    add_free_days_near_weekend(
+        model, employees, work_on_day, num_days, start_weekday=start_weekday
+    )
+
+    # # More free days for night worker
+    add_more_free_days_for_night_worker(model, employees, shifts, work_on_day, num_days)
+
+    # Not to many consecutive shifts
+    add_not_too_many_consecutive_shifts(
+        model, employees, work_on_day, num_days, max_consecutive_work_days
+    )
+
+    # Shift rotate forward
+    # fixed_shift_workers = load_shift_rotate_forward(
+    #     f"./cases/{case_id}/fixed_shift_workers.json"
+    # )
+    add_shift_rotate_forward(model, employees, shifts, num_days)
 
 
 def main():
@@ -135,21 +200,31 @@ def main():
     NUM_DAYS = calendar.monthrange(year, month)[1]
     first_weekday_idx_of_month = start_date.weekday()  # 0 for Monday, 6 for Sunday
 
+    NUM_SHIFTS = 3
+    SOLUTION_LIMIT = 10
+    MAX_CONSECUTIVE_WORK_DAYS = 5
+    OUTPUT = args.output
+
     # Generate list of dates for planning horizon
     dates = [start_date + timedelta(days=i) for i in range(NUM_DAYS)]
 
     model = cp_model.CpModel()
     employees = load_employees(f"./cases/{CASE_ID}/employees.json")
     shifts = create_shift_variables(model, employees, NUM_DAYS, NUM_SHIFTS)
+    work_on_day = create_work_on_days_variables(
+        model, employees, NUM_DAYS, NUM_SHIFTS, shifts
+    )  # whether employee works any shift at specific day
 
     add_all_constraints(
         model=model,
         shifts=shifts,
+        work_on_day=work_on_day,
         employees=employees,
         case_id=CASE_ID,
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
         first_weekday_of_month=first_weekday_idx_of_month,
+        max_consecutive_work_days=MAX_CONSECUTIVE_WORK_DAYS,
     )
 
     unified = UnifiedSolutionHandler(
@@ -162,7 +237,28 @@ def main():
         case_id=CASE_ID,
         solution_dir=SOLUTION_DIR,
     )
-    solve_cp_problem(model, handler=unified)
+
+    if len(StateManager.state.objectives) != 0:
+        weights = {
+            "Shifts rotate fowards": 1,
+            "Not to long shifts": 1,
+            "Minimize number of consecutive night shifts": 1,
+            "free day near weekend": 1,
+            "More Free Days for Night Workers": 1,
+            "Not too many Consecutive Shifts": 1,
+        }
+        add_objective_function(model, weights)
+
+        enumerate_all_solutions = False
+    else:
+        print("No objective function.")
+        enumerate_all_solutions = True
+
+    solve_cp_problem(
+        model,
+        handler=unified,
+        enumerate_all_solutions=enumerate_all_solutions,
+    )
 
     # Output
     if "json" in OUTPUT:
