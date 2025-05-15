@@ -2,6 +2,8 @@ import json
 import StateManager
 from ortools.sat.python import cp_model
 
+NAME_OF_CONSTRAINT = "Inital Constraints"
+
 
 def load_general_settings(filename):
     with open(filename, "r") as f:
@@ -65,7 +67,6 @@ def add_basic_constraints(
     """
     Adds fundamental scheduling constraints:
 
-    - Each shift on each day is assigned to exactly one employee.
     - Each employee can work at most one shift per day.
 
     These constraints form the structural foundation of the schedule.
@@ -78,7 +79,7 @@ def add_basic_constraints(
 
     # one shift per employee per day at most
     for n in all_employees:
-        for d in all_days:
-            model.add_at_most_one(shifts[(n, d, s)] for s in all_shifts)
+        for d_idx in all_days:
+            model.add_at_most_one(shifts[(n, d_idx, s)] for s in all_shifts)
 
-    StateManager.state.constraints.append("Initial")
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
