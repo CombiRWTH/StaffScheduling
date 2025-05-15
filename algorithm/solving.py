@@ -14,9 +14,9 @@ from building_constraints.free_shifts_and_vacation_days import (
     load_free_shifts_and_vacation_days,
     add_free_shifts_and_vacation_days,
 )
-from building_constraints.target_working_hours import (
-    load_target_working_hours,
-    add_target_working_hours,
+from building_constraints.minimal_number_of_staff import (
+    load_min_number_of_staff,
+    add_min_number_of_staff,
 )
 from building_constraints.minimize_number_of_consecutive_night_shifts import (
     add_minimize_number_of_consecutive_night_shifts,
@@ -78,7 +78,7 @@ def add_all_constraints(
     case_id: int,
     num_days: int,
     num_shifts: int,
-    start_weekday: int,
+    first_weekday_of_month: int,
     max_consecutive_work_days: int,
 ) -> None:
     """
@@ -87,7 +87,7 @@ def add_all_constraints(
     Includes:
     - Basic constraints
     - Free shifts and vacation day constraints
-    - Target working hours constraints
+    - Minimal Number of Staff
 
     Additional constraint modules can be easily added to this function to
     extend the model.
@@ -101,6 +101,8 @@ def add_all_constraints(
         case_id (int): Scheduling case ID.
         num_days (int): Number of days.
         num_shifts (int): Number of shifts per day.
+        first_weekday_of_month (int): Starting day of a month, 0 for monday,
+        6 for sunday.
 
     Returns:
         None
@@ -121,20 +123,11 @@ def add_all_constraints(
         num_shifts,
     )
 
-    # Target Working Hours
-    target_hours, shift_durations, tolerance_hours = load_target_working_hours(
-        f"./cases/{case_id}/target_working_hours.json",
-        f"./cases/{case_id}/general_settings.json",
+    min_number_of_staff = load_min_number_of_staff(
+        f"./cases/{case_id}/minimal_number_of_staff.json",
     )
-    add_target_working_hours(
-        model,
-        employees,
-        shifts,
-        num_days,
-        num_shifts,
-        shift_durations,
-        target_hours,
-        tolerance_hours,
+    add_min_number_of_staff(
+        model, employees, shifts, min_number_of_staff, first_weekday_of_month, num_days
     )
 
     # Minimize number of consevutive night shifts
@@ -146,7 +139,7 @@ def add_all_constraints(
     # Free day near weekend
     # here we need the date of the first day in the month, need to connect with the database
     add_free_days_near_weekend(
-        model, employees, work_on_day, num_days, start_weekday=start_weekday
+        model, employees, work_on_day, num_days, start_weekday=first_weekday_of_month
     )
 
     # # More free days for night worker
@@ -193,7 +186,12 @@ def main():
 
     # Scheduling parameters based on month and year
     SOLUTION_DIR = "found_solutions"
+
     CASE_ID = args.case_id
+    NUM_SHIFTS = 3
+    SOLUTION_LIMIT = 10
+    OUTPUT = args.output
+
     year = args.year
     month = args.month
     # First day of the given month
@@ -225,7 +223,7 @@ def main():
         case_id=CASE_ID,
         num_days=NUM_DAYS,
         num_shifts=NUM_SHIFTS,
-        start_weekday=first_weekday_idx_of_month,
+        first_weekday_of_month=first_weekday_idx_of_month,
         max_consecutive_work_days=MAX_CONSECUTIVE_WORK_DAYS,
     )
 

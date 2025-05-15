@@ -6,7 +6,7 @@ is formulated / what the data format should look like, but is also
 responseable for its documentation.
 
 ## Minimal Number of Staff
-For each type of staff there is a dictornary with each day of the week, providing the required number of staff per shift. The shift keys are `"F"`, `"S"` and `"N"`, for the german terms "Frühschicht","Spätschicht", "Nachtschicht".
+For each type of staff there is a dictornary with each day of the week, providing the required number of staff per shift. The shift keys are `"F"`, `"S"` and `"N"`, for the german terms "Frühschicht", "Spätschicht", "Nachtschicht".
 The weekdays are also in german and abbreviated.
 **Example:**
 ```json

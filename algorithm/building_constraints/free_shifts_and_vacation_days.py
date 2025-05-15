@@ -2,6 +2,8 @@ import json
 import StateManager
 from ortools.sat.python import cp_model
 
+NAME_OF_CONSTRAINT = "free shifts and vacation days"
+
 
 def load_free_shifts_and_vacation_days(filename):
     with open(filename, "r") as f:
@@ -45,4 +47,4 @@ def add_free_shifts_and_vacation_days(
             "Dataformat `free shifts` does not fit. Key `employees` is missing."
         )
 
-    StateManager.state.constraints.append("Free Shifts and Vacation Days")
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
