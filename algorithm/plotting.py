@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 def plot_schedule(
     employees,
     schedule,
-    num_days,
+    dates,
     shift_symbols=None,
     job_colors=None,
     shift_colors=None,
@@ -31,11 +31,11 @@ def plot_schedule(
     employeenames = [employee["name"] for employee in employees]
     employeejobs = [employee["type"] for employee in employees]
 
+    num_days = len(dates)
     num_employees = len(employees)
 
     fig, ax = plt.subplots(figsize=(num_days * 1.2, num_employees * 0.8))
 
-    # Set the background for employee names area
     for i, job in enumerate(employeejobs):
         ax.axhspan(
             i,
@@ -47,24 +47,20 @@ def plot_schedule(
             alpha=1,
         )
 
-    for n_idx, employee in enumerate(employees):
+    for n_idx in range(num_employees):
         for d in range(num_days):
-            shifts_today = [s for s in range(3) if schedule.get((n_idx, d, s), False)]
+            shifts_today = [
+                s
+                for s in range(3)
+                if schedule.get((n_idx, dates[d].isoformat(), s), False)
+            ]
             if shifts_today:
                 shift = shifts_today[0] if len(shifts_today) == 1 else None
-                if shift is not None:
-                    ax.add_patch(
-                        plt.Rectangle(
-                            (d, n_idx),
-                            1,
-                            1,
-                            color=shift_colors.get(shift, "white"),
-                            ec="black",
-                        )
-                    )
-                    symbol = shift_symbols[shift]
-                else:
-                    symbol = "?"
+                color = (
+                    shift_colors.get(shift, "white") if shift is not None else "white"
+                )
+                ax.add_patch(plt.Rectangle((d, n_idx), 1, 1, color=color, ec="black"))
+                symbol = shift_symbols.get(shift, "?")
                 ax.text(
                     d + 0.5,
                     n_idx + 0.5,
@@ -73,7 +69,6 @@ def plot_schedule(
                     va="center",
                     fontsize=12,
                     fontweight="bold",
-                    color="black",
                 )
             else:
                 ax.add_patch(plt.Rectangle((d, n_idx), 1, 1, color="white", ec="black"))
@@ -82,14 +77,18 @@ def plot_schedule(
     ax.set_ylim(0, num_employees)
     ax.set_xticks(np.arange(num_days) + 0.5)
     ax.set_yticks(np.arange(num_employees) + 0.5)
+
+    # New Description Date
+    date_labels = [dt.isoformat() for dt in dates]
     ax.set_xticklabels(
-        [f"Day {d}" for d in range(num_days)],
+        date_labels,
         rotation=90,
         ha="center",
         va="center",
         fontsize=10,
     )
     ax.set_yticklabels(employeenames, fontsize=10)
+
     ax.invert_yaxis()
     ax.xaxis.tick_top()
 
@@ -99,11 +98,12 @@ def plot_schedule(
 
     # Create legends for job types and shift types
     job_patches = [
-        mpatches.Patch(color=color, label=label) for label, color in job_colors.items()
+        mpatches.Patch(color=job_colors, label=job_name)
+        for job_name, job_colors in job_colors.items()
     ]
     shift_patches = [
-        mpatches.Patch(color=color, label=f"Shift {shift_symbols[s]}")
-        for s, color in shift_colors.items()
+        mpatches.Patch(color=c, label=f"Shift {shift_symbols[s]}")
+        for s, c in shift_colors.items()
     ]
     all_patches = job_patches + shift_patches
 
@@ -114,6 +114,6 @@ def plot_schedule(
         ncol=len(all_patches),
     )
 
-    ax.set_title("employee Scheduling Overview", pad=20)
+    ax.set_title("Employee Scheduling Overview", pad=20)
     plt.tight_layout()
     plt.show()

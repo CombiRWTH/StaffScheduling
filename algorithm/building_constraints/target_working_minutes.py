@@ -1,6 +1,8 @@
 import json
 import StateManager
 
+NAME_OF_CONSTRAINT = "Target Working Hours"
+
 
 # Idee: Einbau erstmal nur von Obergrenze
 # Dann wenn zu noch Stunden übrig, Zwischendienst auffüllen
@@ -59,9 +61,9 @@ def add_target_working_minutes(
 
     for n in all_employees:
         work_time_terms = []
-        for d in all_days:
+        for d_idx in all_days:
             for s in all_shifts:
-                var = shifts[(n, d, s)]  # this is a BoolVar (0 or 1)
+                var = shifts[(n, d_idx, s)]  # this is a BoolVar (0 or 1)
                 duration = shift_durations[s]  # duration in hours for shift s
                 work_time_terms.append(var * duration)
 
@@ -73,5 +75,6 @@ def add_target_working_minutes(
 
         model.Add(total_work_time == sum(work_time_terms))
         model.Add(total_work_time <= target_hours + tolerance_hours)
+        model.Add(total_work_time > 10)
 
-    StateManager.state.constraints.append("Target Working Hours")
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
