@@ -29,6 +29,7 @@ def load_free_shifts_and_vacation_days(filename):
 ### b) Add Constraint Function
 
 Define a function that:
+
 - Accepts the model and variables
 - Adds constraints to the model using OR-Tools
 - Appends the constraint name to StateManager.state.constraints

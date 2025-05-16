@@ -49,11 +49,12 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
     def handle_solution(self):
         solution = {}
         for n_idx in range(len(self._employees)):
-            for d in range(self._num_days):
-                date_str = self._dates[d].isoformat()
+            for d_idx in range(self._num_days):
+                date_str = self._dates[d_idx].isoformat()
                 for s in range(self._num_shifts):
-                    value = self.Value(self._shifts[(n_idx, d, s)])
+                    value = self.Value(self._shifts[(n_idx, d_idx, s)])
                     solution[(n_idx, date_str, s)] = int(value)
+
         self._solutions.append(solution)
 
         self._solution_count += 1

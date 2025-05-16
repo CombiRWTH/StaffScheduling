@@ -2,6 +2,8 @@ import json
 import StateManager
 from ortools.sat.python import cp_model
 
+NAME_OF_CONSTRAINT = "Inital Constraints"
+
 
 def load_general_settings(filename):
     with open(filename, "r") as f:
@@ -23,12 +25,36 @@ def create_shift_variables(
     """
     shifts = {}
     for n_idx, employee in enumerate(employees):
-        for d in range(num_days):
+        for d_idx in range(num_days):
             for s in range(num_shifts):
-                shifts[(n_idx, d, s)] = model.new_bool_var(
-                    f"shift_{employee['name']}_d{d}_s{s}"
+                shifts[(n_idx, d_idx, s)] = model.new_bool_var(
+                    f"shift_{employee['name']}_d{d_idx}_s{s}"
                 )
     return shifts
+
+
+def create_work_on_days_variables(
+    model: cp_model.CpModel,
+    employees: list[dict],
+    num_days: int,
+    num_shifts: int,
+    shifts: dict[str, cp_model.IntVar],
+) -> dict[tuple, cp_model.IntVar]:
+    """
+    Creates workday variables for each employee, each day. If 1, the employee
+    has to work that day (any shift), if 0, they do not work any shift that day.
+    """
+    work_on_day = {}
+    for n_idx, employee in enumerate(employees):
+        for d_idx in range(num_days):
+            work_on_day[(n_idx, d_idx)] = model.NewBoolVar(
+                f"work_{employee['name']}_d{d_idx}"
+            )
+            model.AddMaxEquality(
+                work_on_day[(n_idx, d_idx)],
+                [shifts[(n_idx, d_idx, s)] for s in range(num_shifts)],
+            )
+    return work_on_day
 
 
 def add_basic_constraints(
@@ -41,7 +67,6 @@ def add_basic_constraints(
     """
     Adds fundamental scheduling constraints:
 
-    - Each shift on each day is assigned to exactly one employee.
     - Each employee can work at most one shift per day.
 
     These constraints form the structural foundation of the schedule.
@@ -52,14 +77,9 @@ def add_basic_constraints(
     all_shifts = range(num_shifts)
     all_days = range(num_days)
 
-    # one employee per (name, day, shift) tuple
-    for d in all_days:
-        for s in all_shifts:
-            model.add_exactly_one(shifts[(n, d, s)] for n in all_employees)
-
     # one shift per employee per day at most
     for n in all_employees:
-        for d in all_days:
-            model.add_at_most_one(shifts[(n, d, s)] for s in all_shifts)
+        for d_idx in all_days:
+            model.add_at_most_one(shifts[(n, d_idx, s)] for s in all_shifts)
 
-    StateManager.state.constraints.append("Initial")
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
