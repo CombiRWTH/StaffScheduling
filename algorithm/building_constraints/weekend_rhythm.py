@@ -1,7 +1,14 @@
 from ortools.sat.python import cp_model
 import StateManager
 
-def add_weekend_rhythm(model, employees, shifts, num_days, num_shifts):
+
+def add_weekend_rhythm(
+    model: cp_model.CpModel,
+    employees: list[dict],
+    shifts: dict[tuple, cp_model.IntVar],
+    num_days: int,
+    num_shifts: int,
+):
     """
     Ensure employees have a consistent weekend rhythm (either work or off both Sat & Sun).
     """

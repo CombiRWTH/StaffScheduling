@@ -152,7 +152,6 @@ def add_all_constraints(
         model, employees, work_on_day, num_days, max_consecutive_work_days
     )
 
-    
     add_weekend_rhythm(model, employees, shifts, num_days, num_shifts)
 
     # Shift rotate forward
