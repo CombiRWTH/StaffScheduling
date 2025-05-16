@@ -1,0 +1,221 @@
+{
+  "employees": [
+    {
+      "PersNr": "4216350736",
+      "name": "Binford",
+      "firstname": "Heinz",
+      "target": 9600
+    },
+    {
+      "PersNr": "9753626269",
+      "name": "Branz",
+      "firstname": "Janett",
+      "target": 9600
+    },
+    {
+      "PersNr": "3663084827",
+      "name": "Burris",
+      "firstname": "Lioba",
+      "target": 9600
+    },
+    {
+      "PersNr": "0558391409",
+      "name": "Carreras",
+      "firstname": "Augustin",
+      "target": 9600
+    },
+    {
+      "PersNr": "7158423338",
+      "name": "Catoe",
+      "firstname": "Ingbert",
+      "target": 9600
+    },
+    {
+      "PersNr": "0314863608",
+      "name": "Demarco",
+      "firstname": "Marcus",
+      "target": 9600
+    },
+    {
+      "PersNr": "4307335425",
+      "name": "Devers",
+      "firstname": "Kersten",
+      "target": 9600
+    },
+    {
+      "PersNr": "5301690706",
+      "name": "Donis",
+      "firstname": "Henni",
+      "target": 9600
+    },
+    {
+      "PersNr": "5275675416",
+      "name": "Driggers",
+      "firstname": "Karena",
+      "target": 9600
+    },
+    {
+      "PersNr": "8467222196",
+      "name": "Farniok",
+      "firstname": "Lina",
+      "target": 9600
+    },
+    {
+      "PersNr": "4601161545",
+      "name": "Fullerton",
+      "firstname": "Christfri",
+      "target": 9600
+    },
+    {
+      "PersNr": "2652384320",
+      "name": "Harkins",
+      "firstname": "Silvia",
+      "target": 9600
+    },
+    {
+      "PersNr": "5277020481",
+      "name": "Hertzler",
+      "firstname": "Burkhild",
+      "target": 9600
+    },
+    {
+      "PersNr": "4524391957",
+      "name": "Hoots",
+      "firstname": "Renilde",
+      "target": 9600
+    },
+    {
+      "PersNr": "6478661190",
+      "name": "Izzo",
+      "firstname": "Annelene",
+      "target": 9600
+    },
+    {
+      "PersNr": "6200464921",
+      "name": "Labelle",
+      "firstname": "Saskia",
+      "target": 9600
+    },
+    {
+      "PersNr": "6304544803",
+      "name": "Merriweather",
+      "firstname": "Bärbl",
+      "target": 9600
+    },
+    {
+      "PersNr": "4939555116",
+      "name": "Milburn",
+      "firstname": "Loremarie",
+      "target": 9600
+    },
+    {
+      "PersNr": "2432833811",
+      "name": "Mittrach",
+      "firstname": "Margaritt",
+      "target": 9600
+    },
+    {
+      "PersNr": "1328220945",
+      "name": "Palacio",
+      "firstname": "Constance",
+      "target": 9600
+    },
+    {
+      "PersNr": "0935373412",
+      "name": "Rashid",
+      "firstname": "Roseliese",
+      "target": 9600
+    },
+    {
+      "PersNr": "2964555583",
+      "name": "Roberson",
+      "firstname": "Ludger",
+      "target": 9600
+    },
+    {
+      "PersNr": "2382310716",
+      "name": "Rodriques",
+      "firstname": "Kilian",
+      "target": 9600
+    },
+    {
+      "PersNr": "7696197975",
+      "name": "Säuffert",
+      "firstname": "Liselotte",
+      "target": 9600
+    },
+    {
+      "PersNr": "2422197372",
+      "name": "Sewell",
+      "firstname": "Nele",
+      "target": 9600
+    },
+    {
+      "PersNr": "6606292809",
+      "name": "Shoemake",
+      "firstname": "Sandra",
+      "target": 9600
+    },
+    {
+      "PersNr": "0247345630",
+      "name": "Staggs",
+      "firstname": "Janett",
+      "target": 9600
+    },
+    {
+      "PersNr": "7192281437",
+      "name": "Tharp",
+      "firstname": "Sieghardt",
+      "target": 9600
+    },
+    {
+      "PersNr": "9263090286",
+      "name": "Valentino",
+      "firstname": "Trude",
+      "target": 9600
+    },
+    {
+      "PersNr": "4847485892",
+      "name": "Vanfleet",
+      "firstname": "Eike",
+      "target": 9600
+    },
+    {
+      "PersNr": "7586945135",
+      "name": "Weathers",
+      "firstname": "Irma",
+      "target": 9600
+    },
+    {
+      "PersNr": "5075364389",
+      "name": "Winters",
+      "firstname": "Gertraute",
+      "target": 9600
+    },
+    {
+      "PersNr": "5559101710",
+      "name": "Woodcock",
+      "firstname": "Hannah",
+      "target": 9600
+    },
+    {
+      "PersNr": "7336293778",
+      "name": "Wunderlich",
+      "firstname": "Daniele",
+      "target": 9600
+    },
+    {
+      "PersNr": "6688644312",
+      "name": "Yeh",
+      "firstname": "Julia",
+      "target": 9600
+    }
+  ],
+  "shift_durations": {
+    "F": 460,
+    "N": 565,
+    "S": 460
+  },
+  "tolerance_less": 460,
+  "tolerance_more": 460
+}
