@@ -14,7 +14,7 @@ from building_constraints.free_shifts_and_vacation_days import (
     load_free_shifts_and_vacation_days,
     add_free_shifts_and_vacation_days,
 )
-from algorithm.building_constraints.target_working_minutes import (
+from building_constraints.target_working_minutes import (
     load_target_working_minutes,
     add_target_working_minutes,
 )
