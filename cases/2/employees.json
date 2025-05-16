@@ -2,213 +2,213 @@
   "employees": [
     {
       "PersNr": "4216350736",
-      "Name": "Binford",
-      "Vorname": "Heinz",
-      "BerufBezeichnung": "Helfer/in - stationäre Krankenpflege (81301-002)"
+      "name": "Binford",
+      "firstname": "Heinz",
+      "type": "Helfer/in - stationäre Krankenpflege (81301-002)"
     },
     {
       "PersNr": "9753626269",
-      "Name": "Branz",
-      "Vorname": "Janett",
-      "BerufBezeichnung": "Altenpfleger/in (82102-002)"
+      "name": "Branz",
+      "firstname": "Janett",
+      "type": "Altenpfleger/in (82102-002)"
     },
     {
       "PersNr": "3663084827",
-      "Name": "Burris",
-      "Vorname": "Lioba",
-      "BerufBezeichnung": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+      "name": "Burris",
+      "firstname": "Lioba",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
       "PersNr": "0558391409",
-      "Name": "Carreras",
-      "Vorname": "Augustin",
-      "BerufBezeichnung": "Pflegefachkraft (Krankenpflege) (81302-018)"
+      "name": "Carreras",
+      "firstname": "Augustin",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
       "PersNr": "7158423338",
-      "Name": "Catoe",
-      "Vorname": "Ingbert",
-      "BerufBezeichnung": "Krankenschwester/-pfleger (81302-008)"
+      "name": "Catoe",
+      "firstname": "Ingbert",
+      "type": "Krankenschwester/-pfleger (81302-008)"
     },
     {
       "PersNr": "0314863608",
-      "Name": "Demarco",
-      "Vorname": "Marcus",
-      "BerufBezeichnung": "Gesundheits- und Krankenpfleger/in (81302-005)"
+      "name": "Demarco",
+      "firstname": "Marcus",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "4307335425",
-      "Name": "Devers",
-      "Vorname": "Kersten",
-      "BerufBezeichnung": "Pflegefachkraft (Krankenpflege) (81302-018)"
+      "name": "Devers",
+      "firstname": "Kersten",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
       "PersNr": "5301690706",
-      "Name": "Donis",
-      "Vorname": "Henni",
-      "BerufBezeichnung": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
+      "name": "Donis",
+      "firstname": "Henni",
+      "type": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
     },
     {
       "PersNr": "5275675416",
-      "Name": "Driggers",
-      "Vorname": "Karena",
-      "BerufBezeichnung": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+      "name": "Driggers",
+      "firstname": "Karena",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
       "PersNr": "8467222196",
-      "Name": "Farniok",
-      "Vorname": "Lina",
-      "BerufBezeichnung": "Gesundheits- und Krankenpfleger/in (81302-005)"
+      "name": "Farniok",
+      "firstname": "Lina",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "4601161545",
-      "Name": "Fullerton",
-      "Vorname": "Christfri",
-      "BerufBezeichnung": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
+      "name": "Fullerton",
+      "firstname": "Christfri",
+      "type": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
     },
     {
       "PersNr": "2652384320",
-      "Name": "Harkins",
-      "Vorname": "Silvia",
-      "BerufBezeichnung": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
+      "name": "Harkins",
+      "firstname": "Silvia",
+      "type": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
     },
     {
       "PersNr": "5277020481",
-      "Name": "Hertzler",
-      "Vorname": "Burkhild",
-      "BerufBezeichnung": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+      "name": "Hertzler",
+      "firstname": "Burkhild",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
       "PersNr": "4524391957",
-      "Name": "Hoots",
-      "Vorname": "Renilde",
-      "BerufBezeichnung": "Altenpfleger/in (82102-002)"
+      "name": "Hoots",
+      "firstname": "Renilde",
+      "type": "Altenpfleger/in (82102-002)"
     },
     {
       "PersNr": "6478661190",
-      "Name": "Izzo",
-      "Vorname": "Annelene",
-      "BerufBezeichnung": "Medizinische/r Fachangestellte/r (81102-004)"
+      "name": "Izzo",
+      "firstname": "Annelene",
+      "type": "Medizinische/r Fachangestellte/r (81102-004)"
     },
     {
       "PersNr": "6200464921",
-      "Name": "Labelle",
-      "Vorname": "Saskia",
-      "BerufBezeichnung": "Gesundheits- und Krankenpfleger/in (81302-005)"
+      "name": "Labelle",
+      "firstname": "Saskia",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "6304544803",
-      "Name": "Merriweather",
-      "Vorname": "Bärbl",
-      "BerufBezeichnung": "Gesundheits- und Krankenpfleger/in (81302-005)"
+      "name": "Merriweather",
+      "firstname": "Bärbl",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "4939555116",
-      "Name": "Milburn",
-      "Vorname": "Loremarie",
-      "BerufBezeichnung": "A-Pflegeassistent/in (A-81302-014)"
+      "name": "Milburn",
+      "firstname": "Loremarie",
+      "type": "A-Pflegeassistent/in (A-81302-014)"
     },
     {
       "PersNr": "2432833811",
-      "Name": "Mittrach",
-      "Vorname": "Margaritt",
-      "BerufBezeichnung": "Stationshilfe (81301-018)"
+      "name": "Mittrach",
+      "firstname": "Margaritt",
+      "type": "Stationshilfe (81301-018)"
     },
     {
       "PersNr": "1328220945",
-      "Name": "Palacio",
-      "Vorname": "Constance",
-      "BerufBezeichnung": "Pflegefachkraft (Krankenpflege) (81302-018)"
+      "name": "Palacio",
+      "firstname": "Constance",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
       "PersNr": "0935373412",
-      "Name": "Rashid",
-      "Vorname": "Roseliese",
-      "BerufBezeichnung": "Altenpfleger/in (82102-002)"
+      "name": "Rashid",
+      "firstname": "Roseliese",
+      "type": "Altenpfleger/in (82102-002)"
     },
     {
       "PersNr": "2964555583",
-      "Name": "Roberson",
-      "Vorname": "Ludger",
-      "BerufBezeichnung": "Altenpfleger/in (82102-002)"
+      "name": "Roberson",
+      "firstname": "Ludger",
+      "type": "Altenpfleger/in (82102-002)"
     },
     {
       "PersNr": "2382310716",
-      "Name": "Rodriques",
-      "Vorname": "Kilian",
-      "BerufBezeichnung": "Bundesfreiwilligendienst (BFD)"
+      "name": "Rodriques",
+      "firstname": "Kilian",
+      "type": "Bundesfreiwilligendienst (BFD)"
     },
     {
       "PersNr": "7696197975",
-      "Name": "Säuffert",
-      "Vorname": "Liselotte",
-      "BerufBezeichnung": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
+      "name": "Säuffert",
+      "firstname": "Liselotte",
+      "type": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
     },
     {
       "PersNr": "2422197372",
-      "Name": "Sewell",
-      "Vorname": "Nele",
-      "BerufBezeichnung": "Pflegeassistent/in (81302-014)"
+      "name": "Sewell",
+      "firstname": "Nele",
+      "type": "Pflegeassistent/in (81302-014)"
     },
     {
       "PersNr": "6606292809",
-      "Name": "Shoemake",
-      "Vorname": "Sandra",
-      "BerufBezeichnung": "Krankenschwester/-pfleger (81302-008)"
+      "name": "Shoemake",
+      "firstname": "Sandra",
+      "type": "Krankenschwester/-pfleger (81302-008)"
     },
     {
       "PersNr": "0247345630",
-      "Name": "Staggs",
-      "Vorname": "Janett",
-      "BerufBezeichnung": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+      "name": "Staggs",
+      "firstname": "Janett",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
       "PersNr": "7192281437",
-      "Name": "Tharp",
-      "Vorname": "Sieghardt",
-      "BerufBezeichnung": "Gesundheits- und Krankenpfleger/in (81302-005)"
+      "name": "Tharp",
+      "firstname": "Sieghardt",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "9263090286",
-      "Name": "Valentino",
-      "Vorname": "Trude",
-      "BerufBezeichnung": "Pflegefachkraft (Krankenpflege) (81302-018)"
+      "name": "Valentino",
+      "firstname": "Trude",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
       "PersNr": "4847485892",
-      "Name": "Vanfleet",
-      "Vorname": "Eike",
-      "BerufBezeichnung": "Pflegefachkraft (Krankenpflege) (81302-018)"
+      "name": "Vanfleet",
+      "firstname": "Eike",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
       "PersNr": "7586945135",
-      "Name": "Weathers",
-      "Vorname": "Irma",
-      "BerufBezeichnung": "Gesundheits- und Krankenpfleger/in (81302-005)"
+      "name": "Weathers",
+      "firstname": "Irma",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "5075364389",
-      "Name": "Winters",
-      "Vorname": "Gertraute",
-      "BerufBezeichnung": "A-Pflegeassistent/in (A-81302-014)"
+      "name": "Winters",
+      "firstname": "Gertraute",
+      "type": "A-Pflegeassistent/in (A-81302-014)"
     },
     {
       "PersNr": "5559101710",
-      "Name": "Woodcock",
-      "Vorname": "Hannah",
-      "BerufBezeichnung": "A-Pflegeassistent/in (A-81302-014)"
+      "name": "Woodcock",
+      "firstname": "Hannah",
+      "type": "A-Pflegeassistent/in (A-81302-014)"
     },
     {
       "PersNr": "7336293778",
-      "Name": "Wunderlich",
-      "Vorname": "Daniele",
-      "BerufBezeichnung": "Gesundheits- und Krankenpfleger/in (81302-005)"
+      "name": "Wunderlich",
+      "firstname": "Daniele",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "6688644312",
-      "Name": "Yeh",
-      "Vorname": "Julia",
-      "BerufBezeichnung": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+      "name": "Yeh",
+      "firstname": "Julia",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     }
   ]
 }
