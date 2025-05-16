@@ -129,7 +129,7 @@ def add_all_constraints(
 
     # Target Working Hours
     target_hours, shift_durations, tolerance_hours = load_target_working_minutes(
-        f"./cases/{case_id}/target_working_hours.json",
+        f"./cases/{case_id}/target_working_minutes.json",
         f"./cases/{case_id}/general_settings.json",
     )
     add_target_working_minutes(
