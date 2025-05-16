@@ -23,6 +23,7 @@ As solver we currently use the CP SAT Solver from Google's OR Tools.
 This folder contains the **implementation** of various constraint-building functions.
 
 Each file defines a specific type of constraint:
+
 - `initial_constraints.py`: basic structure like "one shift per employee per day"
 - `free_shifts_and_vacation_days.py`: time-off and unavailability
 - `target_working_hours.py`: enforces target working time with tolerance
@@ -36,6 +37,7 @@ Note: These files **implement constraint logic**, not case-specific data.
 
 ### `handlers.py`
 Defines how the solution is **handled after solving**, including:
+
 - Printing to console
 - Saving to JSON
 - Plotting (planned)
@@ -66,6 +68,7 @@ Useful for handlers (e.g., saving metadata like applied constraints).
 ### `cases/`
 Holds different **example scenarios** (folders named by `case_id` like `1/`, `2/`, ...).
 Each folder contains:
+
 - Employee definitions
 - Constraint settings
 - Target working hours
@@ -82,6 +85,7 @@ Markdown overview of all defined test cases, explaining their purpose and setup.
 
 ### `docs/`
 Contains supporting documentation:
+
 - `GeneralStructure.md`: this file
 - `Constraints.md`: list of all constraints, one of the most important files
 - `Images/`: optional folder for diagrams or screenshots
