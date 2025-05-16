@@ -3,17 +3,17 @@
     {
       "firstname": "",
       "name": "Pauline",
-      "target": 480
+      "target": 9600
     },
     {
       "firstname": "",
       "name": "Marie",
-      "target": 480
+      "target": 9600
     },
     {
       "firstname": "",
       "name": "Dumbledore",
-      "target": 240
+      "target": 9600
     }
   ],
   "shift_durations": {
@@ -21,6 +21,6 @@
     "N": 450,
     "S": 480
   },
-  "tolerance_less": 960,
+  "tolerance_less": 3000,
   "tolerance_more": 480
 }

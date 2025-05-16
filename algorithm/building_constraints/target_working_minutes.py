@@ -1,7 +1,7 @@
 import json
 import StateManager
 
-NAME_OF_CONSTRAINT = "Target Working Hours"
+NAME_OF_CONSTRAINT = "Target Working minutes"
 
 
 # Idee: Einbau erstmal nur von Obergrenze
@@ -9,72 +9,82 @@ NAME_OF_CONSTRAINT = "Target Working Hours"
 # ist ein ein Problem VIELE zwischendienste aufzufüllen und dann später manuell aufzuteilen
 
 
-def load_target_working_minutes(filename, settings_filename):
+def load_target_working_minutes(filename: str):
     with open(filename, "r") as f:
         data = json.load(f)
-
-    with open(settings_filename, "r") as f:
-        general_settings = json.load(f)
-
-    data["shift_durations_with_index"] = {
-        general_settings["SHIFT_NAME_TO_INDEX"][shift_name]: data["shift_durations"][
-            shift_name
-        ]
-        for shift_name in data["shift_durations"].keys()
-    }
-
     return (
-        data["target_hours"],
-        data["shift_durations_with_index"],
-        data["tolerance_hours"],
+        data["employees"],
+        data["shift_durations"],
+        data["tolerance_less"],
+        data["tolerance_more"],
     )
 
 
 def add_target_working_minutes(
     model,
     employees,
+    employees_target_minutes,
     shifts,
     num_days,
     num_shifts,
     shift_durations,
-    target_hours,
-    tolerance_hours=7,
+    tolerance_less,
+    tolerance_more,
 ):
     """
     Adds a constraint to the model that ensures each employee's total working time
-    is within [target_hours - tolerance_hours, target_hours + tolerance_hours].
+    is within [target_minutes - tolerance_less, target_minutes + tolerance_more].
 
     Args:
         model: The cp_model.CpModel() instance.
-        employees: List of employee IDs.
+        employees_target_minutes: List of employees names with their target
+            target working time in minutes.
         shifts: Dictionary or map of (employee_id, day_id, shift_id) -> BoolVar.
         num_days: Number of days.
         num_shifts: Number of shifts per day.
-        shift_durations: Dictionary mapping shift_id -> duration_in_hours.
-        target_hours: The desired target total hours each employee should work.
-        tolerance_hours: Allowed deviation (+/-) from target_hours.
+        shift_durations: Dictionary mapping shift_id -> duration_in_minutes.
+        tolerance_minutes: Allowed deviation (+/-) from target_minutes.
     """
-    num_employees = len(employees)
-    all_employees = range(num_employees)
-    all_days = range(num_days)
-    all_shifts = range(num_shifts)
 
-    for n in all_employees:
-        work_time_terms = []
-        for d_idx in all_days:
-            for s in all_shifts:
-                var = shifts[(n, d_idx, s)]  # this is a BoolVar (0 or 1)
-                duration = shift_durations[s]  # duration in hours for shift s
-                work_time_terms.append(var * duration)
+    employee_names_to_target = {
+        employees_target_minutes[i]["name"]: employees_target_minutes[i]["target"]
+        for i in range(len(employees_target_minutes))
+    }
 
-        total_work_time = model.NewIntVar(
-            0,
-            int(sum(shift_durations.values()) * num_days),
-            f"total_work_time_nurse_{n}",
-        )
+    shift_index_to_name = ["F", "S", "N"]
 
-        model.Add(total_work_time == sum(work_time_terms))
-        model.Add(total_work_time <= target_hours + tolerance_hours)
-        model.Add(total_work_time > 10)
+    employees_without_information = []  # no target minutes provided
+    for n_idx, employee in enumerate(employees):  # all employees
+        if (
+            employee["name"] not in employee_names_to_target.keys()
+        ):  # check if target provided
+            employees_without_information.append(employee["name"])
+            continue  # skip if no target time provided
+        else:
+            target_minutes = employee_names_to_target[employee["name"]]
+            work_time_terms = []
+            for d_idx in range(num_days):
+                for s_idx in range(num_shifts):
+                    var = shifts[(n_idx, d_idx, s_idx)]  # this is a BoolVar (0 or 1)
+                    duration = shift_durations[
+                        shift_index_to_name[s_idx]
+                    ]  # duration in minutes for shift s
+                    work_time_terms.append(var * duration)
+
+            total_work_time = model.NewIntVar(
+                0,
+                int(max(shift_durations.values()) * num_days),
+                f"total_work_time_nurse_{n_idx}",
+            )
+            model.Add(total_work_time == sum(work_time_terms))
+
+            model.Add(total_work_time <= target_minutes + tolerance_more)
+            model.Add(total_work_time >= target_minutes - tolerance_less)
 
     StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
+
+    print(
+        "Warning: "
+        "For the following employees no target working time was provided: "
+        f"'{', '.join(employees_without_information)}'."
+    )
