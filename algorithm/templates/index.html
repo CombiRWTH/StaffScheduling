@@ -51,7 +51,7 @@
         function changeFile(sel) {
             const file = encodeURIComponent(sel.value);
             const idx = document.getElementById('solSelect').value - 1;
-            window.location.href = `/?file=${file}&solution_index=${idx}`;
+            window.location.href = `/?file=${file}&solution_index=0`;
         }
         function changeSolution(sel) {
             const sol = sel.value - 1;
