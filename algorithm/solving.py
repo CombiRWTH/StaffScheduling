@@ -1,6 +1,7 @@
 import StateManager
 import argparse
 import calendar
+import json
 from datetime import date, timedelta
 from ortools.sat.python import cp_model
 from handlers import UnifiedSolutionHandler
@@ -8,16 +9,11 @@ from building_constraints.initial_constraints import (
     create_shift_variables,
     create_work_on_days_variables,
     add_basic_constraints,
-    load_employees,
 )
 from building_constraints.free_shifts_and_vacation_days import (
-    load_free_shifts_and_vacation_days,
     add_free_shifts_and_vacation_days,
 )
-from building_constraints.minimal_number_of_staff import (
-    load_min_number_of_staff,
-    add_min_number_of_staff,
-)
+from building_constraints.minimal_number_of_staff import add_min_number_of_staff
 from building_constraints.minimize_number_of_consecutive_night_shifts import (
     add_minimize_number_of_consecutive_night_shifts,
 )
@@ -32,6 +28,11 @@ from building_constraints.not_too_many_consecutive_shifts import (
     add_not_too_many_consecutive_shifts,
 )
 from building_constraints.shift_rotate_forward import add_shift_rotate_forward
+
+
+def load_json(filename):
+    with open(filename, "r") as f:
+        return json.load(f)
 
 
 def solve_cp_problem(
@@ -112,7 +113,7 @@ def add_all_constraints(
     add_basic_constraints(model, employees, shifts, num_days, num_shifts)
 
     # Free Shifts and Vacation Days
-    free_shifts_and_vacation_days = load_free_shifts_and_vacation_days(
+    free_shifts_and_vacation_days = load_json(
         f"./cases/{case_id}/free_shifts_and_vacation_days.json"
     )
     add_free_shifts_and_vacation_days(
@@ -123,11 +124,16 @@ def add_all_constraints(
         num_shifts,
     )
 
-    min_number_of_staff = load_min_number_of_staff(
-        f"./cases/{case_id}/minimal_number_of_staff.json",
-    )
+    min_number_of_staff = load_json(f"./cases/{case_id}/minimal_number_of_staff.json")
+    employee_types = load_json(f"./cases/{case_id}/employee_types.json")
     add_min_number_of_staff(
-        model, employees, shifts, min_number_of_staff, first_weekday_of_month, num_days
+        model,
+        employees,
+        shifts,
+        min_number_of_staff,
+        employee_types,
+        first_weekday_of_month,
+        num_days,
     )
 
     # Minimize number of consevutive night shifts
@@ -162,7 +168,7 @@ def main():
         description="Staff scheduling for a given month and year."
     )
     parser.add_argument(
-        "--case_id", "-c", type=int, default=1, help="ID of the cases folder to load"
+        "--case_id", "-c", type=int, default=2, help="ID of the cases folder to load"
     )
     parser.add_argument(
         "--month",
@@ -209,7 +215,7 @@ def main():
     dates = [start_date + timedelta(days=i) for i in range(NUM_DAYS)]
 
     model = cp_model.CpModel()
-    employees = load_employees(f"./cases/{CASE_ID}/employees.json")
+    employees = load_json(f"./cases/{CASE_ID}/employees.json")["employees"]
     shifts = create_shift_variables(model, employees, NUM_DAYS, NUM_SHIFTS)
     work_on_day = create_work_on_days_variables(
         model, employees, NUM_DAYS, NUM_SHIFTS, shifts
