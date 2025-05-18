@@ -1,20 +1,7 @@
-import json
 import StateManager
 from ortools.sat.python import cp_model
 
 NAME_OF_CONSTRAINT = "Inital Constraints"
-
-
-def load_general_settings(filename):
-    with open(filename, "r") as f:
-        config = json.load(f)
-    return config
-
-
-def load_employees(filename):
-    with open(filename, "r") as f:
-        data = json.load(f)
-    return data["employees"]
 
 
 def create_shift_variables(
