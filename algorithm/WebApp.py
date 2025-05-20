@@ -107,7 +107,7 @@ def index():
         num_days = 0
         num_shifts = 0
         num_employees = len(employees)
-        shift_symbols = {0: "F", 1: "S", 2: "N"}
+        shift_symbols = {0: "F", 1: "S", 2: "N", 3: "Z"}
         schedule_map = {i: {} for i in range(num_employees)}
         shift_counts = {i: 0 for i in range(num_employees)}
         date_tooltips = {}
@@ -145,7 +145,12 @@ def index():
         shift_counts = {i: len(schedule_map[i]) for i in schedule_map}
 
         # shift_labels for hovering dates
-        shift_labels = {0: "Frühschichten", 1: "Spätschichten", 2: "Nachtschichten"}
+        shift_labels = {
+            0: "Frühschicht",
+            1: "Spätschicht",
+            2: "Nachtschicht",
+            3: "Zwischenschicht",
+        }
 
         # 1) count daily shifts
         date_counts = {d: {s: 0 for s in range(num_shifts)} for d in dates}
