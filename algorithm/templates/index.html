@@ -5,17 +5,32 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Staff Schedule - Case {{ case_id }}</title>
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
+        /* Sidebar styling */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 260px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #ddd;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        /* Make room for the sidebar */
         body {
+            margin-left: 260px;
             padding: 20px;
         }
 
-        h1,
-        h2 {
-            margin-top: 20px;
-        }
-
+        /* General table styling */
         th,
         td {
             text-align: center;
@@ -23,6 +38,7 @@
             white-space: nowrap;
         }
 
+        /* Shift color coding */
         .table td.shift-0 {
             background-color: #FFCCCC !important;
         }
@@ -35,53 +51,72 @@
             background-color: #CCFFCC !important;
         }
 
-        .table thead th:first-child,
-        .table tbody td:first-child {
+        /* Sticky first column */
+        .table th:first-child,
+        .table td:first-child {
             position: sticky;
             left: 0;
             z-index: 2;
             background-color: #fff;
         }
 
-        .table thead th {
-            position: sticky;
-            top: 0;
-            z-index: 3;
-            background-color: white;
-        }
-
-        .table thead th:first-child {
+        .table th:first-child {
             z-index: 3;
         }
 
-        /* Grey for Weekends */
+        /* Weekend columns */
         .table th.weekend,
         .table td.weekend {
             background-color: #e0e0e0;
         }
+
+        /* Highlight classes for filters */
+        .highlight-name {
+            background-color: #fff3cd !important;
+        }
+
+        .highlight-date {
+            background-color: #d1ecf1 !important;
+        }
     </style>
-    <script>
-        function changeFile(sel) {
-            const file = encodeURIComponent(sel.value);
-            window.location.href = `/?file=${file}&solution_index=0`;
-        }
-        function changeSolution(sel) {
-            const sol = sel.value - 1;
-            const file = encodeURIComponent(document.getElementById('fileSelect').value);
-            window.location.href = `/?file=${file}&solution_index=${sol}`;
-        }
-        document.addEventListener('DOMContentLoaded', function () {
-            var tooltipTriggerList = [].slice.call(
-                document.querySelectorAll('[data-bs-toggle="tooltip"]')
-            );
-            tooltipTriggerList.forEach(function (el) {
-                new bootstrap.Tooltip(el);
-            });
-        });
-    </script>
 </head>
 
 <body class="bg-light">
+    <!-- Sidebar with filter controls -->
+    <div class="sidebar">
+        <h4>Filter</h4>
+
+        <!-- Employee shift count filter -->
+        <div class="mb-4">
+            <h6>Mitarbeiter</h6>
+            <label for="empSlider">Shifts &nbsp;<span id="empValue">0</span></label>
+            <input type="range" id="empSlider" min="0" max="{{ num_days }}" value="0" class="form-range">
+            <select id="empOp" class="form-select form-select-sm mt-2">
+                <option value="lt">&lt;</option>
+                <option value="eq">=</option>
+                <option value="gt">&gt;</option>
+            </select>
+        </div>
+
+        <!-- Shift-type-per-day filters -->
+        <div class="mb-4">
+            <h6>Schichten am Tag (ODER)</h6>
+            {% for i, label in [(0,'Frühschicht'),(1,'Spätschicht'),(2,'Nachtschicht'),(3,'Zwischenschicht')] %}
+            <div class="mb-3">
+                <label>{{ label }} &nbsp;<span id="shift{{i}}Value">0</span></label>
+                <input type="range" id="shift{{i}}Slider" min="0" max="{{ num_employees }}" value="0"
+                    class="form-range">
+                <select id="shift{{i}}Op" class="form-select form-select-sm mt-1">
+                    <option value="lt">&lt;</option>
+                    <option value="eq">=</option>
+                    <option value="gt">&gt;</option>
+                </select>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main content -->
     <div class="container bg-white p-4 rounded shadow-sm" style="overflow-x:auto;">
         <h1 class="text-primary">Staff Schedule</h1>
 
@@ -112,7 +147,10 @@
                     <tr>
                         <th scope="col">Mitarbeiter</th>
                         {% for d in dates_info %}
-                        <th scope="col" class="{% if d.is_weekend %}weekend{% endif %}" data-bs-toggle="tooltip"
+                        <th scope="col" class="{% if d.is_weekend %}weekend{% endif %}"
+                            data-count-0="{{ date_counts[d.date][0] }}" data-count-1="{{ date_counts[d.date][1] }}"
+                            data-count-2="{{ date_counts[d.date][2] }}"
+                            data-count-3="{{ date_counts[d.date].get(3,0) }}" data-bs-toggle="tooltip"
                             title="{{ date_tooltips[d.date] }}">
                             {{ d.date }}<br><small>{{ d.weekday }}</small>
                         </th>
@@ -126,9 +164,8 @@
                         <td title="{{ shift_counts[idx] }} Schichten">{{ emp['name'] }}</td>
                         {% for d in dates_info %}
                         {% set shift = schedule_map[idx].get(d.date) %}
-                        <td class="
-                            shift-{{ shift if shift is not none else '' }}
-                            {% if d.is_weekend %} weekend{% endif %}">
+                        <td
+                            class="shift-{{ shift if shift is not none else '' }} {% if d.is_weekend %}weekend{% endif %}">
                             {{ shift_symbols[shift] if shift is not none else '' }}
                         </td>
                         {% endfor %}
@@ -149,6 +186,89 @@
             <li>Anzahl Lösungen: {{ total_solutions }}</li>
         </ul>
     </div>
+
+    <!-- Bootstrap JS bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // navigate to selected solution file
+        function changeFile(sel) {
+            const file = encodeURIComponent(sel.value);
+            window.location.href = `/?file=${file}&solution_index=0`;
+        }
+        // navigate to selected solution index
+        function changeSolution(sel) {
+            const sol = sel.value - 1;
+            const file = encodeURIComponent(document.getElementById('fileSelect').value);
+            window.location.href = `/?file=${file}&solution_index=${sol}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const table = document.querySelector('table');
+            const shiftCounts = {{ shift_counts | tojson
+        }};
+
+        // compare two numbers with given operator
+        function compare(a, op, b) {
+            if (op === 'lt') return a < b;
+            if (op === 'eq') return a === b;
+            return a > b;
+        }
+
+        // ─── Employee filter ───────────────────────────────────────────
+        const empSlider = document.getElementById('empSlider');
+        const empOp = document.getElementById('empOp');
+        const empValue = document.getElementById('empValue');
+
+        function applyEmployeeFilter() {
+            const val = +empSlider.value;
+            const op = empOp.value;
+            empValue.textContent = val;
+            Array.from(table.tBodies[0].rows).forEach((row, i) => {
+                const cell = row.cells[0];
+                if (compare(shiftCounts[i], op, val)) {
+                    cell.classList.add('highlight-name');
+                } else {
+                    cell.classList.remove('highlight-name');
+                }
+            });
+        }
+        empSlider.addEventListener('input', applyEmployeeFilter);
+        empOp.addEventListener('change', applyEmployeeFilter);
+        applyEmployeeFilter();
+
+        // ─── Date filters (OR-combined) ───────────────────────────────
+        const dateFilters = [0, 1, 2, 3].map(idx => ({
+            slider: document.getElementById(`shift${idx}Slider`),
+            op: document.getElementById(`shift${idx}Op`),
+            valueEl: document.getElementById(`shift${idx}Value`),
+            idx
+        }));
+
+        function applyDateFilter() {
+            dateFilters.forEach(f => {
+                f.currentVal = +f.slider.value;
+                f.currentOp = f.op.value;
+                f.valueEl.textContent = f.currentVal;
+            });
+
+            const headers = Array.from(table.tHead.rows[0].cells).slice(1);
+            headers.forEach(th => {
+                // read count via getAttribute instead of dataset
+                const shouldHighlight = dateFilters.some(f => {
+                    const cnt = +(th.getAttribute(`data-count-${f.idx}`) || 0);
+                    return compare(cnt, f.currentOp, f.currentVal);
+                });
+                th.classList.toggle('highlight-date', shouldHighlight);
+            });
+        }
+        dateFilters.forEach(f => {
+            f.slider.addEventListener('input', applyDateFilter);
+            f.op.addEventListener('change', applyDateFilter);
+        });
+        applyDateFilter();
+    });
+    </script>
 </body>
 
 </html>

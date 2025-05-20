@@ -182,6 +182,7 @@ def index():
         schedule_map=schedule_map,
         dates=dates,
         dates_info=dates_info,
+        date_counts=date_counts,
         date_tooltips=date_tooltips,
         num_days=num_days,
         num_shifts=num_shifts,
