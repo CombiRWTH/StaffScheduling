@@ -104,6 +104,8 @@ def index():
     # Special Case: no solution → render empty schedule
     if total_solutions == 0:
         dates = []
+        dates_info = []
+        date_counts = {}
         num_days = 0
         num_shifts = 0
         num_employees = len(employees)
