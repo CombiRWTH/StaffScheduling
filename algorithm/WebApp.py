@@ -134,7 +134,7 @@ def index():
         num_days = len(dates)
         num_employees = len(employees)
         num_shifts = max(s for (_, _, s) in sample.keys()) + 1
-        shift_symbols = {0: "F", 1: "S", 2: "N"}
+        shift_symbols = {0: "F", 1: "S", 2: "N", 3: "Z"}
 
         # select solution
         sched = sols[solution_index]
