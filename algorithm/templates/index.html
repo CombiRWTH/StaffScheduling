@@ -23,7 +23,6 @@
             white-space: nowrap;
         }
 
-        /* Farbcodierung für Schichten mit hoher Spezifität */
         .table td.shift-0 {
             background-color: #FFCCCC !important;
         }
@@ -41,16 +40,22 @@
             position: sticky;
             left: 0;
             z-index: 2;
+            background-color: #fff;
         }
 
         .table thead th:first-child {
             z-index: 3;
         }
+
+        /* Grey for Weekends */
+        .table th.weekend,
+        .table td.weekend {
+            background-color: #e0e0e0;
+        }
     </style>
     <script>
         function changeFile(sel) {
             const file = encodeURIComponent(sel.value);
-            const idx = document.getElementById('solSelect').value - 1;
             window.location.href = `/?file=${file}&solution_index=0`;
         }
         function changeSolution(sel) {
@@ -99,9 +104,10 @@
                 <thead class="table-light">
                     <tr>
                         <th scope="col">Mitarbeiter</th>
-                        {% for date in dates %}
-                        <th scope="col" data-bs-toggle="tooltip" title="{{ date_tooltips[date] }}">
-                            {{ date }}
+                        {% for d in dates_info %}
+                        <th scope="col" class="{% if d.is_weekend %}weekend{% endif %}" data-bs-toggle="tooltip"
+                            title="{{ date_tooltips[d.date] }}">
+                            {{ d.date }}<br><small>{{ d.weekday }}</small>
                         </th>
                         {% endfor %}
                     </tr>
@@ -111,9 +117,11 @@
                     {% set idx = loop.index0 %}
                     <tr>
                         <td title="{{ shift_counts[idx] }} Schichten">{{ emp['name'] }}</td>
-                        {% for date in dates %}
-                        {% set shift = schedule_map[idx].get(date) %}
-                        <td class="shift-{{ shift if shift is not none else '' }}">
+                        {% for d in dates_info %}
+                        {% set shift = schedule_map[idx].get(d.date) %}
+                        <td class="
+                            shift-{{ shift if shift is not none else '' }}
+                            {% if d.is_weekend %} weekend{% endif %}">
                             {{ shift_symbols[shift] if shift is not none else '' }}
                         </td>
                         {% endfor %}

@@ -117,7 +117,18 @@ def index():
 
         # first solution
         sample = sols[0]
+        # dates
         dates = sorted({d for (_, d, _) in sample.keys()})
+        dates_info = []
+        for date_str in dates:
+            dt = datetime.strptime(date_str, "%Y-%m-%d").date()
+            dates_info.append(
+                {
+                    "date": date_str,
+                    "weekday": dt.strftime("%A"),  # z.B. "Montag"
+                    "is_weekend": dt.weekday() >= 5,  # Samstag=5, Sonntag=6
+                }
+            )
         num_days = len(dates)
         num_employees = len(employees)
         num_shifts = max(s for (_, _, s) in sample.keys()) + 1
@@ -165,6 +176,7 @@ def index():
         employees=employees,
         schedule_map=schedule_map,
         dates=dates,
+        dates_info=dates_info,
         date_tooltips=date_tooltips,
         num_days=num_days,
         num_shifts=num_shifts,
