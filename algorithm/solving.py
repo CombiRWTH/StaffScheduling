@@ -24,14 +24,23 @@ from building_constraints.minimize_number_of_consecutive_night_shifts import (
 from building_constraints.day_no_shift_after_night_shift import (
     add_day_no_shift_after_night_shift,
 )
-from building_constraints.free_days_near_weekend import add_free_days_near_weekend
+from building_constraints.free_days_near_weekend import (
+    add_free_days_near_weekend,
+)
 from building_constraints.more_free_days_for_night_worker import (
     add_more_free_days_for_night_worker,
 )
 from building_constraints.not_too_many_consecutive_shifts import (
     add_not_too_many_consecutive_shifts,
 )
-from building_constraints.shift_rotate_forward import add_shift_rotate_forward
+from building_constraints.shift_rotate_forward import (
+    add_shift_rotate_forward,
+)
+from building_constraints.minimal_number_of_staff import (
+    load_min_number_of_staff,
+    load_employee_types_mapping,
+    add_min_number_of_staff,
+)
 
 
 def solve_cp_problem(
@@ -141,12 +150,21 @@ def add_all_constraints(
         tolerance_more=tolerance_more,
     )
 
-    # min_number_of_staff = load_min_number_of_staff(
-    #     f"./cases/{case_id}/minimal_number_of_staff.json",
-    # )
-    # add_min_number_of_staff(
-    #     model, employees, shifts, min_number_of_staff, first_weekday_of_month, num_days
-    # )
+    min_number_of_staff = load_min_number_of_staff(
+        f"./cases/{case_id}/minimal_number_of_staff.json",
+    )
+    employee_type_mapping = load_employee_types_mapping(
+        f"./cases/{case_id}/employee_types.json",
+    )
+    add_min_number_of_staff(
+        model,
+        employees,
+        shifts,
+        min_number_of_staff,
+        first_weekday_of_month,
+        num_days,
+        employee_type_mapping,
+    )
 
     # Minimize number of consevutive night shifts
     add_minimize_number_of_consecutive_night_shifts(model, employees, shifts, num_days)
@@ -157,7 +175,11 @@ def add_all_constraints(
     # Free day near weekend
     # here we need the date of the first day in the month, need to connect with the database
     add_free_days_near_weekend(
-        model, employees, work_on_day, num_days, start_weekday=first_weekday_of_month
+        model,
+        employees,
+        work_on_day,
+        num_days,
+        start_weekday=first_weekday_of_month,
     )
 
     # # More free days for night worker
@@ -165,7 +187,11 @@ def add_all_constraints(
 
     # Not to many consecutive shifts
     add_not_too_many_consecutive_shifts(
-        model, employees, work_on_day, num_days, max_consecutive_work_days
+        model,
+        employees,
+        work_on_day,
+        num_days,
+        max_consecutive_work_days,
     )
 
     # Shift rotate forward
@@ -180,7 +206,11 @@ def main():
         description="Staff scheduling for a given month and year."
     )
     parser.add_argument(
-        "--case_id", "-c", type=int, default=1, help="ID of the cases folder to load"
+        "--case_id",
+        "-c",
+        type=int,
+        default=1,
+        help="ID of the cases folder to load",
     )
     parser.add_argument(
         "--month",
@@ -191,7 +221,11 @@ def main():
         help="Month to plan (1-12), default: November",
     )
     parser.add_argument(
-        "--year", "-y", type=int, default=2025, help="Year to plan, default: 2025"
+        "--year",
+        "-y",
+        type=int,
+        default=2025,
+        help="Year to plan, default: 2025",
     )
     parser.add_argument(
         "--output",

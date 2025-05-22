@@ -9,6 +9,17 @@ def load_min_number_of_staff(filename):
         return json.load(f)
 
 
+def load_employee_types_mapping(filename):
+    """Load mapping of employee types (as in DB to simpler like 'Azubi')"""
+    with open(filename, "r") as f:
+        simple_type_to_complex = json.load(f)
+    complex_type_to_simple = {}
+    for simple, complex_lst in simple_type_to_complex.items():
+        for complex in complex_lst:
+            complex_type_to_simple[complex] = simple
+    return complex_type_to_simple
+
+
 def add_min_number_of_staff(
     model,
     employees,
@@ -16,10 +27,13 @@ def add_min_number_of_staff(
     requirements,
     first_weekday_idx_of_month,
     last_day_of_month,
+    employee_types_mapping,
 ):
     employee_idx_by_type = {}
     for idx, employee in enumerate(employees):
-        employee_idx_by_type.setdefault(employee["type"], []).append(idx)
+        employee_idx_by_type.setdefault(
+            employee_types_mapping[employee["type"]], []
+        ).append(idx)
 
     weekday_mapping = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
     shift_mapping = ["F", "S", "N"]
