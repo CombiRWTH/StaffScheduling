@@ -83,8 +83,9 @@ def add_target_working_minutes(
 
     StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
 
-    print(
-        "Warning: "
-        "For the following employees no target working time was provided: "
-        f"'{', '.join(employees_without_information)}'."
-    )
+    if len(employees_without_information) > 0:
+        print(
+            "Warning: "
+            "For the following employees no target working time was provided: "
+            f"'{', '.join(employees_without_information)}'."
+        )
