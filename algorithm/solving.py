@@ -14,9 +14,9 @@ from building_constraints.free_shifts_and_vacation_days import (
     load_free_shifts_and_vacation_days,
     add_free_shifts_and_vacation_days,
 )
-from building_constraints.minimal_number_of_staff import (
-    load_min_number_of_staff,
-    add_min_number_of_staff,
+from building_constraints.target_working_minutes import (
+    load_target_working_minutes,
+    add_target_working_minutes,
 )
 from building_constraints.minimize_number_of_consecutive_night_shifts import (
     add_minimize_number_of_consecutive_night_shifts,
@@ -123,12 +123,30 @@ def add_all_constraints(
         num_shifts,
     )
 
-    min_number_of_staff = load_min_number_of_staff(
-        f"./cases/{case_id}/minimal_number_of_staff.json",
+    # Target Working Hours
+    target_hours, shift_durations, tolerance_less, tolerance_more = (
+        load_target_working_minutes(
+            f"./cases/{case_id}/target_working_minutes.json",
+        )
     )
-    add_min_number_of_staff(
-        model, employees, shifts, min_number_of_staff, first_weekday_of_month, num_days
+    add_target_working_minutes(
+        model=model,
+        employees=employees,
+        employees_target_minutes=target_hours,
+        shifts=shifts,
+        num_days=num_days,
+        num_shifts=num_shifts,
+        shift_durations=shift_durations,
+        tolerance_less=tolerance_less,
+        tolerance_more=tolerance_more,
     )
+
+    # min_number_of_staff = load_min_number_of_staff(
+    #     f"./cases/{case_id}/minimal_number_of_staff.json",
+    # )
+    # add_min_number_of_staff(
+    #     model, employees, shifts, min_number_of_staff, first_weekday_of_month, num_days
+    # )
 
     # Minimize number of consevutive night shifts
     add_minimize_number_of_consecutive_night_shifts(model, employees, shifts, num_days)
