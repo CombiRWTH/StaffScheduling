@@ -105,9 +105,7 @@ def add_all_constraints(
     free_shifts_data = load_json(
         f"./cases/{case_id}/free_shifts_and_vacation_days.json"
     )
-    min_staff_data = load_json(
-        f"./cases/{case_id}/minimal_number_of_staff.json"
-    )
+    min_staff_data = load_json(f"./cases/{case_id}/minimal_number_of_staff.json")
 
     # Mapping: Schlüssel → Callable (0 Args dank partial)
     CONSTRAINTS = {
