@@ -106,6 +106,7 @@ def add_all_constraints(
         f"./cases/{case_id}/free_shifts_and_vacation_days.json"
     )
     min_staff_data = load_json(f"./cases/{case_id}/minimal_number_of_staff.json")
+    employee_types_data = load_json(f"./cases/{case_id}/employee_types.json")
 
     # Mapping: Schlüssel → Callable (0 Args dank partial)
     CONSTRAINTS = {
@@ -128,6 +129,7 @@ def add_all_constraints(
             employees,
             shifts,
             min_staff_data,
+            employee_types_data,
             first_weekday_of_month,
             num_days,
         ),
