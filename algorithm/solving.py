@@ -41,15 +41,15 @@ SWITCH = {
     # Kern‑Regeln
     "basic": True,
     # Business Rules
-    "free_shifts": False,
-    "min_staff": False,
-    "target_working_min": True,
-    "min_night_seq": False,
-    "no_shift_after_night": False,
-    "free_near_weekend": False,
-    "more_free_night_worker": False,
-    "max_consecutive": False,
-    "rotate_forward": False,
+    "free_shifts": True,
+    "min_staff": True,
+    "target_working_min": False,
+    "min_night_seq": True,
+    "no_shift_after_night": True,
+    "free_near_weekend": True,
+    "more_free_night_worker": True,
+    "max_consecutive": True,
+    "rotate_forward": True,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
@@ -191,6 +191,7 @@ def add_all_constraints(
             num_days,
             num_shifts,
             target_min_data,
+            free_shifts_data,
         ),
     }
 
