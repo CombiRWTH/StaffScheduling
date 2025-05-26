@@ -209,7 +209,7 @@ def main():
         "--case_id",
         "-c",
         type=int,
-        default=1,
+        default=2,
         help="ID of the cases folder to load",
     )
     parser.add_argument(
