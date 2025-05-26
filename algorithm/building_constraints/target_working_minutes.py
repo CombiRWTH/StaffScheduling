@@ -1,4 +1,5 @@
 import StateManager
+from ortools.sat.python import cp_model
 
 NAME_OF_CONSTRAINT = "Target Working minutes"
 
@@ -6,6 +7,22 @@ NAME_OF_CONSTRAINT = "Target Working minutes"
 # Idee: Einbau erstmal nur von Obergrenze
 # Dann wenn zu noch Stunden übrig, Zwischendienst auffüllen
 # ist ein ein Problem VIELE zwischendienste aufzufüllen und dann später manuell aufzuteilen
+
+
+def reachable_sums(others, max_value):
+    reachable = set()
+
+    def dfs(current_sum):
+        if current_sum > max_value:
+            return
+        if current_sum in reachable:
+            return
+        reachable.add(current_sum)
+        for o in others:
+            dfs(current_sum + o)
+
+    dfs(0)  # start from zero
+    return sorted(reachable)
 
 
 def add_target_working_minutes(
@@ -30,6 +47,13 @@ def add_target_working_minutes(
     shift_durations = target_min_data["shift_durations"]
     tolerance_less = target_min_data["tolerance_less"]
     tolerance_more = target_min_data["tolerance_more"]
+
+    all_possible_total_minutes = cp_model.Domain.FromValues(
+        reachable_sums(
+            shift_durations.values(),
+            max_value=max(shift_durations.values()) * num_days,
+        ),
+    )
 
     employee_names_to_target = {
         employees_target_minutes[i]["name"]: employees_target_minutes[i]["target"]
@@ -56,9 +80,8 @@ def add_target_working_minutes(
                     ]  # duration in minutes for shift s
                     work_time_terms.append(var * duration)
 
-            total_work_time = model.NewIntVar(
-                0,
-                int(max(shift_durations.values()) * num_days),
+            total_work_time = model.NewIntVarFromDomain(
+                all_possible_total_minutes,
                 f"total_work_time_nurse_{n_idx}",
             )
             model.Add(total_work_time == sum(work_time_terms))
