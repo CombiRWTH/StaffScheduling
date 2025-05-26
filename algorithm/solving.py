@@ -53,6 +53,7 @@ SWITCH = {
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
+StateManager.state.switch = SWITCH
 
 
 def load_json(filename):
@@ -194,6 +195,7 @@ def add_all_constraints(
     }
 
     # Ausführen, wenn SWITCH[key] == True
+    SWITCH = StateManager.state.switch
     for key, func in CONSTRAINTS.items():
         if SWITCH.get(key, True):
             func()
@@ -222,7 +224,47 @@ def main():
         default=["json"],
         help="Output formats (json, plot, print)",
     )
+    parser.add_argument(
+        "--switch",
+        "-s",
+        nargs="+",
+        choices=[
+            "B",
+            "FreeS",
+            "Staff",
+            "Tar",
+            "MinN",
+            "NSAN",
+            "FreeW",
+            "MFNW",
+            "MaxC",
+            "Rot",
+        ],
+        default=None,
+        help=(
+            "List of Constraints to switch on. Allowed values: "
+            "B, FreeS, Staff, Tar, MinN, NSAN, FreeW, MFNW, MaxC, Rot"
+        ),
+    )
     args = parser.parse_args()
+
+    if args.switch is not None:
+        constraints_short_to_long = {
+            "B": "basic",
+            "FreeS": "free_shifts",
+            "Staff": "min_staff",
+            "Tar": "target_working_min",
+            "MinN": "min_night_seq",
+            "NSAN": "no_shift_after_night",
+            "FreeW": "free_near_weekend",
+            "MFNW": "more_free_night_worker",
+            "MaxC": "max_consecutive",
+            "Rot": "rotate_forward",
+        }
+        NEW_SWITCH = {key: False for key in SWITCH.keys()}
+        for c_short in args.switch:
+            NEW_SWITCH[constraints_short_to_long[c_short]] = True
+        StateManager.state.switch = NEW_SWITCH
 
     # Parameter
     SOLUTION_DIR = "found_solutions"

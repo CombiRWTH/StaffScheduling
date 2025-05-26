@@ -16,6 +16,7 @@ class StateManager:
     def __init__(self):
         self.constraints = []
         self.objectives = []
+        self.switch = {}
 
     def clear(self):
         self.constraints.clear()
