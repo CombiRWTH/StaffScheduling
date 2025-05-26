@@ -32,7 +32,7 @@ from building_constraints.not_too_many_consecutive_shifts import (
     add_not_too_many_consecutive_shifts,
 )
 from building_constraints.shift_rotate_forward import add_shift_rotate_forward
-
+from building_constraints.target_working_minutes import add_target_working_minutes
 
 # ─────────────────────────────────────────────────
 # ★★ EIN/AUS‑SCHALTER FÜR ALLE CONSTRAINTS ★★
@@ -41,14 +41,15 @@ SWITCH = {
     # Kern‑Regeln
     "basic": True,
     # Business Rules
-    "free_shifts": True,
-    "min_staff": True,
-    "min_night_seq": True,
-    "no_shift_after_night": True,
-    "free_near_weekend": True,
-    "more_free_night_worker": True,
-    "max_consecutive": True,
-    "rotate_forward": True,
+    "free_shifts": False,
+    "min_staff": False,
+    "target_working_min": True,
+    "min_night_seq": False,
+    "no_shift_after_night": False,
+    "free_near_weekend": False,
+    "more_free_night_worker": False,
+    "max_consecutive": False,
+    "rotate_forward": False,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
@@ -109,6 +110,7 @@ def add_all_constraints(
     )
     min_staff_data = load_json(f"./cases/{case_id}/minimal_number_of_staff.json")
     employee_types_data = load_json(f"./cases/{case_id}/employee_types.json")
+    target_min_data = load_json(f"./cases/{case_id}/target_working_minutes.json")
 
     # Mapping: Schlüssel → Callable (0 Args dank partial)
     CONSTRAINTS = {
@@ -179,6 +181,15 @@ def add_all_constraints(
             employees,
             shifts,
             num_days,
+        ),
+        "target_working_min": partial(
+            add_target_working_minutes,
+            model,
+            employees,
+            shifts,
+            num_days,
+            num_shifts,
+            target_min_data,
         ),
     }
 

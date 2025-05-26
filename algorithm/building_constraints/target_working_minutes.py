@@ -1,4 +1,3 @@
-import json
 import StateManager
 
 NAME_OF_CONSTRAINT = "Target Working minutes"
@@ -9,27 +8,8 @@ NAME_OF_CONSTRAINT = "Target Working minutes"
 # ist ein ein Problem VIELE zwischendienste aufzufüllen und dann später manuell aufzuteilen
 
 
-def load_target_working_minutes(filename: str):
-    with open(filename, "r") as f:
-        data = json.load(f)
-    return (
-        data["employees"],
-        data["shift_durations"],
-        data["tolerance_less"],
-        data["tolerance_more"],
-    )
-
-
 def add_target_working_minutes(
-    model,
-    employees,
-    employees_target_minutes,
-    shifts,
-    num_days,
-    num_shifts,
-    shift_durations,
-    tolerance_less,
-    tolerance_more,
+    model, employees, shifts, num_days, num_shifts, target_min_data
 ):
     """
     Adds a constraint to the model that ensures each employee's total working time
@@ -45,6 +25,11 @@ def add_target_working_minutes(
         shift_durations: Dictionary mapping shift_id -> duration_in_minutes.
         tolerance_minutes: Allowed deviation (+/-) from target_minutes.
     """
+
+    employees_target_minutes = target_min_data["employees"]
+    shift_durations = target_min_data["shift_durations"]
+    tolerance_less = target_min_data["tolerance_less"]
+    tolerance_more = target_min_data["tolerance_more"]
 
     employee_names_to_target = {
         employees_target_minutes[i]["name"]: employees_target_minutes[i]["target"]
