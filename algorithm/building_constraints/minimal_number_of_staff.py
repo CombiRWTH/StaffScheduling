@@ -11,13 +11,10 @@ def add_min_number_of_staff(
     employee_types,
     first_weekday_idx_of_month,
     last_day_of_month,
-    employee_types_mapping,
 ):
     employee_idx_by_type = {}
     for idx, employee in enumerate(employees):
-        employee_idx_by_type.setdefault(
-            employee_types_mapping[employee["type"]], []
-        ).append(idx)
+        employee_idx_by_type.setdefault(employee["type"], []).append(idx)
 
     weekday_mapping = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
     shift_mapping = ["F", "S", "N"]
