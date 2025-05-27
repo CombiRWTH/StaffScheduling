@@ -13,11 +13,11 @@ def add_day_no_shift_after_night_shift(
     num_employees = len(employees)
 
     for n in range(num_employees):
-        for d in range(num_days - 1):  # 从第0天到倒数第二天
+        for d in range(num_days - 1):  # to the last second day
             is_night_today = shifts[(n, d, 2)]
             is_night_tomorrow = shifts[(n, d + 1, 2)]
 
-            # 检测：今天是夜班 & 明天不是夜班 → 今天是夜班段结尾
+            # check if today is the last night shift in the night block
             is_end_of_night_block = model.NewBoolVar(f"end_of_night_block_n{n}_d{d}")
             model.AddBoolAnd([is_night_today, is_night_tomorrow.Not()]).OnlyEnforceIf(
                 is_end_of_night_block
@@ -26,8 +26,7 @@ def add_day_no_shift_after_night_shift(
                 is_end_of_night_block.Not()
             )
 
-            # 然后限制：d+1 不得有任何班次
-            for s in range(3):  # 班次：0=早，1=中，2=晚
+            for s in range(3):
                 model.Add(shifts[(n, d + 1, s)] == 0).OnlyEnforceIf(
                     is_end_of_night_block
                 )

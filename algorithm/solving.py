@@ -43,10 +43,10 @@ SWITCH = {
     # Kern‑Regeln
     "basic": True,
     # Business Rules
-    "free_shifts": False,
+    "free_shifts": True,
     "min_staff": True,
     "min_night_seq": True,
-    "no_shift_after_night": True,
+    "no_shift_after_night": False,
     "free_near_weekend": False,
     "more_free_night_worker": False,
     "max_consecutive": False,

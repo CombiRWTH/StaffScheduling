@@ -30,7 +30,11 @@ def add_min_number_of_staff(
         )
         current_weekday = weekday_mapping[current_weekday_index]
         for staff_type in requirements.keys():
-            relevant_employees = employee_idx_by_type[staff_type]
+            if staff_type not in employee_idx_by_type.keys():
+                print(f"skip wrong not existed staff type: {staff_type}")
+                continue
+            else:
+                relevant_employees = employee_idx_by_type[staff_type]
             for shift in requirements[staff_type][current_weekday].keys():
                 shift_index = shift_mapping.index(shift)
                 required_count = requirements[staff_type][current_weekday][shift]

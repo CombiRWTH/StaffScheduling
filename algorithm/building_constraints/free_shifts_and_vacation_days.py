@@ -35,13 +35,26 @@ def add_free_shifts_and_vacation_days(
                         model.Add(
                             shifts[(employee_idx, day_int - 1, s)] == 0
                         )  # day_int to day_idx
-                    model.Add(
-                        shifts[(employee_idx, day_int - 2, 2)] == 0
-                    )  # no night shift before vacation
+                    if day_int > 1:
+                        model.Add(shifts[(employee_idx, day_int - 2, 2)] == 0)
+                    else:
+                        print(
+                            f"skip invalid free_shift day: {day_int} for employee {employee_idx}"
+                        )
+                    # model.Add(
+                    #     shifts[(employee_idx, day_int - 2, 2)] == 0
+                    # )  # no night shift before vacation
             if "free_shifts" in employee:
-                for day_int, shift_name in employee["free_shifts"]:
+                for item in employee["free_shifts"]:
+                    if not isinstance(item, (list, tuple)) or len(item) != 2:
+                        print(f"skip wrong formatted free_shift: {item}")
+                        continue
+                    day_int, shift_name = item
                     shift_idx = shift_names_to_index[shift_name]
                     model.Add(shifts[(employee_idx, day_int - 1, shift_idx)] == 0)
+                # for day_int, shift_name in employee["free_shifts"]:
+                #     shift_idx = shift_names_to_index[shift_name]
+                #     model.Add(shifts[(employee_idx, day_int - 1, shift_idx)] == 0)
     else:
         raise ValueError(
             "Dataformat `free shifts` does not fit. Key `employees` is missing."
