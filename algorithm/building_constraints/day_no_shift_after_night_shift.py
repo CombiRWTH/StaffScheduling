@@ -13,18 +13,24 @@ def add_day_no_shift_after_night_shift(
     num_employees = len(employees)
 
     for n in range(num_employees):
-        for d in range(num_days - 1):  # up to second-last day
-            night_today = shifts[(n, d, 2)]
-            not_night_tomorrow = shifts[(n, d + 1, 2)].Not()
-            shift_tomorrow = model.NewBoolVar(f"has_shift_next_day_n{n}_d{d}")
-            model.AddBoolOr(
-                [shifts[(n, d + 1, 0)], shifts[(n, d + 1, 1)]]
-            ).OnlyEnforceIf(shift_tomorrow)
-            end_of_night_sequence = model.NewBoolVar(f"end_of_night_seq_n{n}_d{d}")
-            model.AddBoolAnd([night_today, not_night_tomorrow]).OnlyEnforceIf(
-                end_of_night_sequence
+        for d in range(num_days - 1):  # 从第0天到倒数第二天
+            is_night_today = shifts[(n, d, 2)]
+            is_night_tomorrow = shifts[(n, d + 1, 2)]
+
+            # 检测：今天是夜班 & 明天不是夜班 → 今天是夜班段结尾
+            is_end_of_night_block = model.NewBoolVar(f"end_of_night_block_n{n}_d{d}")
+            model.AddBoolAnd([is_night_today, is_night_tomorrow.Not()]).OnlyEnforceIf(
+                is_end_of_night_block
             )
-            model.AddImplication(end_of_night_sequence, shift_tomorrow.Not())
+            model.AddBoolOr([is_night_today.Not(), is_night_tomorrow]).OnlyEnforceIf(
+                is_end_of_night_block.Not()
+            )
+
+            # 然后限制：d+1 不得有任何班次
+            for s in range(3):  # 班次：0=早，1=中，2=晚
+                model.Add(shifts[(n, d + 1, s)] == 0).OnlyEnforceIf(
+                    is_end_of_night_block
+                )
 
     StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
 
