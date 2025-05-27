@@ -47,10 +47,10 @@ SWITCH = {
     "min_staff": True,
     "min_night_seq": True,
     "no_shift_after_night": True,
-    "free_near_weekend": True,
-    "more_free_night_worker": True,
-    "max_consecutive": True,
-    "rotate_forward": True,
+    "free_near_weekend": False,
+    "more_free_night_worker": False,
+    "max_consecutive": False,
+    "rotate_forward": False,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
@@ -264,6 +264,7 @@ def main():
             "free day near weekend": 1,
             "More Free Days for Night Workers": 1,
             "Not too many Consecutive Shifts": 1,
+            "24h no shift after night shift phase": 1,
         }
         add_objective_function(model, weights)
         enumerate_all_solutions = False
