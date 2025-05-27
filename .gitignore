@@ -1,4 +1,5 @@
 .venv
+database/.env
 *.pyc
 tempCodeRunnerFile.py
 .DS_store
