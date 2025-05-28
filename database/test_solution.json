@@ -1,0 +1,29 @@
+{
+  "caseID": 1234,
+  "employees": {
+    "name_to_index": {
+      "Anna Schmitz": 0,
+      "Max Müller": 1,
+      "Lisa Becker": 2
+    }
+  },
+  "constraints": [
+    "Max. 1 shift pro Tag",
+    "Keine Nachtschichten für Lisa"
+  ],
+  "numOfSolutions": 1,
+  "givenSolutionLimit": 10,
+  "solutions": [
+    {
+      "(0, 0, 0)": 1,
+      "(1, 0, 1)": 1,
+      "(2, 0, 2)": 1,
+      "(0, 1, 1)": 1,
+      "(1, 1, 2)": 1,
+      "(2, 1, 0)": 1,
+      "(0, 2, 2)": 1,
+      "(1, 2, 0)": 1,
+      "(2, 2, 1)": 1
+    }
+  ]
+}
