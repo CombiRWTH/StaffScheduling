@@ -22,7 +22,7 @@ def add_minimize_number_of_consecutive_night_shifts(
 
     # this is currently not ideal
     # a night shift of length 4 is also counted (multiple times) in night shift
-    # if len 2 and 3. 
+    # if len 2 and 3.
     # This counteracts to the defined weights.
     for n in range(len(employees)):
         for d in range(num_days - 1):  # for length 2
