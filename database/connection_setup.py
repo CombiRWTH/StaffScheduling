@@ -43,7 +43,19 @@ def get_correct_path(filename):
 def export_personal_data_to_json(conn, filename="employees.json"):
     """Export all personal staff information found within TPersonal and create a JSON-file.
     CURRENTLY ONLY TEST PURPOSE ON THIS BRANCH"""
-    query = "SELECT * FROM TPersonal WHERE Prim=459"
+    query = """SELECT
+                    a."Prim",
+                    a."Name",
+                    a."Vorname",
+                    a."PersNr",
+                    t."Bezeichnung" AS "Beruf"
+                FROM "TPlanPersonal" b
+                JOIN
+                    "TPersonal" a ON b."RefPersonal" = a."Prim"
+                LEFT JOIN
+                    "TBerufe" t ON a."RefBerufe" = t."Prim"
+                WHERE "RefPlan"=17193
+            """
     df = pd.read_sql(query, conn)
     json_output = df.to_json(orient="records", force_ascii=False)
     store_path = get_correct_path(filename)
