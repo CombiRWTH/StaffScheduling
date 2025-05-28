@@ -30,7 +30,9 @@ from building_constraints.not_too_many_consecutive_shifts import (
 )
 from building_constraints.shift_rotate_forward import add_shift_rotate_forward
 from building_constraints.minimum_rest_time import add_minimum_rest_time
-from building_constraints.target_working_minutes import add_target_working_minutes
+from building_constraints.intermediate_phase import (
+    add_intermediate_shifts_to_solutions,
+)
 
 # ─────────────────────────────────────────────────
 # ★★ EIN/AUS‑SCHALTER FÜR ALLE CONSTRAINTS ★★
@@ -335,6 +337,16 @@ def main():
         enumerate_all_solutions = True
 
     solve_cp_problem(model, unified, enumerate_all_solutions)
+
+    # ──────────────────────────────────────────────────────────
+    # Phase 2 – insert intermediate shifts (Z)
+    # ──────────────────────────────────────────────────────────
+    unified._solutions = add_intermediate_shifts_to_solutions(
+        unified._solutions,
+        employees,
+        dates,
+        args.case_id,
+    )
 
     # Output
     if "json" in args.output:

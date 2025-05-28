@@ -19,17 +19,29 @@ def add_shift_rotate_forward(
 ) -> None:
     num_employees = len(employees)
     penalties = []
-    bad_rotations = [(0, 2), (1, 0), (2, 1)]  # non-forward rotate
+
+    # detect how many shifts the current model contains
+    num_shifts = max(s for (_, _, s) in shifts.keys()) + 1
+
+    # classic “not-forward” rotations
+    bad_rotations = [(0, 2), (1, 0), (2, 1)]
+
+    # extend with Z-related pairs if Z is present (index 3)
+    if num_shifts >= 4:
+        bad_rotations.extend(
+            [
+                (0, 3),  # E → Z
+                (2, 3),  # N → Z
+                (3, 0),  # Z → E
+                (3, 1),  # Z → L
+                (3, 2),  # Z → N
+            ]
+        )
 
     for n in range(num_employees):
-        # This needs to be implemented to a later time
-        # fixed_shift_workers is its own constraint
-        # if n in fixed_shift_workers:
-        #     continue  # ignore fixed shifts worker
-
         for d in range(num_days - 1):
             for prev_s, next_s in bad_rotations:
-                b = model.NewBoolVar(f"bad_rot_n{n}_d{d}_from{prev_s}to{next_s}")
+                b = model.NewBoolVar(f"bad_rot_n{n}_d{d}_{prev_s}_to_{next_s}")
                 model.AddBoolAnd(
                     [shifts[(n, d, prev_s)], shifts[(n, d + 1, next_s)]]
                 ).OnlyEnforceIf(b)
