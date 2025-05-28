@@ -1,12 +1,6 @@
-import json
 import StateManager
 
 NAME_OF_CONSTRAINT = "Minimal Number of Staff"
-
-
-def load_min_number_of_staff(filename):
-    with open(filename, "r") as f:
-        return json.load(f)
 
 
 def add_min_number_of_staff(
@@ -14,6 +8,7 @@ def add_min_number_of_staff(
     employees,
     shifts,
     requirements,
+    employee_types,
     first_weekday_idx_of_month,
     last_day_of_month,
 ):
@@ -30,7 +25,12 @@ def add_min_number_of_staff(
         )
         current_weekday = weekday_mapping[current_weekday_index]
         for staff_type in requirements.keys():
-            relevant_employees = employee_idx_by_type[staff_type]
+            staff_groups = employee_types[staff_type]
+            relevant_employees = [
+                employee_id
+                for staff_group in staff_groups
+                for employee_id in employee_idx_by_type[staff_group]
+            ]
             for shift in requirements[staff_type][current_weekday].keys():
                 shift_index = shift_mapping.index(shift)
                 required_count = requirements[staff_type][current_weekday][shift]
