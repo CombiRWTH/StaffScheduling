@@ -41,8 +41,8 @@ def get_correct_path(filename):
 
 
 def export_personal_data_to_json(conn, filename="employees.json"):
-    """Export all personal staff information found within TPersonal and create a JSON-file.
-    CURRENTLY ONLY TEST PURPOSE ON THIS BRANCH"""
+    """Export all personal staff information found within TPersonal and create a JSON-file."""
+    # Write SQL-query to retrieve personal data
     query = """SELECT
                     a."Prim",
                     a."Name",
@@ -57,11 +57,25 @@ def export_personal_data_to_json(conn, filename="employees.json"):
                 WHERE "RefPlan"=17193
             """
     df = pd.read_sql(query, conn)
-    json_output = df.to_json(orient="records", force_ascii=False)
+
+    # Restructure and rename to the desired JSON-output-format
+    df_renamed = df.rename(columns={
+        "PersNr": "PersNr",
+        "Vorname": "firstname",
+        "Name": "name",
+        "Beruf": "type"
+    })
+    employees_list = df_renamed.to_dict(orient="records")
+    output_json = {
+        "employees": employees_list
+    }
+
+    # Store JSON-file within given directory
+    json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
     store_path = get_correct_path(filename)
-    # Create or overwrite file in target directory
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
+    # Print a message of completed export
     print(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
