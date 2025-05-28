@@ -7,7 +7,6 @@ import json
 # .env-Datei laden
 load_dotenv()
 
-print("Verfügbare Treiber:", pyodbc.drivers())
 # Umgebungsvariablen auslesen
 server = os.getenv("DB_SERVER")
 database = os.getenv("DB_NAME")
