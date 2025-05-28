@@ -1,6 +1,7 @@
 import StateManager
 import argparse
 import calendar
+import json
 from datetime import date, timedelta
 from functools import partial
 from ortools.sat.python import cp_model
@@ -10,16 +11,11 @@ from building_constraints.initial_constraints import (
     create_shift_variables,
     create_work_on_days_variables,
     add_basic_constraints,
-    load_employees,
 )
 from building_constraints.free_shifts_and_vacation_days import (
-    load_free_shifts_and_vacation_days,
     add_free_shifts_and_vacation_days,
 )
-from building_constraints.minimal_number_of_staff import (
-    load_min_number_of_staff,
-    add_min_number_of_staff,
-)
+from building_constraints.minimal_number_of_staff import add_min_number_of_staff
 from building_constraints.minimize_number_of_consecutive_night_shifts import (
     add_minimize_number_of_consecutive_night_shifts,
 )
@@ -54,6 +50,11 @@ SWITCH = {
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
+
+
+def load_json(filename):
+    with open(filename, "r") as f:
+        return json.load(f)
 
 
 def solve_cp_problem(
@@ -101,12 +102,11 @@ def add_all_constraints(
     """Add all *enabled* constraints to the model."""
 
     # Daten laden, die mehrere Regeln benötigen
-    free_shifts_data = load_free_shifts_and_vacation_days(
+    free_shifts_data = load_json(
         f"./cases/{case_id}/free_shifts_and_vacation_days.json"
     )
-    min_staff_data = load_min_number_of_staff(
-        f"./cases/{case_id}/minimal_number_of_staff.json"
-    )
+    min_staff_data = load_json(f"./cases/{case_id}/minimal_number_of_staff.json")
+    employee_types_data = load_json(f"./cases/{case_id}/employee_types.json")
 
     # Mapping: Schlüssel → Callable (0 Args dank partial)
     CONSTRAINTS = {
@@ -129,6 +129,7 @@ def add_all_constraints(
             employees,
             shifts,
             min_staff_data,
+            employee_types_data,
             first_weekday_of_month,
             num_days,
         ),
@@ -190,7 +191,7 @@ def main():
         description="Staff scheduling for a given month and year."
     )
     parser.add_argument(
-        "--case_id", "-c", type=int, default=1, help="ID of the cases folder to load"
+        "--case_id", "-c", type=int, default=2, help="ID of the cases folder to load"
     )
     parser.add_argument(
         "--month",
@@ -226,7 +227,8 @@ def main():
 
     # Modell aufbauen
     model = cp_model.CpModel()
-    employees = load_employees(f"./cases/{args.case_id}/employees.json")
+    employees = load_json(f"./cases/{args.case_id}/employees.json")["employees"]
+
     shifts = create_shift_variables(model, employees, NUM_DAYS, NUM_SHIFTS)
     work_on_day = create_work_on_days_variables(
         model, employees, NUM_DAYS, NUM_SHIFTS, shifts
