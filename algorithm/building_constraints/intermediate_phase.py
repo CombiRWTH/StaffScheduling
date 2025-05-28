@@ -169,7 +169,8 @@ def add_intermediate_shifts_to_solutions(
         ]
         for d in range(num_days):
             vars_today = [var for (emp, day), var in z_vars.items() if day == d]
-            model.Add(daily_z[d] == sum(vars_today) if vars_today else 0)
+            if vars_today:
+                model.Add(daily_z[d] == sum(vars_today))
 
         max_daily_z = model.NewIntVar(0, num_employees, "maxDailyZ")
         for d in range(num_days):
