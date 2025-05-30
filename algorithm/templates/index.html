@@ -55,6 +55,16 @@
             background-color: #eef3ab !important;
         }
 
+        /* damit .table-responsive und .table wirklich 100% Breite nutzen */
+        .table-responsive {
+            width: 100%;
+            margin: 0;
+        }
+
+        .table {
+            width: 100%;
+        }
+
         /* Sticky first column */
         .table th:first-child,
         .table td:first-child {
@@ -121,7 +131,7 @@
     </div>
 
     <!-- Main content -->
-    <div class="container bg-white p-4 rounded shadow-sm" style="overflow-x:auto;">
+    <div class="container-fluid bg-white p-4 rounded shadow-sm" style="overflow-x:auto;">
         <h1 class="text-primary">Staff Schedule</h1>
 
         <div class="row mb-3">
