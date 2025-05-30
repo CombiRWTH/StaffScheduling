@@ -217,7 +217,7 @@ def main():
         default=11,
         help="Month to plan (1-12)",
     )
-    parser.add_argument("--year", "-y", type=int, default=2025, help="Year to plan")
+    parser.add_argument("--year", "-y", type=int, default=2024, help="Year to plan")
     parser.add_argument(
         "--output",
         "-o",
