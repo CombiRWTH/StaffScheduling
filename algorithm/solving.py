@@ -22,7 +22,9 @@ from building_constraints.minimize_number_of_consecutive_night_shifts import (
 from building_constraints.day_no_shift_after_night_shift import (
     add_day_no_shift_after_night_shift,
 )
-from building_constraints.free_days_near_weekend import add_free_days_near_weekend
+from building_constraints.free_days_near_weekend import (
+    add_free_days_near_weekend,
+)
 from building_constraints.more_free_days_for_night_worker import (
     add_more_free_days_for_night_worker,
 )
@@ -30,7 +32,7 @@ from building_constraints.not_too_many_consecutive_shifts import (
     add_not_too_many_consecutive_shifts,
 )
 from building_constraints.shift_rotate_forward import add_shift_rotate_forward
-
+from building_constraints.target_working_minutes import add_target_working_minutes
 
 # ─────────────────────────────────────────────────
 # ★★ EIN/AUS‑SCHALTER FÜR ALLE CONSTRAINTS ★★
@@ -41,6 +43,7 @@ SWITCH = {
     # Business Rules
     "free_shifts": True,
     "min_staff": True,
+    "target_working_min": False,
     "min_night_seq": True,
     "no_shift_after_night": True,
     "free_near_weekend": True,
@@ -50,6 +53,7 @@ SWITCH = {
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
+StateManager.state.switch = SWITCH
 
 
 def load_json(filename):
@@ -107,6 +111,7 @@ def add_all_constraints(
     )
     min_staff_data = load_json(f"./cases/{case_id}/minimal_number_of_staff.json")
     employee_types_data = load_json(f"./cases/{case_id}/employee_types.json")
+    target_min_data = load_json(f"./cases/{case_id}/target_working_minutes.json")
 
     # Mapping: Schlüssel → Callable (0 Args dank partial)
     CONSTRAINTS = {
@@ -178,9 +183,20 @@ def add_all_constraints(
             shifts,
             num_days,
         ),
+        "target_working_min": partial(
+            add_target_working_minutes,
+            model,
+            employees,
+            shifts,
+            num_days,
+            num_shifts,
+            target_min_data,
+            free_shifts_data,
+        ),
     }
 
     # Ausführen, wenn SWITCH[key] == True
+    SWITCH = StateManager.state.switch
     for key, func in CONSTRAINTS.items():
         if SWITCH.get(key, True):
             func()
@@ -209,7 +225,47 @@ def main():
         default=["json"],
         help="Output formats (json, plot, print)",
     )
+    parser.add_argument(
+        "--switch",
+        "-s",
+        nargs="+",
+        choices=[
+            "B",
+            "FreeS",
+            "Staff",
+            "Tar",
+            "MinN",
+            "NSAN",
+            "FreeW",
+            "MFNW",
+            "MaxC",
+            "Rot",
+        ],
+        default=None,
+        help=(
+            "List of Constraints to switch on. Allowed values: "
+            "B, FreeS, Staff, Tar, MinN, NSAN, FreeW, MFNW, MaxC, Rot"
+        ),
+    )
     args = parser.parse_args()
+
+    if args.switch is not None:
+        constraints_short_to_long = {
+            "B": "basic",
+            "FreeS": "free_shifts",
+            "Staff": "min_staff",
+            "Tar": "target_working_min",
+            "MinN": "min_night_seq",
+            "NSAN": "no_shift_after_night",
+            "FreeW": "free_near_weekend",
+            "MFNW": "more_free_night_worker",
+            "MaxC": "max_consecutive",
+            "Rot": "rotate_forward",
+        }
+        NEW_SWITCH = {key: False for key in SWITCH.keys()}
+        for c_short in args.switch:
+            NEW_SWITCH[constraints_short_to_long[c_short]] = True
+        StateManager.state.switch = NEW_SWITCH
 
     # Parameter
     SOLUTION_DIR = "found_solutions"
