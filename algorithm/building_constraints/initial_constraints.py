@@ -5,7 +5,10 @@ NAME_OF_CONSTRAINT = "Inital Constraints"
 
 
 def create_shift_variables(
-    model: cp_model.CpModel, employees: list[dict], num_days: int, num_shifts: int
+    model: cp_model.CpModel,
+    employees: list[dict],
+    num_days: int,
+    num_shifts: int,
 ) -> dict[tuple, cp_model.IntVar]:
     """
     Creates shift assignment variables for each employee, day, and shift.

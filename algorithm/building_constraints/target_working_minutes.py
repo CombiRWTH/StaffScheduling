@@ -25,8 +25,47 @@ def reachable_sums(others, max_value):
     return sorted(reachable)
 
 
+def create_total_work_time_variables(
+    model, employees, shifts, num_days, num_shifts, shift_durations
+):
+    shift_index_to_name = ["F", "S", "N", "Z"]
+
+    all_possible_total_minutes = cp_model.Domain.FromValues(
+        reachable_sums(
+            shift_durations.values(),
+            max_value=max(shift_durations.values()) * num_days,
+        ),
+    )
+
+    total_work_times = {}
+    for n_idx, employee in enumerate(employees):  # all employees
+        work_time_terms = []
+        for d_idx in range(num_days):
+            for s_idx in range(num_shifts):
+                var = shifts[(n_idx, d_idx, s_idx)]  # this is a BoolVar (0 or 1)
+                duration = shift_durations[
+                    shift_index_to_name[s_idx]
+                ]  # duration in minutes for shift s
+                work_time_terms.append(var * duration)
+
+        total_work_time = model.NewIntVarFromDomain(
+            all_possible_total_minutes,
+            f"total_work_time_nurse_{n_idx}",
+        )
+        total_work_times[employee["name"]] = total_work_time
+        model.Add(total_work_time == sum(work_time_terms))
+    return total_work_times
+
+
 def add_target_working_minutes(
-    model, employees, shifts, num_days, num_shifts, target_min_data, vacation_data=None
+    model,
+    employees,
+    shifts,
+    total_work_times,
+    num_days,
+    num_shifts,
+    target_min_data,
+    vacation_data=None,
 ):
     """
     Adds a constraint to the model that ensures each employee's total working time
@@ -48,19 +87,10 @@ def add_target_working_minutes(
     tolerance_less = target_min_data["tolerance_less"]
     tolerance_more = target_min_data["tolerance_more"]
 
-    all_possible_total_minutes = cp_model.Domain.FromValues(
-        reachable_sums(
-            shift_durations.values(),
-            max_value=max(shift_durations.values()) * num_days,
-        ),
-    )
-
     employee_names_to_target = {
         employees_target_minutes[i]["name"]: employees_target_minutes[i]["target"]
         for i in range(len(employees_target_minutes))
     }
-
-    shift_index_to_name = ["F", "S", "N"]
 
     employees_without_information = []  # no target minutes provided
     for n_idx, employee in enumerate(employees):  # all employees
@@ -97,21 +127,7 @@ def add_target_working_minutes(
                         " free shifts and vacation days is active."
                     )
 
-            work_time_terms = []
-            for d_idx in range(num_days):
-                for s_idx in range(num_shifts):
-                    var = shifts[(n_idx, d_idx, s_idx)]  # this is a BoolVar (0 or 1)
-                    duration = shift_durations[
-                        shift_index_to_name[s_idx]
-                    ]  # duration in minutes for shift s
-                    work_time_terms.append(var * duration)
-
-            total_work_time = model.NewIntVarFromDomain(
-                all_possible_total_minutes,
-                f"total_work_time_nurse_{n_idx}",
-            )
-            model.Add(total_work_time == sum(work_time_terms))
-
+            total_work_time = total_work_times[employee["name"]]
             model.Add(total_work_time <= target_minutes + tolerance_more)
             model.Add(total_work_time >= target_minutes - tolerance_less)
 
