@@ -3,7 +3,6 @@
 
 import json
 import os
-import re
 import ast
 from datetime import datetime
 from flask import Flask, render_template, abort, request
@@ -15,27 +14,22 @@ SOLUTIONS_DIR = os.path.join(BASE_DIR, "found_solutions")
 CASES_DIR = os.path.join(BASE_DIR, "cases")
 CASE_ID = 1
 
-# Pattern for solution files
-PATTERN = re.compile(r"solutions_(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})\.json$")
 
-
-# List available solution files sorted by timestamp
+# List available JSON files sorted by modification time (newest first)
 def list_solution_files():
     if not os.path.isdir(SOLUTIONS_DIR):
         return []
     files = []
     for fname in os.listdir(SOLUTIONS_DIR):
-        match = PATTERN.match(fname)
-        if not match:
+        if not fname.lower().endswith(".json"):
             continue
-        date_part, time_part = match.groups()
-        ts_str = f"{date_part} {time_part.replace('-', ':')}"
+        path = os.path.join(SOLUTIONS_DIR, fname)
         try:
-            ts = datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
+            mtime = os.path.getmtime(path)
+        except OSError:
             continue
-        files.append((ts, fname))
-    files.sort(key=lambda x: x[0])
+        files.append((mtime, fname))
+    files.sort(key=lambda x: x[0], reverse=True)
     return [fname for _, fname in files]
 
 
@@ -57,28 +51,24 @@ def load_employees(case_id=CASE_ID):
         return json.load(f)
 
 
-# HTML template using Jinja2 and Bootstrap for styling
 app = Flask(__name__)
 
 
 @app.route("/")
 def index():
-    # Available files
     files = list_solution_files()
     if not files:
         abort(404, description="Keine Lösungsdateien gefunden")
 
-    # Get query params
-    current_file = request.args.get("file", files[-1])
+    current_file = request.args.get("file", files[0])
     try:
         data = load_solution_file(current_file)
     except FileNotFoundError:
-        data = load_solution_file(files[-1])
-        current_file = files[-1]
+        data = load_solution_file(files[0])
+        current_file = files[0]
 
     solution_index = int(request.args.get("solution_index", 0))
 
-    # Build employees
     emp_map = data.get("employees", {}).get("name_to_index", {})
     if emp_map:
         employees = [None] * len(emp_map)
@@ -87,7 +77,6 @@ def index():
     else:
         employees = load_employees()
 
-    # Parse solutions
     raw = data.get("solutions", [])
     sols = []
     for sol in raw:
@@ -101,25 +90,21 @@ def index():
         sols.append(conv)
 
     total_solutions = len(sols)
-    # Special Case: no solution → render empty schedule
     if total_solutions == 0:
         dates = []
         dates_info = []
+        schedule_map = {}
         date_counts = {}
-        num_days = 0
-        num_shifts = 0
-        num_employees = len(employees)
+        shift_counts = {}
+        emp_work_hours = {}
+        min_counts = {}
+        max_counts = {}
         shift_symbols = {0: "F", 1: "S", 2: "N", 3: "Z"}
-        schedule_map = {i: {} for i in range(num_employees)}
-        shift_counts = {i: 0 for i in range(num_employees)}
-        date_tooltips = {}
     else:
         if solution_index < 0 or solution_index >= total_solutions:
-            abort(404)
+            solution_index = total_solutions - 1
 
-        # first solution
         sample = sols[0]
-        # dates
         dates = sorted({d for (_, d, _) in sample.keys()})
         dates_info = []
         for date_str in dates:
@@ -127,40 +112,56 @@ def index():
             dates_info.append(
                 {
                     "date": date_str,
-                    "weekday": dt.strftime("%A"),  # z.B. "Montag"
-                    "is_weekend": dt.weekday() >= 5,  # Samstag=5, Sonntag=6
+                    "weekday": dt.strftime("%A"),
+                    "is_weekend": dt.weekday() >= 5,
                 }
             )
-        num_days = len(dates)
-        num_employees = len(employees)
-        num_shifts = max(s for (_, _, s) in sample.keys()) + 1
+
+        num_employees = len(emp_map) if emp_map else len(employees)
+        num_shifts = max((s for (_, _, s) in sample.keys()), default=-1) + 1
         shift_symbols = {0: "F", 1: "S", 2: "N", 3: "Z"}
 
-        # select solution
         sched = sols[solution_index]
         schedule_map = {i: {} for i in range(num_employees)}
         for (i, d, s), val in sched.items():
             if val:
                 schedule_map[i][d] = s
 
-        # Stats for hovering Employee names
         shift_counts = {i: len(schedule_map[i]) for i in schedule_map}
 
-        # shift_labels for hovering dates
+        # Load and compute work hours if available
+        shift_durations = data.get("shiftDurations") or data.get("shift_durations")
+        emp_work_hours = {}
+        if shift_durations:
+            emp_minutes = {i: 0 for i in range(num_employees)}
+            for (i, d, s), val in sched.items():
+                if val:
+                    symbol = shift_symbols.get(s)
+                    mins = shift_durations.get(symbol, 0)
+                    emp_minutes[i] += mins
+            emp_work_hours = {i: round(m / 60, 1) for i, m in emp_minutes.items()}
+
+        # Prepare date_counts
+        date_counts = {d: {s: 0 for s in range(num_shifts)} for d in dates}
+        for emp_idx, shifts in schedule_map.items():
+            for d, s in shifts.items():
+                date_counts[d][s] = date_counts[d].get(s, 0) + 1
+
+        # Compute min/max per shift across dates
+        min_counts = {}
+        max_counts = {}
+        for s in range(num_shifts):
+            vals = [date_counts[d].get(s, 0) for d in dates]
+            min_counts[s] = min(vals) if vals else 0
+            max_counts[s] = max(vals) if vals else 0
+
+        # Tooltips for dates
         shift_labels = {
             0: "Frühschicht",
             1: "Spätschicht",
             2: "Nachtschicht",
             3: "Zwischenschicht",
         }
-
-        # 1) count daily shifts
-        date_counts = {d: {s: 0 for s in range(num_shifts)} for d in dates}
-        for emp_idx, shifts in schedule_map.items():
-            for d, s in shifts.items():
-                date_counts[d][s] += 1
-
-        # 2) create tooltip texts
         date_tooltips = {}
         for date, counts in date_counts.items():
             lines = []
@@ -170,7 +171,6 @@ def index():
                     lines.append(f"{label}: {cnt}")
             date_tooltips[date] = "\n".join(lines)
 
-    # debug create time
     loaded_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     return render_template(
@@ -186,13 +186,17 @@ def index():
         dates_info=dates_info,
         date_counts=date_counts,
         date_tooltips=date_tooltips,
-        num_days=num_days,
+        num_days=len(dates),
         num_shifts=num_shifts,
-        num_employees=num_employees,
+        num_employees=len(employees),
         loaded_time=loaded_time,
         shift_symbols=shift_symbols,
         constraints=data.get("constraints", []),
         shift_counts=shift_counts,
+        emp_work_hours=emp_work_hours,
+        min_counts=min_counts,
+        max_counts=max_counts,
+        shift_labels=shift_labels,
     )
 
 

@@ -18,6 +18,7 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
         dates,
         limit,
         case_id,
+        shift_durations,
         solution_dir,
     ):
         super().__init__()
@@ -32,6 +33,7 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
         self._solution_dir = solution_dir
         self._constraints = StateManager.state.constraints
         self._solutions = []
+        self._shift_durations = shift_durations
         self._employee_name_to_index = {
             employee["name"]: idx for idx, employee in enumerate(employees)
         }
@@ -72,6 +74,7 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
             "constraints": self._constraints,
             "numOfSolutions": len(self._solutions),
             "givenSolutionLimit": self._solution_limit,
+            "shiftDurations": self._shift_durations,
             "solutions": [
                 {str(key): value for key, value in solution.items()}
                 for solution in self._solutions

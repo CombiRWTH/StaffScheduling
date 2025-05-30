@@ -165,8 +165,8 @@
                     {% for emp in employees %}
                     {% set idx = loop.index0 %}
                     <tr>
-                        <td data-bs-toggle="tooltip" data-bs-placement="top" +
-                            title="{{ shift_counts[idx] }} Schichten">
+                        <td data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="{{ shift_counts[idx] }} Schichten{% if emp_work_hours.get(idx) %} / {{ emp_work_hours[idx] }} Std{% endif %}">
                             {{ emp['name'] }}
                         </td>
                         {% for d in dates_info %}
@@ -184,10 +184,24 @@
 
         <h2>Debug & Parameter</h2>
         <ul>
-            <li>Fall ID: {{ case_id }}</li>
             <li>Geplante Tage: {{ num_days }}</li>
             <li>Mitarbeiter: {{ num_employees }}</li>
             <li>Schichten pro Tag: {{ num_shifts }}</li>
+            <li>Minimum Schichten pro Tag:
+                <ul class="mb-0">
+                    {% for s, label in shift_labels.items() %}
+                    <li>{{ label }}: {{ min_counts[s] }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <li>Maximum Schichten pro Tag:
+                <ul class="mb-0">
+                    {% for s, label in shift_labels.items() %}
+                    <li>{{ label }}: {{ max_counts[s] }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+
             <li>Geladen um: {{ loaded_time }}</li>
             <li>Constraints: {{ constraints | join(', ') }}</li>
             <li>Anzahl Lösungen: {{ total_solutions }}</li>
