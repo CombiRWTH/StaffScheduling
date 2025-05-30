@@ -58,7 +58,6 @@ def load_employees(case_id=CASE_ID):
 
 
 # HTML template using Jinja2 and Bootstrap for styling
-
 app = Flask(__name__)
 
 
@@ -102,44 +101,77 @@ def index():
         sols.append(conv)
 
     total_solutions = len(sols)
-    if solution_index < 0 or solution_index >= total_solutions:
-        abort(404)
+    # Special Case: no solution → render empty schedule
+    if total_solutions == 0:
+        dates = []
+        dates_info = []
+        date_counts = {}
+        num_days = 0
+        num_shifts = 0
+        num_employees = len(employees)
+        shift_symbols = {0: "F", 1: "S", 2: "N", 3: "Z"}
+        schedule_map = {i: {} for i in range(num_employees)}
+        shift_counts = {i: 0 for i in range(num_employees)}
+        date_tooltips = {}
+    else:
+        if solution_index < 0 or solution_index >= total_solutions:
+            abort(404)
 
-    sample = sols[0]
-    dates = sorted({d for (_, d, _) in sample.keys()})
-    num_days = len(dates)
-    num_employees = len(employees)
-    num_shifts = max(s for (_, _, s) in sample.keys()) + 1
+        # first solution
+        sample = sols[0]
+        # dates
+        dates = sorted({d for (_, d, _) in sample.keys()})
+        dates_info = []
+        for date_str in dates:
+            dt = datetime.strptime(date_str, "%Y-%m-%d").date()
+            dates_info.append(
+                {
+                    "date": date_str,
+                    "weekday": dt.strftime("%A"),  # z.B. "Montag"
+                    "is_weekend": dt.weekday() >= 5,  # Samstag=5, Sonntag=6
+                }
+            )
+        num_days = len(dates)
+        num_employees = len(employees)
+        num_shifts = max(s for (_, _, s) in sample.keys()) + 1
+        shift_symbols = {0: "F", 1: "S", 2: "N", 3: "Z"}
+
+        # select solution
+        sched = sols[solution_index]
+        schedule_map = {i: {} for i in range(num_employees)}
+        for (i, d, s), val in sched.items():
+            if val:
+                schedule_map[i][d] = s
+
+        # Stats for hovering Employee names
+        shift_counts = {i: len(schedule_map[i]) for i in schedule_map}
+
+        # shift_labels for hovering dates
+        shift_labels = {
+            0: "Frühschicht",
+            1: "Spätschicht",
+            2: "Nachtschicht",
+            3: "Zwischenschicht",
+        }
+
+        # 1) count daily shifts
+        date_counts = {d: {s: 0 for s in range(num_shifts)} for d in dates}
+        for emp_idx, shifts in schedule_map.items():
+            for d, s in shifts.items():
+                date_counts[d][s] += 1
+
+        # 2) create tooltip texts
+        date_tooltips = {}
+        for date, counts in date_counts.items():
+            lines = []
+            for s, cnt in counts.items():
+                if cnt:
+                    label = shift_labels.get(s, f"Schicht {s}")
+                    lines.append(f"{label}: {cnt}")
+            date_tooltips[date] = "\n".join(lines)
+
+    # debug create time
     loaded_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    shift_symbols = {0: "F", 1: "S", 2: "N"}
-
-    sched = sols[solution_index]
-    schedule_map = {i: {} for i in range(num_employees)}
-    for (i, d, s), val in sched.items():
-        if val:
-            schedule_map[i][d] = s
-
-    shift_counts = {i: len(schedule_map[i]) for i in schedule_map}
-
-    # shift_labels für die Beschriftung
-    shift_labels = {0: "Frühschichten", 1: "Spätschichten", 2: "Nachtschichten"}
-
-    # 1) Zähle die Schichten pro Tag
-    date_counts = {d: {s: 0 for s in range(num_shifts)} for d in dates}
-    for emp_idx, shifts in schedule_map.items():
-        for d, s in shifts.items():
-            date_counts[d][s] += 1
-
-    # 2) Tooltip-Texte pro Datum zusammenbauen
-    date_tooltips = {}
-    for date, counts in date_counts.items():
-        lines = []
-        for s, cnt in counts.items():
-            if cnt:
-                label = shift_labels.get(s, f"Schicht {s}")
-                lines.append(f"{label}: {cnt}")
-        # mehreren Zeilen durch newline trennen
-        date_tooltips[date] = "\n".join(lines)
 
     return render_template(
         "index.html",
@@ -151,6 +183,8 @@ def index():
         employees=employees,
         schedule_map=schedule_map,
         dates=dates,
+        dates_info=dates_info,
+        date_counts=date_counts,
         date_tooltips=date_tooltips,
         num_days=num_days,
         num_shifts=num_shifts,
