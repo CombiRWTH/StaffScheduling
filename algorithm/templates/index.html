@@ -55,6 +55,16 @@
             background-color: #eef3ab !important;
         }
 
+        /* damit .table-responsive und .table wirklich 100% Breite nutzen */
+        .table-responsive {
+            width: 100%;
+            margin: 0;
+        }
+
+        .table {
+            width: 100%;
+        }
+
         /* Sticky first column */
         .table th:first-child,
         .table td:first-child {
@@ -121,7 +131,7 @@
     </div>
 
     <!-- Main content -->
-    <div class="container bg-white p-4 rounded shadow-sm" style="overflow-x:auto;">
+    <div class="container-fluid bg-white p-4 rounded shadow-sm" style="overflow-x:auto;">
         <h1 class="text-primary">Staff Schedule</h1>
 
         <div class="row mb-3">
@@ -165,8 +175,8 @@
                     {% for emp in employees %}
                     {% set idx = loop.index0 %}
                     <tr>
-                        <td data-bs-toggle="tooltip" data-bs-placement="top" +
-                            title="{{ shift_counts[idx] }} Schichten">
+                        <td data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="{{ shift_counts[idx] }} Schichten{% if emp_work_hours.get(idx) %} / {{ emp_work_hours[idx] }} Std{% endif %}">
                             {{ emp['name'] }}
                         </td>
                         {% for d in dates_info %}
@@ -184,13 +194,46 @@
 
         <h2>Debug & Parameter</h2>
         <ul>
-            <li>Fall ID: {{ case_id }}</li>
             <li>Geplante Tage: {{ num_days }}</li>
             <li>Mitarbeiter: {{ num_employees }}</li>
             <li>Schichten pro Tag: {{ num_shifts }}</li>
+            <li>Anzahl Lösungen: {{ total_solutions }}</li>
+            {% if longest_streak %}
+            {% set max_val = longest_streak.values() | max %}
+            {% for idx, val in longest_streak.items() %}
+            {% if val == max_val %}
+            <li>Längste Schichtserie: {{ employees[idx]['name'] }}: {{ val }} Tage</li>
+            {% break %}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% if longest_night_streak %}
+            {% set max_n = longest_night_streak.values() | max %}
+            {% for idx, val in longest_night_streak.items() %}
+            {% if val == max_n %}
+            <li>Längste Serie von Nachtschichten: {{ employees[idx]['name'] }}: {{ val }} Tage</li>
+            {% break %}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <li>Minimum Schichten pro Tag:
+                <ul class="mb-0">
+                    {% for s, label in shift_labels.items() %}
+                    <li>{{ label }}: {{ min_counts[s] }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <li>Maximum Schichten pro Tag:
+                <ul class="mb-0">
+                    {% for s, label in shift_labels.items() %}
+                    <li>{{ label }}: {{ max_counts[s] }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+
             <li>Geladen um: {{ loaded_time }}</li>
             <li>Constraints: {{ constraints | join(', ') }}</li>
-            <li>Anzahl Lösungen: {{ total_solutions }}</li>
+
         </ul>
     </div>
 
