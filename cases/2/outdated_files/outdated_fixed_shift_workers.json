@@ -6,7 +6,9 @@
             "name": "Branz",
             "shiftPreferences": {
                 "worksNightShifts": false,
-                "excludedShifts": ["N"],
+                "excludedShifts": [
+                    "N"
+                ],
                 "preferredShifts": []
             }
         },
@@ -16,8 +18,13 @@
             "name": "Farniok",
             "shiftPreferences": {
                 "worksNightShifts": true,
-                "excludedShifts": ["F", "S"],
-                "preferredShifts": ["N"]
+                "excludedShifts": [
+                    "F",
+                    "S"
+                ],
+                "preferredShifts": [
+                    "N"
+                ]
             }
         },
         {
@@ -26,7 +33,9 @@
             "name": "Roberson",
             "shiftPreferences": {
                 "worksNightShifts": false,
-                "excludedShifts": ["N"],
+                "excludedShifts": [
+                    "N"
+                ],
                 "preferredShifts": []
             }
         },
@@ -37,8 +46,13 @@
             "shiftPreferences": {
                 "onlyOnWeekdays": true,
                 "worksNightShifts": false,
-                "excludedShifts": ["N", "S"],
-                "preferredShifts": ["F"]
+                "excludedShifts": [
+                    "N",
+                    "S"
+                ],
+                "preferredShifts": [
+                    "F"
+                ]
             }
         },
         {
@@ -48,48 +62,73 @@
             "shiftPreferences": {
                 "onlyOnWeekdays": true,
                 "worksNightShifts": false,
-                "excludedShifts": ["N", "S"],
-                "preferredShifts": ["F"]
+                "excludedShifts": [
+                    "N",
+                    "S"
+                ],
+                "preferredShifts": [
+                    "F"
+                ]
             }
         },
         {
             "PersNr": "6200464921",
             "firstname": "Saskia",
             "name": "Labelle",
-            "shiftPreferences": { 
+            "shiftPreferences": {
                 "worksNightShifts": true,
-                "excludedShifts": ["F", "S"],
-                "preferredShifts": ["N"]
+                "excludedShifts": [
+                    "F",
+                    "S"
+                ],
+                "preferredShifts": [
+                    "N"
+                ]
             }
         },
         {
             "PersNr": "6304544803",
             "firstname": "B\u00e4rbl",
             "name": "Merriweather",
-            "shiftPreferences": { 
+            "shiftPreferences": {
                 "worksNightShifts": false,
-                "excludedShifts": ["N"],
-                "preferredShifts": ["F", "S"]
+                "excludedShifts": [
+                    "N"
+                ],
+                "preferredShifts": [
+                    "F",
+                    "S"
+                ]
             }
         },
         {
             "PersNr": "6606292809",
             "firstname": "Sandra",
             "name": "Shoemake",
-            "shiftPreferences": { 
+            "shiftPreferences": {
                 "worksNightShifts": false,
-                "excludedShifts": ["N"],
-                "preferredShifts": ["F", "S"]
+                "excludedShifts": [
+                    "N"
+                ],
+                "preferredShifts": [
+                    "F",
+                    "S"
+                ]
             }
         },
         {
             "PersNr": "7336293778",
             "firstname": "Daniele",
             "name": "Wunderlich",
-            "shiftPreferences": { 
+            "shiftPreferences": {
                 "worksNightShifts": true,
-                "excludedShifts": ["F", "S"],
-                "preferredShifts": ["N"]
+                "excludedShifts": [
+                    "F",
+                    "S"
+                ],
+                "preferredShifts": [
+                    "N"
+                ]
             }
         }
     ]
