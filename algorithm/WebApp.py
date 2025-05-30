@@ -147,6 +147,13 @@ def index():
 
         # Load and compute work hours if available
         shift_durations = data.get("shiftDurations") or data.get("shift_durations")
+        if shift_durations is None:
+            shift_durations = {
+                "F": 460,  # Frühschicht
+                "S": 460,  # Spätschicht
+                "N": 565,  # Nachtschicht
+                "Z": 460,  # Zwischenschicht
+            }
         if shift_durations:
             emp_minutes = {i: 0 for i in range(num_employees)}
             for (i, d, s), val in sched.items():
