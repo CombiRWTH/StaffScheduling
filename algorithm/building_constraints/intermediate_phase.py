@@ -57,11 +57,7 @@ def _load_target_minutes_json(case_id: int):
     )
 
     # --- Toleranz -----------------------------------------------------------
-    tolerance = (
-        data.get("tolerance_minutes")
-        or max(data.get("tolerance_less", 0), data.get("tolerance_more", 0))
-        or 460
-    )
+    tolerance = max(data.get("tolerance_less", 0), data.get("tolerance_more", 0)) or 460
 
     # --- Schichtdauern ------------------------------------------------------
     shift_durations = {

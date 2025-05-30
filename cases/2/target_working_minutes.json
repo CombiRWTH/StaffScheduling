@@ -248,9 +248,11 @@
   ],
   "shift_durations": {
     "F": 460,
-    "N": 720,
+    "N": 565,
     "S": 460,
     "Z": 460
   },
-  "tolerance_minutes": 460
+  "tolerance_less": 460,
+  "tolerance_minutes": 1000,
+  "tolerance_more": 460
 }
