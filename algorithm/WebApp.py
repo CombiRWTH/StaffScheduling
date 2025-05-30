@@ -154,14 +154,15 @@ def index():
                 "N": 565,  # Nachtschicht
                 "Z": 460,  # Zwischenschicht
             }
-        if shift_durations:
-            emp_minutes = {i: 0 for i in range(num_employees)}
-            for (i, d, s), val in sched.items():
-                if val:
-                    symbol = shift_symbols.get(s)
-                    mins = shift_durations.get(symbol, 0)
-                    emp_minutes[i] += mins
-            emp_work_hours = {i: round(m / 60, 1) for i, m in emp_minutes.items()}
+        if data.get("shiftDurations") or data.get("shift_durations"):
+            shift_durations = data.get("shiftDurations") or data.get("shift_durations")
+        emp_minutes = {i: 0 for i in range(num_employees)}
+        for (i, d, s), val in sched.items():
+            if val:
+                symbol = shift_symbols.get(s)
+                mins = shift_durations.get(symbol, 0)
+                emp_minutes[i] += mins
+        emp_work_hours = {i: round(m / 60, 1) for i, m in emp_minutes.items()}
 
         # Prepare date_counts
         date_counts = {d: {s: 0 for s in range(num_shifts)} for d in dates}
