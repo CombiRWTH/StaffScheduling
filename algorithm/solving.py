@@ -15,7 +15,9 @@ from building_constraints.initial_constraints import (
 from building_constraints.free_shifts_and_vacation_days import (
     add_free_shifts_and_vacation_days,
 )
-from building_constraints.minimal_number_of_staff import add_min_number_of_staff
+from building_constraints.minimal_number_of_staff import (
+    add_min_number_of_staff,
+)
 from building_constraints.minimize_number_of_consecutive_night_shifts import (
     add_minimize_number_of_consecutive_night_shifts,
 )
@@ -28,10 +30,20 @@ from building_constraints.free_days_near_weekend import (
 from building_constraints.not_too_many_consecutive_shifts import (
     add_not_too_many_consecutive_shifts,
 )
-from building_constraints.shift_rotate_forward import add_shift_rotate_forward
+from building_constraints.shift_rotate_forward import (
+    add_shift_rotate_forward,
+)
 from building_constraints.minimum_rest_time import add_minimum_rest_time
-from building_constraints.intermediate_phase import (
-    add_intermediate_shifts_to_solutions,
+from building_constraints.target_working_minutes import (
+    create_total_work_time_variables,
+    add_target_working_minutes,
+)
+
+# from algorithm.building_constraints.intermediate_shifts import (
+#     add_intermediate_shifts_to_solutions,
+# )
+from building_constraints.equally_distributed_workload import (
+    add_equally_distributed_workload_constraint,
 )
 
 # ─────────────────────────────────────────────────
@@ -50,6 +62,8 @@ SWITCH = {
     "more_free_night_worker": True,
     "max_consecutive": True,
     "rotate_forward": True,
+    "intermediate_shifts": False,
+    "equally_distributed_workload": True,
     "wishes_as_hard_constraint": True,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
@@ -97,6 +111,7 @@ def add_all_constraints(
     model: cp_model.CpModel,
     shifts: dict[tuple, cp_model.IntVar],
     work_on_day: dict[tuple, cp_model.IntVar],
+    total_work_time: dict[str, cp_model.IntVar],
     employees: list[dict],
     case_id: int,
     num_days: int,
@@ -118,7 +133,12 @@ def add_all_constraints(
     CONSTRAINTS = {
         # Kern
         "basic": partial(
-            add_basic_constraints, model, employees, shifts, num_days, num_shifts
+            add_basic_constraints,
+            model,
+            employees,
+            shifts,
+            num_days,
+            num_shifts,
         ),
         # Business‑Regeln
         "free_shifts": partial(
@@ -188,10 +208,19 @@ def add_all_constraints(
             model,
             employees,
             shifts,
+            total_work_time,
             num_days,
             num_shifts,
             target_min_data,
             free_shifts_data,
+        ),
+        "equally_distributed_workload": partial(
+            add_equally_distributed_workload_constraint,
+            model,
+            employees,
+            total_work_time,
+            target_min_data["shift_durations"],
+            num_days,
         ),
     }
 
@@ -207,7 +236,11 @@ def main():
         description="Staff scheduling for a given month and year."
     )
     parser.add_argument(
-        "--case_id", "-c", type=int, default=2, help="ID of the cases folder to load"
+        "--case_id",
+        "-c",
+        type=int,
+        default=2,
+        help="ID of the cases folder to load",
     )
     parser.add_argument(
         "--month",
@@ -241,6 +274,7 @@ def main():
             "MaxC",
             "Rot",
             "Wish",
+            "Inter",
         ],
         default=None,
         help=(
@@ -262,6 +296,7 @@ def main():
             "MaxC": "max_consecutive",
             "Rot": "rotate_forward",
             "Wish": "wishes_as_hard_constraint",
+            "Inter": "intermediate_shifts",
         }
         NEW_SWITCH = {key: False for key in SWITCH.keys()}
         for c_short in args.switch:
@@ -285,23 +320,23 @@ def main():
     # Modell aufbauen
     model = cp_model.CpModel()
     employees = load_json(f"./cases/{args.case_id}/employees.json")["employees"]
+    shift_durations = load_json(f"./cases/{args.case_id}/target_working_minutes.json")[
+        "shift_durations"
+    ]
 
     shifts = create_shift_variables(model, employees, NUM_DAYS, NUM_SHIFTS)
     work_on_day = create_work_on_days_variables(
         model, employees, NUM_DAYS, NUM_SHIFTS, shifts
     )
-    # Get shift_durations From targetworkingminutes.json
-    shift_durations = {}
-    try:
-        shift_durations = load_json(
-            f"./cases/{args.case_id}/target_working_minutes.json"
-        )["shift_durations"]
-    except FileNotFoundError:
-        print("Warning: target_working_minutes.json not found.")
+    total_work_time = create_total_work_time_variables(
+        model, employees, shifts, NUM_DAYS, NUM_SHIFTS, shift_durations
+    )
+
     add_all_constraints(
         model=model,
         shifts=shifts,
         work_on_day=work_on_day,
+        total_work_time=total_work_time,
         employees=employees,
         case_id=args.case_id,
         num_days=NUM_DAYS,
@@ -330,6 +365,7 @@ def main():
             "Minimize number of consecutive night shifts": 1,
             "free day near weekend": 1,
             "Not too many Consecutive Shifts": 1,
+            "Equally Distributed Workload": 1000,
         }
         add_objective_function(model, weights)
         enumerate_all_solutions = False
@@ -339,15 +375,16 @@ def main():
 
     solve_cp_problem(model, unified, enumerate_all_solutions)
 
-    # ──────────────────────────────────────────────────────────
-    # Phase 2 – insert intermediate shifts (Z)
-    # ──────────────────────────────────────────────────────────
-    unified._solutions = add_intermediate_shifts_to_solutions(
-        unified._solutions,
-        employees,
-        dates,
-        args.case_id,
-    )
+    # # ──────────────────────────────────────────────────────────
+    # # Phase 2 – insert intermediate shifts (Z)
+    # # ──────────────────────────────────────────────────────────
+    # if StateManager.state.switch["intermediate_shifts"]:
+    #     unified._solutions = add_intermediate_shifts_to_solutions(
+    #         unified._solutions,
+    #         employees,
+    #         dates,
+    #         args.case_id,
+    #     )
 
     # Output
     if "json" in args.output:
