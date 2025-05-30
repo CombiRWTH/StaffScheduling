@@ -80,3 +80,34 @@ The shift keys are `"F"`, `"S"` and `"N"`, for the german terms "Frühschicht", 
     ]
   }
 ```
+
+
+## Target Working Minutes
+```json
+{
+  "employees": [
+    {
+      "firstname": "",
+      "name": "Pauline",
+      "target": 9600
+    },
+    {
+      "firstname": "",
+      "name": "Marie",
+      "target": 9600
+    },
+    {
+      "firstname": "",
+      "name": "Dumbledore",
+      "target": 9600
+    }
+  ],
+  "shift_durations": {
+    "F": 480,
+    "N": 450,
+    "S": 480
+  },
+  "tolerance_less": 3000,
+  "tolerance_more": 480
+}
+```
