@@ -41,15 +41,15 @@ SWITCH = {
     # Kern‑Regeln
     "basic": True,
     # Business Rules
-    "free_shifts": False,
-    "min_staff": False,
-    "target_working_min": True,
-    "min_night_seq": False,
-    "no_shift_after_night": False,
-    "free_near_weekend": False,
-    "more_free_night_worker": False,
-    "max_consecutive": False,
-    "rotate_forward": False,
+    "free_shifts": True,
+    "min_staff": True,
+    "target_working_min": False,
+    "min_night_seq": True,
+    "no_shift_after_night": True,
+    "free_near_weekend": True,
+    "more_free_night_worker": True,
+    "max_consecutive": True,
+    "rotate_forward": True,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
@@ -191,6 +191,7 @@ def add_all_constraints(
             num_days,
             num_shifts,
             target_min_data,
+            free_shifts_data,
         ),
     }
 
@@ -288,7 +289,14 @@ def main():
     work_on_day = create_work_on_days_variables(
         model, employees, NUM_DAYS, NUM_SHIFTS, shifts
     )
-
+    # Get shift_durations From targetworkingminutes.json
+    shift_durations = {}
+    try:
+        shift_durations = load_json(
+            f"./cases/{args.case_id}/target_working_minutes.json"
+        )["shift_durations"]
+    except FileNotFoundError:
+        print("Warning: target_working_minutes.json not found.")
     add_all_constraints(
         model=model,
         shifts=shifts,
@@ -309,6 +317,7 @@ def main():
         dates=dates,
         limit=SOLUTION_LIMIT,
         case_id=args.case_id,
+        shift_durations=shift_durations,
         solution_dir=SOLUTION_DIR,
     )
 
