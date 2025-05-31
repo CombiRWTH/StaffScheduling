@@ -87,6 +87,8 @@ def add_target_working_minutes(
     tolerance_less = target_min_data["tolerance_less"]
     tolerance_more = target_min_data["tolerance_more"]
 
+    penalty_terms = []
+
     employee_names_to_target = {
         employees_target_minutes[i]["name"]: employees_target_minutes[i]["target"]
         for i in range(len(employees_target_minutes))
@@ -128,9 +130,37 @@ def add_target_working_minutes(
                     )
 
             total_work_time = total_work_times[employee["name"]]
-            model.Add(total_work_time <= target_minutes + tolerance_more)
-            model.Add(total_work_time >= target_minutes - tolerance_less)
 
+            # Hard upper bound
+            model.Add(total_work_time <= target_minutes + tolerance_more)
+            model.Add(total_work_time >= target_minutes - tolerance_less * 10)
+
+            # Compute expected minimum time
+            soft_min = target_minutes - tolerance_less
+
+            # Auxiliary variable: how much the employee is underworked
+            underworked = model.NewIntVar(0, soft_min, f"underworked_n{n_idx}")
+
+            # Boolean condition: is underworked?
+            is_underworked = model.NewBoolVar(f"is_underworked_n{n_idx}")
+
+            # Link underworked only if condition is true
+            model.Add(total_work_time < soft_min).OnlyEnforceIf(is_underworked)
+            model.Add(total_work_time >= soft_min).OnlyEnforceIf(is_underworked.Not())
+
+            # underworked = soft_min - total_work_time (if underworked)
+            temp_diff = model.NewIntVar(0, soft_min, f"underworked_amount_n{n_idx}")
+            model.Add(temp_diff == soft_min - total_work_time).OnlyEnforceIf(
+                is_underworked
+            )
+            model.Add(temp_diff == 0).OnlyEnforceIf(is_underworked.Not())
+
+            # Finally, bind underworked to temp_diff
+            model.Add(underworked == temp_diff)
+
+            penalty_terms += [underworked]
+
+    StateManager.state.objectives.append((sum(penalty_terms), NAME_OF_CONSTRAINT))
     StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
 
     if len(employees_without_information) > 0:
