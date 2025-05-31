@@ -89,6 +89,16 @@ def add_target_working_minutes(
         - employees_target_minutes[i]["actual"]  # SOLL - IST
         for i in range(len(employees_target_minutes))
     }
+    employee_names_to_target = {}
+    for i in range(len(employees_target_minutes)):
+        employee_name = employees_target_minutes[i]["name"]
+        SOLL = employees_target_minutes[i]["target"]
+        IST = employees_target_minutes[i]["actual"]
+        diff = SOLL - IST
+
+        employee_names_to_target[employee_name] = diff if diff >= 0 else 0
+
+    print(employee_names_to_target)
 
     employees_without_information = []  # no target minutes provided
     for n_idx, employee in enumerate(employees):  # all employees
@@ -104,7 +114,7 @@ def add_target_working_minutes(
 
             # Hard upper bound
             model.Add(total_work_time <= target_minutes + tolerance_more)
-            model.Add(total_work_time >= target_minutes - tolerance_less * 10)
+            model.Add(total_work_time >= min(target_minutes - tolerance_less * 10, 0))
 
             # Compute expected minimum time
             soft_min = target_minutes - tolerance_less
