@@ -37,6 +37,6 @@ def add_min_number_of_staff(
                 work_vars = [
                     shifts[(n, day_idx, shift_index)] for n in relevant_employees
                 ]
-                model.Add(sum(work_vars) >= required_count)
+                model.Add(sum(work_vars) == required_count)
 
     StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
