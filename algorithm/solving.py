@@ -40,10 +40,9 @@ from building_constraints.target_working_minutes import (
     create_total_work_time_variables,
     add_target_working_minutes,
 )
-
-# from algorithm.building_constraints.intermediate_shifts import (
-#     add_intermediate_shifts_to_solutions,
-# )
+from building_constraints.intermediate_shifts import (
+    add_intermediate_shifts,
+)
 from building_constraints.equally_distributed_workload import (
     add_equally_distributed_workload_constraint,
 )
@@ -64,8 +63,9 @@ SWITCH = {
     "more_free_night_worker": True,
     "max_consecutive": True,
     "rotate_forward": True,
-    "intermediate_shifts": False,
+    "intermediate_shifts": True,
     "equally_distributed_workload": True,
+    "wishes_as_hard_constraint": True,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
@@ -123,8 +123,9 @@ def add_all_constraints(
     """Add all *enabled* constraints to the model."""
 
     # Daten laden, die mehrere Regeln benötigen
+    suffix = "_wishes" if StateManager.state.switch["wishes_as_hard_constraint"] else ""
     free_shifts_data = load_json(
-        f"./cases/{case_id}/free_shifts_and_vacation_days.json"
+        f"./cases/{case_id}/free_shifts_and_vacation_days{suffix}.json"
     )
     min_staff_data = load_json(f"./cases/{case_id}/minimal_number_of_staff.json")
     employee_types_data = load_json(f"./cases/{case_id}/employee_types.json")
@@ -224,6 +225,14 @@ def add_all_constraints(
             target_min_data["shift_durations"],
             num_days,
         ),
+        "intermediate_shits": partial(
+            add_intermediate_shifts,
+            model,
+            employees,
+            shifts,
+            first_weekday_of_month,
+            num_days,
+        ),
     }
 
     # Ausführen, wenn SWITCH[key] == True
@@ -306,10 +315,15 @@ def main():
 
     # Parameter
     SOLUTION_DIR = "found_solutions"
-    NUM_SHIFTS = 3
     SOLUTION_LIMIT = 10
     MAX_CONSECUTIVE_WORK_DAYS = 5
 
+    if StateManager.state.switch["intermediate_shifts"]:
+        NAMES_OF_SHIFTS = ["F", "S", "N", "Z"]
+    else:
+        NAMES_OF_SHIFTS = ["F", "S", "N"]
+
+    NUM_SHIFTS = len(NAMES_OF_SHIFTS)
     year = args.year
     month = args.month
     start_date = date(year, month, 1)
@@ -366,7 +380,9 @@ def main():
             "free day near weekend": 1,
             "More Free Days for Night Workers": 1,
             "Not too many Consecutive Shifts": 1,
-            "Equally Distributed Workload": 1000,
+            "Equally Distributed Workload": 10,
+            "Intermediate Shifts": 10,
+            "Target Working minutes": 10000,
         }
         add_objective_function(model, weights)
         enumerate_all_solutions = False
