@@ -207,12 +207,8 @@ def add_all_constraints(
             add_target_working_minutes,
             model,
             employees,
-            shifts,
             total_work_time,
-            num_days,
-            num_shifts,
             target_min_data,
-            free_shifts_data,
         ),
         "equally_distributed_workload": partial(
             add_equally_distributed_workload_constraint,
