@@ -2,213 +2,248 @@
   "employees": [
     {
       "PersNr": "4216350736",
-      "firstname": "Heinz",
       "name": "Binford",
-      "target": 9600
+      "firstname": "Heinz",
+      "target": 0,
+      "actual": 0
     },
     {
       "PersNr": "9753626269",
-      "firstname": "Janett",
       "name": "Branz",
-      "target": 9600
+      "firstname": "Janett",
+      "target": 6930,
+      "actual": 2880
     },
     {
       "PersNr": "3663084827",
-      "firstname": "Lioba",
       "name": "Burris",
-      "target": 9600
+      "firstname": "Lioba",
+      "target": 9240,
+      "actual": 1000
     },
     {
       "PersNr": "0558391409",
-      "firstname": "Augustin",
       "name": "Carreras",
-      "target": 9600
+      "firstname": "Augustin",
+      "target": 9240,
+      "actual": 7447
     },
     {
       "PersNr": "7158423338",
-      "firstname": "Ingbert",
       "name": "Catoe",
-      "target": 9600
+      "firstname": "Ingbert",
+      "target": 7680,
+      "actual": 460
     },
     {
       "PersNr": "0314863608",
-      "firstname": "Marcus",
       "name": "Demarco",
-      "target": 9600
+      "firstname": "Marcus",
+      "target": 8400,
+      "actual": 8950
     },
     {
       "PersNr": "4307335425",
-      "firstname": "Kersten",
       "name": "Devers",
-      "target": 9600
+      "firstname": "Kersten",
+      "target": 9240,
+      "actual": 0
     },
     {
       "PersNr": "5301690706",
-      "firstname": "Henni",
       "name": "Donis",
-      "target": 9600
+      "firstname": "Henni",
+      "target": 9240,
+      "actual": 0
     },
     {
       "PersNr": "5275675416",
-      "firstname": "Karena",
       "name": "Driggers",
-      "target": 9600
+      "firstname": "Karena",
+      "target": 9240,
+      "actual": 2310
     },
     {
       "PersNr": "8467222196",
-      "firstname": "Lina",
       "name": "Farniok",
-      "target": 9600
+      "firstname": "Lina",
+      "target": 5544,
+      "actual": 0
     },
     {
       "PersNr": "4601161545",
-      "firstname": "Christfri",
       "name": "Fullerton",
-      "target": 9600
+      "firstname": "Christfri",
+      "target": 9240,
+      "actual": 0
     },
     {
       "PersNr": "2652384320",
-      "firstname": "Silvia",
       "name": "Harkins",
-      "target": 9600
+      "firstname": "Silvia",
+      "target": 8316,
+      "actual": 2079
     },
     {
       "PersNr": "5277020481",
-      "firstname": "Burkhild",
       "name": "Hertzler",
-      "target": 9600
+      "firstname": "Burkhild",
+      "target": 9240,
+      "actual": 2310
     },
     {
       "PersNr": "4524391957",
-      "firstname": "Renilde",
       "name": "Hoots",
-      "target": 9600
+      "firstname": "Renilde",
+      "target": 9240,
+      "actual": 360
     },
     {
       "PersNr": "6478661190",
-      "firstname": "Annelene",
       "name": "Izzo",
-      "target": 9600
+      "firstname": "Annelene",
+      "target": 9360,
+      "actual": 0
     },
     {
       "PersNr": "6200464921",
-      "firstname": "Saskia",
       "name": "Labelle",
-      "target": 9600
+      "firstname": "Saskia",
+      "target": 7392,
+      "actual": 1848
     },
     {
       "PersNr": "6304544803",
-      "firstname": "B\u00e4rbl",
       "name": "Merriweather",
-      "target": 9600
+      "firstname": "Bärbl",
+      "target": 4560,
+      "actual": 0
     },
     {
       "PersNr": "4939555116",
-      "firstname": "Loremarie",
       "name": "Milburn",
-      "target": 9600
+      "firstname": "Loremarie",
+      "target": 2310,
+      "actual": 0
     },
     {
       "PersNr": "2432833811",
-      "firstname": "Margaritt",
       "name": "Mittrach",
-      "target": 9600
+      "firstname": "Margaritt",
+      "target": 9360,
+      "actual": 468
     },
     {
       "PersNr": "1328220945",
-      "firstname": "Constance",
       "name": "Palacio",
-      "target": 9600
+      "firstname": "Constance",
+      "target": 9240,
+      "actual": 462
     },
     {
       "PersNr": "0935373412",
-      "firstname": "Roseliese",
       "name": "Rashid",
-      "target": 9600
+      "firstname": "Roseliese",
+      "target": 9240,
+      "actual": 0
     },
     {
       "PersNr": "2964555583",
-      "firstname": "Ludger",
       "name": "Roberson",
-      "target": 9600
+      "firstname": "Ludger",
+      "target": 9240,
+      "actual": 0
     },
     {
       "PersNr": "2382310716",
-      "firstname": "Kilian",
       "name": "Rodriques",
-      "target": 9600
+      "firstname": "Kilian",
+      "target": 9240,
+      "actual": 2300
     },
     {
       "PersNr": "7696197975",
+      "name": "Säuffert",
       "firstname": "Liselotte",
-      "name": "S\u00e4uffert",
-      "target": 9600
+      "target": 4620,
+      "actual": 5085
     },
     {
       "PersNr": "2422197372",
-      "firstname": "Nele",
       "name": "Sewell",
-      "target": 9600
+      "firstname": "Nele",
+      "target": 9240,
+      "actual": 8765
     },
     {
       "PersNr": "6606292809",
-      "firstname": "Sandra",
       "name": "Shoemake",
-      "target": 9600
+      "firstname": "Sandra",
+      "target": 7680,
+      "actual": 1920
     },
     {
       "PersNr": "0247345630",
-      "firstname": "Janett",
       "name": "Staggs",
-      "target": 9600
+      "firstname": "Janett",
+      "target": 9240,
+      "actual": 1386
     },
     {
       "PersNr": "7192281437",
-      "firstname": "Sieghardt",
       "name": "Tharp",
-      "target": 9600
+      "firstname": "Sieghardt",
+      "target": 960,
+      "actual": 920
     },
     {
       "PersNr": "9263090286",
-      "firstname": "Trude",
       "name": "Valentino",
-      "target": 9600
+      "firstname": "Trude",
+      "target": 9240,
+      "actual": 460
     },
     {
       "PersNr": "4847485892",
-      "firstname": "Eike",
       "name": "Vanfleet",
-      "target": 9600
+      "firstname": "Eike",
+      "target": 9240,
+      "actual": 460
     },
     {
       "PersNr": "7586945135",
-      "firstname": "Irma",
       "name": "Weathers",
-      "target": 9600
+      "firstname": "Irma",
+      "target": 9240,
+      "actual": 0
     },
     {
       "PersNr": "5075364389",
-      "firstname": "Gertraute",
       "name": "Winters",
-      "target": 9600
+      "firstname": "Gertraute",
+      "target": 9240,
+      "actual": 460
     },
     {
       "PersNr": "5559101710",
-      "firstname": "Hannah",
       "name": "Woodcock",
-      "target": 9600
+      "firstname": "Hannah",
+      "target": 9240,
+      "actual": 462
     },
     {
       "PersNr": "7336293778",
-      "firstname": "Daniele",
       "name": "Wunderlich",
-      "target": 9600
+      "firstname": "Daniele",
+      "target": 5544,
+      "actual": 832
     },
     {
       "PersNr": "6688644312",
-      "firstname": "Julia",
       "name": "Yeh",
-      "target": 9600
+      "firstname": "Julia",
+      "target": 9240,
+      "actual": 2310
     }
   ],
   "shift_durations": {
