@@ -78,6 +78,7 @@ def add_free_shifts_and_vacation_days(
             "Dataformat `free shifts` does not fit. Key `employees` is missing."
         )
 
-    StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
-    if wishes_as_hard_constraint:
-        StateManager.state.constraints.append("Wishes as Hard Constraint")
+    suffix = (
+        " inc. Wishes" if StateManager.state.switch["wishes_as_hard_constraint"] else ""
+    )
+    StateManager.state.constraints.append(NAME_OF_CONSTRAINT + suffix)
