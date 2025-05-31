@@ -28,15 +28,17 @@ def add_shift_rotate_forward(
 
     # extend with Z-related pairs if Z is present (index 3)
     if num_shifts >= 4:
-        bad_rotations.extend(
-            [
-                (0, 3),  # E → Z
-                (2, 3),  # N → Z
-                (3, 0),  # Z → E
-                (3, 1),  # Z → L
-                (3, 2),  # Z → N
-            ]
-        )
+        pass
+        # I am not sure if there are like any bad rotation with Zwischendienst?
+        # bad_rotations.extend(
+        #     [
+        #         (0, 3),  # E → Z
+        #         (2, 3),  # N → Z
+        #         (3, 0),  # Z → E
+        #         (3, 1),  # Z → L
+        #         (3, 2),  # Z → N
+        #     ]
+        # )
 
     for n in range(num_employees):
         for d in range(num_days - 1):
