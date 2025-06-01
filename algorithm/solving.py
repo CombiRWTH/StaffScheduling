@@ -191,6 +191,7 @@ def add_all_constraints(
             employees,
             num_days,
             shifts,
+        ),
         "target_working_min": partial(
             add_target_working_minutes,
             model,
