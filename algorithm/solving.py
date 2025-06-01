@@ -297,7 +297,14 @@ def main():
     work_on_day = create_work_on_days_variables(
         model, employees, NUM_DAYS, NUM_SHIFTS, shifts
     )
-
+    # Get shift_durations From targetworkingminutes.json
+    shift_durations = {}
+    try:
+        shift_durations = load_json(
+            f"./cases/{args.case_id}/target_working_minutes.json"
+        )["shift_durations"]
+    except FileNotFoundError:
+        print("Warning: target_working_minutes.json not found.")
     add_all_constraints(
         model=model,
         shifts=shifts,
@@ -318,6 +325,7 @@ def main():
         dates=dates,
         limit=SOLUTION_LIMIT,
         case_id=args.case_id,
+        shift_durations=shift_durations,
         solution_dir=SOLUTION_DIR,
     )
 

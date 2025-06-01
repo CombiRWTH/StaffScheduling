@@ -3,9 +3,8 @@
 
 import json
 import os
-import re
 import ast
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, render_template, abort, request
 
 # Base directory of the project
@@ -15,27 +14,22 @@ SOLUTIONS_DIR = os.path.join(BASE_DIR, "found_solutions")
 CASES_DIR = os.path.join(BASE_DIR, "cases")
 CASE_ID = 1
 
-# Pattern for solution files
-PATTERN = re.compile(r"solutions_(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})\.json$")
 
-
-# List available solution files sorted by timestamp
+# List available JSON files sorted by modification time (newest first)
 def list_solution_files():
     if not os.path.isdir(SOLUTIONS_DIR):
         return []
     files = []
     for fname in os.listdir(SOLUTIONS_DIR):
-        match = PATTERN.match(fname)
-        if not match:
+        if not fname.lower().endswith(".json"):
             continue
-        date_part, time_part = match.groups()
-        ts_str = f"{date_part} {time_part.replace('-', ':')}"
+        path = os.path.join(SOLUTIONS_DIR, fname)
         try:
-            ts = datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
+            mtime = os.path.getmtime(path)
+        except OSError:
             continue
-        files.append((ts, fname))
-    files.sort(key=lambda x: x[0])
+        files.append((mtime, fname))
+    files.sort(key=lambda x: x[0], reverse=True)
     return [fname for _, fname in files]
 
 
@@ -57,28 +51,24 @@ def load_employees(case_id=CASE_ID):
         return json.load(f)
 
 
-# HTML template using Jinja2 and Bootstrap for styling
 app = Flask(__name__)
 
 
 @app.route("/")
 def index():
-    # Available files
     files = list_solution_files()
     if not files:
         abort(404, description="Keine Lösungsdateien gefunden")
 
-    # Get query params
-    current_file = request.args.get("file", files[-1])
+    current_file = request.args.get("file", files[0])
     try:
         data = load_solution_file(current_file)
     except FileNotFoundError:
-        data = load_solution_file(files[-1])
-        current_file = files[-1]
+        data = load_solution_file(files[0])
+        current_file = files[0]
 
     solution_index = int(request.args.get("solution_index", 0))
 
-    # Build employees
     emp_map = data.get("employees", {}).get("name_to_index", {})
     if emp_map:
         employees = [None] * len(emp_map)
@@ -87,7 +77,6 @@ def index():
     else:
         employees = load_employees()
 
-    # Parse solutions
     raw = data.get("solutions", [])
     sols = []
     for sol in raw:
@@ -101,25 +90,31 @@ def index():
         sols.append(conv)
 
     total_solutions = len(sols)
-    # Special Case: no solution → render empty schedule
+    # Initialize stats
+    min_counts = {}
+    max_counts = {}
+    emp_work_hours = {}
+    longest_streak = {}
+    longest_night_streak = {}
+
     if total_solutions == 0:
         dates = []
         dates_info = []
+        schedule_map = {}
         date_counts = {}
-        num_days = 0
-        num_shifts = 0
-        num_employees = len(employees)
+        shift_counts = {}
         shift_symbols = {0: "F", 1: "S", 2: "N", 3: "Z"}
-        schedule_map = {i: {} for i in range(num_employees)}
-        shift_counts = {i: 0 for i in range(num_employees)}
-        date_tooltips = {}
+        shift_labels = {
+            0: "Frühschicht",
+            1: "Spätschicht",
+            2: "Nachtschicht",
+            3: "Zwischenschicht",
+        }
     else:
         if solution_index < 0 or solution_index >= total_solutions:
-            abort(404)
+            solution_index = total_solutions - 1
 
-        # first solution
         sample = sols[0]
-        # dates
         dates = sorted({d for (_, d, _) in sample.keys()})
         dates_info = []
         for date_str in dates:
@@ -127,26 +122,14 @@ def index():
             dates_info.append(
                 {
                     "date": date_str,
-                    "weekday": dt.strftime("%A"),  # z.B. "Montag"
-                    "is_weekend": dt.weekday() >= 5,  # Samstag=5, Sonntag=6
+                    "weekday": dt.strftime("%A"),
+                    "is_weekend": dt.weekday() >= 5,
                 }
             )
-        num_days = len(dates)
-        num_employees = len(employees)
-        num_shifts = max(s for (_, _, s) in sample.keys()) + 1
+
+        num_employees = len(emp_map) if emp_map else len(employees)
+        num_shifts = max((s for (_, _, s) in sample.keys()), default=-1) + 1
         shift_symbols = {0: "F", 1: "S", 2: "N", 3: "Z"}
-
-        # select solution
-        sched = sols[solution_index]
-        schedule_map = {i: {} for i in range(num_employees)}
-        for (i, d, s), val in sched.items():
-            if val:
-                schedule_map[i][d] = s
-
-        # Stats for hovering Employee names
-        shift_counts = {i: len(schedule_map[i]) for i in schedule_map}
-
-        # shift_labels for hovering dates
         shift_labels = {
             0: "Frühschicht",
             1: "Spätschicht",
@@ -154,13 +137,90 @@ def index():
             3: "Zwischenschicht",
         }
 
-        # 1) count daily shifts
+        sched = sols[solution_index]
+        schedule_map = {i: {} for i in range(num_employees)}
+        for (i, d, s), val in sched.items():
+            if val:
+                schedule_map[i][d] = s
+
+        shift_counts = {i: len(schedule_map[i]) for i in schedule_map}
+
+        # Load and compute work hours if available
+        shift_durations = data.get("shiftDurations") or data.get("shift_durations")
+        if shift_durations is None:
+            shift_durations = {
+                "F": 460,  # Frühschicht
+                "S": 460,  # Spätschicht
+                "N": 565,  # Nachtschicht
+                "Z": 460,  # Zwischenschicht
+            }
+        if data.get("shiftDurations") or data.get("shift_durations"):
+            shift_durations = data.get("shiftDurations") or data.get("shift_durations")
+        emp_minutes = {i: 0 for i in range(num_employees)}
+        for (i, d, s), val in sched.items():
+            if val:
+                symbol = shift_symbols.get(s)
+                mins = shift_durations.get(symbol, 0)
+                emp_minutes[i] += mins
+        emp_work_hours = {i: round(m / 60, 1) for i, m in emp_minutes.items()}
+
+        # Prepare date_counts
         date_counts = {d: {s: 0 for s in range(num_shifts)} for d in dates}
         for emp_idx, shifts in schedule_map.items():
             for d, s in shifts.items():
-                date_counts[d][s] += 1
+                date_counts[d][s] = date_counts[d].get(s, 0) + 1
 
-        # 2) create tooltip texts
+        # Compute min/max per shift across dates
+        for s in range(num_shifts):
+            vals = [date_counts[d].get(s, 0) for d in dates]
+            min_counts[s] = min(vals) if vals else 0
+            max_counts[s] = max(vals) if vals else 0
+
+        # Compute longest consecutive working days
+        for i in range(num_employees):
+            # sort employee's working dates
+            worked_dates = sorted(
+                datetime.strptime(d, "%Y-%m-%d").date() for d in schedule_map[i].keys()
+            )
+            max_run = 0
+            current_run = 0
+            prev_date = None
+            for dt in worked_dates:
+                if prev_date and dt == prev_date + timedelta(days=1):
+                    current_run += 1
+                else:
+                    current_run = 1
+                max_run = max(max_run, current_run)
+                prev_date = dt
+            longest_streak[i] = max_run
+
+        # Compute longest consecutive night shifts
+        night_symbol = None
+        # find symbol index for 'N'
+        for idx, sym in shift_symbols.items():
+            if sym == "N":
+                night_symbol = idx
+        if night_symbol is not None:
+            for i in range(num_employees):
+                # dates with night shift
+                night_dates = sorted(
+                    datetime.strptime(d, "%Y-%m-%d").date()
+                    for d, s in schedule_map[i].items()
+                    if s == night_symbol
+                )
+                max_run = 0
+                current_run = 0
+                prev_date = None
+                for dt in night_dates:
+                    if prev_date and dt == prev_date + timedelta(days=1):
+                        current_run += 1
+                    else:
+                        current_run = 1
+                    max_run = max(max_run, current_run)
+                    prev_date = dt
+                longest_night_streak[i] = max_run
+
+        # Tooltips for dates
         date_tooltips = {}
         for date, counts in date_counts.items():
             lines = []
@@ -170,7 +230,6 @@ def index():
                     lines.append(f"{label}: {cnt}")
             date_tooltips[date] = "\n".join(lines)
 
-    # debug create time
     loaded_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     return render_template(
@@ -186,15 +245,22 @@ def index():
         dates_info=dates_info,
         date_counts=date_counts,
         date_tooltips=date_tooltips,
-        num_days=num_days,
+        num_days=len(dates),
         num_shifts=num_shifts,
-        num_employees=num_employees,
+        num_employees=len(employees),
         loaded_time=loaded_time,
         shift_symbols=shift_symbols,
         constraints=data.get("constraints", []),
         shift_counts=shift_counts,
+        emp_work_hours=emp_work_hours,
+        min_counts=min_counts,
+        max_counts=max_counts,
+        shift_labels=shift_labels,
+        longest_streak=longest_streak,
+        longest_night_streak=longest_night_streak,
     )
 
 
 if __name__ == "__main__":
+    app.jinja_env.add_extension("jinja2.ext.loopcontrols")
     app.run(debug=True, port=5000)
