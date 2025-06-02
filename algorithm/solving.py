@@ -121,9 +121,8 @@ def add_all_constraints(
     """Add all *enabled* constraints to the model."""
 
     # Daten laden, die mehrere Regeln benötigen
-    suffix = "_wishes" if StateManager.state.switch["wishes_as_hard_constraint"] else ""
     free_shifts_data = load_json(
-        f"./cases/{case_id}/free_shifts_and_vacation_days{suffix}.json"
+        f"./cases/{case_id}/free_shifts_and_vacation_days.json"
     )
     min_staff_data = load_json(f"./cases/{case_id}/minimal_number_of_staff.json")
     employee_types_data = load_json(f"./cases/{case_id}/employee_types.json")
