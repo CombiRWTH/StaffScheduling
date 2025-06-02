@@ -59,7 +59,6 @@ class UnifiedSolutionHandler(cp_model.CpSolverSolutionCallback):
 
         self._solutions.append(solution)
 
-        self._solution_count += 1
         if self._solution_count >= self._solution_limit:
             self.StopSearch()
 
