@@ -84,11 +84,26 @@ def add_target_working_minutes(
 
     penalty_terms = []
 
+    # employee_names_to_target = {
+    #     employees_target_minutes[i]["name"]: employees_target_minutes[i]["target"]
+    #     - employees_target_minutes[i]["actual"]  # SOLL - IST
+    #     for i in range(len(employees_target_minutes))
+    # }
+
     employee_names_to_target = {
         employees_target_minutes[i]["name"]: employees_target_minutes[i]["target"]
-        - employees_target_minutes[i]["actual"]  # SOLL - IST
+        # SOLL
         for i in range(len(employees_target_minutes))
     }
+    employee_names_to_target["Binford"] = 9240  # set Binford to Fulltime
+
+    # employee_names_to_target = {
+    #     employees_target_minutes[i]["name"]: 9240
+    #     # SOLL
+    #     for i in range(len(employees_target_minutes))
+    # }
+
+    print(employee_names_to_target)
 
     employees_without_information = []  # no target minutes provided
     for n_idx, employee in enumerate(employees):  # all employees

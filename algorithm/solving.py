@@ -52,7 +52,7 @@ SWITCH = {
     # Kern‑Regeln
     "basic": True,
     # Business Rules
-    "free_shifts": False,
+    "free_shifts": True,
     "min_staff": True,
     "target_working_min": True,
     "min_night_seq": True,
