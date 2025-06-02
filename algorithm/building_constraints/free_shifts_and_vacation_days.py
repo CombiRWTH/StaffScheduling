@@ -17,7 +17,7 @@ def add_free_shifts_and_vacation_days(
     wishes_as_hard_constraint = StateManager.state.switch["wishes_as_hard_constraint"]
 
     name_to_index = {employee["name"]: idx for idx, employee in enumerate(employees)}
-    shift_names_to_index = {"F": 0, "S": 1, "N": 2}
+    shift_names_to_index = {"F": 0, "S": 1, "N": 2, "Z": 3}
 
     if "employees" in constraints:
         for employee in constraints["employees"]:
@@ -43,19 +43,13 @@ def add_free_shifts_and_vacation_days(
                             shifts[(employee_idx, day_int - 1, s)] == 0
                         )  # day_int to day_idx
 
-            if (
-                "vacation_shifts" in employee
-                and len(employee["vacation_shifts"][0]) > 0
-            ):
+            if "vacation_shifts" in employee and len(employee["vacation_shifts"]) > 0:
                 for day_int, shift_name in employee["vacation_shifts"]:
                     shift_idx = shift_names_to_index[shift_name]
                     model.Add(shifts[(employee_idx, day_int - 1, shift_idx)] == 0)
 
             # currently handled the same as vacation shifts
-            if (
-                "forbidden_shifts" in employee
-                and len(employee["forbidden_shifts"][0]) > 0
-            ):
+            if "forbidden_shifts" in employee and len(employee["forbidden_shifts"]) > 0:
                 for day_int, shift_name in employee["forbidden_shifts"]:
                     shift_idx = shift_names_to_index[shift_name]
                     model.Add(shifts[(employee_idx, day_int - 1, shift_idx)] == 0)
@@ -74,7 +68,7 @@ def add_free_shifts_and_vacation_days(
                             model.Add(
                                 shifts[(employee_idx, day_int - 2, 2)] == 0
                             )  # no night shift before vacation
-                if "wish_shifts" in employee and len(employee["wish_shifts"][0]) > 0:
+                if "wish_shifts" in employee and len(employee["wish_shifts"]) > 0:
                     for day_int, shift_name in employee["wish_shifts"]:
                         shift_idx = shift_names_to_index[shift_name]
                         model.Add(shifts[(employee_idx, day_int - 1, shift_idx)] == 0)
