@@ -54,7 +54,7 @@ SWITCH = {
     # Kern‑Regeln
     "basic": True,
     # Business Rules
-    "free_shifts": True,
+    "free_shifts": False,
     "min_staff": True,
     "target_working_min": True,
     "min_night_seq": True,
@@ -257,7 +257,7 @@ def main():
         default=11,
         help="Month to plan (1-12)",
     )
-    parser.add_argument("--year", "-y", type=int, default=2025, help="Year to plan")
+    parser.add_argument("--year", "-y", type=int, default=2024, help="Year to plan")
     parser.add_argument(
         "--output",
         "-o",
@@ -280,12 +280,13 @@ def main():
             "MFNW",
             "MaxC",
             "Rot",
+            "Wish",
             "Inter",
         ],
         default=None,
         help=(
             "List of Constraints to switch on. Allowed values: "
-            "B, FreeS, Staff, Tar, MinN, NSAN, FreeW, MFNW, MaxC, Rot"
+            "B, FreeS, Staff, Tar, MinN, NSAN, FreeW, MFNW, MaxC, Rot, Wish"
         ),
     )
     args = parser.parse_args()
@@ -302,6 +303,7 @@ def main():
             "MFNW": "more_free_night_worker",
             "MaxC": "max_consecutive",
             "Rot": "rotate_forward",
+            "Wish": "wishes_as_hard_constraint",
             "Inter": "intermediate_shifts",
         }
         NEW_SWITCH = {key: False for key in SWITCH.keys()}
@@ -364,6 +366,7 @@ def main():
         dates=dates,
         limit=SOLUTION_LIMIT,
         case_id=args.case_id,
+        shift_durations=shift_durations,
         solution_dir=SOLUTION_DIR,
     )
 
@@ -387,17 +390,6 @@ def main():
         enumerate_all_solutions = True
 
     solve_cp_problem(model, unified, enumerate_all_solutions)
-
-    # # ──────────────────────────────────────────────────────────
-    # # Phase 2 – insert intermediate shifts (Z)
-    # # ──────────────────────────────────────────────────────────
-    # if StateManager.state.switch["intermediate_shifts"]:
-    #     unified._solutions = add_intermediate_shifts_to_solutions(
-    #         unified._solutions,
-    #         employees,
-    #         dates,
-    #         args.case_id,
-    #     )
 
     # Output
     if "json" in args.output:
