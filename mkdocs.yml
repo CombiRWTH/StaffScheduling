@@ -5,6 +5,7 @@ nav:
   - Constraints: Constraints.md
   - General structure: GeneralStructure.md
   - How to build a constraint: HowToBuildAConstraint.md
+  - How to connect to the database: DatabaseConnection.md
 
 theme:
   name: material
