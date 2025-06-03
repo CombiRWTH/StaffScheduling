@@ -32,6 +32,7 @@ from building_constraints.not_too_many_consecutive_shifts import (
     add_not_too_many_consecutive_shifts,
 )
 from building_constraints.shift_rotate_forward import add_shift_rotate_forward
+from building_constraints.minimum_rest_time import add_minimum_rest_time
 from building_constraints.target_working_minutes import add_target_working_minutes
 
 # ─────────────────────────────────────────────────
@@ -51,6 +52,7 @@ SWITCH = {
     "max_consecutive": True,
     "rotate_forward": True,
     "wishes_as_hard_constraint": True,
+    "no_night_to_early": True,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
@@ -183,6 +185,13 @@ def add_all_constraints(
             employees,
             shifts,
             num_days,
+        ),
+        "no_night_to_early": partial(
+            add_minimum_rest_time,
+            model,
+            employees,
+            num_days,
+            shifts,
         ),
         "target_working_min": partial(
             add_target_working_minutes,
