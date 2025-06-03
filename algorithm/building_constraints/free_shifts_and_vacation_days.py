@@ -1,14 +1,7 @@
-import json
 import StateManager
 from ortools.sat.python import cp_model
 
 NAME_OF_CONSTRAINT = "free shifts and vacation days"
-
-
-def load_free_shifts_and_vacation_days(filename):
-    with open(filename, "r") as f:
-        data = json.load(f)
-    return data
 
 
 def add_free_shifts_and_vacation_days(
@@ -35,10 +28,11 @@ def add_free_shifts_and_vacation_days(
                         model.Add(
                             shifts[(employee_idx, day_int - 1, s)] == 0
                         )  # day_int to day_idx
-                    model.Add(
-                        shifts[(employee_idx, day_int - 2, 2)] == 0
-                    )  # no night shift before vacation
-            if "free_shifts" in employee:
+                    if day_int >= 2:  # prevent index of -1
+                        model.Add(
+                            shifts[(employee_idx, day_int - 2, 2)] == 0
+                        )  # no night shift before vacation
+            if "free_shifts" in employee and len(employee["free_shifts"][0]) > 0:
                 for day_int, shift_name in employee["free_shifts"]:
                     shift_idx = shift_names_to_index[shift_name]
                     model.Add(shifts[(employee_idx, day_int - 1, shift_idx)] == 0)
