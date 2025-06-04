@@ -121,12 +121,17 @@ def export_target_working_minutes_to_json(conn, filename="target_working_minutes
     "Wert_RefKonten19_55":  "actual"
     })
 
-    json_output = df_wide.to_json(orient="records", force_ascii=False)
-    store_path = get_correct_path(filename)
+    target_working_minutes_list = df_wide.to_dict(orient="records")
+    output_json = {
+        "target_working_minutes": target_working_minutes_list
+    }
 
-    # Create or overwrite file in target directory
+    # Store JSON-file within given directory
+    json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
+    store_path = get_correct_path(filename)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
+    # Print a message of completed export
     print(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
