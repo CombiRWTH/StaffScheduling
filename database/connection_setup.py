@@ -79,10 +79,62 @@ def export_personal_data_to_json(conn, filename="employees.json"):
     print(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
+def export_target_working_minutes_to_json(conn, filename="target_working_minutes.json"):
+    """Export all target working minutes found within TPersonalKontenJeMonat and create a JSON-file."""
+    # SQL Query to export the target working hours from TPersonalKontenJeMonat
+    query = """SELECT 
+                    p.PersNr, 
+                    p.Name AS 'name', 
+                    p.Vorname AS 'firstname', 
+                    pkt.RefKonten, 
+                    pkt.Wert2 
+                FROM TPersonalKontenJeMonat pkt 
+                JOIN TPersonal p ON pkt.RefPersonal = p.Prim 
+                WHERE (pkt.RefKonten = 1  OR pkt.RefKonten = 19 OR pkt.RefKonten = 55) AND pkt.Monat = '202411' ORDER BY p.Name asc"""
+
+    df = pd.read_sql(query, conn)
+
+    # Converting hours to minutes
+    df["Wert2"] = (df["Wert2"] * 60).round(0)
+
+    # Merging different entries for each employee to summarize all Konten in one entry
+    df_wide = (
+        df.pivot_table(index=["PersNr", "name", "firstname"],
+                       columns="RefKonten",
+                       values="Wert2",
+                       aggfunc="sum",
+                       fill_value=0)
+          .reset_index()
+          .rename(columns=lambda c: f"Wert_RefKonten{c}" if isinstance(c, (int, float)) else c)
+    )
+
+    # Choosing right Konto (see DatabaseQueries.md)
+    df_wide["Wert_RefKonten19_55"] = df_wide[["Wert_RefKonten19",
+                                          "Wert_RefKonten55"]].max(axis=1)
+    
+    # 
+    df_wide = df_wide.drop(columns=["Wert_RefKonten19", "Wert_RefKonten55"])
+
+    # Renaming Columns 
+    df_wide = df_wide.rename(columns={
+    "Wert_RefKonten1":      "target",
+    "Wert_RefKonten19_55":  "actual"
+    })
+
+    json_output = df_wide.to_json(orient="records", force_ascii=False)
+    store_path = get_correct_path(filename)
+
+    # Create or overwrite file in target directory
+    with open(store_path, "w", encoding="utf-8") as f:
+        f.write(json_output)
+    print(f"✅ Export abgeschlossen – {filename} erstellt")
+
+
 def main():
     conn = get_db_connection()
 
     export_personal_data_to_json(conn)
+    export_target_working_minutes_to_json(conn)
 
 
 if __name__ == "__main__":
