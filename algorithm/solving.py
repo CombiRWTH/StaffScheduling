@@ -15,7 +15,9 @@ from building_constraints.initial_constraints import (
 from building_constraints.free_shifts_and_vacation_days import (
     add_free_shifts_and_vacation_days,
 )
-from building_constraints.minimal_number_of_staff import add_min_number_of_staff
+from building_constraints.minimal_number_of_staff import (
+    add_min_number_of_staff,
+)
 from building_constraints.minimize_number_of_consecutive_night_shifts import (
     add_minimize_number_of_consecutive_night_shifts,
 )
@@ -31,9 +33,18 @@ from building_constraints.more_free_days_for_night_worker import (
 from building_constraints.not_too_many_consecutive_shifts import (
     add_not_too_many_consecutive_shifts,
 )
+from building_constraints.target_working_minutes import (
+    create_total_work_time_variables,
+    add_target_working_minutes,
+)
+from building_constraints.intermediate_shifts import (
+    add_intermediate_shifts,
+)
+from building_constraints.equally_distributed_workload import (
+    add_equally_distributed_workload_constraint,
+)
 from building_constraints.shift_rotate_forward import add_shift_rotate_forward
 from building_constraints.minimum_rest_time import add_minimum_rest_time
-from building_constraints.target_working_minutes import add_target_working_minutes
 
 # ─────────────────────────────────────────────────
 # ★★ EIN/AUS‑SCHALTER FÜR ALLE CONSTRAINTS ★★
@@ -44,14 +55,17 @@ SWITCH = {
     # Business Rules
     "free_shifts": True,
     "min_staff": True,
-    "target_working_min": False,
+    "target_working_min": True,
     "min_night_seq": True,
     "no_shift_after_night": True,
-    "free_near_weekend": True,
+    "free_near_weekend": False,
     "more_free_night_worker": True,
     "max_consecutive": True,
     "rotate_forward": True,
-    "no_night_to_early": True,
+    "intermediate_shifts": True,
+    "equally_distributed_workload": True,
+    "wishes_as_hard_constraint": True,
+    "no_night_to_early": False,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
@@ -98,6 +112,7 @@ def add_all_constraints(
     model: cp_model.CpModel,
     shifts: dict[tuple, cp_model.IntVar],
     work_on_day: dict[tuple, cp_model.IntVar],
+    total_work_time: dict[str, cp_model.IntVar],
     employees: list[dict],
     case_id: int,
     num_days: int,
@@ -119,7 +134,12 @@ def add_all_constraints(
     CONSTRAINTS = {
         # Kern
         "basic": partial(
-            add_basic_constraints, model, employees, shifts, num_days, num_shifts
+            add_basic_constraints,
+            model,
+            employees,
+            shifts,
+            num_days,
+            num_shifts,
         ),
         # Business‑Regeln
         "free_shifts": partial(
@@ -196,11 +216,24 @@ def add_all_constraints(
             add_target_working_minutes,
             model,
             employees,
-            shifts,
-            num_days,
-            num_shifts,
+            total_work_time,
             target_min_data,
-            free_shifts_data,
+        ),
+        "equally_distributed_workload": partial(
+            add_equally_distributed_workload_constraint,
+            model,
+            employees,
+            total_work_time,
+            target_min_data["shift_durations"],
+            num_days,
+        ),
+        "intermediate_shits": partial(
+            add_intermediate_shifts,
+            model,
+            employees,
+            shifts,
+            first_weekday_of_month,
+            num_days,
         ),
     }
 
@@ -216,7 +249,11 @@ def main():
         description="Staff scheduling for a given month and year."
     )
     parser.add_argument(
-        "--case_id", "-c", type=int, default=2, help="ID of the cases folder to load"
+        "--case_id",
+        "-c",
+        type=int,
+        default=2,
+        help="ID of the cases folder to load",
     )
     parser.add_argument(
         "--month",
@@ -249,11 +286,13 @@ def main():
             "MFNW",
             "MaxC",
             "Rot",
+            "Wish",
+            "Inter",
         ],
         default=None,
         help=(
             "List of Constraints to switch on. Allowed values: "
-            "B, FreeS, Staff, Tar, MinN, NSAN, FreeW, MFNW, MaxC, Rot"
+            "B, FreeS, Staff, Tar, MinN, NSAN, FreeW, MFNW, MaxC, Rot, Wish"
         ),
     )
     args = parser.parse_args()
@@ -270,6 +309,8 @@ def main():
             "MFNW": "more_free_night_worker",
             "MaxC": "max_consecutive",
             "Rot": "rotate_forward",
+            "Wish": "wishes_as_hard_constraint",
+            "Inter": "intermediate_shifts",
         }
         NEW_SWITCH = {key: False for key in SWITCH.keys()}
         for c_short in args.switch:
@@ -278,10 +319,15 @@ def main():
 
     # Parameter
     SOLUTION_DIR = "found_solutions"
-    NUM_SHIFTS = 3
     SOLUTION_LIMIT = 10
     MAX_CONSECUTIVE_WORK_DAYS = 5
 
+    if StateManager.state.switch["intermediate_shifts"]:
+        NAMES_OF_SHIFTS = ["F", "S", "N", "Z"]
+    else:
+        NAMES_OF_SHIFTS = ["F", "S", "N"]
+
+    NUM_SHIFTS = len(NAMES_OF_SHIFTS)
     year = args.year
     month = args.month
     start_date = date(year, month, 1)
@@ -293,23 +339,23 @@ def main():
     # Modell aufbauen
     model = cp_model.CpModel()
     employees = load_json(f"./cases/{args.case_id}/employees.json")["employees"]
+    shift_durations = load_json(f"./cases/{args.case_id}/target_working_minutes.json")[
+        "shift_durations"
+    ]
 
     shifts = create_shift_variables(model, employees, NUM_DAYS, NUM_SHIFTS)
     work_on_day = create_work_on_days_variables(
         model, employees, NUM_DAYS, NUM_SHIFTS, shifts
     )
-    # Get shift_durations From targetworkingminutes.json
-    shift_durations = {}
-    try:
-        shift_durations = load_json(
-            f"./cases/{args.case_id}/target_working_minutes.json"
-        )["shift_durations"]
-    except FileNotFoundError:
-        print("Warning: target_working_minutes.json not found.")
+    total_work_time = create_total_work_time_variables(
+        model, employees, shifts, NUM_DAYS, NUM_SHIFTS, shift_durations
+    )
+
     add_all_constraints(
         model=model,
         shifts=shifts,
         work_on_day=work_on_day,
+        total_work_time=total_work_time,
         employees=employees,
         case_id=args.case_id,
         num_days=NUM_DAYS,
@@ -339,6 +385,9 @@ def main():
             "free day near weekend": 1,
             "More Free Days for Night Workers": 1,
             "Not too many Consecutive Shifts": 1,
+            "Equally Distributed Workload": 10,
+            "Intermediate Shifts": 10,
+            "Target Working minutes": 10000,
         }
         add_objective_function(model, weights)
         enumerate_all_solutions = False

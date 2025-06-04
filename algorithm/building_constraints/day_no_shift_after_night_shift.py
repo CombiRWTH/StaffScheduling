@@ -16,9 +16,13 @@ def add_day_no_shift_after_night_shift(
         for d in range(num_days - 1):  # up to second-last day
             night_today = shifts[(n, d, 2)]
             not_night_tomorrow = shifts[(n, d + 1, 2)].Not()
-            shift_tomorrow = (
-                shifts[(n, d + 1, 0)] + shifts[(n, d + 1, 1)] + shifts[(n, d + 1, 2)]
-            )
+
+            # include Z (index 3) if it exists in this model
+            tomorrow_terms = [
+                shifts[(n, d + 1, s)] for s in (0, 1, 2, 3) if (n, d + 1, s) in shifts
+            ]
+            shift_tomorrow = sum(tomorrow_terms)
+
             model.Add(shift_tomorrow == 0).OnlyEnforceIf(
                 [night_today, not_night_tomorrow]
             )

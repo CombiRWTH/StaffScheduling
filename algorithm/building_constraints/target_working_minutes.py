@@ -25,8 +25,43 @@ def reachable_sums(others, max_value):
     return sorted(reachable)
 
 
+def create_total_work_time_variables(
+    model, employees, shifts, num_days, num_shifts, shift_durations
+):
+    shift_index_to_name = ["F", "S", "N", "Z"]
+
+    all_possible_total_minutes = cp_model.Domain.FromValues(
+        reachable_sums(
+            shift_durations.values(),
+            max_value=max(shift_durations.values()) * num_days,
+        ),
+    )
+
+    total_work_times = {}
+    for n_idx, employee in enumerate(employees):  # all employees
+        work_time_terms = []
+        for d_idx in range(num_days):
+            for s_idx in range(num_shifts):
+                var = shifts[(n_idx, d_idx, s_idx)]  # this is a BoolVar (0 or 1)
+                duration = shift_durations[
+                    shift_index_to_name[s_idx]
+                ]  # duration in minutes for shift s
+                work_time_terms.append(var * duration)
+
+        total_work_time = model.NewIntVarFromDomain(
+            all_possible_total_minutes,
+            f"total_work_time_nurse_{n_idx}",
+        )
+        total_work_times[employee["name"]] = total_work_time
+        model.Add(total_work_time == sum(work_time_terms))
+    return total_work_times
+
+
 def add_target_working_minutes(
-    model, employees, shifts, num_days, num_shifts, target_min_data, vacation_data=None
+    model,
+    employees,
+    total_work_times,
+    target_min_data,
 ):
     """
     Adds a constraint to the model that ensures each employee's total working time
@@ -44,23 +79,31 @@ def add_target_working_minutes(
     """
 
     employees_target_minutes = target_min_data["employees"]
-    shift_durations = target_min_data["shift_durations"]
     tolerance_less = target_min_data["tolerance_less"]
     tolerance_more = target_min_data["tolerance_more"]
 
-    all_possible_total_minutes = cp_model.Domain.FromValues(
-        reachable_sums(
-            shift_durations.values(),
-            max_value=max(shift_durations.values()) * num_days,
-        ),
-    )
+    penalty_terms = []
+
+    # employee_names_to_target = {
+    #     employees_target_minutes[i]["name"]: employees_target_minutes[i]["target"]
+    #     - employees_target_minutes[i]["actual"]  # SOLL - IST
+    #     for i in range(len(employees_target_minutes))
+    # }
 
     employee_names_to_target = {
         employees_target_minutes[i]["name"]: employees_target_minutes[i]["target"]
+        # SOLL
         for i in range(len(employees_target_minutes))
     }
+    employee_names_to_target["Binford"] = 9240  # set Binford to Fulltime
 
-    shift_index_to_name = ["F", "S", "N"]
+    # employee_names_to_target = {
+    #     employees_target_minutes[i]["name"]: 9240
+    #     # SOLL
+    #     for i in range(len(employees_target_minutes))
+    # }
+
+    print(employee_names_to_target)
 
     employees_without_information = []  # no target minutes provided
     for n_idx, employee in enumerate(employees):  # all employees
@@ -72,49 +115,38 @@ def add_target_working_minutes(
         else:
             target_minutes = employee_names_to_target[employee["name"]]
 
-            # handle vacation days, need to be substracted from target minutes
-            if StateManager.state.switch["free_shifts"]:
-                if vacation_data is not None:
-                    correct_employee = None
-                    for employee_candidate in vacation_data["employees"]:
-                        if employee_candidate["name"] == employee["name"]:
-                            correct_employee = employee_candidate
-                    if correct_employee is not None:
-                        # employee has vacation days
-                        num_free_days = len(correct_employee["free_days"])
-                        target_minutes -= num_free_days * min(shift_durations.values())
-                        print(
-                            employee["name"],
-                            n_idx,
-                            correct_employee["name"],
-                            target_minutes,
-                            num_free_days,
-                        )
-                else:
-                    raise TypeError(
-                        "You need to provide `vacation_data` to"
-                        " target working minutes if constraint"
-                        " free shifts and vacation days is active."
-                    )
+            total_work_time = total_work_times[employee["name"]]
 
-            work_time_terms = []
-            for d_idx in range(num_days):
-                for s_idx in range(num_shifts):
-                    var = shifts[(n_idx, d_idx, s_idx)]  # this is a BoolVar (0 or 1)
-                    duration = shift_durations[
-                        shift_index_to_name[s_idx]
-                    ]  # duration in minutes for shift s
-                    work_time_terms.append(var * duration)
-
-            total_work_time = model.NewIntVarFromDomain(
-                all_possible_total_minutes,
-                f"total_work_time_nurse_{n_idx}",
-            )
-            model.Add(total_work_time == sum(work_time_terms))
-
+            # Hard upper bound
             model.Add(total_work_time <= target_minutes + tolerance_more)
-            model.Add(total_work_time >= target_minutes - tolerance_less)
+            model.Add(total_work_time >= target_minutes - tolerance_less * 10)
 
+            # Compute expected minimum time
+            soft_min = target_minutes - tolerance_less
+
+            # Auxiliary variable: how much the employee is underworked
+            underworked = model.NewIntVar(0, soft_min, f"underworked_n{n_idx}")
+
+            # Boolean condition: is underworked?
+            is_underworked = model.NewBoolVar(f"is_underworked_n{n_idx}")
+
+            # Link underworked only if condition is true
+            model.Add(total_work_time < soft_min).OnlyEnforceIf(is_underworked)
+            model.Add(total_work_time >= soft_min).OnlyEnforceIf(is_underworked.Not())
+
+            # underworked = soft_min - total_work_time (if underworked)
+            temp_diff = model.NewIntVar(0, soft_min, f"underworked_amount_n{n_idx}")
+            model.Add(temp_diff == soft_min - total_work_time).OnlyEnforceIf(
+                is_underworked
+            )
+            model.Add(temp_diff == 0).OnlyEnforceIf(is_underworked.Not())
+
+            # Finally, bind underworked to temp_diff
+            model.Add(underworked == temp_diff)
+
+            penalty_terms += [underworked]
+
+    StateManager.state.objectives.append((sum(penalty_terms), NAME_OF_CONSTRAINT))
     StateManager.state.constraints.append(NAME_OF_CONSTRAINT)
 
     if len(employees_without_information) > 0:
