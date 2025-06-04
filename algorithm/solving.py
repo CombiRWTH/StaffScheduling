@@ -33,9 +33,6 @@ from building_constraints.more_free_days_for_night_worker import (
 from building_constraints.not_too_many_consecutive_shifts import (
     add_not_too_many_consecutive_shifts,
 )
-from building_constraints.shift_rotate_forward import (
-    add_shift_rotate_forward,
-)
 from building_constraints.target_working_minutes import (
     create_total_work_time_variables,
     add_target_working_minutes,
@@ -46,6 +43,9 @@ from building_constraints.intermediate_shifts import (
 from building_constraints.equally_distributed_workload import (
     add_equally_distributed_workload_constraint,
 )
+from building_constraints.shift_rotate_forward import add_shift_rotate_forward
+from building_constraints.minimum_rest_time import add_minimum_rest_time
+from building_constraints.target_working_minutes import add_target_working_minutes
 
 # ─────────────────────────────────────────────────
 # ★★ EIN/AUS‑SCHALTER FÜR ALLE CONSTRAINTS ★★
@@ -66,6 +66,7 @@ SWITCH = {
     "intermediate_shifts": True,
     "equally_distributed_workload": True,
     "wishes_as_hard_constraint": True,
+    "no_night_to_early": False,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
@@ -204,6 +205,13 @@ def add_all_constraints(
             employees,
             shifts,
             num_days,
+        ),
+        "no_night_to_early": partial(
+            add_minimum_rest_time,
+            model,
+            employees,
+            num_days,
+            shifts,
         ),
         "target_working_min": partial(
             add_target_working_minutes,
