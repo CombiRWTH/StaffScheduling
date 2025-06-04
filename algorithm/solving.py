@@ -45,7 +45,6 @@ from building_constraints.equally_distributed_workload import (
 )
 from building_constraints.shift_rotate_forward import add_shift_rotate_forward
 from building_constraints.minimum_rest_time import add_minimum_rest_time
-from building_constraints.target_working_minutes import add_target_working_minutes
 
 # ─────────────────────────────────────────────────
 # ★★ EIN/AUS‑SCHALTER FÜR ALLE CONSTRAINTS ★★
