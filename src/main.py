@@ -1,3 +1,4 @@
+from cli import CLIParser
 from cp import (
     Model,
     MinStaffingConstraint,
@@ -10,7 +11,8 @@ from datetime import date, timedelta
 
 
 def main():
-    # cli
+    _cli = CLIParser()
+
     # input = FsLoader() / DbLoader()
 
     employees = [Employee(i, "test_{i}", "test", "abc") for i in range(3)]
