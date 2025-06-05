@@ -1,21 +1,23 @@
 from cli import CLIParser
+from loader import FSLoader
 from cp import (
     Model,
     MinStaffingConstraint,
     OneShiftPerDayConstraint,
     EmployeeDayShiftVariable,
 )
-from employee import Employee
 from shift import Shift
 from datetime import date, timedelta
 
 
 def main():
-    _cli = CLIParser()
+    cli = CLIParser()
+    case_id = cli.get_case_id()
+    loader = FSLoader(case_id)
+
+    employees = loader.get_employees()
 
     # input = FsLoader() / DbLoader()
-
-    employees = [Employee(i, "test_{i}", "test", "abc") for i in range(3)]
     days = [
         date.today(),
         date.today() + timedelta(days=1),
