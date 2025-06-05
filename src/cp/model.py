@@ -1,5 +1,5 @@
-from variables.variable import Variable
-from constraints import Constraint
+from .variables.variable import Variable
+from .constraints import Constraint
 from ortools.sat.python.cp_model import (
     CpModel,
     CpSolver,

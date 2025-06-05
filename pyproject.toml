@@ -26,3 +26,16 @@ docs = [
     "mkdocs-material-extensions (>=1.0.0)",
     "mkdocs-autorefs (>=0.2.1)",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+sources = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[project.scripts]
+solve = "main:main"
