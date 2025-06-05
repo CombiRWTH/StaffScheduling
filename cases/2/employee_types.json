@@ -1,20 +1,20 @@
 {
   "Azubi": [
     "A-Pflegefachkraft (Krankenpflege) (A-81302-018)",
-    "A-Pflegeassistent/in (A-81302-014)",
-    "Bundesfreiwilligendienst (BFD)"
+    "A-Pflegeassistent/in (A-81302-014)"
   ],
   "Fachkraft": [
     "Pflegefachkraft (Krankenpflege) (81302-018)",
     "Gesundheits- und Krankenpfleger/in (81302-005)",
     "Krankenschwester/-pfleger (81302-008)",
-    "Altenpfleger/in (82102-002)",
-    "Medizinische/r Fachangestellte/r (81102-004)"
+    "Altenpfleger/in (82102-002)"
   ],
   "Hilfskraft": [
     "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)",
     "Pflegeassistent/in (81302-014)",
     "Helfer/in - station\u00e4re Krankenpflege (81301-002)",
-    "Stationshilfe (81301-018)"
+    "Stationshilfe (81301-018)",
+    "Bundesfreiwilligendienst (BFD)",
+    "Medizinische/r Fachangestellte/r (81102-004)"
   ]
 }
