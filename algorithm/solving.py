@@ -44,11 +44,11 @@ SWITCH = {
     # Business Rules
     "free_shifts": True,
     "min_staff": True,
-    "target_working_min": False,
+    "target_working_min": True,
     "min_night_seq": True,
     "no_shift_after_night": True,
     "free_near_weekend": True,
-    "more_free_night_worker": True,
+    "more_free_night_worker": False,
     "max_consecutive": True,
     "rotate_forward": True,
     "no_night_to_early": True,
