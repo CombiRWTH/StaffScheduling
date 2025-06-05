@@ -1,8 +1,11 @@
-from model import Model
+from cp import (
+    Model,
+    MinStaffingConstraint,
+    OneShiftPerDayConstraint,
+    EmployeeDayShiftVariable,
+)
 from employee import Employee
 from shift import Shift
-from variables.employee_day_shift import EmployeeDayShift
-from constraints import MinStaffing, OneShiftPerDay
 from datetime import date, timedelta
 
 
@@ -18,10 +21,10 @@ def main():
     ]
     shifts = [Shift("Früh", 1), Shift("Spät", 2), Shift("Nacht", 3)]
 
-    variables = [EmployeeDayShift(employees, days, shifts)]
+    variables = [EmployeeDayShiftVariable(employees, days, shifts)]
     constraints = [
-        OneShiftPerDay(employees, days, shifts),
-        MinStaffing(employees, days, shifts),
+        OneShiftPerDayConstraint(employees, days, shifts),
+        MinStaffingConstraint(employees, days, shifts),
     ]
 
     model = Model()

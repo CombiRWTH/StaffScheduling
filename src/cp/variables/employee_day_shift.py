@@ -5,7 +5,7 @@ from shift import Shift
 from ortools.sat.python.cp_model import CpModel, IntVar
 
 
-class EmployeeDayShift(Variable):
+class EmployeeDayShiftVariable(Variable):
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
         self._employees = employees
         self._days = days
@@ -17,7 +17,7 @@ class EmployeeDayShift(Variable):
             for day in self._days:
                 for shift in self._shifts:
                     var = model.new_bool_var(
-                        EmployeeDayShift.get_key(employee, day, shift)
+                        EmployeeDayShiftVariable.get_key(employee, day, shift)
                     )
                     vars.append(var)
 

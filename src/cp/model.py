@@ -8,7 +8,7 @@ from ortools.sat.python.cp_model import (
 )
 
 
-class SolutionHandler(CpSolverSolutionCallback):
+class _SolutionHandler(CpSolverSolutionCallback):
     _solutions: int
     _variables: list[IntVar]
     _limit: int
@@ -52,7 +52,7 @@ class Model:
         solver.parameters.linearization_level = 0
         solver.parameters.enumerate_all_solutions = True
         variables = list(self._variables.values())
-        handler = SolutionHandler(variables, limit)
+        handler = _SolutionHandler(variables, limit)
         solver.SolveWithSolutionCallback(self._model, handler)
 
         print("\nStatistics")
