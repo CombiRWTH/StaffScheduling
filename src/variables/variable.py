@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from model import Model
+from ortools.sat.python.cp_model import CpModel, IntVar
 
 
 class Variable(ABC):
@@ -7,5 +7,5 @@ class Variable(ABC):
         pass
 
     @abstractmethod
-    def add_to_model(self, model: Model):
+    def create(self, model: CpModel) -> list[IntVar]:
         pass

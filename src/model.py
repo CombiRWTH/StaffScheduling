@@ -1,36 +1,61 @@
-from employee import Employee
-from day import Day
-from shift import Shift
 from variables.variable import Variable
-from constraints.constraint import Constraint
-from ortools.sat.python import cp_model
+from constraints import Constraint
+from ortools.sat.python.cp_model import (
+    CpModel,
+    CpSolver,
+    CpSolverSolutionCallback,
+    IntVar,
+)
 
 
-class SolutionHandler(cp_model.CpSolverSolutionCallback):
-    def __init__(self):
-        pass
+class SolutionHandler(CpSolverSolutionCallback):
+    _solutions: int
+    _variables: list[IntVar]
+    _limit: int
+
+    def __init__(self, variables: list[IntVar], limit: int = 5):
+        CpSolverSolutionCallback.__init__(self)
+        self._solutions = 0
+
+        self._variables = variables
+        self._limit = limit
 
     def on_solution_callback(self):
-        pass
+        self._solutions += 1
+        print(f"Solution {self._solutions}:")
+
+        for variable in self._variables:
+            print(f"{variable.name}: {self.Value(variable)}")
+
+        if self._solutions >= self._limit:
+            self.stop_search()
 
 
 class Model:
+    _model: CpModel
+    _variables: dict[str, IntVar]
+
     def __init__(self):
-        self.model = cp_model.Model
+        self._model = CpModel()
+        self._variables = {}
 
-    def add_constraints(self, constraints: list[Constraint]):
-        for constraint in constraints:
-            constraint.add_to_model(self.model)
+    def add_constraint(self, constraint: Constraint):
+        constraint.create(self._model, self._variables)
 
-    def add_at_most_one(self, variables: list[Variable]):
-        self.model.add_at_most_one(variables)
+    def add_variable(self, variable: Variable) -> str:
+        vars = variable.create(self._model)
+        for var in vars:
+            self._variables[var.name] = var
 
-    def get_variable(
-        self, employee: Employee, day: Day | None, shift: Shift | None
-    ) -> str:
-        return ""
+    def solve(self, limit: int = 5):
+        solver = CpSolver()
+        solver.parameters.linearization_level = 0
+        solver.parameters.enumerate_all_solutions = True
+        variables = list(self._variables.values())
+        handler = SolutionHandler(variables, limit)
+        solver.SolveWithSolutionCallback(self._model, handler)
 
-    def solve(self):
-        solver = cp_model.CpSolver()
-        handler = SolutionHandler()
-        solver.SolveWithSolutionCallback(self.model, handler)
+        print("\nStatistics")
+        print(f"  - conflicts      : {solver.num_conflicts}")
+        print(f"  - branches       : {solver.num_branches}")
+        print(f"  - wall time      : {solver.wall_time} s")
