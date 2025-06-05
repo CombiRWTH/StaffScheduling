@@ -57,3 +57,6 @@ class CLIParser:
         )
 
         self._args = self._parser.parse_args()
+
+    def get_case_id(self) -> int:
+        return self._args.case_id
