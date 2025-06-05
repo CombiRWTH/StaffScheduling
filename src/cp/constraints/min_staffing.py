@@ -2,8 +2,7 @@ from . import Constraint
 from employee import Employee
 from day import Day
 from shift import Shift
-from variables.variable import Variable
-from variables.employee_day_shift import EmployeeDayShiftVariable
+from ..variables import Variable, EmployeeDayShiftVariable
 from ortools.sat.python.cp_model import CpModel
 
 

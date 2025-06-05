@@ -16,3 +16,16 @@ dependencies = [
 dev = [
     "pre-commit>=4.2.0",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+sources = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[project.scripts]
+solve = "main:main"

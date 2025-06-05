@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from employee import Employee
 from day import Day
 from shift import Shift
-from variables.variable import Variable
+from ..variables import Variable
 from ortools.sat.python.cp_model import CpModel
 
 
