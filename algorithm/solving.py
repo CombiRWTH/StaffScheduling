@@ -25,9 +25,6 @@ from building_constraints.day_no_shift_after_night_shift import (
 from building_constraints.free_days_near_weekend import (
     add_free_days_near_weekend,
 )
-from building_constraints.more_free_days_for_night_worker import (
-    add_more_free_days_for_night_worker,
-)
 from building_constraints.not_too_many_consecutive_shifts import (
     add_not_too_many_consecutive_shifts,
 )
@@ -48,7 +45,6 @@ SWITCH = {
     "min_night_seq": True,
     "no_shift_after_night": True,
     "free_near_weekend": True,
-    "more_free_night_worker": False,
     "max_consecutive": True,
     "rotate_forward": True,
     "no_night_to_early": True,
@@ -162,14 +158,6 @@ def add_all_constraints(
             num_days,
             start_weekday=first_weekday_of_month,
         ),
-        "more_free_night_worker": partial(
-            add_more_free_days_for_night_worker,
-            model,
-            employees,
-            shifts,
-            work_on_day,
-            num_days,
-        ),
         "max_consecutive": partial(
             add_not_too_many_consecutive_shifts,
             model,
@@ -267,7 +255,6 @@ def main():
             "MinN": "min_night_seq",
             "NSAN": "no_shift_after_night",
             "FreeW": "free_near_weekend",
-            "MFNW": "more_free_night_worker",
             "MaxC": "max_consecutive",
             "Rot": "rotate_forward",
         }
@@ -337,7 +324,6 @@ def main():
             "Not to long shifts": 1,
             "Minimize number of consecutive night shifts": 1,
             "free day near weekend": 1,
-            "More Free Days for Night Workers": 1,
             "Not too many Consecutive Shifts": 1,
         }
         add_objective_function(model, weights)
