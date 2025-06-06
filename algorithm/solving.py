@@ -42,7 +42,7 @@ SWITCH = {
     # Kern‑Regeln
     "basic": True,
     # Business Rules
-    "free_shifts": True,
+    "free_shifts": False,
     "min_staff": True,
     "target_working_min": True,
     "min_night_seq": True,
@@ -51,6 +51,7 @@ SWITCH = {
     "more_free_night_worker": False,
     "max_consecutive": True,
     "rotate_forward": True,
+    "wishes_as_hard_constraint": True,
     "no_night_to_early": True,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
@@ -249,11 +250,12 @@ def main():
             "MFNW",
             "MaxC",
             "Rot",
+            "Wish",
         ],
         default=None,
         help=(
             "List of Constraints to switch on. Allowed values: "
-            "B, FreeS, Staff, Tar, MinN, NSAN, FreeW, MFNW, MaxC, Rot"
+            "B, FreeS, Staff, Tar, MinN, NSAN, FreeW, MFNW, MaxC, Rot, Wish"
         ),
     )
     args = parser.parse_args()
@@ -270,6 +272,7 @@ def main():
             "MFNW": "more_free_night_worker",
             "MaxC": "max_consecutive",
             "Rot": "rotate_forward",
+            "Wish": "wishes_as_hard_constraint",
         }
         NEW_SWITCH = {key: False for key in SWITCH.keys()}
         for c_short in args.switch:
