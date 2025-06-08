@@ -4,31 +4,32 @@ from cp import (
     Model,
     MinStaffingConstraint,
     OneShiftPerDayConstraint,
+    TargetMinutesConstraint,
     EmployeeDayShiftVariable,
 )
-from shift import Shift
-from datetime import date, timedelta
+from datetime import timedelta
+from calendar import monthrange
 
 
 def main():
     cli = CLIParser()
     case_id = cli.get_case_id()
+    start_date = cli.get_start_date()
+
     loader = FSLoader(case_id)
 
     employees = loader.get_employees()
-
-    # input = FsLoader() / DbLoader()
+    shifts = loader.get_shifts()
     days = [
-        date.today(),
-        date.today() + timedelta(days=1),
-        date.today() + timedelta(days=2),
+        start_date + timedelta(days=i)
+        for i in range(monthrange(start_date.year, start_date.month)[1])
     ]
-    shifts = [Shift("Früh", 1), Shift("Spät", 2), Shift("Nacht", 3)]
 
     variables = [EmployeeDayShiftVariable(employees, days, shifts)]
     constraints = [
         OneShiftPerDayConstraint(employees, days, shifts),
         MinStaffingConstraint(employees, days, shifts),
+        TargetMinutesConstraint(employees, days, shifts),
     ]
 
     model = Model()
