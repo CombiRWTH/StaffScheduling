@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from datetime import date
 
 
 class CLIParser:
@@ -60,3 +61,6 @@ class CLIParser:
 
     def get_case_id(self) -> int:
         return self._args.case_id
+
+    def get_start_date(self) -> date:
+        return date(self._args.year, self._args.month, 1)
