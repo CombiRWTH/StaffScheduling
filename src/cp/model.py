@@ -1,5 +1,6 @@
-from .variables.variable import Variable
+from .variables import Variable
 from .constraints import Constraint
+from .objectives import Objective
 from ortools.sat.python.cp_model import (
     CpModel,
     CpSolver,
@@ -43,8 +44,11 @@ class Model:
     def add_constraint(self, constraint: Constraint):
         constraint.create(self._model, self._variables)
 
+    def add_objective(self, objective: Objective):
+        objective.create(self._model, self._variables)
+
     def add_variable(self, variable: Variable) -> str:
-        vars = variable.create(self._model)
+        vars = variable.create(self._model, self._variables)
         for var in vars:
             self._variables[var.name] = var
 

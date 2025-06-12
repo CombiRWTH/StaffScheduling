@@ -7,5 +7,5 @@ class Variable(ABC):
         pass
 
     @abstractmethod
-    def create(self, model: CpModel) -> list[IntVar]:
+    def create(self, model: CpModel, variables: dict[str, IntVar]) -> list[IntVar]:
         pass
