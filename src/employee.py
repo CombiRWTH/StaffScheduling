@@ -42,7 +42,7 @@ class Employee:
 
             vacation_time = 0
             vacation_time += len(self._vacation_days) * min(
-                shift.get_duration() for shift in shifts
+                shift.duration for shift in shifts
             )
 
             return self._target_working_time - vacation_time
