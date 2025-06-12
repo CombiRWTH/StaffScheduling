@@ -66,7 +66,11 @@ class FSLoader(Loader):
         return employees
 
     def get_shifts(self) -> list[Shift]:
-        return [Shift(1, "Früh", 460), Shift(2, "Spät", 460), Shift(3, "Nacht", 565)]
+        return [
+            Shift(1, "Früh", 360, 850),
+            Shift(2, "Spät", 770, 1260),
+            Shift(3, "Nacht", 1220, 390),
+        ]
 
     def _load_json(self, filename: str):
         file_path = self._get_file_path(filename)

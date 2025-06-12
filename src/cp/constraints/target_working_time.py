@@ -24,7 +24,7 @@ class TargetWorkingTimeConstraint(Constraint):
                     variable = variables[
                         EmployeeDayShiftVariable.get_key(employee, day, shift)
                     ]
-                    actual_working_time.append(variable * shift.get_duration())
+                    actual_working_time.append(variable * shift.duration)
 
             working_time_variable = model.new_int_var_from_domain(
                 working_time_domain, f"working_time_{employee.get_id()}"
@@ -50,7 +50,7 @@ class TargetWorkingTimeConstraint(Constraint):
             dfs(0)  # start from zero
             return sorted(reachable)
 
-        shift_durations = list(map(lambda s: s.get_duration(), self._shifts))
+        shift_durations = list(map(lambda shift: shift.duration, self._shifts))
         max_duration = max(shift_durations) * len(self._days)
 
         return Domain.FromValues(reachable_sums(shift_durations, max_duration))
