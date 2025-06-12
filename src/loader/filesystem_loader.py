@@ -14,12 +14,24 @@ class FSLoader(Loader):
 
     def get_employees(self) -> list[Employee]:
         fs_employees = self._load_json("employees")["employees"]
+
         fs_employees_target: list = self._load_json("target_working_minutes")[
             "employees"
         ]
         fs_employees_target: dict = {
             fs_employee["PersNr"]: fs_employee["target"]
             for fs_employee in fs_employees_target
+        }
+        fs_employees_vacation: list = self._load_json("free_shifts_and_vacation_days")[
+            "employees"
+        ]
+        fs_employees_vacation_days: dict = {
+            fs_employee["PersNr"]: fs_employee["free_days"]
+            for fs_employee in fs_employees_vacation
+        }
+        fs_employees_vacation_shifts: dict = {
+            fs_employee["PersNr"]: fs_employee["free_shifts"]
+            for fs_employee in fs_employees_vacation
         }
 
         employees = []
@@ -29,11 +41,26 @@ class FSLoader(Loader):
             firstname = fs_employee["firstname"]
             type = fs_employee["type"]
 
-            target = fs_employees_target[id]
+            target = fs_employees_target.get(id)
             if target is None:
-                raise ValueError(f"Target working minutes not found for employee {id}!")
+                target = 0
+                print(f"Target working minutes not found for employee {id}!")
 
-            employees.append(Employee(id, surname, firstname, type, target))
+            vacation_days = fs_employees_vacation_days.get(id)
+            if vacation_days is None:
+                vacation_days = []
+                print(f"Vacation days not found for employee {id}!")
+
+            vacation_shifts = fs_employees_vacation_shifts.get(id)
+            if vacation_shifts is None:
+                vacation_shifts = []
+                print(f"Vacation shifts not found for employee {id}!")
+
+            employees.append(
+                Employee(
+                    id, surname, firstname, type, target, vacation_days, vacation_shifts
+                )
+            )
 
         return employees
 

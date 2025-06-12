@@ -25,7 +25,8 @@ class _SolutionHandler(CpSolverSolutionCallback):
         print(f"Solution {self._solutions}:")
 
         for variable in self._variables:
-            print(f"{variable.name}: {self.Value(variable)}")
+            pass
+            # print(f"{variable.name}: {self.Value(variable)}")
 
         if self._solutions >= self._limit:
             self.stop_search()

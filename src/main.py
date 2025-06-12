@@ -4,7 +4,7 @@ from cp import (
     Model,
     MinStaffingConstraint,
     OneShiftPerDayConstraint,
-    TargetMinutesConstraint,
+    TargetWorkingTimeConstraint,
     EmployeeDayShiftVariable,
 )
 from datetime import timedelta
@@ -29,7 +29,7 @@ def main():
     constraints = [
         OneShiftPerDayConstraint(employees, days, shifts),
         MinStaffingConstraint(employees, days, shifts),
-        TargetMinutesConstraint(employees, days, shifts),
+        TargetWorkingTimeConstraint(employees, days, shifts),
     ]
 
     model = Model()

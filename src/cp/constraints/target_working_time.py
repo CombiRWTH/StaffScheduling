@@ -9,15 +9,15 @@ TOLERANCE_LESS = 460
 TOLERANCE_MORE = TOLERANCE_LESS
 
 
-class TargetMinutesConstraint(Constraint):
+class TargetWorkingTimeConstraint(Constraint):
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
-        super().__init__("target-minutes", employees, days, shifts)
+        super().__init__("target-working-time", employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         working_time_domain = self._get_working_time_domain()
 
         for employee in self._employees:
-            target_working_time = employee.get_target_working_time()
+            target_working_time = employee.get_target_working_time(self._shifts)
             actual_working_time = []
             for day in self._days:
                 for shift in self._shifts:
