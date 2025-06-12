@@ -2,6 +2,7 @@ from .loader import Loader
 from employee import Employee
 from shift import Shift
 from json import load
+import logging
 
 
 class FSLoader(Loader):
@@ -44,17 +45,17 @@ class FSLoader(Loader):
             target = fs_employees_target.get(id)
             if target is None:
                 target = 0
-                print(f"Target working minutes not found for employee {id}!")
+                logging.info(f"Target working minutes not found for employee {id}!")
 
             vacation_days = fs_employees_vacation_days.get(id)
             if vacation_days is None:
                 vacation_days = []
-                print(f"Vacation days not found for employee {id}!")
+                logging.info(f"Vacation days not found for employee {id}!")
 
             vacation_shifts = fs_employees_vacation_shifts.get(id)
             if vacation_shifts is None:
                 vacation_shifts = []
-                print(f"Vacation shifts not found for employee {id}!")
+                logging.info(f"Vacation shifts not found for employee {id}!")
 
             employees.append(
                 Employee(

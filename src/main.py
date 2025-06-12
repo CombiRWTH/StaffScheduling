@@ -9,6 +9,11 @@ from cp import (
 )
 from datetime import timedelta
 from calendar import monthrange
+import logging
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 def main():
