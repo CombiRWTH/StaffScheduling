@@ -8,7 +8,7 @@ from ortools.sat.python.cp_model import CpModel
 
 class MinStaffingConstraint(Constraint):
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
-        super().__init__("one-shift-per-day", employees, days, shifts)
+        super().__init__("min-staffing", employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for day in self._days:

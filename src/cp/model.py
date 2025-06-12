@@ -7,6 +7,7 @@ from ortools.sat.python.cp_model import (
     CpSolverSolutionCallback,
     IntVar,
 )
+import logging
 
 
 class _SolutionHandler(CpSolverSolutionCallback):
@@ -36,16 +37,22 @@ class _SolutionHandler(CpSolverSolutionCallback):
 class Model:
     _model: CpModel
     _variables: dict[str, IntVar]
+    _objectives: list[Objective]
+    _constraints: list[Constraint]
 
     def __init__(self):
         self._model = CpModel()
         self._variables = {}
+        self._objectives = []
+        self._constraints = []
 
     def add_constraint(self, constraint: Constraint):
         constraint.create(self._model, self._variables)
+        self._constraints.append(constraint)
 
     def add_objective(self, objective: Objective):
         objective.create(self._model, self._variables)
+        self._objectives.append(objective)
 
     def add_variable(self, variable: Variable) -> str:
         vars = variable.create(self._model, self._variables)
@@ -53,6 +60,19 @@ class Model:
             self._variables[var.name] = var
 
     def solve(self, limit: int = 5):
+        logging.info("Solving model...")
+        logging.info(f"  - number of variables: {len(self._variables)}")
+        logging.info(f"  - number of objectives: {len(self._objectives)}")
+        logging.info(f"  - number of constraints: {len(self._constraints)}")
+
+        logging.info("Objectives:")
+        for objective in self._objectives:
+            logging.info(f"  - {objective.name} (weight: {objective.weight})")
+
+        logging.info("Constraints:")
+        for constraint in self._constraints:
+            logging.info(f"  - {constraint.name}")
+
         solver = CpSolver()
         solver.parameters.linearization_level = 0
         solver.parameters.enumerate_all_solutions = True

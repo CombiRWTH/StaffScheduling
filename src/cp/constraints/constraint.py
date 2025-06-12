@@ -21,3 +21,7 @@ class Constraint(ABC):
     @abstractmethod
     def create(self, model: CpModel, variables: dict[str, Variable]):
         pass
+
+    @property
+    def name(self) -> str:
+        return self._key.replace("-", " ").title()

@@ -29,3 +29,11 @@ class Objective:
     @abstractmethod
     def create(self, model: CpModel):
         pass
+
+    @property
+    def weight(self) -> float:
+        return self._weight
+
+    @property
+    def name(self) -> str:
+        return self._key.replace("-", " ").title()

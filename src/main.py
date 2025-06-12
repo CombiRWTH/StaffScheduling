@@ -46,7 +46,7 @@ def main():
         TargetWorkingTimeConstraint(employees, days, shifts),
     ]
     objectives = [
-        NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, employees, days)
+        NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days)
     ]
 
     model = Model()
