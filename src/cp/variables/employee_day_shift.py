@@ -11,7 +11,7 @@ class EmployeeDayShiftVariable(Variable):
         self._days = days
         self._shifts = shifts
 
-    def create(self, model: CpModel) -> IntVar:
+    def create(self, model: CpModel, variables: dict[str, IntVar]) -> list[IntVar]:
         vars = []
         for employee in self._employees:
             for day in self._days:

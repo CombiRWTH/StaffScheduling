@@ -6,6 +6,8 @@ from cp import (
     OneShiftPerDayConstraint,
     TargetWorkingTimeConstraint,
     EmployeeDayShiftVariable,
+    EmployeeDayVariable,
+    NotTooManyConsecutiveDaysObjective,
 )
 from datetime import timedelta
 from calendar import monthrange
@@ -14,6 +16,8 @@ import logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
+
+MAX_CONSECUTIVE_DAYS = 5
 
 
 def main():
@@ -30,16 +34,27 @@ def main():
         for i in range(monthrange(start_date.year, start_date.month)[1])
     ]
 
-    variables = [EmployeeDayShiftVariable(employees, days, shifts)]
+    variables = [
+        EmployeeDayShiftVariable(employees, days, shifts),
+        EmployeeDayVariable(
+            employees, days, shifts
+        ),  # Based on EmployeeDayShiftVariable
+    ]
     constraints = [
         OneShiftPerDayConstraint(employees, days, shifts),
         MinStaffingConstraint(employees, days, shifts),
         TargetWorkingTimeConstraint(employees, days, shifts),
     ]
+    objectives = [
+        NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, employees, days)
+    ]
 
     model = Model()
     for variable in variables:
         model.add_variable(variable)
+
+    for objective in objectives:
+        model.add_objective(objective)
 
     for constraint in constraints:
         model.add_constraint(constraint)

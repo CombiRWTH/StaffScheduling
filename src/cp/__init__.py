@@ -4,4 +4,10 @@ from .constraints import (
     OneShiftPerDayConstraint as OneShiftPerDayConstraint,
     TargetWorkingTimeConstraint as TargetWorkingTimeConstraint,
 )
-from .variables import EmployeeDayShiftVariable as EmployeeDayShiftVariable
+from .objectives import (
+    NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
+)
+from .variables import (
+    EmployeeDayShiftVariable as EmployeeDayShiftVariable,
+    EmployeeDayVariable as EmployeeDayVariable,
+)
