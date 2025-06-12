@@ -8,9 +8,13 @@ from datetime import timedelta
 
 class NotTooManyConsecutiveDaysObjective(Objective):
     def __init__(
-        self, max_consecutive_shifts: int, employees: list[Employee], days: list[Day]
+        self,
+        max_consecutive_shifts: int,
+        weight: float,
+        employees: list[Employee],
+        days: list[Day],
     ):
-        super().__init__("not-too-many-consecutive-shifts", 1.0, employees, days, [])
+        super().__init__("not-too-many-consecutive-shifts", weight, employees, days, [])
 
         self.max_consecutive_shifts = max_consecutive_shifts
 
