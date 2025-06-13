@@ -8,8 +8,10 @@ from datetime import timedelta
 
 
 class VacationDaysAndShiftsConstraint(Constraint):
+    KEY = "vacation-days-and-shifts"
+
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
-        super().__init__("vaction-days-and-shifts", employees, days, shifts)
+        super().__init__(employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for employee in self._employees:

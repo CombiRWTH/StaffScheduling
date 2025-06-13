@@ -7,6 +7,8 @@ from ortools.sat.python.cp_model import CpModel
 
 
 class MinStaffingConstraint(Constraint):
+    KEY = "min-staffing"
+
     _min_staffing: dict[str, dict[str, dict[dict[str, int]]]]
 
     def __init__(
@@ -16,7 +18,7 @@ class MinStaffingConstraint(Constraint):
         days: list[Day],
         shifts: list[Shift],
     ):
-        super().__init__("min-staffing", employees, days, shifts)
+        super().__init__(employees, days, shifts)
         self._min_staffing = min_staffing
 
     def create(self, model: CpModel, variables: dict[str, Variable]):

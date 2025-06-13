@@ -8,6 +8,8 @@ from datetime import timedelta
 
 
 class RotateShiftsForwardObjective(Objective):
+    KEY = "rotate-shifts-forward"
+
     def __init__(
         self,
         weight: float,
@@ -15,7 +17,7 @@ class RotateShiftsForwardObjective(Objective):
         days: list[Day],
         shifts: list[Shift],
     ):
-        super().__init__("rotate-shifts-forward", weight, employees, days, shifts)
+        super().__init__(weight, employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):
         possible_rotation_variables: list[IntVar] = []

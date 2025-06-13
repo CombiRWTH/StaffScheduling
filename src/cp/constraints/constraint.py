@@ -7,16 +7,15 @@ from ortools.sat.python.cp_model import CpModel
 
 
 class Constraint(ABC):
-    _key: str
-
-    def __init__(
-        self, key: str, employees: list[Employee], days: list[Day], shifts: list[Shift]
-    ):
-        self._key = key
-
+    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
         self._employees = employees
         self._days = days
         self._shifts = shifts
+
+    @property
+    @abstractmethod
+    def KEY(cls) -> str:
+        raise NotImplementedError
 
     @abstractmethod
     def create(self, model: CpModel, variables: dict[str, Variable]):
@@ -24,4 +23,4 @@ class Constraint(ABC):
 
     @property
     def name(self) -> str:
-        return self._key.replace("-", " ").title()
+        return self.KEY.replace("-", " ").title()

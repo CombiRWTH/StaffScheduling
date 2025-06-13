@@ -10,8 +10,10 @@ TOLERANCE_MORE = TOLERANCE_LESS
 
 
 class TargetWorkingTimeConstraint(Constraint):
+    KEY = "target-working-time"
+
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
-        super().__init__("target-working-time", employees, days, shifts)
+        super().__init__(employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         working_time_domain = self._get_working_time_domain()

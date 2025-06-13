@@ -1,5 +1,6 @@
 from .model import Model as Model
 from .constraints import (
+    Constraint as Constraint,
     FreeDayAfterNightShiftPhaseConstraint as FreeDayAfterNightShiftPhaseConstraint,
     MinRestTimeConstraint as MinRestTimeConstraint,
     MinStaffingConstraint as MinStaffingConstraint,
@@ -8,6 +9,7 @@ from .constraints import (
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
 )
 from .objectives import (
+    Objective as Objective,
     FreeDaysNearWeekendObjective as FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,

@@ -8,6 +8,8 @@ from datetime import timedelta
 
 
 class MinimizeConsecutiveNightShiftsObjective(Objective):
+    KEY = "minimize-consecutive-night-shifts"
+
     def __init__(
         self,
         weight: float,
@@ -15,9 +17,7 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
         days: list[Day],
         shifts: list[Shift],
     ):
-        super().__init__(
-            "minimize-consecutive-night-shfits", weight, employees, days, shifts
-        )
+        super().__init__(weight, employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):
         penalties = []
