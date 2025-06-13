@@ -25,6 +25,4 @@ class EmployeeDayShiftVariable(Variable):
 
     def get_key(employee: Employee, day: Day, shift: Shift) -> str:
         # return f"e:{employee.get_id()}_d:{day}_s:{shift.get_id()}"
-        return (
-            f"({employee.get_id()}, '{day.strftime('%Y-%m-%d')}', {shift.get_id() - 1})"
-        )
+        return f"({employee.get_id()}, '{day.strftime('%Y-%m-%d')}', {shift.get_id()})"

@@ -1,4 +1,8 @@
 class Shift:
+    EARLY = 0
+    LATE = 1
+    NIGHT = 2
+
     _id: int
     _name: str
     _start_time: int

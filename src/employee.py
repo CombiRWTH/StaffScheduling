@@ -9,7 +9,7 @@ class Employee:
     _level: str
     _target_working_time: int
     _vacation_days: list[int]
-    _vacation_shifts: list[int]
+    _vacation_shifts: list[tuple[int, str]]
 
     def __init__(
         self,
@@ -54,3 +54,10 @@ class Employee:
             return self._target_working_time - vacation_time
 
         return self._target_working_time
+
+    def has_vacation(self, day: int, shift: int = None) -> bool:
+        if shift is None:
+            return day in self._vacation_days
+
+        shift_abbreviations = {0: "F", 1: "S", 2: "N"}
+        return (day, shift_abbreviations[shift]) in self._vacation_shifts

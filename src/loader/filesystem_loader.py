@@ -38,8 +38,11 @@ class FSLoader(Loader):
             fs_employee["PersNr"]: fs_employee["free_days"]
             for fs_employee in fs_employees_vacation
         }
+
         fs_employees_vacation_shifts: dict = {
-            fs_employee["PersNr"]: fs_employee["free_shifts"]
+            fs_employee["PersNr"]: list(
+                map(lambda x: (x[0], x[1]), fs_employee["free_shifts"])
+            )
             for fs_employee in fs_employees_vacation
         }
 
@@ -91,9 +94,9 @@ class FSLoader(Loader):
         ]
         """
         return [
-            Shift(1, "Früh", 360, 820),
-            Shift(2, "Spät", 805, 1265),
-            Shift(3, "Nacht", 1250, 375),
+            Shift(Shift.EARLY, "Früh", 360, 820),
+            Shift(Shift.LATE, "Spät", 805, 1265),
+            Shift(Shift.NIGHT, "Nacht", 1250, 375),
         ]
 
     def get_min_staffing(self) -> dict[str, dict[str, dict[dict[str, int]]]]:

@@ -2,9 +2,11 @@ from cli import CLIParser
 from loader import FSLoader
 from cp import (
     Model,
+    MinRestTimeConstraint,
     MinStaffingConstraint,
-    OneShiftPerDayConstraint,
+    MaxOneShiftPerDayConstraint,
     TargetWorkingTimeConstraint,
+    VacationDaysAndShiftsConstraint,
     EmployeeDayShiftVariable,
     EmployeeDayVariable,
     NotTooManyConsecutiveDaysObjective,
@@ -43,9 +45,11 @@ def main():
         ),  # Based on EmployeeDayShiftVariable
     ]
     constraints = [
-        OneShiftPerDayConstraint(employees, days, shifts),
+        MinRestTimeConstraint(employees, days, shifts),
         MinStaffingConstraint(min_staffing, employees, days, shifts),
+        MaxOneShiftPerDayConstraint(employees, days, shifts),
         TargetWorkingTimeConstraint(employees, days, shifts),
+        VacationDaysAndShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days)
