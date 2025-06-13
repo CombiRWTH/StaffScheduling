@@ -13,6 +13,7 @@ from cp import (
     FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective,
     NotTooManyConsecutiveDaysObjective,
+    RotateShiftsForwardObjective,
 )
 from datetime import timedelta
 from calendar import monthrange
@@ -59,6 +60,7 @@ def main():
         FreeDaysNearWeekendObjective(1.0, employees, days),
         MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
+        RotateShiftsForwardObjective(1.0, employees, days, shifts),
     ]
 
     model = Model()

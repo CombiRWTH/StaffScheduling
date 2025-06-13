@@ -11,6 +11,7 @@ from .objectives import (
     FreeDaysNearWeekendObjective as FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
+    RotateShiftsForwardObjective as RotateShiftsForwardObjective,
 )
 from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,
