@@ -7,8 +7,10 @@ from ortools.sat.python.cp_model import CpModel
 
 
 class MaxOneShiftPerDayConstraint(Constraint):
+    KEY = "one-shift-per-day"
+
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
-        super().__init__("one-shift-per-day", employees, days, shifts)
+        super().__init__(employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for employee in self._employees:

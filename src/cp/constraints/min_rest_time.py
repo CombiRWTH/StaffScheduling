@@ -8,8 +8,10 @@ from datetime import timedelta
 
 
 class MinRestTimeConstraint(Constraint):
+    KEY = "minimum-rest-time"
+
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
-        super().__init__("minimum-rest-time", employees, days, shifts)
+        super().__init__(employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for employee in self._employees:

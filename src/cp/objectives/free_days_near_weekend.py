@@ -7,13 +7,15 @@ from datetime import timedelta
 
 
 class FreeDaysNearWeekendObjective(Objective):
+    KEY = "free-days-near-weekend"
+
     def __init__(
         self,
         weight: float,
         employees: list[Employee],
         days: list[Day],
     ):
-        super().__init__("free-days-near-weekend", weight, employees, days, [])
+        super().__init__(weight, employees, days, [])
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):
         possible_free_saturday_variables: list[IntVar] = []

@@ -8,8 +8,10 @@ from datetime import timedelta
 
 
 class FreeDayAfterNightShiftPhaseConstraint(Constraint):
+    KEY = "free-day-after-night-shift-phase"
+
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
-        super().__init__("free-day-after-night-shift-phase", employees, days, shifts)
+        super().__init__(employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for employee in self._employees:

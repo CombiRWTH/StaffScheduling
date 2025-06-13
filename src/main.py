@@ -27,9 +27,23 @@ MAX_CONSECUTIVE_DAYS = 5
 
 
 def main():
-    cli = CLIParser()
+    cli = CLIParser(
+        [
+            FreeDayAfterNightShiftPhaseConstraint,
+            MinRestTimeConstraint,
+            MinStaffingConstraint,
+            MaxOneShiftPerDayConstraint,
+            TargetWorkingTimeConstraint,
+            VacationDaysAndShiftsConstraint,
+            FreeDaysNearWeekendObjective,
+            MinimizeConsecutiveNightShiftsObjective,
+            NotTooManyConsecutiveDaysObjective,
+            RotateShiftsForwardObjective,
+        ]
+    )
     case_id = cli.get_case_id()
     start_date = cli.get_start_date()
+    selected_constraints = cli.get_constraints()
 
     loader = FSLoader(case_id)
 
@@ -57,11 +71,23 @@ def main():
         VacationDaysAndShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
-        FreeDaysNearWeekendObjective(1.0, employees, days),
+        FreeDaysNearWeekendObjective(5.0, employees, days),
         MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
     ]
+
+    if selected_constraints is not None:
+        constraints = [
+            constraint
+            for constraint in constraints
+            if constraint.KEY in selected_constraints
+        ]
+        objectives = [
+            objective
+            for objective in objectives
+            if objective.KEY in selected_constraints
+        ]
 
     model = Model()
     for variable in variables:
