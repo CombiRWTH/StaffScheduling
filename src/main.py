@@ -104,7 +104,7 @@ def main():
     loader.write_solutions(
         case_id,
         employees,
-        [constraint.name for constraint in constraints],
+        [constraint.name for constraint in constraints + objectives],
         shifts,
         solutions,
     )
