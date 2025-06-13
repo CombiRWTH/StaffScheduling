@@ -2,6 +2,7 @@ from cli import CLIParser
 from loader import FSLoader
 from cp import (
     Model,
+    FreeDayAfterNightShiftPhaseConstraint,
     MinRestTimeConstraint,
     MinStaffingConstraint,
     MaxOneShiftPerDayConstraint,
@@ -46,6 +47,7 @@ def main():
         ),  # Based on EmployeeDayShiftVariable
     ]
     constraints = [
+        FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts),
         MinRestTimeConstraint(employees, days, shifts),
         MinStaffingConstraint(min_staffing, employees, days, shifts),
         MaxOneShiftPerDayConstraint(employees, days, shifts),
