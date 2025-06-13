@@ -116,7 +116,11 @@ class FSLoader(Loader):
             "employees": {
                 "name_to_index": {
                     employee._surname: int(employee.get_id()) for employee in employees
-                }
+                },
+                "name_to_target": {
+                    employee._surname: employee.get_target_working_time(shifts)
+                    for employee in employees
+                },
             },
             "constraints": constraints,
             "num_of_solutions": len(solutions),
