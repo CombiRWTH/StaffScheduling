@@ -1,3 +1,4 @@
+from solution import Solution
 from .variables import Variable
 from .constraints import Constraint
 from .objectives import Objective
@@ -11,27 +12,29 @@ import logging
 
 
 class _SolutionHandler(CpSolverSolutionCallback):
-    _solutions: int
+    _solutions: list[Solution]
     _variables: list[IntVar]
     _limit: int
 
     def __init__(self, variables: list[IntVar], limit: int = 5):
         CpSolverSolutionCallback.__init__(self)
-        self._solutions = 0
+        self._solutions = []
 
         self._variables = variables
         self._limit = limit
 
     def on_solution_callback(self):
-        self._solutions += 1
-        print(f"Solution {self._solutions}:")
+        solution = Solution(
+            {variable.name: self.Value(variable) for variable in self._variables}
+        )
+        self._solutions.append(solution)
 
-        for variable in self._variables:
-            pass
-            # print(f"{variable.name}: {self.Value(variable)}")
-
-        if self._solutions >= self._limit:
+        if len(self._solutions) >= self._limit:
             self.stop_search()
+
+    @property
+    def solutions(self) -> list[Solution]:
+        return self._solutions
 
 
 class Model:
@@ -59,7 +62,7 @@ class Model:
         for var in vars:
             self._variables[var.name] = var
 
-    def solve(self, limit: int = 5):
+    def solve(self, limit: int = 5) -> list[Solution]:
         logging.info("Solving model...")
         logging.info(f"  - number of variables: {len(self._variables)}")
         logging.info(f"  - number of objectives: {len(self._objectives)}")
@@ -84,3 +87,5 @@ class Model:
         print(f"  - conflicts      : {solver.num_conflicts}")
         print(f"  - branches       : {solver.num_branches}")
         print(f"  - wall time      : {solver.wall_time} s")
+
+        return handler.solutions

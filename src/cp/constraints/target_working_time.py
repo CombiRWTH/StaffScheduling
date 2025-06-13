@@ -18,19 +18,20 @@ class TargetWorkingTimeConstraint(Constraint):
 
         for employee in self._employees:
             target_working_time = employee.get_target_working_time(self._shifts)
-            actual_working_time = []
+
+            possible_working_time = []
             for day in self._days:
                 for shift in self._shifts:
                     variable = variables[
                         EmployeeDayShiftVariable.get_key(employee, day, shift)
                     ]
-                    actual_working_time.append(variable * shift.duration)
+                    possible_working_time.append(variable * shift.duration)
 
             working_time_variable = model.new_int_var_from_domain(
-                working_time_domain, f"working_time_{employee.get_id()}"
+                working_time_domain, f"working_time_e:{employee.get_id()}"
             )
 
-            model.add(working_time_variable == sum(actual_working_time))
+            model.add(sum(possible_working_time) == working_time_variable)
             model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
             model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
 

@@ -1,7 +1,9 @@
 from .loader import Loader
 from employee import Employee
 from shift import Shift
-from json import load
+from solution import Solution
+from json import load, dump
+from datetime import datetime
 import logging
 
 
@@ -15,6 +17,12 @@ class FSLoader(Loader):
 
     def get_employees(self) -> list[Employee]:
         fs_employees = self._load_json("employees")["employees"]
+        fs_employees_levels = self._load_json("employee_types")
+        fs_employees_levels: dict = {
+            type: level
+            for level, types in fs_employees_levels.items()
+            for type in types
+        }
 
         fs_employees_target: list = self._load_json("target_working_minutes")[
             "employees"
@@ -36,11 +44,12 @@ class FSLoader(Loader):
         }
 
         employees = []
-        for fs_employee in fs_employees:
+        for i, fs_employee in enumerate(fs_employees):
             id = fs_employee["PersNr"]
             surname = fs_employee["name"]
             firstname = fs_employee["firstname"]
             type = fs_employee["type"]
+            level = fs_employees_levels[type]
 
             target = fs_employees_target.get(id)
             if target is None:
@@ -59,23 +68,75 @@ class FSLoader(Loader):
 
             employees.append(
                 Employee(
-                    id, surname, firstname, type, target, vacation_days, vacation_shifts
+                    id=i,
+                    surname=surname,
+                    name=firstname,
+                    type=type,
+                    level=level,
+                    target_working_time=target,
+                    vacation_days=vacation_days,
+                    vacation_shifts=vacation_shifts,
                 )
             )
 
         return employees
 
     def get_shifts(self) -> list[Shift]:
+        """
+        Actual shifts from timeoffice:
         return [
             Shift(1, "Früh", 360, 850),
             Shift(2, "Spät", 770, 1260),
             Shift(3, "Nacht", 1220, 390),
         ]
+        """
+        return [
+            Shift(1, "Früh", 360, 820),
+            Shift(2, "Spät", 805, 1265),
+            Shift(3, "Nacht", 1250, 375),
+        ]
+
+    def get_min_staffing(self) -> dict[str, dict[str, dict[dict[str, int]]]]:
+        fs_min_staffing = self._load_json("minimal_number_of_staff")
+        return fs_min_staffing
+
+    def write_solutions(
+        self,
+        case: int,
+        employees: list[Employee],
+        constraints: list[str],
+        shifts: list[Shift],
+        solutions: list[Solution],
+    ):
+        data = {
+            "case_id": case,
+            "employees": {
+                "name_to_index": {
+                    employee._surname: int(employee.get_id()) for employee in employees
+                }
+            },
+            "constraints": constraints,
+            "num_of_solutions": len(solutions),
+            "givenSolutionLimit": len(solutions),
+            "shiftDurations": {shift._name[0]: shift.duration for shift in shifts},
+            "solutions": [solution.variables for solution in solutions],
+        }
+        self._write_json(
+            f"solutions_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}", data
+        )
 
     def _load_json(self, filename: str):
         file_path = self._get_file_path(filename)
         with open(file_path, "r") as file:
             return load(file)
 
+    def _write_json(self, filename: str, data: dict):
+        file_path = self._get_solutions_path(filename)
+        with open(file_path, "w") as file:
+            dump(data, file, indent=4)
+
     def _get_file_path(self, filename: str) -> str:
         return f"./cases/{self._case_id}/{filename}.json"
+
+    def _get_solutions_path(self, filename: str) -> str:
+        return f"./found_solutions/{filename}.json"

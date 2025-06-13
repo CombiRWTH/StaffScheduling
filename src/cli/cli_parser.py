@@ -25,7 +25,7 @@ class CLIParser:
             help="Month to plan (1-12)",
         )
         self._parser.add_argument(
-            "--year", "-y", type=int, default=2025, help="Year to plan"
+            "--year", "-y", type=int, default=2024, help="Year to plan"
         )
         self._parser.add_argument(
             "--output",
