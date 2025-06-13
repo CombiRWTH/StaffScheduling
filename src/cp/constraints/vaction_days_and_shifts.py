@@ -28,9 +28,6 @@ class VacationDaysAndShiftsConstraint(Constraint):
 
                 for shift in self._shifts:
                     if employee.has_vacation(day.day, shift.get_id()):
-                        print(
-                            f"Employee {employee._surname} has vacation on day {day.day} for shift {shift.get_id()}"
-                        )
                         shift_var = variables[
                             EmployeeDayShiftVariable.get_key(employee, day, shift)
                         ]
