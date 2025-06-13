@@ -664,9 +664,7 @@
         7,
         8
       ],
-      "free_shifts": [
-        []
-      ],
+      "free_shifts": [],
       "name": "Donis"
     },
     {
@@ -684,9 +682,7 @@
         29,
         30
       ],
-      "free_shifts": [
-        []
-      ],
+      "free_shifts": [],
       "name": "Harkins"
     },
     {
@@ -1138,9 +1134,7 @@
       "free_days": [
         18
       ],
-      "free_shifts": [
-        []
-      ],
+      "free_shifts": [],
       "name": "Mittrach"
     },
     {
@@ -1233,9 +1227,7 @@
       "free_days": [
         1
       ],
-      "free_shifts": [
-        []
-      ],
+      "free_shifts": [],
       "name": "Weathers"
     },
     {
@@ -1244,9 +1236,7 @@
       "free_days": [
         18
       ],
-      "free_shifts": [
-        []
-      ],
+      "free_shifts": [],
       "name": "Woodcock"
     },
     {

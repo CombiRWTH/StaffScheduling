@@ -176,7 +176,7 @@
                     {% set idx = loop.index0 %}
                     <tr>
                         <td data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="{{ shift_counts[idx] }} Schichten{% if emp_work_hours.get(idx) %} / {{ emp_work_hours[idx] }} Std{% endif %}">
+                            title="{{ shift_counts[idx] }} Schichten{% if emp_work_hours.get(idx) %}, {{ emp_work_hours[idx] }} Std{% endif %}{% if emp.get('target') %} / {{ emp['target'] }} Std{% endif %}">
                             {{ emp['name'] }}
                         </td>
                         {% for d in dates_info %}
