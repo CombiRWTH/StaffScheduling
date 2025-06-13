@@ -25,9 +25,14 @@ class _SolutionHandler(CpSolverSolutionCallback):
 
     def on_solution_callback(self):
         solution = Solution(
-            {variable.name: self.Value(variable) for variable in self._variables}
+            {variable.name: self.Value(variable) for variable in self._variables},
+            self.objective_value,
         )
         self._solutions.append(solution)
+
+        logging.info(
+            f"{len(self._solutions)}. solution with objective value: {solution.objective}"
+        )
 
         if len(self._solutions) >= self._limit:
             self.stop_search()

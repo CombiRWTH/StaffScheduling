@@ -8,6 +8,7 @@ from .constraints import (
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
 )
 from .objectives import (
+    FreeDaysNearWeekendObjective as FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
 )

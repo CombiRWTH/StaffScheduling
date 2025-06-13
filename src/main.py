@@ -10,6 +10,7 @@ from cp import (
     VacationDaysAndShiftsConstraint,
     EmployeeDayShiftVariable,
     EmployeeDayVariable,
+    FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective,
     NotTooManyConsecutiveDaysObjective,
 )
@@ -55,6 +56,7 @@ def main():
         VacationDaysAndShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
+        FreeDaysNearWeekendObjective(1.0, employees, days),
         MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
     ]
