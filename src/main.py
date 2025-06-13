@@ -4,10 +4,8 @@ from cp import (
     Model,
     MinStaffingConstraint,
     OneShiftPerDayConstraint,
-    TargetWorkingTimeConstraint,
     EmployeeDayShiftVariable,
     EmployeeDayVariable,
-    NotTooManyConsecutiveDaysObjective,
 )
 from datetime import timedelta
 from calendar import monthrange
@@ -28,11 +26,13 @@ def main():
     loader = FSLoader(case_id)
 
     employees = loader.get_employees()
-    shifts = loader.get_shifts()
     days = [
         start_date + timedelta(days=i)
         for i in range(monthrange(start_date.year, start_date.month)[1])
     ]
+    shifts = loader.get_shifts()
+
+    min_staffing = loader.get_min_staffing()
 
     variables = [
         EmployeeDayShiftVariable(employees, days, shifts),
@@ -42,12 +42,16 @@ def main():
     ]
     constraints = [
         OneShiftPerDayConstraint(employees, days, shifts),
-        MinStaffingConstraint(employees, days, shifts),
-        TargetWorkingTimeConstraint(employees, days, shifts),
+        MinStaffingConstraint(min_staffing, employees, days, shifts),
+        # TargetWorkingTimeConstraint(employees, days, shifts),
     ]
     objectives = [
-        NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days)
+        # NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days)
     ]
+
+    print(
+        f"Loaded {len(employees)} employees, {len(days)} days, and {len(shifts)} shifts."
+    )
 
     model = Model()
     for variable in variables:
@@ -59,7 +63,15 @@ def main():
     for constraint in constraints:
         model.add_constraint(constraint)
 
-    model.solve()
+    solutions = model.solve()
+
+    loader.write_solutions(
+        case_id,
+        employees,
+        [constraint.name for constraint in constraints],
+        shifts,
+        solutions,
+    )
 
 
 if __name__ == "__main__":
