@@ -19,16 +19,23 @@ class NotTooManyConsecutiveDaysObjective(Objective):
         self.max_consecutive_shifts = max_consecutive_shifts
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):
+        possible_overwork_variables: list[IntVar] = []
         for employee in self._employees:
-            for day in self._days[: -self.max_consecutive_shifts + 1]:
-                variable = model.new_bool_var(f"overwork_e:{employee.get_id()}_d:{day}")
+            for day in self._days[: -self.max_consecutive_shifts]:
+                day_phase_variable = model.new_bool_var(
+                    f"day_phase_e:{employee.get_id()}_d:{day}"
+                )
                 window = [
                     variables[EmployeeDayVariable.get_key(employee, day + timedelta(i))]
-                    for i in range(self.max_consecutive_shifts)
+                    for i in range(self.max_consecutive_shifts + 1)
                 ]
-                model.add(sum(window) == self.max_consecutive_shifts).only_enforce_if(
-                    variable
-                )
-                model.add(sum(window) != self.max_consecutive_shifts).only_enforce_if(
-                    variable.Not()
-                )
+                model.add(
+                    sum(window) == self.max_consecutive_shifts + 1
+                ).only_enforce_if(day_phase_variable)
+                model.add(
+                    sum(window) != self.max_consecutive_shifts + 1
+                ).only_enforce_if(day_phase_variable.Not())
+
+                possible_overwork_variables.append(day_phase_variable)
+
+        return sum(possible_overwork_variables) * self.weight

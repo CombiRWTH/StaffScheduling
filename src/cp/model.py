@@ -41,12 +41,14 @@ class Model:
     _model: CpModel
     _variables: dict[str, IntVar]
     _objectives: list[Objective]
+    _penalties: list
     _constraints: list[Constraint]
 
     def __init__(self):
         self._model = CpModel()
         self._variables = {}
         self._objectives = []
+        self._penalties = []
         self._constraints = []
 
     def add_constraint(self, constraint: Constraint):
@@ -54,7 +56,8 @@ class Model:
         self._constraints.append(constraint)
 
     def add_objective(self, objective: Objective):
-        objective.create(self._model, self._variables)
+        penalty = objective.create(self._model, self._variables)
+        self._penalties.append(penalty)
         self._objectives.append(objective)
 
     def add_variable(self, variable: Variable) -> str:
@@ -72,6 +75,8 @@ class Model:
         for objective in self._objectives:
             logging.info(f"  - {objective.name} (weight: {objective.weight})")
 
+        self._model.minimize(sum(self._penalties))
+
         logging.info("Constraints:")
         for constraint in self._constraints:
             logging.info(f"  - {constraint.name}")
@@ -81,6 +86,7 @@ class Model:
         solver.parameters.enumerate_all_solutions = True
         variables = list(self._variables.values())
         handler = _SolutionHandler(variables, limit)
+
         solver.SolveWithSolutionCallback(self._model, handler)
 
         print("\nStatistics")

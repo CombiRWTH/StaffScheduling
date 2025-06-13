@@ -9,6 +9,7 @@ from cp import (
     VacationDaysAndShiftsConstraint,
     EmployeeDayShiftVariable,
     EmployeeDayVariable,
+    MinimizeConsecutiveNightShiftsObjective,
     NotTooManyConsecutiveDaysObjective,
 )
 from datetime import timedelta
@@ -52,7 +53,8 @@ def main():
         VacationDaysAndShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
-        NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days)
+        MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
+        NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
     ]
 
     model = Model()
