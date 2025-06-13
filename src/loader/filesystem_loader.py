@@ -54,17 +54,17 @@ class FSLoader(Loader):
             target = fs_employees_target.get(id)
             if target is None:
                 target = 0
-                logging.warning(f"Target working minutes not found for employee {id}!")
+                logging.debug(f"Target working minutes not found for employee {id}!")
 
             vacation_days = fs_employees_vacation_days.get(id)
             if vacation_days is None:
                 vacation_days = []
-                logging.warning(f"Vacation days not found for employee {id}!")
+                logging.debug(f"Vacation days not found for employee {id}!")
 
             vacation_shifts = fs_employees_vacation_shifts.get(id)
             if vacation_shifts is None:
                 vacation_shifts = []
-                logging.warning(f"Vacation shifts not found for employee {id}!")
+                logging.debug(f"Vacation shifts not found for employee {id}!")
 
             employees.append(
                 Employee(

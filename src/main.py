@@ -4,8 +4,10 @@ from cp import (
     Model,
     MinStaffingConstraint,
     OneShiftPerDayConstraint,
+    TargetWorkingTimeConstraint,
     EmployeeDayShiftVariable,
     EmployeeDayVariable,
+    NotTooManyConsecutiveDaysObjective,
 )
 from datetime import timedelta
 from calendar import monthrange
@@ -43,15 +45,11 @@ def main():
     constraints = [
         OneShiftPerDayConstraint(employees, days, shifts),
         MinStaffingConstraint(min_staffing, employees, days, shifts),
-        # TargetWorkingTimeConstraint(employees, days, shifts),
+        TargetWorkingTimeConstraint(employees, days, shifts),
     ]
     objectives = [
-        # NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days)
+        NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days)
     ]
-
-    print(
-        f"Loaded {len(employees)} employees, {len(days)} days, and {len(shifts)} shifts."
-    )
 
     model = Model()
     for variable in variables:
