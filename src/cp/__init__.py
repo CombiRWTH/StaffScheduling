@@ -1,5 +1,6 @@
 from .model import Model as Model
 from .constraints import (
+    FreeDayAfterNightShiftPhaseConstraint as FreeDayAfterNightShiftPhaseConstraint,
     MinRestTimeConstraint as MinRestTimeConstraint,
     MinStaffingConstraint as MinStaffingConstraint,
     MaxOneShiftPerDayConstraint as MaxOneShiftPerDayConstraint,

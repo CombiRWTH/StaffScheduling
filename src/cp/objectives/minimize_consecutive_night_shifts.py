@@ -48,7 +48,7 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
                     )
 
             penalties.append(
-                sum(possible_night_shift_phase_variables) * (self.weight**phase_length)
+                sum(possible_night_shift_phase_variables) * (self._weight**phase_length)
             )
 
         return sum(penalties)
