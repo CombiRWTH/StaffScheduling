@@ -29,7 +29,7 @@ class MinStaffingConstraint(Constraint):
             6: "Sa",
             7: "So",
         }
-        shift_abbreviations = {1: "F", 2: "S", 3: "N"}
+        shift_abbreviations = {0: "F", 1: "S", 2: "N"}
 
         for day in self._days:
             weekday = weekday_abbreviations[day.isoweekday()]

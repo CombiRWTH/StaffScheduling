@@ -1,8 +1,10 @@
 from .model import Model as Model
 from .constraints import (
+    MinRestTimeConstraint as MinRestTimeConstraint,
     MinStaffingConstraint as MinStaffingConstraint,
-    OneShiftPerDayConstraint as OneShiftPerDayConstraint,
+    MaxOneShiftPerDayConstraint as MaxOneShiftPerDayConstraint,
     TargetWorkingTimeConstraint as TargetWorkingTimeConstraint,
+    VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
 )
 from .objectives import (
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,

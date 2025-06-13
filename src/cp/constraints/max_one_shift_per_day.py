@@ -6,7 +6,7 @@ from ..variables import Variable, EmployeeDayShiftVariable
 from ortools.sat.python.cp_model import CpModel
 
 
-class OneShiftPerDayConstraint(Constraint):
+class MaxOneShiftPerDayConstraint(Constraint):
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
         super().__init__("one-shift-per-day", employees, days, shifts)
 
