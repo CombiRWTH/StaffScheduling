@@ -135,11 +135,51 @@ def export_target_working_minutes_to_json(conn, filename="target_working_minutes
     print(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
+def export_worked_sundays_to_json(conn, filename="worked_sundays.json"):
+    """Export the number of worked sundays found within TPersonalKontenJeTag and create a JSON-file."""
+    # Write SQL-query to retrieve worked sundays (for November 2024 and 12 months prior)
+    query = """SELECT
+                p.PersNr,
+                p.Name AS name,
+                p.Vorname AS firstname,
+                COUNT(DISTINCT CAST(pkt.Datum AS DATE)) AS worked_sundays
+            FROM TPersonalKontenJeTag pkt
+            JOIN TPersonal p ON pkt.RefPersonal = p.Prim
+            WHERE
+                pkt.RefKonten = 40
+                AND pkt.Datum BETWEEN '2023.30.11' AND '2024.30.11'
+                --AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'
+                AND pkt.Wert > 0
+            GROUP BY
+                p.PersNr,
+                p.Name,
+                p.Vorname
+            ORDER BY
+                worked_sundays DESC;
+            """
+    df = pd.read_sql(query, conn)
+
+    # Restructure and rename to the desired JSON-output-format
+    worked_sundays = df.to_dict(orient="records")
+    output_json = {
+        "worked_sundays": worked_sundays
+    }
+
+    # Store JSON-file within given directory
+    json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
+    store_path = get_correct_path(filename)
+    with open(store_path, "w", encoding="utf-8") as f:
+        f.write(json_output)
+    # Print a message of completed export
+    print(f"✅ Export abgeschlossen – {filename} erstellt")
+
+
 def main():
     conn = get_db_connection()
 
     export_personal_data_to_json(conn)
     export_target_working_minutes_to_json(conn)
+    export_worked_sundays_to_json(conn)
 
 
 if __name__ == "__main__":
