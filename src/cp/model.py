@@ -9,6 +9,7 @@ from ortools.sat.python.cp_model import (
     IntVar,
 )
 import logging
+import timeit
 
 
 class _SolutionHandler(CpSolverSolutionCallback):
@@ -92,7 +93,11 @@ class Model:
         variables = list(self._variables.values())
         handler = _SolutionHandler(variables, limit)
 
+        start_time = timeit.default_timer()
         solver.SolveWithSolutionCallback(self._model, handler)
+        elapsed_time = timeit.default_timer() - start_time
+
+        logging.info(f"Solving completed in {elapsed_time:.2f} seconds")
 
         print("\nStatistics")
         print(f"  - conflicts      : {solver.num_conflicts}")

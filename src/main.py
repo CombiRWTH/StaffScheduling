@@ -25,6 +25,7 @@ logging.basicConfig(
 )
 
 MAX_CONSECUTIVE_DAYS = 5
+SOLUTIONS_LIMIT = 10
 
 
 def main():
@@ -75,7 +76,7 @@ def main():
     objectives = [
         FreeDaysNearWeekendObjective(5.0, employees, days),
         MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
-        # MinimizeOvertimeObjective(1.0, employees, days, shifts),
+        MinimizeOvertimeObjective(1.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
     ]
@@ -102,7 +103,7 @@ def main():
     for constraint in constraints:
         model.add_constraint(constraint)
 
-    solutions = model.solve()
+    solutions = model.solve(SOLUTIONS_LIMIT)
 
     loader.write_solutions(
         case_id,
