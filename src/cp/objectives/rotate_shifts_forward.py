@@ -33,7 +33,7 @@ class RotateShiftsForwardObjective(Objective):
                     current_shift_variable = variables[
                         EmployeeDayShiftVariable.get_key(employee, day, shift)
                     ]
-                    next_approaching_shift_variable = variables[
+                    next_desired_shift_variable = variables[
                         EmployeeDayShiftVariable.get_key(
                             employee,
                             day + timedelta(days=1),
@@ -42,12 +42,12 @@ class RotateShiftsForwardObjective(Objective):
                     ]
 
                     model.add_bool_and(
-                        [current_shift_variable, next_approaching_shift_variable]
+                        [current_shift_variable, next_desired_shift_variable]
                     ).only_enforce_if(rotation_variable)
                     model.add_bool_or(
                         [
                             current_shift_variable.Not(),
-                            next_approaching_shift_variable.Not(),
+                            next_desired_shift_variable.Not(),
                         ]
                     ).only_enforce_if(rotation_variable.Not())
 
