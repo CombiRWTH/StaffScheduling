@@ -22,6 +22,9 @@ class Employee:
         vacation_days: list[int] = [],
         vacation_shifts: list[int] = [],
     ):
+        """
+        Initializes an Employee instance.
+        """
         self._id = id
         self._surname = surname
         self._name = name
@@ -41,6 +44,11 @@ class Employee:
     def get_target_working_time(
         self, shifts: list[Shift] = [], subtract_vacation: bool = True
     ) -> int:
+        """
+        Calculates the target working time for the employee.
+
+        If `subtract_vacation` is True, it subtracts the vacation time from the target working time, it uses the minimum duration of the shifts to calculate vacation time.
+        """
         if subtract_vacation:
             if shifts == []:
                 raise ValueError(
@@ -56,6 +64,10 @@ class Employee:
         return self._target_working_time
 
     def has_vacation(self, day: int, shift: int = None) -> bool:
+        """
+        Checks if the employee has vacation on a specific day and optionally a specific shift.
+        If `shift` is None, it checks if the employee has vacation on that day regardless of the shift.
+        """
         if shift is None:
             return day in self._vacation_days
 

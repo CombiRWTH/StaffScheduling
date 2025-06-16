@@ -11,6 +11,9 @@ class MinRestTimeConstraint(Constraint):
     KEY = "minimum-rest-time"
 
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+        """
+        Initializes the constraint that ensures an employee has a minimum rest time between shifts.
+        """
         super().__init__(employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):

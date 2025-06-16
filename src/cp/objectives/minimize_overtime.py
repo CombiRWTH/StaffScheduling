@@ -16,6 +16,10 @@ class MinimizeOvertimeObjective(Objective):
         days: list[Day],
         shifts: list[Shift],
     ):
+        """
+        Initializes the objective to minimize overtime for employees.
+        Overtime is calculated as the difference between the total working time and the target working time.
+        """
         super().__init__(weight, employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):

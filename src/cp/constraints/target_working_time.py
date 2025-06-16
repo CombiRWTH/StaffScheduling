@@ -13,6 +13,9 @@ class TargetWorkingTimeConstraint(Constraint):
     KEY = "target-working-time"
 
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+        """
+        Initializes the constraint that ensures each employee works a target amount of time.
+        """
         super().__init__(employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):

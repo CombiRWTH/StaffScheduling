@@ -15,6 +15,9 @@ class FreeDaysNearWeekendObjective(Objective):
         employees: list[Employee],
         days: list[Day],
     ):
+        """
+        Initializes the objective that maximizes the number of free days near weekends.
+        """
         super().__init__(weight, employees, days, [])
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):

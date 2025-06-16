@@ -9,6 +9,9 @@ class Shift:
     _end_time: int
 
     def __init__(self, id: int, name: str, start_time: int, end_time: int):
+        """
+        Initializes a Shift instance.
+        """
         self._id = id
         self._name = name
         self._start_time = start_time
@@ -27,6 +30,10 @@ class Shift:
 
     @property
     def duration(self) -> int:
+        """
+        Calculates the duration of the shift in minutes.
+        If the shift ends before it starts (overnight shift), it calculates the duration accordingly.
+        """
         if self._end_time < self._start_time:
             # Overnight shift
             return (1440 - self._start_time) + self._end_time

@@ -17,6 +17,9 @@ class RotateShiftsForwardObjective(Objective):
         days: list[Day],
         shifts: list[Shift],
     ):
+        """
+        Initializes the objective that ensures the forward rotation in shifts.
+        """
         super().__init__(weight, employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):

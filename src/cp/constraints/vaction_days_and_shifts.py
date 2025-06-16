@@ -11,6 +11,9 @@ class VacationDaysAndShiftsConstraint(Constraint):
     KEY = "vacation-days-and-shifts"
 
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+        """
+        Initializes the constraint that ensures employees do not have shifts on their vacation days.
+        """
         super().__init__(employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
