@@ -2,7 +2,6 @@ import pyodbc
 import pandas as pd
 from dotenv import load_dotenv
 import os
-import json
 
 # Load the .env-file for login purposes
 load_dotenv()
