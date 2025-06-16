@@ -14,6 +14,9 @@ class Objective(Constraint):
         days: list[Day],
         shifts: list[Shift],
     ):
+        """
+        Initializes the objective with a weight and the given employees, days, and shifts.
+        """
         super().__init__(employees, days, shifts)
         self._weight = weight
 

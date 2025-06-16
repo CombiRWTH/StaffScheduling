@@ -1,5 +1,8 @@
 class Solution:
     def __init__(self, variables: dict[str, int], objective: int):
+        """
+        Initializes a Solution instance.
+        """
         self._variables = variables
         self._objective = objective
 

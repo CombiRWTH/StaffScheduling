@@ -7,6 +7,12 @@ from ortools.sat.python.cp_model import CpModel, IntVar
 
 class EmployeeDayVariable(Variable):
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+        """
+        Initializes the EmployeeDayVariable with the given employees, days, and shifts.
+        This variable represents whether an employee is assigned to work on a specific day,
+        considering all shifts they might work on that day.
+        """
+        super().__init__()
         self._employees = employees
         self._days = days
         self._shifts = shifts

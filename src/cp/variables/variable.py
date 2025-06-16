@@ -4,6 +4,9 @@ from ortools.sat.python.cp_model import CpModel, IntVar
 
 class Variable(ABC):
     def __init__(self):
+        """
+        Initializes the variable.
+        """
         pass
 
     @abstractmethod

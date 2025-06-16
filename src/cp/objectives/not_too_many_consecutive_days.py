@@ -16,6 +16,9 @@ class NotTooManyConsecutiveDaysObjective(Objective):
         employees: list[Employee],
         days: list[Day],
     ):
+        """
+        Initializes the objective that minimizes the number of consecutive shifts for employees.
+        """
         super().__init__(weight, employees, days, [])
 
         self.max_consecutive_shifts = max_consecutive_shifts

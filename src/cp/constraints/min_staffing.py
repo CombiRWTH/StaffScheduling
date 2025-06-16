@@ -18,6 +18,9 @@ class MinStaffingConstraint(Constraint):
         days: list[Day],
         shifts: list[Shift],
     ):
+        """
+        Initializes the constraint that ensures minimum staffing levels for each shift on each day.
+        """
         super().__init__(employees, days, shifts)
         self._min_staffing = min_staffing
 
