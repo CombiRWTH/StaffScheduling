@@ -8,6 +8,10 @@ repos:
     hooks:
       - id: check-json
       - id: check-yaml
+        exclude: mkdocs.yml
+      - id: check-yaml
+        args: [--unsafe]
+        files: mkdocs.yml
       - id: detect-private-key
       - id: debug-statements
       - id: end-of-file-fixer
