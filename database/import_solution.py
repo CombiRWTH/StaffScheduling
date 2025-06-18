@@ -276,5 +276,3 @@ with pyodbc.connect(conn_str) as conn:
 
 
 print(f"{len(df):,} Lines inserted in TPlanPersonalKommtGeht.")
-
-
