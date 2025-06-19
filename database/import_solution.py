@@ -76,6 +76,43 @@ def load_person_to_job(conn_str: str) -> dict[int, int]:
     with pyodbc.connect(conn_str) as cn:
         return {row.Prim: row.RefBerufe for row in cn.cursor().execute(sql)}
 
+def load_shift_segments(conn_str: str,
+                        shift_id_map: dict[int, int]
+                       ) -> dict[int, list[tuple[time, time, int]]]:
+
+    sql = """
+        SELECT Kommt, Geht
+        FROM   TDiensteSollzeiten
+        WHERE  RefDienste = ?
+        ORDER  BY Kommt
+    """
+
+    segments_by_shift = {}
+
+    with pyodbc.connect(conn_str) as cn:
+        cur = cn.cursor()
+        for shift_id, ref_dienst in shift_id_map.items():
+
+            cur.execute(sql, ref_dienst)
+            rows = cur.fetchall()
+            if not rows:
+                raise ValueError(
+                    f"TDiensteSollzeiten does not contain an entry for RefDienste {ref_dienst}"
+                )
+
+            base_date = rows[0].Kommt.date()
+            segs = []
+
+            for r in rows:
+                offset = (r.Kommt.date() - base_date).days
+                segs.append((r.Kommt.time(), r.Geht.time(), offset))
+
+            segments_by_shift[shift_id] = segs
+
+    return segments_by_shift
+
+
+
 conn_str = get_conn_string()
 prim_to_refberuf = load_person_to_job(conn_str)
 
@@ -126,34 +163,6 @@ else:
 
 
 
-# Shift-Mapping
-# Format: shift_id : [ (von_time, bis_time, day_offset) , … ]
-SHIFT_SEGMENTS = {
-    # Frühdienst
-    0: [
-        (time( 6,  0), time(10,  0), 0),
-        (time(10, 30), time(14, 10), 0),   
-    ],
-    # Spätdienst
-    1: [
-        (time(12, 50), time(15, 30), 0),
-        (time(16,  0), time(21,  0), 0),
-    ],
-    # Nachtdienst (Segment 3 ends on the next day)
-    2: [
-        (time(20, 20), time(21, 45), 0),
-        (time(22,  0), time(23, 30), 0),
-        (time( 0,  0), time( 6, 30), 1),   # +1 day
-    ],
-    # Zwischendienst
-    3: [
-        (time(8, 0), time(14, 0), 0),
-        (time(12,  30), time(16, 10), 0),
-    ],
-}
-
-
-
 PE_ID = 77  #PlanungseinheitID
 PLAN_ID   = 17193      #RefPlan
 STATUS_ID = 20      
@@ -161,6 +170,9 @@ STATUS_ID = 20
 # corresponding shift IDs
 SHIFT_TO_REFDIENST = {0: 2939, 1: 2947, 2: 2953, 3: 2906}
 
+# Shift-Mapping
+# Format: shift_id : [ (von_time, bis_time, day_offset) , … ]
+SHIFT_SEGMENTS = load_shift_segments(conn_str, SHIFT_TO_REFDIENST)
 
 
 # Build solution in DataFrame  (one row per segment)
@@ -221,9 +233,8 @@ df["lfdNr"] = (
 )
 
 
-
-# Test export as a json file to check if the output is correct without actually writing into the db
 '''
+# Test export as a json file to check if the output is correct without actually writing into the db
 test_file = df.to_dict(orient="records")
 output_json = {
      "test": test_file
@@ -276,3 +287,5 @@ with pyodbc.connect(conn_str) as conn:
 
 
 print(f"{len(df):,} Lines inserted in TPlanPersonalKommtGeht.")
+
+
