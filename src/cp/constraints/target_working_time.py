@@ -25,7 +25,7 @@ class TargetWorkingTimeConstraint(Constraint):
             if employee.hidden:
                 continue
 
-            # target_working_time = employee.get_target_working_time(self._shifts)
+            target_working_time = employee.get_target_working_time(self._shifts)
 
             possible_working_time = []
             for day in self._days:
@@ -40,7 +40,7 @@ class TargetWorkingTimeConstraint(Constraint):
             )
 
             model.add(sum(possible_working_time) == working_time_variable)
-            # model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
+            model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
             # model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
 
     def _get_working_time_domain(self):
