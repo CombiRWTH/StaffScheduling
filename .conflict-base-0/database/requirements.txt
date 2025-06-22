@@ -1,3 +1,0 @@
-pyodbc
-pandas
-python-dotenv
