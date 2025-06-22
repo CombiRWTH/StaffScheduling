@@ -1,68 +1,90 @@
-# Constraints
-This is an incomplete list of all constraints that we need keep track of in this project.
-An ideal constraint would contain a short description, an indicator on where this constraint
-comes from (see "Sources of Information"), a mathematical representation, notes about
-potential problems and a proposal on how to implement such a constraint. For the latest documentation, see
-[Documentation OR Tools](https://developers.google.com/optimization/reference/python/sat/python/cp_model#cp_model.CpModel).
+All constraints are located inside `src/cp/constraints/*.py`.
+Each constraint is implemented as a function that takes a `CpModel`[^1] object and adds the necessary constraints to it.
+Constraints are considered as hard constraints as they must be satisfied for a valid schedule.
+For soft constraints, see the [Objectives](/concepts/objectives.md) chapter.
 
-## Sources of Information
-1. Problem definition (PDF file from Moodle)
-2. Occupational Health and Safety Law (Arbeitsschutzgesetz) (PDF file from Moodle)
-3. Guidelines for shift work
+- [Free day after night shift phase](#free-day-after-night-shift-phase)
+- [Max one shift per day](#max-one-shift-per-day)
+- [Minimum rest time between shifts](#minimum-rest-time-between-shifts)
+- [Minimum number of staff per shift](#minimum-number-of-staff-per-shift)
+- [Target working time per month](#target-working-time-per-month)
+- [Vacation days and free shifts](#vacation-days-and-free-shifts)
 
-## Idea for all soft constraints
-It is not possible to set multiple maximize or minimize constraints but we could think about combining all "soft constraints" to one objective function that can be minimized. Given a penalty for each shift that does not match a specific constraint (e.g. rotating foward), we could build a global objective function that we want to minimize, enabling us to also assign a weight to the different constraints.
+# All Constraints
+
+## Free day after night shift phase [^4]
+
+According to recommendations for the healthy organization of night and shift work, workers should have at least 24 hours of free time after a night shift.
+This ensures that workers have sufficient rest after a night shift.
+Therefore, if an employee works the night shift today and does not work the night shift tomorrow, they must take the day off.
+
+```python title="src/cp/constraints/free_day_after_night_shift_phase.py"
+model.add(day_tomorrow_variable == 0).only_enforce_if(
+    [night_shift_today_variable, night_shift_tomorrow_variable.Not()]
+)
+```
+
+## Max one shift per day
+
+## Minimum rest time between shifts [^3]
+
+## Minimum number of staff per shift [^2]
+
+Each shift has a minimum required number of staff.
+This is a hard constraint that must be met.
+The goal is to ensure that the required number of qualified staff members are present for each shift.
+Therefore, the total number of staff members assigned to a shift must be greater than or equal to the required number of staff for that shift.
+
+```python title="src/cp/constraints/min_staffing.py"
+model.add(sum(potential_working_staff) >= min_staffing)
+```
+
+![Staff_Requirements](/images/staff_requirements.png)
+/// caption
+Staff requirements per weekday and professional group.
+///
+
+## Target working time per month [^1]
+
+Each employee has an individual monthly work target.
+This target is considered a hard constraint because it must be met within a certain range.
+A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the objective function to ensure minimal overtime/undertime.
+Therefore, the total working time must fall within the range of all possible shift combinations and the target working time range.
+
+```python title="src/cp/constraints/target_working_time.py"
+working_time_variable = model.new_int_var_from_domain(
+    working_time_domain, f"working_time_e:{employee.get_id()}"
+)
+
+model.add(sum(possible_working_time) == working_time_variable)
+model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
+model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
+```
+
+## Vacation days and free shifts [1]
+
+Vacation days must remain free, and the day before a vacation day no night shift is allowed.
+Therefore, if an employee has a vacation day or a free shift, the corresponding shift variable must be set to zero. Also considering the night shift the day before a vacation day or free shift.
+
+```python title="src/cp/constraints/vacation_days_and_free_shifts.py"
+if employee.has_vacation(day.day):
+    model.add(day_variable == 0)
+
+    if day.day > 1:
+        model.add(night_shift_variable == 0)
+
+if employee.has_vacation(day.day, shift.get_id()):
+    model.add(shift_variable == 0)
+```
+<!--
 
 ## All Constraints
 
 ### Minimal Number of Staff (1)
 
-![Staff_Requirements](Images/staff_requirements.png)
-
-The above table shows the minimal number of staff per day and per professional group.
-If we have more staff available:
-
-
 1. Mo - Fr an additional "Zwischendienst" (T75)
 2. "Zwischendienst" on the weekends
 3. If there are enough people, Mo - Fr no "Zwischendienst" but one addtional staff member to the first and second shift
-
-### Free shifts or days (1)
-Vacation days and free days on the weekend must remain free.
-The day before a vacation day or a free weekend no night shift is allowed.
-
-- **Mathematical Representation:**
-- **Implementation Idea:** Implementation should be easy. We just iterate through all free days and shifts and set the variables to zero:
-```python
-model.Add(shift == 0)
-```
-
-### Target Working hours (1)
-Per month a maximum deviation of one day shift is allowed (+/- 7.67 h).
-
-Addtionally in the next month this should be considered.
-!!! Problem here: CP Solver does only work with integers? Maybe scale hours up?
-
-- **Mathematical Representation:**
-- **Implementation Idea:** First get the current work time per employee depending on the shifts variables
-```python
-model.Add(current_work_time_per_employee <= target_minuts + 7.67 * 60)
-model.Add(current_work_time_per_employee >= target_minuts - 7.67 * 60)
-```
-
-### Minimize Number of Consecutive Night Shifts (3.1)
-The number of consecutive night shifts should be as few as possible.
-In order to count the consecutive night shifts, we introduce a new variable "consecutive", whcih should be set to 1 only iff
-the worker works at the night at day d and d+1, then set the constraint to limit sum of "consecutive"
-- **Implementation Idea:** Set "consecutive" to 1 iff night_today && night_tomorrow == 1
-```python
-model.AddBoolAnd([night_today, night_after_tomorrow]).OnlyEnforceIf(consecutive)
-model.AddBoolOr([night_today.Not(), night_after_tomorrow.Not()]).OnlyEnforceIf(consecutive.Not())
-```
-
-### 24h no shift after phase of Night Shifts (3.2)
-According to the recommendations for the healthy organization of night and shift work, after the night shift, the worker should have
-longer free time at least 24h, which means the worker who worked for the night shift should be free in the next three shifts.
 
 ### Free days near weekend (3.3)
 Free days should come in pairs (two) and include at least one weekend day:
@@ -157,4 +179,9 @@ model.Add(sum(window) == MAX_CONSECUTIVE_WORK_DAYS + 1).OnlyEnforceIf(overwork)
 model.Add(sum(window) != MAX_CONSECUTIVE_WORK_DAYS + 1).OnlyEnforceIf(overwork.Not())
 ```
 
-Essentially that means that longs shifts (12h plus) should be restricted.
+Essentially that means that longs shifts (12h plus) should be restricted. -->
+
+[^1]: [OR Tools Documentation](https://developers.google.com/optimization/reference/python/sat/python/cp_model#cp_model.CpModel)
+[^2]: Problem definition (PDF file from Moodle)
+[^3]: Occupational Health and Safety Law (Arbeitsschutzgesetz) (PDF file from Moodle)
+[^4]: Guidelines for shift work

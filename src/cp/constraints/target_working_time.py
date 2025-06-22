@@ -5,7 +5,7 @@ from shift import Shift
 from ..variables import Variable, EmployeeDayShiftVariable
 from ortools.sat.python.cp_model import CpModel, Domain
 
-TOLERANCE_LESS = 230
+TOLERANCE_LESS = 460
 TOLERANCE_MORE = TOLERANCE_LESS
 
 

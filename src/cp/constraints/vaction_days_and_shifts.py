@@ -20,20 +20,20 @@ class VacationDaysAndShiftsConstraint(Constraint):
         for employee in self._employees:
             for day in self._days:
                 if employee.has_vacation(day.day):
-                    day_var = variables[EmployeeDayVariable.get_key(employee, day)]
-                    model.add(day_var == 0)
+                    day_variable = variables[EmployeeDayVariable.get_key(employee, day)]
+                    model.add(day_variable == 0)
 
                     if day.day > 1:
-                        night_shift_var = variables[
+                        night_shift_variable = variables[
                             EmployeeDayShiftVariable.get_key(
                                 employee, day - timedelta(1), self._shifts[Shift.NIGHT]
                             )
                         ]
-                        model.add(night_shift_var == 0)
+                        model.add(night_shift_variable == 0)
 
                 for shift in self._shifts:
                     if employee.has_vacation(day.day, shift.get_id()):
-                        shift_var = variables[
+                        shift_variable = variables[
                             EmployeeDayShiftVariable.get_key(employee, day, shift)
                         ]
-                        model.add(shift_var == 0)
+                        model.add(shift_variable == 0)
