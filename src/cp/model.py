@@ -71,6 +71,7 @@ class Model:
         print(f"  - wall time      : {solver.wall_time} s")
         print(f"  - objective value: {solver.objective_value}")
         print(f"  - status         : {solver.status_name()}")
+        print(f"  - objective value: {solver.objective_value}")
 
         solution = Solution(
             {
