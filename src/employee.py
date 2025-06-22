@@ -8,6 +8,7 @@ class Employee:
     _type: str
     _level: str
     _target_working_time: int
+    _actual_working_time: int = 0
     _forbidden_days: list[int]
     _forbidden_shifts: list[tuple[int, str]]
     _vacation_days: list[int]
@@ -22,7 +23,8 @@ class Employee:
         name: str,
         type: str,
         level: str,
-        target_working_time: int,
+        target_working_time: int = 0,
+        actual_working_time: int = 0,
         forbidden_days: list[int] = [],
         forbidden_shifts: list[tuple[int, str]] = [],
         vacation_days: list[int] = [],
@@ -39,6 +41,7 @@ class Employee:
         self._type = type
         self._level = level
         self._target_working_time = target_working_time
+        self._actual_working_time = actual_working_time
         self._forbidden_days = forbidden_days
         self._forbidden_shifts = forbidden_shifts
         self._vacation_days = vacation_days
@@ -71,9 +74,9 @@ class Employee:
                 shift.duration for shift in shifts
             )
 
-            return self._target_working_time - vacation_time
+            return self._target_working_time - self._actual_working_time - vacation_time
 
-        return self._target_working_time
+        return self._target_working_time - self._actual_working_time
 
     def unavailable(self, day: int, shift: int = None) -> bool:
         """

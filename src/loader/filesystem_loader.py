@@ -24,17 +24,21 @@ class FSLoader(Loader):
             for type in types
         }
 
-        fs_employees_target: list = self._load_json("target_working_minutes")[
+        fs_employees_target_working: list = self._load_json("target_working_minutes")[
             "employees"
         ]
-        fs_employees_target: dict = {
-            fs_employee["PersNr"]: fs_employee["target"]
-            for fs_employee in fs_employees_target
-        }
+        fs_employees_target: dict = {}
+        fs_employees_actual: dict = {}
+
+        for fs_employee in fs_employees_target_working:
+            if "target" in fs_employee:
+                fs_employees_target[fs_employee["PersNr"]] = fs_employee["target"]
+            if "actual" in fs_employee:
+                fs_employees_actual[fs_employee["PersNr"]] = fs_employee["actual"]
+
         fs_employees_vacation: list = self._load_json("free_shifts_and_vacation_days")[
             "employees"
         ]
-
         fs_employees_forbidden_days: dict = {}
         fs_employees_forbidden_shifts: dict = {}
         fs_employees_vacation_days: dict = {}
@@ -79,6 +83,8 @@ class FSLoader(Loader):
                 target = 0
                 logging.debug(f"Target working minutes not found for employee {id}!")
 
+            actual = fs_employees_actual.get(id, 0)
+
             forbidden_days = fs_employees_forbidden_days.get(id, [])
             forbidden_shifts = fs_employees_forbidden_shifts.get(id, [])
             vacation_days = fs_employees_vacation_days.get(id, [])
@@ -94,6 +100,7 @@ class FSLoader(Loader):
                     type=type,
                     level=level,
                     target_working_time=target,
+                    actual_working_time=actual,
                     forbidden_days=forbidden_days,
                     forbidden_shifts=forbidden_shifts,
                     vacation_days=vacation_days,
