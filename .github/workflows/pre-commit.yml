@@ -1,4 +1,4 @@
-name: 🔧 pre-commit
+name: 🧹 Pre-commit Checks
 
 on:
   pull_request:
@@ -7,6 +7,7 @@ on:
 
 jobs:
   pre-commit:
+    name: 🧹 Pre-commit Checks
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code
