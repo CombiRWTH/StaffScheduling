@@ -34,17 +34,37 @@ class FSLoader(Loader):
         fs_employees_vacation: list = self._load_json("free_shifts_and_vacation_days")[
             "employees"
         ]
-        fs_employees_vacation_days: dict = {
-            fs_employee["PersNr"]: fs_employee["free_days"]
-            for fs_employee in fs_employees_vacation
-        }
 
-        fs_employees_vacation_shifts: dict = {
-            fs_employee["PersNr"]: list(
-                map(lambda x: (x[0], x[1]), fs_employee["free_shifts"])
-            )
-            for fs_employee in fs_employees_vacation
-        }
+        fs_employees_forbidden_days: dict = {}
+        fs_employees_forbidden_shifts: dict = {}
+        fs_employees_vacation_days: dict = {}
+        fs_employees_vacation_shifts: dict = {}
+        fs_employees_wish_days: dict = {}
+        fs_employees_wish_shifts: dict = {}
+
+        for fs_employee in fs_employees_vacation:
+            if "forbidden_days" in fs_employee:
+                fs_employees_forbidden_days[fs_employee["PersNr"]] = fs_employee[
+                    "forbidden_days"
+                ]
+            if "forbidden_shifts" in fs_employee:
+                fs_employees_forbidden_shifts[fs_employee["PersNr"]] = list(
+                    map(lambda x: (x[0], x[1]), fs_employee["forbidden_shifts"])
+                )
+            if "vacation_days" in fs_employee:
+                fs_employees_vacation_days[fs_employee["PersNr"]] = fs_employee[
+                    "vacation_days"
+                ]
+            if "vacation_shifts" in fs_employee:
+                fs_employees_vacation_shifts[fs_employee["PersNr"]] = list(
+                    map(lambda x: (x[0], x[1]), fs_employee["vacation_shifts"])
+                )
+            if "wish_days" in fs_employee:
+                fs_employees_wish_days[fs_employee["PersNr"]] = fs_employee["wish_days"]
+            if "wish_shifts" in fs_employee:
+                fs_employees_wish_shifts[fs_employee["PersNr"]] = list(
+                    map(lambda x: (x[0], x[1]), fs_employee["wish_shifts"])
+                )
 
         employees = []
         for i, fs_employee in enumerate(fs_employees):
@@ -59,15 +79,12 @@ class FSLoader(Loader):
                 target = 0
                 logging.debug(f"Target working minutes not found for employee {id}!")
 
-            vacation_days = fs_employees_vacation_days.get(id)
-            if vacation_days is None:
-                vacation_days = []
-                logging.debug(f"Vacation days not found for employee {id}!")
-
-            vacation_shifts = fs_employees_vacation_shifts.get(id)
-            if vacation_shifts is None:
-                vacation_shifts = []
-                logging.debug(f"Vacation shifts not found for employee {id}!")
+            forbidden_days = fs_employees_forbidden_days.get(id, [])
+            forbidden_shifts = fs_employees_forbidden_shifts.get(id, [])
+            vacation_days = fs_employees_vacation_days.get(id, [])
+            vacation_shifts = fs_employees_vacation_shifts.get(id, [])
+            wish_days = fs_employees_wish_days.get(id, [])
+            wish_shifts = fs_employees_wish_shifts.get(id, [])
 
             employees.append(
                 Employee(
@@ -77,8 +94,12 @@ class FSLoader(Loader):
                     type=type,
                     level=level,
                     target_working_time=target,
+                    forbidden_days=forbidden_days,
+                    forbidden_shifts=forbidden_shifts,
                     vacation_days=vacation_days,
                     vacation_shifts=vacation_shifts,
+                    wish_days=wish_days,
+                    wish_shifts=wish_shifts,
                 )
             )
 

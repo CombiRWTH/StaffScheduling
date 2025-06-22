@@ -19,7 +19,7 @@ class VacationDaysAndShiftsConstraint(Constraint):
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for employee in self._employees:
             for day in self._days:
-                if employee.has_vacation(day.day):
+                if employee.unavailable(day.day):
                     day_variable = variables[EmployeeDayVariable.get_key(employee, day)]
                     model.add(day_variable == 0)
 
@@ -32,7 +32,7 @@ class VacationDaysAndShiftsConstraint(Constraint):
                         model.add(night_shift_variable == 0)
 
                 for shift in self._shifts:
-                    if employee.has_vacation(day.day, shift.get_id()):
+                    if employee.unavailable(day.day, shift.get_id()):
                         shift_variable = variables[
                             EmployeeDayShiftVariable.get_key(employee, day, shift)
                         ]

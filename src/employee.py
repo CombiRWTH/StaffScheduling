@@ -8,8 +8,12 @@ class Employee:
     _type: str
     _level: str
     _target_working_time: int
+    _forbidden_days: list[int]
+    _forbidden_shifts: list[tuple[int, str]]
     _vacation_days: list[int]
     _vacation_shifts: list[tuple[int, str]]
+    _wish_days: list[int]
+    _wish_shifts: list[tuple[int, str]]
 
     def __init__(
         self,
@@ -19,8 +23,12 @@ class Employee:
         type: str,
         level: str,
         target_working_time: int,
+        forbidden_days: list[int] = [],
+        forbidden_shifts: list[tuple[int, str]] = [],
         vacation_days: list[int] = [],
         vacation_shifts: list[int] = [],
+        wish_days: list[int] = [],
+        wish_shifts: list[tuple[int, str]] = [],
     ):
         """
         Initializes an Employee instance.
@@ -31,8 +39,12 @@ class Employee:
         self._type = type
         self._level = level
         self._target_working_time = target_working_time
+        self._forbidden_days = forbidden_days
+        self._forbidden_shifts = forbidden_shifts
         self._vacation_days = vacation_days
         self._vacation_shifts = vacation_shifts
+        self._wish_days = wish_days
+        self._wish_shifts = wish_shifts
 
     def get_id(self) -> str:
         return self._id
@@ -63,13 +75,13 @@ class Employee:
 
         return self._target_working_time
 
-    def has_vacation(self, day: int, shift: int = None) -> bool:
+    def unavailable(self, day: int, shift: int = None) -> bool:
         """
-        Checks if the employee has vacation on a specific day and optionally a specific shift.
+        Checks if the employee has vacation or is not available on a specific day and optionally a specific shift.
         If `shift` is None, it checks if the employee has vacation on that day regardless of the shift.
         """
         if shift is None:
-            return day in self._vacation_days
+            return day in self._vacation_days or day in self._forbidden_days
 
         shift_abbreviations = {0: "F", 1: "S", 2: "N"}
         return (day, shift_abbreviations[shift]) in self._vacation_shifts
