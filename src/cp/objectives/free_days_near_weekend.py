@@ -21,63 +21,67 @@ class FreeDaysNearWeekendObjective(Objective):
         super().__init__(weight, employees, days, [])
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):
-        possible_free_saturday_variables: list[IntVar] = []
-        possible_free_sunday_variables: list[IntVar] = []
-        possible_free_weekend_variables: list[IntVar] = []
+        possible_free_first_day_variable: list[IntVar] = []
+        possible_free_second_day_variables: list[IntVar] = []
+        possible_free_both_days_variables: list[IntVar] = []
 
         for employee in self._employees:
             for day in self._days:
-                if day.isoweekday() in [6]:
-                    free_saturday_variable = model.new_bool_var(
-                        f"free_saturday_e:{employee.get_id()}_d:{day}"
+                if day.isoweekday() in [5, 6, 7]:
+                    free_day_variable = model.new_bool_var(
+                        f"free_first_day_e:{employee.get_id()}_d:{day}"
                     )
                     day_today_variable = variables[
                         EmployeeDayVariable.get_key(employee, day)
                     ]
                     model.add(day_today_variable == 0).only_enforce_if(
-                        free_saturday_variable
+                        free_day_variable
                     )
                     model.add(day_today_variable == 1).only_enforce_if(
-                        free_saturday_variable.Not()
+                        free_day_variable.Not()
                     )
 
-                    possible_free_saturday_variables.append(free_saturday_variable)
+                    possible_free_first_day_variable.append(free_day_variable)
 
                     if day + timedelta(1) in self._days:
-                        free_sunday_variable = model.new_bool_var(
-                            f"free_sunday_e:{employee.get_id()}_d:{day + timedelta(1)}"
+                        free_next_day_variable = model.new_bool_var(
+                            f"free_second_day_e:{employee.get_id()}_d:{day + timedelta(1)}"
                         )
                         day_tomorrow_variable = variables[
                             EmployeeDayVariable.get_key(employee, day + timedelta(1))
                         ]
                         model.add(day_tomorrow_variable == 0).only_enforce_if(
-                            free_sunday_variable
+                            free_next_day_variable
                         )
                         model.add(day_tomorrow_variable != 0).only_enforce_if(
-                            free_sunday_variable.Not()
+                            free_next_day_variable.Not()
                         )
 
-                        possible_free_sunday_variables.append(free_sunday_variable)
+                        possible_free_second_day_variables.append(
+                            free_next_day_variable
+                        )
 
-                        free_weekend_variable = model.new_bool_var(
-                            f"free_weekend_e:{employee.get_id()}_d:{day}"
+                        free_both_days_variable = model.new_bool_var(
+                            f"free_both_days_e:{employee.get_id()}_d:{day}"
                         )
                         model.add_bool_and(
-                            [free_saturday_variable, free_sunday_variable]
-                        ).only_enforce_if(free_weekend_variable)
+                            [free_day_variable, free_next_day_variable]
+                        ).only_enforce_if(free_both_days_variable)
                         model.add_bool_or(
                             [
-                                free_saturday_variable.Not(),
-                                free_sunday_variable.Not(),
+                                free_day_variable.Not(),
+                                free_next_day_variable.Not(),
                             ]
-                        ).only_enforce_if(free_weekend_variable.Not())
+                        ).only_enforce_if(free_both_days_variable.Not())
 
-                        possible_free_weekend_variables.append(free_weekend_variable)
+                        possible_free_both_days_variables.append(
+                            free_both_days_variable
+                        )
 
         return sum(
             [
-                sum(possible_free_saturday_variables) * -1 * self.weight,
-                sum(possible_free_sunday_variables) * -1 * self.weight,
-                sum(possible_free_weekend_variables) * -2 * self.weight,
+                sum(possible_free_first_day_variable) * -1 * self.weight,
+                sum(possible_free_second_day_variables) * -1 * self.weight,
+                sum(possible_free_both_days_variables) * -4 * self.weight,
             ]
         )
