@@ -23,10 +23,9 @@ class MinimizeOvertimeObjective(Objective):
         super().__init__(weight, employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):
-        possible_overtime_variables: list[IntVar] = []
+        possible_overtime_absolute_variables: list[IntVar] = []
 
-        shift_durations = list(map(lambda shift: shift.duration, self._shifts))
-        max_duration = max(shift_durations) * len(self._days)
+        max_duration = 31 * 24 * 60
 
         for employee in self._employees:
             target_working_time = employee.get_target_working_time(self._shifts)
@@ -40,13 +39,23 @@ class MinimizeOvertimeObjective(Objective):
                     possible_working_time.append(variable * shift.duration)
 
             possible_overtime_variable = model.new_int_var(
-                0, max_duration, f"overtime_e:{employee.get_id()}"
+                -max_duration, max_duration, f"overtime_e:{employee.get_id()}"
             )
 
+            possible_overtime_absolute_variable = model.new_int_var(
+                0, max_duration, f"overtime_absolute_e:{employee.get_id()}"
+            )
+            model.add(
+                possible_overtime_variable
+                == sum(possible_working_time) - target_working_time
+            )
             model.add_abs_equality(
+                possible_overtime_absolute_variable,
                 possible_overtime_variable,
-                sum(possible_working_time) - target_working_time,
             )
-            possible_overtime_variables.append(possible_overtime_variable)
 
-        return sum(possible_overtime_variables) * self._weight
+            possible_overtime_absolute_variables.append(
+                possible_overtime_absolute_variable
+            )
+
+        return sum(possible_overtime_absolute_variables) * self._weight
