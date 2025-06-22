@@ -1,0 +1,3 @@
+ancestorEntries = ["src/employee.py"]
+ourEntries = ["src/employee.py"]
+theirEntries = ["src/employee.py"]
