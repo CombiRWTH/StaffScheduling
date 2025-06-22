@@ -59,16 +59,16 @@ def export_personal_data_to_json(conn, filename="employees.json"):
     df = pd.read_sql(query, conn)
 
     # Restructure and rename to the desired JSON-output-format
-    df_renamed = df.rename(columns={
-        "PersNr": "PersNr",
-        "Vorname": "firstname",
-        "Name": "name",
-        "Beruf": "type"
-    })
+    df_renamed = df.rename(
+        columns={
+            "PersNr": "PersNr",
+            "Vorname": "firstname",
+            "Name": "name",
+            "Beruf": "type",
+        }
+    )
     employees_list = df_renamed.to_dict(orient="records")
-    output_json = {
-        "employees": employees_list
-    }
+    output_json = {"employees": employees_list}
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
@@ -82,14 +82,14 @@ def export_personal_data_to_json(conn, filename="employees.json"):
 def export_target_working_minutes_to_json(conn, filename="target_working_minutes.json"):
     """Export all target working minutes found within TPersonalKontenJeMonat and create a JSON-file."""
     # SQL Query to export the target working hours from TPersonalKontenJeMonat
-    query = """SELECT 
-                    p.PersNr, 
-                    p.Name AS 'name', 
-                    p.Vorname AS 'firstname', 
-                    pkt.RefKonten, 
-                    pkt.Wert2 
-                FROM TPersonalKontenJeMonat pkt 
-                JOIN TPersonal p ON pkt.RefPersonal = p.Prim 
+    query = """SELECT
+                    p.PersNr,
+                    p.Name AS 'name',
+                    p.Vorname AS 'firstname',
+                    pkt.RefKonten,
+                    pkt.Wert2
+                FROM TPersonalKontenJeMonat pkt
+                JOIN TPersonal p ON pkt.RefPersonal = p.Prim
                 WHERE (pkt.RefKonten = 1  OR pkt.RefKonten = 19 OR pkt.RefKonten = 55) AND pkt.Monat = '202411' ORDER BY p.Name asc"""
 
     df = pd.read_sql(query, conn)
@@ -99,32 +99,34 @@ def export_target_working_minutes_to_json(conn, filename="target_working_minutes
 
     # Merging different entries for each employee to summarize all Konten in one entry
     df_wide = (
-        df.pivot_table(index=["PersNr", "name", "firstname"],
-                       columns="RefKonten",
-                       values="Wert2",
-                       aggfunc="sum",
-                       fill_value=0)
-          .reset_index()
-          .rename(columns=lambda c: f"Wert_RefKonten{c}" if isinstance(c, (int, float)) else c)
+        df.pivot_table(
+            index=["PersNr", "name", "firstname"],
+            columns="RefKonten",
+            values="Wert2",
+            aggfunc="sum",
+            fill_value=0,
+        )
+        .reset_index()
+        .rename(
+            columns=lambda c: f"Wert_RefKonten{c}" if isinstance(c, (int, float)) else c
+        )
     )
 
     # Choosing right Konto (see DatabaseQueries.md)
-    df_wide["Wert_RefKonten19_55"] = df_wide[["Wert_RefKonten19",
-                                          "Wert_RefKonten55"]].max(axis=1)
-    
-    # 
+    df_wide["Wert_RefKonten19_55"] = df_wide[
+        ["Wert_RefKonten19", "Wert_RefKonten55"]
+    ].max(axis=1)
+
+    #
     df_wide = df_wide.drop(columns=["Wert_RefKonten19", "Wert_RefKonten55"])
 
-    # Renaming Columns 
-    df_wide = df_wide.rename(columns={
-    "Wert_RefKonten1":      "target",
-    "Wert_RefKonten19_55":  "actual"
-    })
+    # Renaming Columns
+    df_wide = df_wide.rename(
+        columns={"Wert_RefKonten1": "target", "Wert_RefKonten19_55": "actual"}
+    )
 
     target_working_minutes_list = df_wide.to_dict(orient="records")
-    output_json = {
-        "target_working_minutes": target_working_minutes_list
-    }
+    output_json = {"target_working_minutes": target_working_minutes_list}
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
@@ -161,9 +163,7 @@ def export_worked_sundays_to_json(conn, filename="worked_sundays.json"):
 
     # Restructure and rename to the desired JSON-output-format
     worked_sundays = df.to_dict(orient="records")
-    output_json = {
-        "worked_sundays": worked_sundays
-    }
+    output_json = {"worked_sundays": worked_sundays}
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
