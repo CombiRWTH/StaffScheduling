@@ -1,3 +1,4 @@
+import os
 from .loader import Loader
 from employee import Employee
 from shift import Shift
@@ -180,6 +181,8 @@ class FSLoader(Loader):
 
     def _write_json(self, filename: str, data: dict):
         file_path = self._get_solutions_path(filename)
+        if not os.path.exists("./found_solutions"):
+            os.makedirs("./found_solutions")
         with open(file_path, "w") as file:
             dump(data, file, indent=4)
 
