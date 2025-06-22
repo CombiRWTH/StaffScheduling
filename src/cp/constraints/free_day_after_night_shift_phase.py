@@ -18,6 +18,9 @@ class FreeDayAfterNightShiftPhaseConstraint(Constraint):
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for employee in self._employees:
+            if employee.hidden:
+                continue
+
             for day in self._days[:-1]:
                 night_shift_today_variable = variables[
                     EmployeeDayShiftVariable.get_key(

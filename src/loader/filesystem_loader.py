@@ -74,7 +74,7 @@ class FSLoader(Loader):
                     map(lambda x: (x[0], x[1]), fs_employee["wish_shifts"])
                 )
 
-        employees = []
+        employees: list[Employee] = []
         for i, fs_employee in enumerate(fs_employees):
             id = fs_employee["PersNr"]
             surname = fs_employee["name"]
@@ -101,8 +101,8 @@ class FSLoader(Loader):
                     id=i,
                     surname=surname,
                     name=firstname,
-                    type=type,
                     level=level,
+                    type=type,
                     target_working_time=target,
                     actual_working_time=actual,
                     forbidden_days=forbidden_days,
@@ -113,6 +113,9 @@ class FSLoader(Loader):
                     wish_shifts=wish_shifts,
                 )
             )
+
+        # employees = []
+        employees += super().get_employees(len(employees))
 
         return employees
 

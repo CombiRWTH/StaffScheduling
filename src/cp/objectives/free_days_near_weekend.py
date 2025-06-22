@@ -26,6 +26,9 @@ class FreeDaysNearWeekendObjective(Objective):
         possible_free_both_days_variables: list[IntVar] = []
 
         for employee in self._employees:
+            if employee.hidden:
+                continue
+
             for day in self._days:
                 if day.isoweekday() in [5, 6, 7]:
                     free_day_variable = model.new_bool_var(
