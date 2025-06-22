@@ -74,7 +74,7 @@ def main():
         VacationDaysAndShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
-        FreeDaysNearWeekendObjective(5.0, employees, days),
+        FreeDaysNearWeekendObjective(10.0, employees, days),
         MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
         MinimizeOvertimeObjective(1.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),

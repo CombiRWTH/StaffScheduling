@@ -1,7 +1,7 @@
 All constraints are located inside `src/cp/constraints/*.py`.
 Each constraint is implemented as a function that takes a `CpModel`[^1] object and adds the necessary constraints to it.
 Constraints are considered as hard constraints as they must be satisfied for a valid schedule.
-For soft constraints, see the [Objectives](/concepts/objectives.md) chapter.
+For soft constraints, see the [Objectives](/concepts/objectives) chapter.
 
 - [Free day after night shift phase](#free-day-after-night-shift-phase)
 - [Max one shift per day](#max-one-shift-per-day)
@@ -48,7 +48,7 @@ Staff requirements per weekday and professional group.
 
 Each employee has an individual monthly work target.
 This target is considered a hard constraint because it must be met within a certain range.
-A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the objective function to ensure minimal overtime/undertime.
+A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the [objective](/concepts/objectives/#minimize-overtimeundertime) function to ensure minimal overtime/undertime.
 Therefore, the total working time must fall within the range of all possible shift combinations and the target working time range.
 
 ```python title="src/cp/constraints/target_working_time.py"
@@ -61,7 +61,7 @@ model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
 model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
 ```
 
-## Vacation days and free shifts [1]
+## Vacation days and free shifts [^1]
 
 Vacation days must remain free, and the day before a vacation day no night shift is allowed.
 Therefore, if an employee has a vacation day or a free shift, the corresponding shift variable must be set to zero. Also considering the night shift the day before a vacation day or free shift.
@@ -85,45 +85,6 @@ if employee.has_vacation(day.day, shift.get_id()):
 1. Mo - Fr an additional "Zwischendienst" (T75)
 2. "Zwischendienst" on the weekends
 3. If there are enough people, Mo - Fr no "Zwischendienst" but one addtional staff member to the first and second shift
-
-### Free days near weekend (3.3)
-Free days should come in pairs (two) and include at least one weekend day:
-
-- Friday and Saturday
-- Saturday and Sunday
-- Sunday and Monday
-
-We consider this constraint as two parts, we also consider them as rewards in the model:
-1. the free days come in pair
-2. the free days include weekend day
-
-Our basic idea is to add a variable "objective_terms", and append all the point as a list in the variable. The plan have two ways
-to earn the point and one way to lose the point.
-1. Everytime when there is a free days come in pair, the variable will get 1 point
-2. If the free day include weekend day, the variable will also get 1 point
-3. Everytime when there is a free day comes alone, then the variable will get -1 point
-
-Finally, we calculate the sum of the points and maximize it using the following constraint
-```python
-model.Maximize(sum(objective_terms))
-```
-
-### Shifts should "rotate forward" (3.5)
-Meaning early, late, night and not night, late, early. This maximizes the time to rest between shifts.
-
-To achieve this constraint, we first need to fix the list of shift workers and limit their shifts.
-We then introduce the variable bad_rotation, which defines several shift sequences for non-forward shifts,
-and if a shift sequence contained therein occurs, the penalty is noted as plus one point, and finally a constraint is added to minimize the value of the penalty.
-```python
-bad_rotations = [(0, 2), (1, 0), (2, 1)]  # non-forward rotate
-for d in range(num_days - 1):
-    for (prev_s, next_s) in bad_rotations:
-        b = model.NewBoolVar(f'bad_rot_n{n}_d{d}_from{prev_s}to{next_s}')
-        model.AddBoolAnd([shifts[(n, d, prev_s)], shifts[(n, d + 1, next_s)]]).OnlyEnforceIf(b)
-        model.AddBoolOr([shifts[(n, d, prev_s)].Not(), shifts[(n, d + 1, next_s)].Not()]).OnlyEnforceIf(b.Not())
-        penalties.append(b)
-model.Minimize(sum(penalties))
-```
 
 
 ### Weekend Rhythm (Kickoff Meeting)
