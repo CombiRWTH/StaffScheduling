@@ -5,6 +5,9 @@ from .free_days_near_weekend import (
 from .minimize_consecutive_night_shifts import (
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
 )
+from .minimize_hidden_employees import (
+    MinimizeHiddenEmployeesObjective as MinimizeHiddenEmployeesObjective,
+)
 from .minimize_overtime import (
     MinimizeOvertimeObjective as MinimizeOvertimeObjective,
 )

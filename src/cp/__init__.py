@@ -12,6 +12,7 @@ from .objectives import (
     Objective as Objective,
     FreeDaysNearWeekendObjective as FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
+    MinimizeHiddenEmployeesObjective as MinimizeHiddenEmployeesObjective,
     MinimizeOvertimeObjective as MinimizeOvertimeObjective,
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
