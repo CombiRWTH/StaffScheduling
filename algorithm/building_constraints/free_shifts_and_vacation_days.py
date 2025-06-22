@@ -68,7 +68,7 @@ def add_free_shifts_and_vacation_days(
                             model.Add(
                                 shifts[(employee_idx, day_int - 2, 2)] == 0
                             )  # no night shift before vacation
-                if "wish_shifts" in employee and len(employee["wish_shifts"][0]) > 0:
+                if "wish_shifts" in employee and len(employee["wish_shifts"]) > 0:
                     for day_int, shift_name in employee["wish_shifts"]:
                         shift_idx = shift_names_to_index[shift_name]
                         model.Add(shifts[(employee_idx, day_int - 1, shift_idx)] == 0)

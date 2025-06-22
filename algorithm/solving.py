@@ -44,8 +44,6 @@ from building_constraints.intermediate_shifts import (
 from building_constraints.equally_distributed_workload import (
     add_equally_distributed_workload_constraint,
 )
-from building_constraints.shift_rotate_forward import add_shift_rotate_forward
-from building_constraints.minimum_rest_time import add_minimum_rest_time
 
 # ─────────────────────────────────────────────────
 # ★★ EIN/AUS‑SCHALTER FÜR ALLE CONSTRAINTS ★★
@@ -66,6 +64,7 @@ SWITCH = {
     "intermediate_shifts": True,
     "equally_distributed_workload": True,
     "wishes_as_hard_constraint": True,
+    "no_night_to_early": False,
 }
 #  HIER EINFACH TRUE ↔ FALSE UMSCHALTEN
 # ──────────────────────────────────────────
