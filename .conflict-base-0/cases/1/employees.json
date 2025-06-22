@@ -1,0 +1,88 @@
+{
+  "employees": [
+    {
+      "name": "Pauline",
+      "type": "Fachkraft"
+    },
+    {
+      "name": "Jonas",
+      "type": "Hilfskraft"
+    },
+    {
+      "name": "Marie",
+      "type": "Fachkraft"
+    },
+    {
+      "name": "Jesus",
+      "type": "Fachkraft"
+    },
+    {
+      "name": "Joseph",
+      "type": "Azubi"
+    },
+    {
+      "name": "K\u00f6nig1",
+      "type": "Hilfskraft"
+    },
+    {
+      "name": "K\u00f6nig2",
+      "type": "Azubi"
+    },
+    {
+      "name": "David",
+      "type": "Azubi"
+    },
+    {
+      "name": "Armin",
+      "type": "Fachkraft"
+    },
+    {
+      "name": "Maxi",
+      "type": "Hilfskraft"
+    },
+    {
+      "name": "Peter",
+      "type": "Fachkraft"
+    },
+    {
+      "name": "Hans",
+      "type": "Hilfskraft"
+    },
+    {
+      "name": "Goliath",
+      "type": "Fachkraft"
+    },
+    {
+      "name": "CaptainAmerica",
+      "type": "Fachkraft"
+    },
+    {
+      "name": "IronMan",
+      "type": "Fachkraft"
+    },
+    {
+      "name": "Thor",
+      "type": "Hilfskraft"
+    },
+    {
+      "name": "Dr.Strange",
+      "type": "Hilfskraft"
+    },
+    {
+      "name": "Hulk",
+      "type": "Hilfskraft"
+    },
+    {
+      "name": "TheFlash",
+      "type": "Azubi"
+    },
+    {
+      "name": "Dumbledore",
+      "type": "Fachkraft"
+    },
+    {
+      "name": "HarryPotter",
+      "type": "Hilfskraft"
+    }
+  ]
+}

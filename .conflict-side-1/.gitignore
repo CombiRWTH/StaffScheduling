@@ -1,0 +1,10 @@
+.venv
+database/.env
+*.pyc
+tempCodeRunnerFile.py
+.DS_store
+found_solutions
+algorihtm/__pycache__
+.idea
+/.vscode
+site
