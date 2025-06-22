@@ -1,3 +1,0 @@
-ancestorEntries = ["src/cp/model.py", "src/solve.py"]
-ourEntries = ["src/cp/model.py", "src/solve.py"]
-theirEntries = ["src/cp/model.py", "src/solve.py"]
