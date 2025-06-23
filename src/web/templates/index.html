@@ -14,7 +14,7 @@
                 <label for="solution_file_select" class="form-label">Select Solution</label>
                 <select id="solution_file_select" class="form-select">
                     {% for solution_file_name in solution_file_names %}#
-                        <option value="{{ solution_file_name }}" selected="{{ selected_solution_file_name }}">{{ solution_file_name }}</option>
+                        <option value="{{ solution_file_name }}" {{ 'selected' if solution_file_name == selected_solution_file_name }}>{{ solution_file_name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -80,6 +80,11 @@
             document.addEventListener('DOMContentLoaded', function () {
                 const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
                 const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+            });
+
+            document.getElementById('solution_file_select').addEventListener('change', e => {
+                const file = encodeURIComponent(e.target.value);
+                window.location.href = `/?solution_file_name=${file}`;
             });
         </script>
     </body>

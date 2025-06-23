@@ -157,7 +157,7 @@ class FSLoader(Loader):
             if file.startswith("solutions_") and file.endswith(".json"):
                 solutions.append(file[:-5])
 
-        return solutions
+        return sorted(solutions)
 
     def write_solution(
         self,
