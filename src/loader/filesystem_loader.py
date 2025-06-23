@@ -130,6 +130,7 @@ class FSLoader(Loader):
         """
         return [
             Shift(Shift.EARLY, "Früh", 360, 820),
+            Shift(Shift.INTERMEDIATE, "Zwischen", 480, 940),
             Shift(Shift.LATE, "Spät", 805, 1265),
             Shift(Shift.NIGHT, "Nacht", 1250, 375),
         ]

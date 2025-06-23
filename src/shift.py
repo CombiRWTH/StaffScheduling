@@ -7,6 +7,7 @@ _COLORS = {
 
 class Shift:
     EARLY = 0
+    INTERMEDIATE = 3
     LATE = 1
     NIGHT = 2
 
