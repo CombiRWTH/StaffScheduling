@@ -9,8 +9,9 @@ from datetime import datetime, time, timedelta
 from dotenv import load_dotenv
 from pathlib import Path
 from collections import Counter
+from connection_setup import get_db_connection_string
 
-# Load the .env-file for login purposes
+# Load the .env-file for file import purposes
 load_dotenv()
 
 
@@ -30,24 +31,6 @@ def load_json_files():
     with open(employee_file, encoding="utf-8") as f:
         emp_data = json.load(f)["employees"]
     return data, emp_data
-
-
-def get_conn_string():
-    """Create a basic connection to the TimeOffice database by returning the SQL connection string."""
-    server = os.getenv("DB_SERVER")
-    database = os.getenv("DB_NAME")
-    username = os.getenv("DB_USER")
-    password = os.getenv("DB_PASSWORD")
-
-    conn_str = (
-        f"DRIVER={{ODBC Driver 18 for SQL Server}};"
-        f"SERVER={server};"
-        f"DATABASE={database};"
-        f"UID={username};"
-        f"PWD={password};"
-        "TrustServerCertificate=yes;"
-    )
-    return conn_str
 
 
 def get_correct_path(filename):
@@ -277,7 +260,7 @@ def insert_dataframe_to_db(df, conn_str):
 
 
 def run():
-    conn_str = get_conn_string()
+    conn_str = get_db_connection_string()
     data, emp_data = load_json_files()
     prim_to_refberuf = load_person_to_job(conn_str)
     key2prim = build_key2prim(emp_data)
