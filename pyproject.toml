@@ -38,4 +38,5 @@ sources = ["src"]
 packages = ["src"]
 
 [project.scripts]
-solve = "main:main"
+solve = "solve:main"
+plot = "plot:main"
