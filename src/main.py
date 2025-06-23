@@ -103,14 +103,13 @@ def main():
     for constraint in constraints:
         model.add_constraint(constraint)
 
-    solutions = model.solve(SOLUTIONS_LIMIT)
+    solution = model.solve()
 
     loader.write_solutions(
-        case_id,
         employees,
         [constraint.name for constraint in constraints + objectives],
         shifts,
-        solutions,
+        [solution],
     )
 
 
