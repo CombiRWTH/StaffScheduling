@@ -1,4 +1,5 @@
 from shift import Shift
+from day import Day
 
 
 class Employee:
@@ -78,13 +79,15 @@ class Employee:
 
         return self._target_working_time - self._actual_working_time
 
-    def unavailable(self, day: int, shift: int = None) -> bool:
+    def unavailable(self, day: Day, shift: Shift = None) -> bool:
         """
         Checks if the employee has vacation or is not available on a specific day and optionally a specific shift.
         If `shift` is None, it checks if the employee has vacation on that day regardless of the shift.
         """
         if shift is None:
-            return day in self._vacation_days or day in self._forbidden_days
+            return day.day in self._vacation_days or day.day in self._forbidden_days
 
-        shift_abbreviations = {0: "F", 1: "S", 2: "N"}
-        return (day, shift_abbreviations[shift]) in self._vacation_shifts
+        return (day.day, shift.abbreviation) in self._vacation_shifts or (
+            day.day,
+            shift.abbreviation,
+        ) in self._forbidden_shifts

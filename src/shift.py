@@ -21,6 +21,10 @@ class Shift:
         return self._id
 
     @property
+    def abbreviation(self) -> str:
+        return self._name[:1]
+
+    @property
     def start_time(self) -> int:
         return self._start_time
 
