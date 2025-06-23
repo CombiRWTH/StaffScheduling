@@ -1,3 +1,10 @@
+_COLORS = {
+    0: "#FFCCCC",
+    1: "#CCCCFF",
+    2: "#CCFFCC",
+}
+
+
 class Shift:
     EARLY = 0
     LATE = 1
@@ -23,6 +30,10 @@ class Shift:
     @property
     def abbreviation(self) -> str:
         return self._name[:1]
+
+    @property
+    def color(self) -> str:
+        return _COLORS.get(self._id, "#FFFFFF")
 
     @property
     def start_time(self) -> int:

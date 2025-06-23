@@ -16,8 +16,6 @@ from cp import (
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
 )
-from datetime import timedelta
-from calendar import monthrange
 import logging
 
 logging.basicConfig(
@@ -51,10 +49,7 @@ def main():
     loader = FSLoader(case_id)
 
     employees = loader.get_employees()
-    days = [
-        start_date + timedelta(days=i)
-        for i in range(monthrange(start_date.year, start_date.month)[1])
-    ]
+    days = loader.get_days(start_date)
     shifts = loader.get_shifts()
 
     min_staffing = loader.get_min_staffing()
@@ -105,12 +100,10 @@ def main():
 
     solution = model.solve()
 
-    loader.write_solutions(
-        employees,
-        [constraint.name for constraint in constraints + objectives],
-        shifts,
-        [solution],
+    loader.write_solution(
+        solution,
     )
+
 
 if __name__ == "__main__":
     main()

@@ -13,15 +13,43 @@
             <div class="">
                 <label for="solution_file_select" class="form-label">Select Solution</label>
                 <select id="solution_file_select" class="form-select">
+                    {% for solution_file_name in solution_file_names %}#
+                        <option value="{{ solution_file_name }}" selected="{{ selected_solution_file_name }}">{{ solution_file_name }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </nav>
-        <main class="bg-body-tertiary p-2 rounded shadow-sm">
-            <table class="table">
+        <main class="bg-body-tertiary p-2 rounded shadow-sm overflow-scroll">
+            <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Employee</th>
+                        <th class="text-center text-nowrap">Employee</th>
+                        {% for day in days %}
+                            <th class="text-center text-nowrap">{{ day }}</th>
+                        {% endfor %}
                     </tr>
+                    {% for employee in employees %}
+                        <tr>
+                            <td class="text-center text-nowrap">
+                                <span class="text-secondary">{{ employee.level }}</span>
+                                <br />
+                                {{ employee.name }}
+                            </td>
+                            {% for day in days %}
+                                <td class="text-center">
+                                    {% for shift in shifts %}
+                                        {% set key = "(" ~ employee.get_id() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
+                                        {% if variables[key] == 1 %}
+                                            <span class="d-block w-100 h-100 rounded" style="background-color: {{ shift.color }};">
+                                                <br />
+                                                {{ shift.abbreviation }}
+                                            </span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
                 </thead>
             </table>
         </main>

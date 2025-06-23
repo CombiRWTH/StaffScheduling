@@ -57,6 +57,10 @@ class Employee:
     def level(self) -> str:
         return self._level
 
+    @property
+    def name(self) -> str:
+        return f"{self._surname} {self._name}"
+
     def get_target_working_time(
         self, shifts: list[Shift] = [], subtract_vacation: bool = True
     ) -> int:
