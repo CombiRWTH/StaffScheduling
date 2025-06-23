@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
-from database.connection_setup import get_db_connection
-from database import export_data
+from connection_setup import get_db_connection
+import export_data
 
 # Load the .env-file for login purposes
 load_dotenv()
