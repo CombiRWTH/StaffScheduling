@@ -13,3 +13,9 @@ class Solution:
     @property
     def objective(self) -> int:
         return self._objective
+
+    def __json__(self):
+        return {
+            "variables": self._variables,
+            "objective": self._objective,
+        }
