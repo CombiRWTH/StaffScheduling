@@ -57,10 +57,13 @@ class Model:
 
         solver = CpSolver()
         solver.parameters.num_workers = 0
-        solver.parameters.max_time_in_seconds = timeout
+        if timeout is not None:
+            logging.info(f"Timeout set to {timeout} seconds")
+            solver.parameters.max_time_in_seconds = timeout
         solver.parameters.linearization_level = 0
 
         start_time = timeit.default_timer()
+
         solver.solve(self._model)
         elapsed_time = timeit.default_timer() - start_time
 
