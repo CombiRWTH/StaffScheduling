@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from functools import partial
 from ortools.sat.python import cp_model
 from handlers import UnifiedSolutionHandler
+import timeit
 
 from building_constraints.initial_constraints import (
     create_shift_variables,
@@ -86,13 +87,16 @@ def solve_cp_problem(
     solver.parameters.enumerate_all_solutions = enumerate_all_solutions
     solver.parameters.linearization_level = 0
 
+    start_time = timeit.default_timer()
     solver.SolveWithSolutionCallback(model, handler)
+    elapsed_time = timeit.default_timer() - start_time
 
     print("\nStatistics")
     print(f"  - Conflicts     : {solver.num_conflicts}")
     print(f"  - Branches      : {solver.num_branches}")
     print(f"  - Wall time     : {solver.wall_time:.2f}s")
     print(f"  - Solutions found: {handler.solution_count() if handler else 0}")
+    print(f"  - Elapsed time  : {elapsed_time:.2f}s")
 
 
 def add_objective_function(model: cp_model.CpModel, weights: dict):

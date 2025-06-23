@@ -73,7 +73,10 @@ def index():
     if emp_map:
         employees = [None] * len(emp_map)
         for name, idx in emp_map.items():
-            employees[idx] = {"name": name}
+            employees[idx] = {
+                "name": name,
+                "target": data["employees"].get("name_to_target", {}).get(name, 0) / 60,
+            }
     else:
         employees = load_employees()
 
@@ -264,3 +267,4 @@ def index():
 if __name__ == "__main__":
     app.jinja_env.add_extension("jinja2.ext.loopcontrols")
     app.run(debug=True, port=5010)
+    app.run(debug=True, port=8000)

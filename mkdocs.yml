@@ -9,6 +9,7 @@ nav:
       - First Steps: getting-started/first-steps.md
   - Concepts:
       - Constraints: concepts/constraints.md
+      - Objectives: concepts/objectives.md
       - Datatabase: concepts/database.md
       - Visualization: concepts/visualization.md
 
@@ -36,6 +37,7 @@ markdown_extensions:
       generic: true
   - pymdownx.betterem:
       smart_enable: all
+  - pymdownx.blocks.caption
   - pymdownx.caret
   - pymdownx.details
   - pymdownx.emoji:
