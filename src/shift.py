@@ -1,7 +1,7 @@
 _COLORS = {
-    0: "#FFCCCC",
-    1: "#CCCCFF",
-    2: "#CCFFCC",
+    0: "oklch(93.8% 0.127 124.321)",
+    1: "oklch(91.7% 0.08 205.041)",
+    2: "oklch(89.4% 0.057 293.283)",
 }
 
 
@@ -30,6 +30,10 @@ class Shift:
     @property
     def abbreviation(self) -> str:
         return self._name[:1]
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     @property
     def color(self) -> str:

@@ -30,22 +30,26 @@
                     </tr>
                     {% for employee in employees %}
                         <tr>
-                            <td class="text-center text-nowrap">
+                            <td class="text-center text-nowrap" title="{{ employee}}">
                                 <span class="text-secondary">{{ employee.level }}</span>
                                 <br />
                                 {{ employee.name }}
                             </td>
                             {% for day in days %}
-                                <td class="text-center">
+                                <td class="text-center" style="position: relative">
                                     {% for shift in shifts %}
                                         {% set key = "(" ~ employee.get_id() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
                                         {% if variables[key] == 1 %}
                                             <span class="d-block w-100 h-100 rounded" style="background-color: {{ shift.color }};">
+                                                {{ shift.name }}
                                                 <br />
-                                                {{ shift.abbreviation }}
+                                                <span class="text-secondary">{{ shift.duration }}</span>
                                             </span>
                                         {% endif %}
                                     {% endfor %}
+                                    {% if employee.unavailable(day) %}
+                                        <div style="position: absolute; inset: 0; background-color: oklch(89.2% 0.058 10.001);" class="text-secondary"></div>
+                                    {% endif %}
                                 </td>
                             {% endfor %}
                         </tr>
