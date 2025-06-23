@@ -5,42 +5,10 @@ from .objectives import Objective
 from ortools.sat.python.cp_model import (
     CpModel,
     CpSolver,
-    CpSolverSolutionCallback,
     IntVar,
 )
 import logging
 import timeit
-
-
-class _SolutionHandler(CpSolverSolutionCallback):
-    _solutions: list[Solution]
-    _variables: list[IntVar]
-    _limit: int
-
-    def __init__(self, variables: list[IntVar], limit: int = 5):
-        CpSolverSolutionCallback.__init__(self)
-        self._solutions = []
-
-        self._variables = variables
-        self._limit = limit
-
-    def on_solution_callback(self):
-        solution = Solution(
-            {variable.name: self.Value(variable) for variable in self._variables},
-            self.objective_value,
-        )
-        self._solutions.append(solution)
-
-        logging.info(
-            f"{len(self._solutions)}. solution with objective value: {solution.objective}"
-        )
-
-        if len(self._solutions) >= self._limit:
-            self.stop_search()
-
-    @property
-    def solutions(self) -> list[Solution]:
-        return self._solutions
 
 
 class Model:
@@ -71,7 +39,7 @@ class Model:
         for var in vars:
             self._variables[var.name] = var
 
-    def solve(self, limit: int = 5) -> list[Solution]:
+    def solve(self) -> Solution:
         logging.info("Solving model...")
         logging.info(f"  - number of variables: {len(self._variables)}")
         logging.info(f"  - number of objectives: {len(self._objectives)}")
@@ -89,12 +57,9 @@ class Model:
 
         solver = CpSolver()
         solver.parameters.linearization_level = 0
-        solver.parameters.enumerate_all_solutions = True
-        variables = list(self._variables.values())
-        handler = _SolutionHandler(variables, limit)
 
         start_time = timeit.default_timer()
-        solver.SolveWithSolutionCallback(self._model, handler)
+        solver.solve(self._model)
         elapsed_time = timeit.default_timer() - start_time
 
         logging.info(f"Solving completed in {elapsed_time:.2f} seconds")
@@ -103,5 +68,15 @@ class Model:
         print(f"  - conflicts      : {solver.num_conflicts}")
         print(f"  - branches       : {solver.num_branches}")
         print(f"  - wall time      : {solver.wall_time} s")
+        print(f"  - objective value: {solver.objective_value}")
+        print(f"  - status         : {solver.status_name()}")
 
-        return handler.solutions
+        solution = Solution(
+            {
+                variable.name: solver.value(variable)
+                for variable in self._variables.values()
+            },
+            solver.objective_value,
+        )
+
+        return solution
