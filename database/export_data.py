@@ -149,3 +149,92 @@ def export_worked_sundays_to_json(conn, filename="worked_sundays.json"):
         f.write(json_output)
     # Print a message of completed export
     print(f"✅ Export abgeschlossen – {filename} erstellt")
+
+# Helper function for export_free_shift_and_vacation_days_json()
+def collapse(df, col_name):
+    out = (
+         df.groupby("PersNr")["day"]
+            .apply(lambda s: sorted(s.unique().tolist()))
+            .to_dict()
+    )
+    return {k: {col_name: v} for k, v in out.items()}
+
+def export_free_shift_and_vacation_days_json(conn, filename="free_shifts_and_vacation_days.json"):
+    """Export the free shifts and vacation daysfound within TPersonalKommtGeht and create a JSON-file."""
+
+    EMP_FILE = get_correct_path("employees.json")  
+    with open(EMP_FILE, encoding="utf-8") as f:
+        emp_data = json.load(f)["employees"]      
+
+    persnr2meta = {
+        str(e["PersNr"]): {"name": e["name"], "firstname": e["firstname"]}
+        for e in emp_data
+    }
+
+    whitelist_persnr = {e["PersNr"] for e in emp_data} 
+
+    query_vac = """
+        SELECT
+            p.PersNr,
+            p.Name       AS name,
+            p.Vorname    AS firstname,
+            pkg.Datum    AS vacation_days
+        FROM TPlanPersonalKommtGeht pkg
+        JOIN TPersonal p ON pkg.RefPersonal = p.Prim
+        WHERE
+            pkg.Datum BETWEEN '2024.01.11' AND '2024.30.11'
+            AND pkg.RefgAbw IN (20, 2434, 2435, 2091);
+            """
+    
+    query_forb = """
+        SELECT
+            p.PersNr,
+            p.Name       AS 'name',
+            p.Vorname    AS 'firstname',
+            pkg.Datum    AS 'forbidden_days'
+        FROM TPlanPersonalKommtGeht pkg
+        JOIN TPersonal p ON pkg.RefPersonal = p.Prim
+        WHERE pkg.Datum BETWEEN '2024.01.11' AND '2024.30.11'
+            AND (
+                pkg.RefgAbw IS NULL
+            OR pkg.RefgAbw NOT IN (20, 2434, 2435, 2091)  
+            )
+            """
+
+    vac_df = pd.read_sql(query_vac, conn)
+    forb_df = pd.read_sql(query_forb, conn)
+
+    vac_df = vac_df[vac_df["PersNr"].isin(whitelist_persnr)]
+    forb_df = forb_df[forb_df["PersNr"].isin(whitelist_persnr)]
+
+    vac_df["day"] = pd.to_datetime(vac_df["vacation_days"]).dt.day
+    forb_df["day"] = pd.to_datetime(forb_df["forbidden_days"]).dt.day
+
+    vac_map  = collapse(vac_df,  "vacation_days")
+    forb_map = collapse(forb_df, "forbidden_days")
+
+    employees_out = []
+    for persnr, meta in persnr2meta.items():
+        rec = {
+            "PersNr": persnr,
+            "name": meta["name"],
+            "firstname": meta["firstname"],
+            "vacation_days":  vac_map.get(persnr, {}).get("vacation_days", []),
+            "forbidden_days": forb_map.get(persnr, {}).get("forbidden_days", [])
+        }
+        employees_out.append(rec)
+
+    # Restructure and rename to the desired JSON-output-format
+    free_shifts_and_vacation_days = employees_out
+    output_json = {
+        "employees": free_shifts_and_vacation_days
+    }
+
+    # Store JSON-file within given directory
+    json_output = json.dumps(output_json, ensure_ascii=False, indent=2, default=str)
+    store_path = get_correct_path(filename)
+    with open(store_path, "w", encoding="utf-8") as f:
+        f.write(json_output)
+    # Print a message of completed export
+    print(f"✅ Export abgeschlossen – {filename} erstellt")
+    
