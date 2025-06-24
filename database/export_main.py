@@ -13,7 +13,7 @@ def main():
     export_data.export_personal_data_to_json(conn)
     export_data.export_target_working_minutes_to_json(conn)
     export_data.export_worked_sundays_to_json(conn)
-
+    export_data.export_free_shift_and_vacation_days_json(conn)
 
 if __name__ == "__main__":
     main()
