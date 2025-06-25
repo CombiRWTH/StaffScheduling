@@ -253,13 +253,13 @@ def export_free_shift_and_vacation_days_json(conn, filename="free_shifts_and_vac
     vac_map  = collapse(vac_df,  "vacation_days")
     forb_map = collapse(forb_df, "forbidden_days")
 
-      # forbidden_shifts:  List[ [day, KurzBez] ] – remove duplicates
+      # reserved:  List[ [day, KurzBez] ] – remove duplicates
     shift_map = (
         shift_df.groupby("PersNr")
                 .apply(lambda g: sorted({(d, kb) for d, kb in zip(g["day"], g["dienst"])}))
                 .to_dict()
     )
-    shift_map = {k: {"forbidden_shifts": [[d, kb] for d, kb in v]}
+    shift_map = {k: {"reserved": [[d, kb] for d, kb in v]}
                  for k, v in shift_map.items()}
 
     # Mapping  Prim -> Set (present days in Konto)
@@ -285,7 +285,7 @@ def export_free_shift_and_vacation_days_json(conn, filename="free_shifts_and_vac
 
         vac  = vac_map .get(persnr, {}).get("vacation_days",  [])
         forb = forb_map.get(persnr, {}).get("forbidden_days", [])
-        shift = shift_map.get(persnr, {}).get("forbidden_shifts", [])
+        shift = shift_map.get(persnr, {}).get("reserved", [])
 
         # remove duplicates of forbidden days that are already in forbidden shifts
         shift_days = {d for d, _ in shift}        
@@ -297,7 +297,7 @@ def export_free_shift_and_vacation_days_json(conn, filename="free_shifts_and_vac
             "firstname": meta["firstname"],
             "vacation_days":  vac,
             "forbidden_days": forb_clean,
-            "forbidden_shifts": shift
+            "reserved": shift
         }
         employees_out.append(rec)
 

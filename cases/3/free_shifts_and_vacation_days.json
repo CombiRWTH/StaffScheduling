@@ -23,7 +23,7 @@
         24,
         25
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "9205490147",
@@ -62,7 +62,7 @@
         29,
         30
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "9753626269",
@@ -70,7 +70,7 @@
       "firstname": "Janett",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "2422197372",
@@ -91,7 +91,7 @@
         26,
         27
       ],
-      "forbidden_shifts": [
+      "reserved": [
         [
           1,
           "N5"
@@ -190,7 +190,7 @@
         29,
         30
       ],
-      "forbidden_shifts": [
+      "reserved": [
         [
           10,
           "N5"
@@ -239,7 +239,7 @@
         24,
         30
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "7158423338",
@@ -247,7 +247,7 @@
       "firstname": "Ingbert",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": [
+      "reserved": [
         [
           15,
           "S2_"
@@ -291,7 +291,7 @@
         29,
         30
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "6304544803",
@@ -308,7 +308,7 @@
         2,
         3
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "8467222196",
@@ -316,7 +316,7 @@
       "firstname": "Lina",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "2432833811",
@@ -326,7 +326,7 @@
         18
       ],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "7336293778",
@@ -340,7 +340,7 @@
         29
       ],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "1328220945",
@@ -350,7 +350,7 @@
         11
       ],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "4307335425",
@@ -358,7 +358,7 @@
       "firstname": "Kersten",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "4524391957",
@@ -368,7 +368,7 @@
         11
       ],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "4731372662",
@@ -407,7 +407,7 @@
         29,
         30
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "4847485892",
@@ -415,7 +415,7 @@
       "firstname": "Eike",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": [
+      "reserved": [
         [
           25,
           "S2_"
@@ -430,7 +430,7 @@
       "forbidden_days": [
         18
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "5301690706",
@@ -441,7 +441,7 @@
         8
       ],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "0558391409",
@@ -449,7 +449,7 @@
       "firstname": "Augustin",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "4216350736",
@@ -498,7 +498,7 @@
         28,
         29
       ],
-      "forbidden_shifts": [
+      "reserved": [
         [
           1,
           "N€"
@@ -511,7 +511,7 @@
       "firstname": "Roseliese",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "4601161545",
@@ -519,7 +519,7 @@
       "firstname": "Christfri",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "6200464921",
@@ -538,7 +538,7 @@
         23,
         24
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "3663084827",
@@ -570,7 +570,7 @@
         29,
         30
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "9263090286",
@@ -578,7 +578,7 @@
       "firstname": "Trude",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": [
+      "reserved": [
         [
           17,
           "F2_"
@@ -591,7 +591,7 @@
       "firstname": "Annelene",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "0314863608",
@@ -615,7 +615,7 @@
         14,
         22
       ],
-      "forbidden_shifts": [
+      "reserved": [
         [
           15,
           "S2_"
@@ -664,7 +664,7 @@
       "firstname": "Ludger",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "7192281437",
@@ -700,7 +700,7 @@
         29,
         30
       ],
-      "forbidden_shifts": [
+      "reserved": [
         [
           27,
           "S2_"
@@ -722,7 +722,7 @@
         9,
         10
       ],
-      "forbidden_shifts": [
+      "reserved": [
         [
           5,
           "S2_"
@@ -760,7 +760,7 @@
         22,
         25
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "5277020481",
@@ -777,7 +777,7 @@
         28,
         29
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "5275675416",
@@ -794,7 +794,7 @@
         22,
         25
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "5075364389",
@@ -802,7 +802,7 @@
       "firstname": "Gertraute",
       "vacation_days": [],
       "forbidden_days": [],
-      "forbidden_shifts": [
+      "reserved": [
         [
           29,
           "T75_"
@@ -822,7 +822,7 @@
         5,
         6
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "7586945135",
@@ -832,7 +832,7 @@
       "forbidden_days": [
         1
       ],
-      "forbidden_shifts": []
+      "reserved": []
     },
     {
       "PersNr": "4939555116",
@@ -868,7 +868,7 @@
         26,
         27
       ],
-      "forbidden_shifts": []
+      "reserved": []
     }
   ]
 }
