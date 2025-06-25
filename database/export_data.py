@@ -171,7 +171,13 @@ def export_free_shift_and_vacation_days_json(conn, filename="free_shifts_and_vac
         for e in emp_data
     }
 
+    prim_to_persnr = {
+        int(e["Prim"]): str(e["PersNr"]) 
+        for e in emp_data
+    }
+
     whitelist_persnr = {e["PersNr"] for e in emp_data} 
+    whitelist = set(persnr2meta)
 
     query_vac = """
         SELECT
@@ -186,7 +192,7 @@ def export_free_shift_and_vacation_days_json(conn, filename="free_shifts_and_vac
             AND pkg.RefgAbw IN (20, 2434, 2435, 2091);
             """
     
-    query_forb = """
+    query_forb_days = """
         SELECT
             p.PersNr,
             p.Name       AS 'name',
@@ -195,32 +201,103 @@ def export_free_shift_and_vacation_days_json(conn, filename="free_shifts_and_vac
         FROM TPlanPersonalKommtGeht pkg
         JOIN TPersonal p ON pkg.RefPersonal = p.Prim
         WHERE pkg.Datum BETWEEN '2024.01.11' AND '2024.30.11'
-            AND (
-                pkg.RefgAbw IS NULL
-            OR pkg.RefgAbw NOT IN (20, 2434, 2435, 2091)  
-            )
+            AND pkg.RefgAbw NOT IN (20, 2434, 2435, 2091) 
+            """
+    
+    query_forb_shifts = """
+        SELECT
+            p.PersNr,
+            p.Name       AS 'name',
+            p.Vorname    AS 'firstname',
+            pkg.Datum    AS 'forbidden_days',
+			d.KurzBez    AS 'dienst'
+        FROM TPlanPersonalKommtGeht pkg
+        JOIN TPersonal p ON pkg.RefPersonal = p.Prim
+		JOIN TDienste d ON pkg.RefDienste = d.Prim
+        WHERE pkg.Datum BETWEEN '2024.01.11' AND '2024.30.11'
+            AND pkg.RefgAbw IS NULL 
             """
 
+    query_acc = """
+        SELECT
+            RefPersonal     AS Prim,
+            Datum
+        FROM  TPersonalKontenJeTag
+        WHERE RefPlanungsEinheiten = 77
+        AND Datum BETWEEN '2024.01.11' AND '2024.30.11';
+        """
+    
+
     vac_df = pd.read_sql(query_vac, conn)
-    forb_df = pd.read_sql(query_forb, conn)
+    forb_df = pd.read_sql(query_forb_days, conn)
+    shift_df = pd.read_sql(query_forb_shifts, conn)
+    acc_df = pd.read_sql(query_acc, conn)
 
     vac_df = vac_df[vac_df["PersNr"].isin(whitelist_persnr)]
     forb_df = forb_df[forb_df["PersNr"].isin(whitelist_persnr)]
+    shift_df = shift_df[shift_df["PersNr"].isin(whitelist_persnr)]
 
     vac_df["day"] = pd.to_datetime(vac_df["vacation_days"]).dt.day
     forb_df["day"] = pd.to_datetime(forb_df["forbidden_days"]).dt.day
+    shift_df["day"] = pd.to_datetime(shift_df["forbidden_days"]).dt.day
+
+    acc_df["Prim"] = acc_df["Prim"].astype(int)
+    acc_df["day"]  = pd.to_datetime(acc_df["Datum"]).dt.day
+
+    # all days (DatetimeIndex)
+    all_dates = pd.date_range(start="2024-11-01", end="2024-11-30", freq="D")
+
+    # only index of day
+    all_days = set(all_dates.day)
 
     vac_map  = collapse(vac_df,  "vacation_days")
     forb_map = collapse(forb_df, "forbidden_days")
 
+      # forbidden_shifts:  List[ [day, KurzBez] ] – remove duplicates
+    shift_map = (
+        shift_df.groupby("PersNr")
+                .apply(lambda g: sorted({(d, kb) for d, kb in zip(g["day"], g["dienst"])}))
+                .to_dict()
+    )
+    shift_map = {k: {"forbidden_shifts": [[d, kb] for d, kb in v]}
+                 for k, v in shift_map.items()}
+
+    # Mapping  Prim -> Set (present days in Konto)
+    konto_map = (
+        acc_df.groupby("Prim")["day"]
+            .apply(set)
+            .to_dict()
+    )
+
+    for prim_person, kontotage in konto_map.items():
+        persnr = prim_to_persnr.get(prim_person)      # if not present
+        if persnr is None or str(persnr) not in whitelist:
+            continue                                  # employee not relevant
+
+        fehlende = sorted(list(all_days - kontotage))
+        rec = forb_map.setdefault(str(persnr), {"forbidden_days": []})
+        # merge (without duplicates) + sort
+        rec["forbidden_days"] = sorted(set(rec["forbidden_days"]) | set(fehlende))
+
+
     employees_out = []
     for persnr, meta in persnr2meta.items():
+
+        vac  = vac_map .get(persnr, {}).get("vacation_days",  [])
+        forb = forb_map.get(persnr, {}).get("forbidden_days", [])
+        shift = shift_map.get(persnr, {}).get("forbidden_shifts", [])
+
+        # remove duplicates of forbidden days that are already in forbidden shifts
+        shift_days = {d for d, _ in shift}        
+        forb_clean = [d for d in forb if d not in shift_days]
+
         rec = {
             "PersNr": persnr,
             "name": meta["name"],
             "firstname": meta["firstname"],
-            "vacation_days":  vac_map.get(persnr, {}).get("vacation_days", []),
-            "forbidden_days": forb_map.get(persnr, {}).get("forbidden_days", [])
+            "vacation_days":  vac,
+            "forbidden_days": forb_clean,
+            "forbidden_shifts": shift
         }
         employees_out.append(rec)
 
