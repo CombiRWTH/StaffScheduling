@@ -33,6 +33,7 @@ This file contains the list of all employees within our PE (Planungseinheit), in
     }
   ]
 }
+```
 
 ## 📁 File: `free_shifts_and_vacation_days.json`
 
@@ -44,20 +45,21 @@ This file contains the list of all employees within our PE (Planungseinheit), wh
 
 ```jsonc
 {
-  "employees": [            // List of all employees
+  "employees": [             // List of all employees
     {
-      "Prim": int,      // Internal primary key ID
-      "firstname": "string",// First name of the employee
-      "name": "string",     // Last name of the employee
-      "forbidden_days": {
-        [int]
-      },   // Days that are crossed off within TimeOffice = not available
-      "reserved": {
-        [int, "string"]
-      }   // Shifts that are crossed off within TimeOffice and worked in another PE = not available
-      "vacation_days": {
-        [int]
-      }   // Days that are marked as vacation days = not available
+      "Prim": "int",         // Internal primary key ID
+      "firstname": "string", // First name of the employee
+      "name": "string",      // Last name of the employee
+      "forbidden_days": {    // Days that are crossed off within TimeOffice = not available
+        ["int"]
+      },
+      "reserved": {          // Shifts that are crossed off within TimeOffice and worked in
+        ["int", "string"]      // another PE = not available
+      }
+      "vacation_days": {     // Days that are marked as vacation days = not available
+        ["int"]
+      }
     }
   ]
 }
+```
