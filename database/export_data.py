@@ -236,8 +236,6 @@ def export_free_shift_and_vacation_days_json(
     shift_df = pd.read_sql(query_forb_shifts, engine)
     acc_df = pd.read_sql(query_acc, engine)
 
-    # acc_df.to_json("acc_data.json", orient="records", indent=2, force_ascii=False)
-
     vac_df = vac_df[vac_df["PersNr"].isin(whitelist_persnr)]
     forb_df = forb_df[forb_df["PersNr"].isin(whitelist_persnr)]
     shift_df = shift_df[shift_df["PersNr"].isin(whitelist_persnr)]
@@ -270,14 +268,6 @@ def export_free_shift_and_vacation_days_json(
 
     # Mapping  Prim -> Set (present days in Konto)
     konto_map = acc_df.groupby("Prim")["day"].apply(set).to_dict()
-
-    # with open("konto_map.json", "w", encoding="utf-8") as f:
-    #     json.dump(
-    #         {k: list(v) for k, v in konto_map.items()},
-    #         f,
-    #         indent=2,
-    #         ensure_ascii=False
-    #     )
 
     for prim_person, kontotage in konto_map.items():
         persnr = prim_to_persnr.get(prim_person)  # if not present
