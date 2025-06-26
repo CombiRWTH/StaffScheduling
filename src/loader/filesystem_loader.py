@@ -96,6 +96,7 @@ class FSLoader(Loader):
             firstname = fs_employee["firstname"]
             type = fs_employee["type"]
             level = fs_employees_levels[type]
+            qualifications = fs_employee.get("qualifications", [])
 
             target = fs_employees_target.get(id)
             if target is None:
@@ -127,6 +128,7 @@ class FSLoader(Loader):
                     wish_days=wish_days,
                     wish_shifts=wish_shifts,
                     planned_shifts=planned_shifts,
+                    qualifications=qualifications,
                 )
             )
 
