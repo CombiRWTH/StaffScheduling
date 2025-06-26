@@ -115,10 +115,6 @@ class FSLoader(Loader):
                 )
             )
 
-        # employees = []
-        employees += super().get_employees(len(employees))
-
-        # employees = []
         employees += super().get_employees(len(employees))
 
         return employees
