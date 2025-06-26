@@ -174,7 +174,7 @@ def export_free_shift_and_vacation_days_json(
         emp_data = json.load(f)["employees"]
 
     prim2meta = {
-        int(e["Prim"]): { "PersNr": str(e["PersNr"]), "name": e["name"], "firstname": e["firstname"]}
+        int(e["Prim"]): {"name": e["name"], "firstname": e["firstname"]}
         for e in emp_data
     }
 
@@ -183,7 +183,6 @@ def export_free_shift_and_vacation_days_json(
     query_vac = """
         SELECT
             p.Prim       AS Prim,  
-            p.PersNr,
             p.Name       AS name,
             p.Vorname    AS firstname,
             pkg.Datum    AS vacation_days
@@ -197,7 +196,6 @@ def export_free_shift_and_vacation_days_json(
     query_forb_days = """
         SELECT
             p.Prim       AS Prim,  
-            p.PersNr,
             p.Name       AS 'name',
             p.Vorname    AS 'firstname',
             pkg.Datum    AS 'forbidden_days'
@@ -210,7 +208,6 @@ def export_free_shift_and_vacation_days_json(
     query_forb_shifts = """
         SELECT
             p.Prim       AS Prim,  
-            p.PersNr,
             p.Name       AS 'name',
             p.Vorname    AS 'firstname',
             pkg.Datum    AS 'reserved',
@@ -291,7 +288,6 @@ def export_free_shift_and_vacation_days_json(
 
         rec = {
             "Prim": prim,
-            "PersNr": meta["PersNr"],
             "name": meta["name"],
             "firstname": meta["firstname"],
             "vacation_days": vac,
