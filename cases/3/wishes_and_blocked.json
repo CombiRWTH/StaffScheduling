@@ -1,10 +1,10 @@
 {
   "employees": [
     {
-      "Prim": 791,
       "blocked_days": [],
       "blocked_shifts": [],
       "firstname": "Janett",
+      "key": 791,
       "name": "Branz",
       "wish_days": [],
       "wish_shifts": [
@@ -15,10 +15,10 @@
       ]
     },
     {
-      "Prim": 917,
       "blocked_days": [],
       "blocked_shifts": [],
       "firstname": "Ingbert",
+      "key": 917,
       "name": "Catoe",
       "wish_days": [
         8
@@ -35,7 +35,6 @@
       ]
     },
     {
-      "Prim": 2963,
       "blocked_days": [],
       "blocked_shifts": [
         [
@@ -292,6 +291,7 @@
         ]
       ],
       "firstname": "Renilde",
+      "key": 2963,
       "name": "Hoots",
       "wish_days": [
         26
@@ -299,7 +299,6 @@
       "wish_shifts": []
     },
     {
-      "Prim": 7603,
       "blocked_days": [],
       "blocked_shifts": [
         [
@@ -424,6 +423,7 @@
         ]
       ],
       "firstname": "Ludger",
+      "key": 7603,
       "name": "Roberson",
       "wish_days": [],
       "wish_shifts": [
@@ -438,10 +438,10 @@
       ]
     },
     {
-      "Prim": 6836,
       "blocked_days": [],
       "blocked_shifts": [],
       "firstname": "Trude",
+      "key": 6836,
       "name": "Valentino",
       "wish_days": [],
       "wish_shifts": [
@@ -472,10 +472,10 @@
       ]
     },
     {
-      "Prim": 3868,
       "blocked_days": [],
       "blocked_shifts": [],
       "firstname": "Eike",
+      "key": 3868,
       "name": "Vanfleet",
       "wish_days": [
         11
@@ -604,7 +604,6 @@
       ]
     },
     {
-      "Prim": 925,
       "blocked_days": [],
       "blocked_shifts": [
         [
@@ -969,6 +968,7 @@
         ]
       ],
       "firstname": "Lina",
+      "key": 925,
       "name": "Farniok",
       "wish_days": [
         20,
@@ -977,10 +977,10 @@
       "wish_shifts": []
     },
     {
-      "Prim": 5367,
       "blocked_days": [],
       "blocked_shifts": [],
       "firstname": "Henni",
+      "key": 5367,
       "name": "Donis",
       "wish_days": [],
       "wish_shifts": [
@@ -999,10 +999,10 @@
       ]
     },
     {
-      "Prim": 6677,
       "blocked_days": [],
       "blocked_shifts": [],
       "firstname": "Christfri",
+      "key": 6677,
       "name": "Fullerton",
       "wish_days": [
         28,
@@ -1011,7 +1011,6 @@
       "wish_shifts": []
     },
     {
-      "Prim": 6681,
       "blocked_days": [],
       "blocked_shifts": [
         [
@@ -1376,12 +1375,12 @@
         ]
       ],
       "firstname": "Saskia",
+      "key": 6681,
       "name": "Labelle",
       "wish_days": [],
       "wish_shifts": []
     },
     {
-      "Prim": 928,
       "blocked_days": [
         1,
         6,
@@ -1762,12 +1761,12 @@
         ]
       ],
       "firstname": "Daniele",
+      "key": 928,
       "name": "Wunderlich",
       "wish_days": [],
       "wish_shifts": []
     },
     {
-      "Prim": 459,
       "blocked_days": [],
       "blocked_shifts": [
         [
@@ -1892,12 +1891,12 @@
         ]
       ],
       "firstname": "Sandra",
+      "key": 459,
       "name": "Shoemake",
       "wish_days": [],
       "wish_shifts": []
     },
     {
-      "Prim": 924,
       "blocked_days": [
         8,
         14,
@@ -2030,12 +2029,12 @@
         ]
       ],
       "firstname": "B\u00e4rbl",
+      "key": 924,
       "name": "Merriweather",
       "wish_days": [],
       "wish_shifts": []
     },
     {
-      "Prim": 6507,
       "blocked_days": [],
       "blocked_shifts": [
         [
@@ -2292,6 +2291,7 @@
         ]
       ],
       "firstname": "Roseliese",
+      "key": 6507,
       "name": "Rashid",
       "wish_days": [],
       "wish_shifts": []

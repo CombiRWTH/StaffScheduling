@@ -64,7 +64,7 @@ def export_target_working_minutes_to_json(
     """Export all target working minutes found within TPersonalKontenJeMonat and create a JSON-file."""
     # SQL Query to export the target working hours from TPersonalKontenJeMonat
     query = """SELECT
-                    p.PersNr,
+                    p.Prim,
                     p.Name AS 'name',
                     p.Vorname AS 'firstname',
                     pkt.RefKonten,
@@ -81,7 +81,7 @@ def export_target_working_minutes_to_json(
     # Merging different entries for each employee to summarize all Konten in one entry
     df_wide = (
         df.pivot_table(
-            index=["PersNr", "name", "firstname"],
+            index=["Prim", "name", "firstname"],
             columns="RefKonten",
             values="Wert2",
             aggfunc="sum",
@@ -103,7 +103,11 @@ def export_target_working_minutes_to_json(
 
     # Renaming Columns
     df_wide = df_wide.rename(
-        columns={"Wert_RefKonten1": "target", "Wert_RefKonten19_55": "actual"}
+        columns={
+            "Wert_RefKonten1": "target",
+            "Wert_RefKonten19_55": "actual",
+            "Prim": "key",
+        }
     )
 
     target_working_minutes_list = df_wide.to_dict(orient="records")
@@ -122,7 +126,7 @@ def export_worked_sundays_to_json(engine, filename="worked_sundays.json"):
     """Export the number of worked sundays found within TPersonalKontenJeTag and create a JSON-file."""
     # Write SQL-query to retrieve worked sundays (for November 2024 and 12 months prior)
     query = """SELECT
-                p.PersNr,
+                p.Prim,
                 p.Name AS name,
                 p.Vorname AS firstname,
                 COUNT(DISTINCT CAST(pkt.Datum AS DATE)) AS worked_sundays
@@ -134,7 +138,7 @@ def export_worked_sundays_to_json(engine, filename="worked_sundays.json"):
                 --AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'
                 AND pkt.Wert > 0
             GROUP BY
-                p.PersNr,
+                p.Prim,
                 p.Name,
                 p.Vorname
             ORDER BY
@@ -143,7 +147,8 @@ def export_worked_sundays_to_json(engine, filename="worked_sundays.json"):
     df = pd.read_sql(query, engine)
 
     # Restructure and rename to the desired JSON-output-format
-    worked_sundays = df.to_dict(orient="records")
+    df_renamed = df.rename(columns={"Prim": "key"})
+    worked_sundays = df_renamed.to_dict(orient="records")
     output_json = {"worked_sundays": worked_sundays}
 
     # Store JSON-file within given directory
