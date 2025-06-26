@@ -48,9 +48,10 @@
                         {% endfor %}
                         {% set actual_shifts = ns.actual_shifts %}
                         {% set actual_hours = ns.actual_minutes / 60 %}
-                        {% set target_hours = employee.get_target_working_time(shifts) / 60 %}
+                        {% set target_hours = employee.get_available_working_time() / 60 %}
+                        {% set overtime = (actual_hours - target_hours)|abs > 7.67  %}
                         <tr>
-                            <td class="text-center text-nowrap" style="position: relative;{{ ' background-color: oklch(89.2% 0.058 10.001); ' if actual_hours > target_hours + 7.67 }}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="{{ actual_shifts }} shifts </br> {{ '%.2f'|format(actual_hours) }}h of {{ '%.2f'|format(target_hours) }}h">
+                            <td class="text-center text-nowrap" style="position: relative;{{ ' background-color: oklch(89.2% 0.058 10.001); ' if overtime }}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="{{ actual_shifts }} shifts </br> {{ '%.2f'|format(actual_hours) }}h of {{ '%.2f'|format(target_hours) }}h">
                                 {{ employee.name }}
                                 <br />
                                 <span class="text-secondary">{{ employee.level }}</span>
