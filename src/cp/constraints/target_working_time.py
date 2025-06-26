@@ -31,7 +31,7 @@ class TargetWorkingTimeConstraint(Constraint):
                     possible_working_time.append(variable * shift.duration)
 
             working_time_variable = model.new_int_var_from_domain(
-                working_time_domain, f"working_time_e:{employee.get_id()}"
+                working_time_domain, f"working_time_e:{employee.get_key()}"
             )
             model.add(sum(possible_working_time) == working_time_variable)
 

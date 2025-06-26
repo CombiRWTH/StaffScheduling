@@ -36,4 +36,4 @@ class EmployeeDayVariable(Variable):
         return vars
 
     def get_key(employee: Employee, day: Day) -> str:
-        return f"e:{employee.get_id()}_d:{day}"
+        return f"e:{employee.get_key()}_d:{day}"

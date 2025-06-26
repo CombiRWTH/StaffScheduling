@@ -78,6 +78,7 @@ class FSLoader(Loader):
         employees: list[Employee] = []
         for i, fs_employee in enumerate(fs_employees):
             id = fs_employee["PersNr"]
+            key = fs_employee.get("key")
             surname = fs_employee["name"]
             firstname = fs_employee["firstname"]
             type = fs_employee["type"]
@@ -99,7 +100,7 @@ class FSLoader(Loader):
 
             employees.append(
                 Employee(
-                    id=i,
+                    key=key if key is not None else i,
                     surname=surname,
                     name=firstname,
                     level=level,

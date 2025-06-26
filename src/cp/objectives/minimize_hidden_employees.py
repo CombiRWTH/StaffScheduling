@@ -40,7 +40,7 @@ class MinimizeHiddenEmployeesObjective(Objective):
                     possible_working_time.append(variable * shift.duration)
 
             possible_hidden_employee_variable = model.new_int_var(
-                0, max_duration, f"hidden_e:{employee.get_id()}"
+                0, max_duration, f"hidden_e:{employee.get_key()}"
             )
 
             model.add(possible_hidden_employee_variable == sum(possible_working_time))

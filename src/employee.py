@@ -3,7 +3,7 @@ from day import Day
 
 
 class Employee:
-    _id: int
+    _key: int
     _surname: str
     _name: str
     _level: str
@@ -19,7 +19,7 @@ class Employee:
 
     def __init__(
         self,
-        id: int,
+        key: int,
         surname: str,
         name: str,
         level: str,
@@ -36,7 +36,7 @@ class Employee:
         """
         Initializes an Employee instance.
         """
-        self._id = id
+        self._key = key
         self._surname = surname
         self._name = name
         self._level = level
@@ -50,8 +50,8 @@ class Employee:
         self._wish_days = wish_days
         self._wish_shifts = wish_shifts
 
-    def get_id(self) -> int:
-        return self._id
+    def get_key(self) -> int:
+        return self._key
 
     @property
     def level(self) -> str:
