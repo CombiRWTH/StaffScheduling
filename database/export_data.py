@@ -163,11 +163,28 @@ def collapse(df, col_name):
     )
     return {k: {col_name: v} for k, v in out.items()}
 
+def get_plan_dates(engine, planid):
+    query = f"""
+        SELECT 
+            CAST(VonDat AS DATE) AS 'START', 
+            CAST(BisDat AS DATE) AS 'END' 
+        FROM TPlan WHERE Prim = '{planid}'
+        """
+    df = pd.read_sql(query, engine)
+    return df
+    
 
 def export_free_shift_and_vacation_days_json(
     engine, filename="free_shifts_and_vacation_days.json"
 ):
     """Export the free shifts and vacation daysfound within TPersonalKommtGeht and create a JSON-file."""
+
+    planid = 17193
+
+    dates = get_plan_dates(engine, planid)
+
+    START_DATE = dates.loc[0, "START"]
+    END_DATE = dates.loc[0, "END"]
 
     EMP_FILE = get_correct_path("employees.json")
     with open(EMP_FILE, encoding="utf-8") as f:
@@ -180,7 +197,7 @@ def export_free_shift_and_vacation_days_json(
 
     whitelist = set(prim2meta)
 
-    query_vac = """
+    query_vac = f"""
         SELECT
             p.Prim       AS Prim,  
             p.Name       AS name,
@@ -189,11 +206,11 @@ def export_free_shift_and_vacation_days_json(
         FROM TPlanPersonalKommtGeht pkg
         JOIN TPersonal p ON pkg.RefPersonal = p.Prim
         WHERE
-            pkg.Datum BETWEEN '2024.01.11' AND '2024.30.11'
+            pkg.Datum BETWEEN CONVERT(date,'{START_DATE}',23) AND CONVERT(date,'{END_DATE}',23)
             AND pkg.RefgAbw IN (20, 2434, 2435, 2091);
             """
 
-    query_forb_days = """
+    query_forb_days = f"""
         SELECT
             p.Prim       AS Prim,  
             p.Name       AS 'name',
@@ -201,11 +218,11 @@ def export_free_shift_and_vacation_days_json(
             pkg.Datum    AS 'forbidden_days'
         FROM TPlanPersonalKommtGeht pkg
         JOIN TPersonal p ON pkg.RefPersonal = p.Prim
-        WHERE pkg.Datum BETWEEN '2024.01.11' AND '2024.30.11'
+        WHERE pkg.Datum BETWEEN CONVERT(date,'{START_DATE}',23) AND CONVERT(date,'{END_DATE}',23)
             AND pkg.RefgAbw NOT IN (20, 2434, 2435, 2091)
             """
 
-    query_forb_shifts = """
+    query_forb_shifts = f"""
         SELECT
             p.Prim       AS Prim,  
             p.Name       AS 'name',
@@ -215,17 +232,17 @@ def export_free_shift_and_vacation_days_json(
         FROM TPlanPersonalKommtGeht pkg
         JOIN TPersonal p ON pkg.RefPersonal = p.Prim
 		JOIN TDienste d ON pkg.RefDienste = d.Prim
-        WHERE pkg.Datum BETWEEN '2024.01.11' AND '2024.30.11'
+        WHERE pkg.Datum BETWEEN CONVERT(date,'{START_DATE}',23) AND CONVERT(date,'{END_DATE}',23)
             AND pkg.RefgAbw IS NULL
             """
 
-    query_acc = """
+    query_acc = f"""
         SELECT
             RefPersonal     AS Prim,
             Datum
         FROM  TPersonalKontenJeTag
         WHERE RefPlanungsEinheiten = 77
-        AND Datum BETWEEN '2024.01.11' AND '2024.30.11';
+        AND Datum BETWEEN CONVERT(date,'{START_DATE}',23) AND CONVERT(date,'{END_DATE}',23);
         """
 
     vac_df = pd.read_sql(query_vac, engine)
@@ -244,8 +261,9 @@ def export_free_shift_and_vacation_days_json(
     acc_df["Prim"] = acc_df["Prim"].astype(int)
     acc_df["day"] = pd.to_datetime(acc_df["Datum"]).dt.day
 
+
     # all days (DatetimeIndex)
-    all_dates = pd.date_range(start="2024-11-01", end="2024-11-30", freq="D")
+    all_dates = pd.date_range(start=START_DATE, end=END_DATE, freq="D")
 
     # only index of day
     all_days = set(all_dates.day)
