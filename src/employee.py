@@ -61,27 +61,11 @@ class Employee:
     def name(self) -> str:
         return f"{self._surname} {self._name}"
 
-    def get_target_working_time(
-        self, shifts: list[Shift] = [], subtract_vacation: bool = True
-    ) -> int:
+    def get_available_working_time(self) -> int:
         """
         Calculates the target working time for the employee.
-
-        If `subtract_vacation` is True, it subtracts the vacation time from the target working time, it uses the minimum duration of the shifts to calculate vacation time.
         """
-        if subtract_vacation:
-            if shifts == []:
-                raise ValueError(
-                    "Shifts must be provided to calculate target working time with vacation subtracted."
-                )
-
-            vacation_time = len(self._vacation_days) * min(
-                shift.duration for shift in shifts
-            )
-
-            return self._target_working_time - self._actual_working_time - vacation_time
-
-        return self._target_working_time - self._actual_working_time
+        return max(self._target_working_time - self._actual_working_time, 0)
 
     def unavailable(self, day: Day, shift: Shift = None) -> bool:
         """

@@ -28,7 +28,7 @@ class MinimizeOvertimeObjective(Objective):
         max_duration = 31 * 24 * 60
 
         for employee in self._employees:
-            target_working_time = employee.get_target_working_time(self._shifts)
+            target_working_time = employee.get_available_working_time()
             possible_working_time = []
 
             for day in self._days:
