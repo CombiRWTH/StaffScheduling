@@ -1,6 +1,5 @@
 import json
 import ast
-import pyodbc
 import os
 import re
 import unicodedata
@@ -9,7 +8,8 @@ from datetime import datetime, time, timedelta
 from dotenv import load_dotenv
 from pathlib import Path
 from collections import Counter
-from connection_setup import get_db_connection_string
+from connection_setup import get_db_engine
+from sqlalchemy import text
 
 # Load the .env-file for file import purposes
 load_dotenv()
@@ -20,11 +20,11 @@ def load_json_files():
     which includes the shifts references to employees."""
     base_path = Path(__file__).parent.resolve()
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
-    # sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
-    sub_folder = "2"
+    sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
 
     solution_file = base_path / "solutions_test.json"
-    employee_file = Path(base_folder) / sub_folder / "employees.json"
+    #employee_file = Path(base_folder) / sub_folder / "employees.json"
+    employee_file = base_path / "employees.json"
 
     with open(solution_file, encoding="utf-8") as f:
         data = json.load(f)
@@ -65,31 +65,30 @@ def variants(last: str, first: str):
     return [norm(x) for x in raw]
 
 
-def load_person_to_job(conn_str: str) -> dict[int, int]:
+def load_person_to_job(engine) -> dict[int, int]:
     """Reads TPersonal (Prim, RefBerufe) and returns {Prim: RefBerufe}."""
-    sql = "SELECT Prim, RefBerufe FROM TPersonal"
-    with pyodbc.connect(conn_str) as cn:
-        return {row.Prim: row.RefBerufe for row in cn.cursor().execute(sql)}
+    sql = text("SELECT Prim, RefBerufe FROM TPersonal")
+    with engine.connect() as connection:
+        result = connection.execute(sql)
+        return {row.Prim: row.RefBerufe for row in result}
 
 
 def load_shift_segments(
-    conn_str: str, shift_id_map: dict[int, int]
+    engine, shift_id_map: dict[int, int]
 ) -> dict[int, list[tuple[time, time, int]]]:
     """Load the correct times for each shift type."""
-    sql = """
+    sql = text("""
         SELECT Kommt, Geht
         FROM   TDiensteSollzeiten
-        WHERE  RefDienste = ?
+        WHERE  RefDienste = :ref
         ORDER  BY Kommt
-    """
+    """)
 
     segments_by_shift = {}
 
-    with pyodbc.connect(conn_str) as cn:
-        cur = cn.cursor()
+    with engine.connect() as conn:
         for shift_id, ref_dienst in shift_id_map.items():
-            cur.execute(sql, ref_dienst)
-            rows = cur.fetchall()
+            rows = conn.execute(sql, {"ref": ref_dienst}).fetchall()
             if not rows:
                 raise ValueError(
                     f"TDiensteSollzeiten does not contain an entry for RefDienste {ref_dienst}"
@@ -104,42 +103,11 @@ def load_shift_segments(
 
             segments_by_shift[shift_id] = segments
 
-    print(segments_by_shift)
     return segments_by_shift
-
-
-def build_key2prim(emp_data):
-    last_counts = Counter(norm(e["name"]) for e in emp_data)
-    unique_last = {ln for ln, c in last_counts.items() if c == 1}
-
-    key2prim = {}
-    for emp in emp_data:
-        ln, fn, prim = norm(emp["name"]), norm(emp["firstname"]), emp["Prim"]
-
-        for v in variants(ln, fn):
-            key2prim[v] = prim
-
-        if ln in unique_last:
-            key2prim[ln] = prim
-    return key2prim
-
-
-def map_indices_to_prims(data, key2prim):
-    idx_to_name = data["employees"]["name_to_index"]
-    idx_to_prim, unmatched = {}, []
-    for full_name, idx in idx_to_name.items():
-        key = norm(full_name)
-        prim = key2prim.get(key)
-        if prim is not None:
-            idx_to_prim[idx] = prim
-        else:
-            unmatched.append(full_name)
-    return idx_to_prim, unmatched
 
 
 def build_dataframe(
     data,
-    idx_to_prim,
     prim_to_refberuf,
     shift_segments,
     shift_to_refdienst,
@@ -149,14 +117,13 @@ def build_dataframe(
 ):
     """Build the solution into one DataFrame (one row per segment)."""
     records = []
-    for key, val in data["solutions"][0].items():
+    for key, val in data["variables"].items():
         if val != 1:
             continue
 
-        emp_idx, date_str, shift_id = ast.literal_eval(key)
+        prim_person, date_str, shift_id = ast.literal_eval(key)
         base_date = datetime.strptime(date_str, "%Y-%m-%d").date()
         ref_dienst = shift_to_refdienst[shift_id]
-        prim_person = idx_to_prim[emp_idx]
         prim_beruf = prim_to_refberuf.get(prim_person)
 
         if prim_beruf is None:
@@ -176,7 +143,7 @@ def build_dataframe(
                     "RefPersonal": prim_person,
                     "Datum": datum,
                     "RefStati": status_id,
-                    "lfdNr": 0,
+                    "lfdNr": seg_idx,
                     "RefgAbw": None,
                     "RefDienste": ref_dienst,
                     "RefBerufe": prim_beruf,
@@ -198,78 +165,43 @@ def build_dataframe(
             )
 
     df = pd.DataFrame(records)
-    # lfdNr assigned per day/employee/status
-    df["lfdNr"] = (
-        df.sort_values(["RefPersonal", "Datum", "VonZeit"])
-        .groupby(["RefPersonal", "Datum", "RefStati"])
-        .cumcount()
-        + 1
-    )
     return df
 
 
-def insert_dataframe_to_db(df, conn_str):
+def insert_dataframe_to_db(df, engine):
     """Insert the correctly formatted solution into the database."""
-    with pyodbc.connect(conn_str) as conn:
-        cursor = conn.cursor()
-        cursor.fast_executemany = True
 
-        insert_sql = """
-            INSERT INTO TPlanPersonalKommtGeht
-            (RefPlan, RefPersonal, Datum, RefStati, lfdNr,
-            RefgAbw, RefDienste, RefBerufe, RefPlanungseinheiten,
-            VonZeit, BisZeit, RefDienstAbw, Minuten, Info,
-            RefEinsatzArten, Wunschdienst, BereitVon, BereitBis,
-            RefDiensteSpezTypenElemente, RefPeinheitOwner,
-            RefSeminareTermine, VBAHerkunft)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """
+    insert_sql = text("""
+        INSERT INTO TPlanPersonalKommtGeht
+        (RefPlan, RefPersonal, Datum, RefStati, lfdNr,
+        RefgAbw, RefDienste, RefBerufe, RefPlanungseinheiten,
+        VonZeit, BisZeit, RefDienstAbw, Minuten, Info,
+        RefEinsatzArten, Wunschdienst, BereitVon, BereitBis,
+        RefDiensteSpezTypenElemente, RefPeinheitOwner,
+        RefSeminareTermine, VBAHerkunft)
+        VALUES (
+            :RefPlan, :RefPersonal, :Datum, :RefStati, :lfdNr,
+            :RefgAbw, :RefDienste, :RefBerufe, :RefPlanungseinheiten,
+            :VonZeit, :BisZeit, :RefDienstAbw, :Minuten, :Info,
+            :RefEinsatzArten, :Wunschdienst, :BereitVon, :BereitBis,
+            :RefDiensteSpezTypenElemente, :RefPeinheitOwner,
+            :RefSeminareTermine, :VBAHerkunft
+        )
+    """)
 
-        params = [
-            (
-                row.RefPlan,
-                row.RefPersonal,
-                row.Datum,
-                row.RefStati,
-                row.lfdNr,
-                row.RefgAbw,
-                row.RefDienste,
-                row.RefBerufe,
-                row.RefPlanungseinheiten,
-                row.VonZeit,
-                row.BisZeit,
-                row.RefDienstAbw,
-                row.Minuten,
-                row.Info,
-                row.RefEinsatzArten,
-                row.Wunschdienst,
-                row.BereitVon,
-                row.BereitBis,
-                row.RefDiensteSpezTypenElemente,
-                row.RefPeinheitOwner,
-                row.RefSeminareTermine,
-                row.VBAHerkunft,
-            )
-            for row in df.itertuples(index=False)
-        ]
+    params = df.to_dict(orient="records") 
 
-        cursor.executemany(insert_sql, params)
-        conn.commit()
+    with engine.begin() as conn:
+        conn.execution_options(fast_executemany=True)
+        conn.execute(insert_sql, params)
 
     print(f"{len(df):,} Lines inserted in TPlanPersonalKommtGeht.")
 
 
 def run():
-    conn_str = get_db_connection_string()
+    engine = get_db_engine()
     data, emp_data = load_json_files()
-    prim_to_refberuf = load_person_to_job(conn_str)
-    key2prim = build_key2prim(emp_data)
-    idx_to_prim, unmatched = map_indices_to_prims(data, key2prim)
-
-    if unmatched:
-        print("Not yet assigned:", ", ".join(unmatched))
-    else:
-        print("All names successfully mapped!")
+    prim_to_refberuf = load_person_to_job(engine)
 
     # Currently hardcoded at the "wrong" spot!
     PE_ID = 77
@@ -279,11 +211,10 @@ def run():
     # Corresponding shift IDs to given counts of shifts
     SHIFT_TO_REFDIENST = {0: 2939, 1: 2947, 2: 2953, 3: 2906}
     # Shift mapping with format: shift_id : [ (von_time, bis_time, day_offset) , … ]
-    SHIFT_SEGMENTS = load_shift_segments(conn_str, SHIFT_TO_REFDIENST)
+    SHIFT_SEGMENTS = load_shift_segments(engine, SHIFT_TO_REFDIENST)
 
     df = build_dataframe(
         data,
-        idx_to_prim,
         prim_to_refberuf,
         SHIFT_SEGMENTS,
         SHIFT_TO_REFDIENST,
@@ -293,7 +224,7 @@ def run():
     )
 
     # When needed to write into the database directly:
-    # insert_dataframe_to_db(df, conn_str)
+    #insert_dataframe_to_db(df, engine)
 
     # Test export as a json file to check if the output is correct without actually writing into the db:
     test_file = df.to_dict(orient="records")
