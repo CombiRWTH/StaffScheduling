@@ -32,7 +32,7 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
 
                 for day in self._days[: -(phase_length - 1)]:
                     night_shift_phase_variable = model.NewBoolVar(
-                        f"night_shift_phase_e:{employee.get_id()}_d:{day}_l:{phase_length}"
+                        f"night_shift_phase_e:{employee.get_key()}_d:{day}_l:{phase_length}"
                     )
                     window = [
                         variables[

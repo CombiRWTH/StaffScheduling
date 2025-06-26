@@ -29,7 +29,7 @@ class Loader(ABC):
             for new_id in range(last_id, last_id + num):
                 hidden_employees.append(
                     Employee(
-                        id=new_id,
+                        key=new_id,
                         name="Hidden",
                         surname=f"{level}{new_id}",
                         level=level,

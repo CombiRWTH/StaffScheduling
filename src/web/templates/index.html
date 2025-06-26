@@ -39,7 +39,7 @@
                         {% set ns = namespace(actual_minutes=0,actual_shifts=0) %}
                         {% for day in days %}
                             {% for shift in shifts %}
-                                {% set key = "(" ~ employee.get_id() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
+                                {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
                                 {% if variables[key] == 1 %}
                                     {% set ns.actual_shifts = ns.actual_shifts + 1%}
                                     {% set ns.actual_minutes = ns.actual_minutes + shift.duration %}
@@ -59,7 +59,7 @@
                             {% for day in days %}
                                 <td class="text-center text-light" style="position: relative;{{ ' background-color: oklch(92.2% 0 0); ' if day.isoweekday() in [6,7] }}{{ ' background-color: oklch(97.1% 0.013 17.38); ' if employee.unavailable(day) }}">
                                     {% for shift in shifts %}
-                                        {% set key = "(" ~ employee.get_id() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
+                                        {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
                                         {% if variables[key] == 1 %}
                                             <span class="d-block w-100 h-100 rounded" style="background-color: {{ shift.color }};">
                                                 <br />

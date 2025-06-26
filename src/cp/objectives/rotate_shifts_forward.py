@@ -31,7 +31,7 @@ class RotateShiftsForwardObjective(Objective):
             for day in self._days[:-1]:
                 for shift in self._shifts:
                     rotation_variable = model.new_bool_var(
-                        f"rotation_e:{employee.get_id()}_d:{day}_s:{shift.get_id()}"
+                        f"rotation_e:{employee.get_key()}_d:{day}_s:{shift.get_id()}"
                     )
                     current_shift_variable = variables[
                         EmployeeDayShiftVariable.get_key(employee, day, shift)

@@ -39,11 +39,11 @@ class MinimizeOvertimeObjective(Objective):
                     possible_working_time.append(variable * shift.duration)
 
             possible_overtime_variable = model.new_int_var(
-                -max_duration, max_duration, f"overtime_e:{employee.get_id()}"
+                -max_duration, max_duration, f"overtime_e:{employee.get_key()}"
             )
 
             possible_overtime_absolute_variable = model.new_int_var(
-                0, max_duration, f"overtime_absolute_e:{employee.get_id()}"
+                0, max_duration, f"overtime_absolute_e:{employee.get_key()}"
             )
             model.add(
                 possible_overtime_variable
