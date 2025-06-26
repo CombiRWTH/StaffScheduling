@@ -70,7 +70,7 @@ class Employee:
     @property
     def name(self) -> str:
         return f"{self._surname} {self._name}"
-    
+
     def qualified(self, qualification: str) -> bool:
         """
         Checks if the employee has a specific qualification.
