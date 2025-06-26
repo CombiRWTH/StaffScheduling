@@ -1,16 +1,16 @@
 _COLORS = {
     0: "oklch(45.3% 0.124 130.933)",
-    1: "oklch(76.9% 0.188 70.08)",
-    2: "oklch(20.8% 0.042 265.755)",
-    3: "oklch(78.9% 0.154 211.53)",
+    1: "oklch(78.9% 0.154 211.53)",
+    2: "oklch(76.9% 0.188 70.08)",
+    3: "oklch(20.8% 0.042 265.755)",
 }
 
 
 class Shift:
     EARLY = 0
-    LATE = 1
-    NIGHT = 2
-    INTERMEDIATE = 3
+    INTERMEDIATE = 1
+    LATE = 2
+    NIGHT = 3
 
     _id: int
     _name: str
