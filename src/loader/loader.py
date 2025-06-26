@@ -17,53 +17,28 @@ class Loader(ABC):
         """
         Retrieves a list of employees.
         """
-        return [
-            Employee(
-                id=start, name="Hidden", surname="Azubi0", level="Azubi", type="hidden"
-            ),
-            Employee(
-                id=start + 1,
-                name="Hidden",
-                surname="Fachkraft0",
-                level="Fachkraft",
-                type="hidden",
-            ),
-            Employee(
-                id=start + 2,
-                name="Hidden",
-                surname="Fachkraft1",
-                level="Fachkraft",
-                type="hidden",
-            ),
-            Employee(
-                id=start + 3,
-                name="Hidden",
-                surname="Fachkraft2",
-                level="Fachkraft",
-                type="hidden",
-            ),
-            Employee(
-                id=start + 4,
-                name="Hidden",
-                surname="Fachkraft3",
-                level="Fachkraft",
-                type="hidden",
-            ),
-            Employee(
-                id=start + 5,
-                name="Hidden",
-                surname="Hilfskraft0",
-                level="Hilfskraft",
-                type="hidden",
-            ),
-            Employee(
-                id=start + 6,
-                name="Hidden",
-                surname="Hilfskraft1",
-                level="Hilfskraft",
-                type="hidden",
-            ),
-        ]
+        min_staffing = self.get_min_staffing()
+        num_hidden_employees_per_level = {
+            level: max(max(shifts.values()) for shifts in days.values())
+            for level, days in min_staffing.items()
+        }
+
+        hidden_employees = []
+        last_id = start
+        for level, num in num_hidden_employees_per_level.items():
+            for new_id in range(last_id, last_id + num):
+                hidden_employees.append(
+                    Employee(
+                        id=new_id,
+                        name="Hidden",
+                        surname=f"{level}{new_id}",
+                        level=level,
+                        type="hidden",
+                    )
+                )
+            last_id += num
+
+        return hidden_employees
 
     @abstractmethod
     def get_shifts(self) -> list[Shift]:
@@ -77,7 +52,7 @@ class Loader(ABC):
         pass
 
     @abstractmethod
-    def get_min_staffing(self) -> dict[str, dict[str, dict[dict[str, int]]]]:
+    def get_min_staffing(self) -> dict[str, dict[str, dict[str, int]]]:
         """
         Retrieves the minimum staffing requirements.
         """

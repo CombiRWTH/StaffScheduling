@@ -140,7 +140,7 @@ class FSLoader(Loader):
             for i in range(monthrange(start_date.year, start_date.month)[1])
         ]
 
-    def get_min_staffing(self) -> dict[str, dict[str, dict[dict[str, int]]]]:
+    def get_min_staffing(self) -> dict[str, dict[str, dict[str, int]]]:
         fs_min_staffing = self._load_json(
             self._get_file_path("minimal_number_of_staff")
         )
