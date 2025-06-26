@@ -1,0 +1,874 @@
+{
+  "employees": [
+    {
+      "PersNr": "6606292809",
+      "name": "Shoemake",
+      "firstname": "Sandra",
+      "vacation_days": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12
+      ],
+      "forbidden_days": [
+        18,
+        22,
+        23,
+        24,
+        25
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "9205490147",
+      "name": "Mccomas",
+      "firstname": "Adriane",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "9753626269",
+      "name": "Branz",
+      "firstname": "Janett",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "2422197372",
+      "name": "Sewell",
+      "firstname": "Nele",
+      "vacation_days": [],
+      "forbidden_days": [
+        4,
+        5,
+        9,
+        10,
+        15,
+        16,
+        17,
+        18,
+        19,
+        25,
+        26,
+        27
+      ],
+      "reserved": [
+        [
+          1,
+          "N5"
+        ],
+        [
+          2,
+          "N5"
+        ],
+        [
+          3,
+          "N5"
+        ],
+        [
+          6,
+          "S2_"
+        ],
+        [
+          7,
+          "S2_"
+        ],
+        [
+          8,
+          "S2_"
+        ],
+        [
+          11,
+          "F2_"
+        ],
+        [
+          12,
+          "F2_"
+        ],
+        [
+          13,
+          "F2_"
+        ],
+        [
+          14,
+          "F2_"
+        ],
+        [
+          20,
+          "S2_"
+        ],
+        [
+          21,
+          "N5"
+        ],
+        [
+          22,
+          "N5"
+        ],
+        [
+          23,
+          "N5"
+        ],
+        [
+          24,
+          "N5"
+        ],
+        [
+          29,
+          "N5"
+        ],
+        [
+          30,
+          "N5"
+        ]
+      ]
+    },
+    {
+      "PersNr": "7696197975",
+      "name": "Säuffert",
+      "firstname": "Liselotte",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        9,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18,
+        21,
+        22,
+        23,
+        24,
+        25,
+        28,
+        29,
+        30
+      ],
+      "reserved": [
+        [
+          10,
+          "N5"
+        ],
+        [
+          11,
+          "N5"
+        ],
+        [
+          15,
+          "N5"
+        ],
+        [
+          19,
+          "N5"
+        ],
+        [
+          20,
+          "N5"
+        ],
+        [
+          26,
+          "N5"
+        ],
+        [
+          27,
+          "N5"
+        ]
+      ]
+    },
+    {
+      "PersNr": "2652384320",
+      "name": "Harkins",
+      "firstname": "Silvia",
+      "vacation_days": [
+        21,
+        22,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "forbidden_days": [
+        23,
+        24,
+        30
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "7158423338",
+      "name": "Catoe",
+      "firstname": "Ingbert",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": [
+        [
+          15,
+          "S2_"
+        ]
+      ]
+    },
+    {
+      "PersNr": "6040241459",
+      "name": "Keese",
+      "firstname": "Jenny",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "6304544803",
+      "name": "Merriweather",
+      "firstname": "Bärbl",
+      "vacation_days": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "forbidden_days": [
+        1,
+        2,
+        3
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "8467222196",
+      "name": "Farniok",
+      "firstname": "Lina",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "2432833811",
+      "name": "Mittrach",
+      "firstname": "Margaritt",
+      "vacation_days": [
+        18
+      ],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "7336293778",
+      "name": "Wunderlich",
+      "firstname": "Daniele",
+      "vacation_days": [
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "1328220945",
+      "name": "Palacio",
+      "firstname": "Constance",
+      "vacation_days": [
+        11
+      ],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "4307335425",
+      "name": "Devers",
+      "firstname": "Kersten",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "4524391957",
+      "name": "Hoots",
+      "firstname": "Renilde",
+      "vacation_days": [
+        11
+      ],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "4731372662",
+      "name": "Seligman",
+      "firstname": "Elgine",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "4847485892",
+      "name": "Vanfleet",
+      "firstname": "Eike",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": [
+        [
+          25,
+          "S2_"
+        ]
+      ]
+    },
+    {
+      "PersNr": "5559101710",
+      "name": "Woodcock",
+      "firstname": "Hannah",
+      "vacation_days": [],
+      "forbidden_days": [
+        18
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "5301690706",
+      "name": "Donis",
+      "firstname": "Henni",
+      "vacation_days": [
+        7,
+        8
+      ],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "0558391409",
+      "name": "Carreras",
+      "firstname": "Augustin",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "4216350736",
+      "name": "Binford",
+      "firstname": "Heinz",
+      "vacation_days": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "forbidden_days": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "reserved": [
+        [
+          1,
+          "N€"
+        ]
+      ]
+    },
+    {
+      "PersNr": "0935373412",
+      "name": "Rashid",
+      "firstname": "Roseliese",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "4601161545",
+      "name": "Fullerton",
+      "firstname": "Christfri",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "6200464921",
+      "name": "Labelle",
+      "firstname": "Saskia",
+      "vacation_days": [
+        18,
+        19,
+        20,
+        21,
+        22,
+        25,
+        26
+      ],
+      "forbidden_days": [
+        23,
+        24
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "3663084827",
+      "name": "Burris",
+      "firstname": "Lioba",
+      "vacation_days": [],
+      "forbidden_days": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "9263090286",
+      "name": "Valentino",
+      "firstname": "Trude",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": [
+        [
+          17,
+          "F2_"
+        ]
+      ]
+    },
+    {
+      "PersNr": "6478661190",
+      "name": "Izzo",
+      "firstname": "Annelene",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "0314863608",
+      "name": "Demarco",
+      "firstname": "Marcus",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        22
+      ],
+      "reserved": [
+        [
+          15,
+          "S2_"
+        ],
+        [
+          17,
+          "F2_"
+        ],
+        [
+          18,
+          "F2_"
+        ],
+        [
+          19,
+          "N5"
+        ],
+        [
+          20,
+          "N5"
+        ],
+        [
+          25,
+          "F2_"
+        ],
+        [
+          26,
+          "F2_"
+        ],
+        [
+          27,
+          "F2_"
+        ],
+        [
+          28,
+          "F2_"
+        ],
+        [
+          29,
+          "F2_"
+        ]
+      ]
+    },
+    {
+      "PersNr": "2964555583",
+      "name": "Roberson",
+      "firstname": "Ludger",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": []
+    },
+    {
+      "PersNr": "7192281437",
+      "name": "Tharp",
+      "firstname": "Sieghardt",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        26,
+        29,
+        30
+      ],
+      "reserved": [
+        [
+          27,
+          "S2_"
+        ],
+        [
+          28,
+          "S2_"
+        ]
+      ]
+    },
+    {
+      "PersNr": "2382310716",
+      "name": "Rodriques",
+      "firstname": "Kilian",
+      "vacation_days": [],
+      "forbidden_days": [
+        4,
+        8,
+        9,
+        10
+      ],
+      "reserved": [
+        [
+          5,
+          "S2_"
+        ],
+        [
+          6,
+          "S2_"
+        ],
+        [
+          7,
+          "S2_"
+        ],
+        [
+          16,
+          "T75_"
+        ],
+        [
+          17,
+          "T75_"
+        ]
+      ]
+    },
+    {
+      "PersNr": "6688644312",
+      "name": "Yeh",
+      "firstname": "Julia",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        22,
+        25
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "5277020481",
+      "name": "Hertzler",
+      "firstname": "Burkhild",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        28,
+        29
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "5275675416",
+      "name": "Driggers",
+      "firstname": "Karena",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        22,
+        25
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "5075364389",
+      "name": "Winters",
+      "firstname": "Gertraute",
+      "vacation_days": [],
+      "forbidden_days": [],
+      "reserved": [
+        [
+          29,
+          "T75_"
+        ]
+      ]
+    },
+    {
+      "PersNr": "0247345630",
+      "name": "Staggs",
+      "firstname": "Janett",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "7586945135",
+      "name": "Weathers",
+      "firstname": "Irma",
+      "vacation_days": [],
+      "forbidden_days": [
+        1
+      ],
+      "reserved": []
+    },
+    {
+      "PersNr": "4939555116",
+      "name": "Milburn",
+      "firstname": "Loremarie",
+      "vacation_days": [],
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "reserved": []
+    }
+  ]
+}
