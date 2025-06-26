@@ -21,17 +21,17 @@ def export_personal_data_to_json(engine, filename="employees.json"):
     """Export all personal staff information found within TPersonal and create a JSON-file."""
     # Write SQL-query to retrieve personal data
     query = """SELECT
-                    a."Prim",
-                    a."Name",
-                    a."Vorname",
-                    a."PersNr",
-                    t."Bezeichnung" AS "Beruf"
-                FROM "TPlanPersonal" b
+                    a.Prim,
+                    a.Name,
+                    a.Vorname,
+                    a.PersNr,
+                    t.Bezeichnung AS 'Beruf'
+                FROM TPlanPersonal b
                 JOIN
-                    "TPersonal" a ON b."RefPersonal" = a."Prim"
+                    TPersonal a ON b.RefPersonal = a.Prim
                 LEFT JOIN
-                    "TBerufe" t ON a."RefBerufe" = t."Prim"
-                WHERE "RefPlan"=17193
+                    TBerufe t ON a.RefBerufe = t.Prim
+                WHERE RefPlan=17193
             """
     df = pd.read_sql(query, engine)
     df = df.drop_duplicates()
@@ -39,6 +39,7 @@ def export_personal_data_to_json(engine, filename="employees.json"):
     # Restructure and rename to the desired JSON-output-format
     df_renamed = df.rename(
         columns={
+            "Prim": "key",
             "PersNr": "PersNr",
             "Vorname": "firstname",
             "Name": "name",
@@ -157,22 +158,21 @@ def export_worked_sundays_to_json(engine, filename="worked_sundays.json"):
 # Helper function for export_free_shift_and_vacation_days_json()
 def collapse(df, col_name):
     out = (
-        df.groupby("Prim")["day"]
-        .apply(lambda s: sorted(s.unique().tolist()))
-        .to_dict()
+        df.groupby("Prim")["day"].apply(lambda s: sorted(s.unique().tolist())).to_dict()
     )
     return {k: {col_name: v} for k, v in out.items()}
 
+
 def get_plan_dates(engine, planid):
     query = f"""
-        SELECT 
-            CAST(VonDat AS DATE) AS 'START', 
-            CAST(BisDat AS DATE) AS 'END' 
+        SELECT
+            CAST(VonDat AS DATE) AS 'START',
+            CAST(BisDat AS DATE) AS 'END'
         FROM TPlan WHERE Prim = '{planid}'
         """
     df = pd.read_sql(query, engine)
     return df
-    
+
 
 def export_free_shift_and_vacation_days_json(
     engine, filename="free_shifts_and_vacation_days.json"
@@ -191,7 +191,7 @@ def export_free_shift_and_vacation_days_json(
         emp_data = json.load(f)["employees"]
 
     prim2meta = {
-        int(e["Prim"]): {"name": e["name"], "firstname": e["firstname"]}
+        int(e["key"]): {"name": e["name"], "firstname": e["firstname"]}
         for e in emp_data
     }
 
@@ -199,7 +199,7 @@ def export_free_shift_and_vacation_days_json(
 
     query_vac = f"""
         SELECT
-            p.Prim       AS Prim,  
+            p.Prim       AS Prim,
             p.Name       AS name,
             p.Vorname    AS firstname,
             pkg.Datum    AS vacation_days
@@ -212,7 +212,7 @@ def export_free_shift_and_vacation_days_json(
 
     query_forb_days = f"""
         SELECT
-            p.Prim       AS Prim,  
+            p.Prim       AS Prim,
             p.Name       AS 'name',
             p.Vorname    AS 'firstname',
             pkg.Datum    AS 'forbidden_days'
@@ -224,7 +224,7 @@ def export_free_shift_and_vacation_days_json(
 
     query_forb_shifts = f"""
         SELECT
-            p.Prim       AS Prim,  
+            p.Prim       AS Prim,
             p.Name       AS 'name',
             p.Vorname    AS 'firstname',
             pkg.Datum    AS 'reserved',
@@ -261,7 +261,6 @@ def export_free_shift_and_vacation_days_json(
     acc_df["Prim"] = acc_df["Prim"].astype(int)
     acc_df["day"] = pd.to_datetime(acc_df["Datum"]).dt.day
 
-
     # all days (DatetimeIndex)
     all_dates = pd.date_range(start=START_DATE, end=END_DATE, freq="D")
 
@@ -283,17 +282,15 @@ def export_free_shift_and_vacation_days_json(
 
     # Mapping  Prim -> Set (present days in Konto)
     konto_map = acc_df.groupby("Prim")["day"].apply(set).to_dict()
-    
-    for prim_person in whitelist:
 
-        kontotage = konto_map.get(prim_person, set())  
+    for prim_person in whitelist:
+        kontotage = konto_map.get(prim_person, set())
         fehlende = sorted(all_days - kontotage)
 
         rec = forb_map.setdefault(prim_person, {"forbidden_days": []})
         # merge (without duplicates) + sort
         rec["forbidden_days"] = sorted(set(rec["forbidden_days"]) | set(fehlende))
 
-        
     employees_out = []
     for prim, meta in prim2meta.items():
         vac = vac_map.get(prim, {}).get("vacation_days", [])
@@ -305,7 +302,7 @@ def export_free_shift_and_vacation_days_json(
         forb_clean = [d for d in forb if d not in shift_days]
 
         rec = {
-            "Prim": prim,
+            "key": prim,
             "name": meta["name"],
             "firstname": meta["firstname"],
             "vacation_days": vac,
