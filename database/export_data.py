@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import os
+from dateutil.relativedelta import relativedelta
 
 
 def get_correct_path(filename):
@@ -17,7 +18,37 @@ def get_correct_path(filename):
     return output_path
 
 
-def export_personal_data_to_json(engine, filename="employees.json"):
+def export_planning_data(engine, plan_id):
+    """Export relevant basic plan data for retrieving all information for the algorithm."""
+    query = """SELECT
+                    Prim AS 'PlanID',
+                    RefPlanungseinheiten AS 'PE',
+                    VonDat,
+                    BisDat
+                FROM TPlan
+                WHERE Prim = ?
+            """
+    df = pd.read_sql(query, engine, params=(plan_id,))
+    result = df.iloc[0].to_dict()
+
+    start_date = result["VonDat"]
+    year_month = f"{start_date.year}{start_date.month:02d}"
+    result["JahrMonat"] = year_month
+
+    from_date = result["VonDat"]
+    till_date = result["BisDat"]
+    one_year_back = till_date - relativedelta(years=1)
+
+    result["MinusEinJahr"] = (
+        f"{one_year_back.year}.{one_year_back.day:02d}.{one_year_back.month:02d}"
+    )
+    result["VonDat"] = f"{from_date.year}.{from_date.day:02d}.{from_date.month:02d}"
+    result["BisDat"] = f"{till_date.year}.{till_date.day:02d}.{till_date.month:02d}"
+
+    return result
+
+
+def export_personal_data_to_json(engine, plan_id, filename="employees.json"):
     """Export all personal staff information found within TPersonal and create a JSON-file."""
     # Write SQL-query to retrieve personal data
     query = """SELECT
@@ -31,9 +62,9 @@ def export_personal_data_to_json(engine, filename="employees.json"):
                     TPersonal a ON b.RefPersonal = a.Prim
                 LEFT JOIN
                     TBerufe t ON a.RefBerufe = t.Prim
-                WHERE RefPlan=17193
+                WHERE RefPlan = ?
             """
-    df = pd.read_sql(query, engine)
+    df = pd.read_sql(query, engine, params=(plan_id,))
     df = df.drop_duplicates()
 
     # Restructure and rename to the desired JSON-output-format
@@ -59,7 +90,7 @@ def export_personal_data_to_json(engine, filename="employees.json"):
 
 
 def export_target_working_minutes_to_json(
-    engine, filename="target_working_minutes.json"
+    engine, month, filename="target_working_minutes.json"
 ):
     """Export all target working minutes found within TPersonalKontenJeMonat and create a JSON-file."""
     # SQL Query to export the target working hours from TPersonalKontenJeMonat
@@ -71,9 +102,9 @@ def export_target_working_minutes_to_json(
                     pkt.Wert2
                 FROM TPersonalKontenJeMonat pkt
                 JOIN TPersonal p ON pkt.RefPersonal = p.Prim
-                WHERE (pkt.RefKonten = 1  OR pkt.RefKonten = 19 OR pkt.RefKonten = 55) AND pkt.Monat = '202411' ORDER BY p.Name asc"""
+                WHERE (pkt.RefKonten = 1  OR pkt.RefKonten = 19 OR pkt.RefKonten = 55) AND pkt.Monat = ? ORDER BY p.Name asc"""
 
-    df = pd.read_sql(query, engine)
+    df = pd.read_sql(query, engine, params=(month,))
 
     # Converting hours to minutes
     df["Wert2"] = (df["Wert2"] * 60).round(0)
@@ -122,7 +153,9 @@ def export_target_working_minutes_to_json(
     print(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
-def export_worked_sundays_to_json(engine, filename="worked_sundays.json"):
+def export_worked_sundays_to_json(
+    engine, from_date, till_date, filename="worked_sundays.json"
+):
     """Export the number of worked sundays found within TPersonalKontenJeTag and create a JSON-file."""
     # Write SQL-query to retrieve worked sundays (for November 2024 and 12 months prior)
     query = """SELECT
@@ -134,7 +167,7 @@ def export_worked_sundays_to_json(engine, filename="worked_sundays.json"):
             JOIN TPersonal p ON pkt.RefPersonal = p.Prim
             WHERE
                 pkt.RefKonten = 40
-                AND pkt.Datum BETWEEN '2023.30.11' AND '2024.30.11'
+                AND pkt.Datum BETWEEN ? AND ?
                 --AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'
                 AND pkt.Wert > 0
             GROUP BY
@@ -144,7 +177,14 @@ def export_worked_sundays_to_json(engine, filename="worked_sundays.json"):
             ORDER BY
                 worked_sundays DESC;
             """
-    df = pd.read_sql(query, engine)
+    df = pd.read_sql(
+        query,
+        engine,
+        params=(
+            from_date,
+            till_date,
+        ),
+    )
 
     # Restructure and rename to the desired JSON-output-format
     df_renamed = df.rename(columns={"Prim": "key"})
@@ -168,25 +208,22 @@ def collapse(df, col_name):
     return {k: {col_name: v} for k, v in out.items()}
 
 
-def get_plan_dates(engine, planid):
+def get_plan_dates(engine, plan_id):
     query = f"""
         SELECT
             CAST(VonDat AS DATE) AS 'START',
             CAST(BisDat AS DATE) AS 'END'
-        FROM TPlan WHERE Prim = '{planid}'
+        FROM TPlan WHERE Prim = '{plan_id}'
         """
     df = pd.read_sql(query, engine)
     return df
 
 
 def export_free_shift_and_vacation_days_json(
-    engine, filename="free_shifts_and_vacation_days.json"
+    engine, plan_id, planning_unit, filename="free_shifts_and_vacation_days.json"
 ):
     """Export the free shifts and vacation daysfound within TPersonalKommtGeht and create a JSON-file."""
-
-    planid = 17193
-
-    dates = get_plan_dates(engine, planid)
+    dates = get_plan_dates(engine, plan_id)
 
     START_DATE = dates.loc[0, "START"]
     END_DATE = dates.loc[0, "END"]
@@ -246,14 +283,14 @@ def export_free_shift_and_vacation_days_json(
             RefPersonal     AS Prim,
             Datum
         FROM  TPersonalKontenJeTag
-        WHERE RefPlanungsEinheiten = 77
+        WHERE RefPlanungsEinheiten = ?
         AND Datum BETWEEN CONVERT(date,'{START_DATE}',23) AND CONVERT(date,'{END_DATE}',23);
         """
 
     vac_df = pd.read_sql(query_vac, engine)
     forb_df = pd.read_sql(query_forb_days, engine)
     shift_df = pd.read_sql(query_forb_shifts, engine)
-    acc_df = pd.read_sql(query_acc, engine)
+    acc_df = pd.read_sql(query_acc, engine, params=(planning_unit,))
 
     vac_df = vac_df[vac_df["Prim"].isin(whitelist)]
     forb_df = forb_df[forb_df["Prim"].isin(whitelist)]
