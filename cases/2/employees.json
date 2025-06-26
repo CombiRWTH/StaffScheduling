@@ -19,6 +19,9 @@
       "firstname": "Janett",
       "key": 791,
       "name": "Branz",
+      "qualifications": [
+        "rounds"
+      ],
       "type": "Altenpfleger/in (82102-002)"
     },
     {
@@ -103,6 +106,9 @@
       "firstname": "Renilde",
       "key": 2963,
       "name": "Hoots",
+      "qualifications": [
+        "rounds"
+      ],
       "type": "Altenpfleger/in (82102-002)"
     },
     {
@@ -117,6 +123,9 @@
       "firstname": "Eike",
       "key": 3868,
       "name": "Vanfleet",
+      "qualifications": [
+        "rounds"
+      ],
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
