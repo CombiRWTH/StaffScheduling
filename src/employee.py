@@ -3,11 +3,11 @@ from day import Day
 
 
 class Employee:
-    _id: str
+    _id: int
     _surname: str
     _name: str
-    _type: str
     _level: str
+    _type: str
     _target_working_time: int
     _actual_working_time: int = 0
     _forbidden_days: list[int]
@@ -19,11 +19,11 @@ class Employee:
 
     def __init__(
         self,
-        id: str,
+        id: int,
         surname: str,
         name: str,
-        type: str,
         level: str,
+        type: str,
         target_working_time: int = 0,
         actual_working_time: int = 0,
         forbidden_days: list[int] = [],
@@ -39,8 +39,8 @@ class Employee:
         self._id = id
         self._surname = surname
         self._name = name
-        self._type = type
         self._level = level
+        self._type = type
         self._target_working_time = target_working_time
         self._actual_working_time = actual_working_time
         self._forbidden_days = forbidden_days
@@ -50,12 +50,16 @@ class Employee:
         self._wish_days = wish_days
         self._wish_shifts = wish_shifts
 
-    def get_id(self) -> str:
+    def get_id(self) -> int:
         return self._id
 
     @property
     def level(self) -> str:
         return self._level
+
+    @property
+    def hidden(self) -> bool:
+        return self._type == "hidden"
 
     @property
     def name(self) -> str:

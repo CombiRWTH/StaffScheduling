@@ -5,8 +5,8 @@ from shift import Shift
 from ..variables import Variable, EmployeeDayShiftVariable
 from ortools.sat.python.cp_model import CpModel, Domain
 
-TOLERANCE_MORE = 460
-TOLERANCE_LESS = TOLERANCE_MORE
+TOLERANCE_LESS = 460
+TOLERANCE_MORE = TOLERANCE_LESS
 
 
 class TargetWorkingTimeConstraint(Constraint):
@@ -22,6 +22,11 @@ class TargetWorkingTimeConstraint(Constraint):
         working_time_domain = self._get_working_time_domain()
 
         for employee in self._employees:
+            if employee.hidden:
+                continue
+
+            # target_working_time = employee.get_target_working_time(self._shifts)
+
             possible_working_time = []
             for day in self._days:
                 for shift in self._shifts:
@@ -33,14 +38,10 @@ class TargetWorkingTimeConstraint(Constraint):
             working_time_variable = model.new_int_var_from_domain(
                 working_time_domain, f"working_time_e:{employee.get_id()}"
             )
+
             model.add(sum(possible_working_time) == working_time_variable)
-
-            if employee.hidden or employee.name == "Milburn Loremarie":
-                continue
-
-            target_working_time = employee.get_available_working_time()
-            model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
-            model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
+            # model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
+            # model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
 
     def _get_working_time_domain(self):
         def reachable_sums(others, max_value):

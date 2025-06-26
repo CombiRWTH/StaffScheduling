@@ -55,7 +55,7 @@ class MinStaffingConstraint(Constraint):
                         ]
                         potential_working_staff.append(variable)
 
-                    model.add(sum(potential_working_staff) >= min_staffing)
+                    model.add(sum(potential_working_staff) == min_staffing)
 
     def _get_eligible_employees(self, required_level: str) -> list[Employee]:
         return [

@@ -39,7 +39,7 @@ class Model:
         for var in vars:
             self._variables[var.name] = var
 
-    def solve(self) -> Solution:
+    def solve(self, timeout: int | None) -> Solution:
         logging.info("Solving model...")
         logging.info(f"  - number of variables: {len(self._variables)}")
         logging.info(f"  - number of objectives: {len(self._objectives)}")
@@ -56,9 +56,14 @@ class Model:
             logging.info(f"  - {constraint.name}")
 
         solver = CpSolver()
+        solver.parameters.num_workers = 0
+        if timeout is not None:
+            logging.info(f"Timeout set to {timeout} seconds")
+            solver.parameters.max_time_in_seconds = timeout
         solver.parameters.linearization_level = 0
 
         start_time = timeit.default_timer()
+
         solver.solve(self._model)
         elapsed_time = timeit.default_timer() - start_time
 
@@ -70,6 +75,8 @@ class Model:
         print(f"  - wall time      : {solver.wall_time} s")
         print(f"  - objective value: {solver.objective_value}")
         print(f"  - status         : {solver.status_name()}")
+        print(f"  - objective value: {solver.objective_value}")
+        print(f"  - info           : {solver.solution_info()}")
 
         solution = Solution(
             {

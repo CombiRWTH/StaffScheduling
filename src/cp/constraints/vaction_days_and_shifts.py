@@ -18,6 +18,9 @@ class VacationDaysAndShiftsConstraint(Constraint):
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for employee in self._employees:
+            if employee.hidden:
+                continue
+
             for day in self._days:
                 if employee.unavailable(day):
                     day_variable = variables[EmployeeDayVariable.get_key(employee, day)]
