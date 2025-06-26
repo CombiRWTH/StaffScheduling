@@ -39,7 +39,7 @@ class Model:
         for var in vars:
             self._variables[var.name] = var
 
-    def solve(self) -> Solution:
+    def solve(self, timeout: int | None) -> Solution:
         logging.info("Solving model...")
         logging.info(f"  - number of variables: {len(self._variables)}")
         logging.info(f"  - number of objectives: {len(self._objectives)}")

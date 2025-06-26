@@ -101,7 +101,7 @@ def main():
     for constraint in constraints:
         model.add_constraint(constraint)
 
-    solution = model.solve()
+    solution = model.solve(TIMEOUT)
 
     loader.write_solution(
         solution,
