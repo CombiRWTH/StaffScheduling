@@ -157,7 +157,7 @@ def export_worked_sundays_to_json(engine, filename="worked_sundays.json"):
 # Helper function for export_free_shift_and_vacation_days_json()
 def collapse(df, col_name):
     out = (
-        df.groupby("PersNr")["day"]
+        df.groupby("Prim")["day"]
         .apply(lambda s: sorted(s.unique().tolist()))
         .to_dict()
     )
@@ -173,18 +173,16 @@ def export_free_shift_and_vacation_days_json(
     with open(EMP_FILE, encoding="utf-8") as f:
         emp_data = json.load(f)["employees"]
 
-    persnr2meta = {
-        str(e["PersNr"]): {"name": e["name"], "firstname": e["firstname"]}
+    prim2meta = {
+        int(e["Prim"]): { "PersNr": str(e["PersNr"]), "name": e["name"], "firstname": e["firstname"]}
         for e in emp_data
     }
 
-    prim_to_persnr = {int(e["Prim"]): str(e["PersNr"]) for e in emp_data}
-
-    whitelist_persnr = {e["PersNr"] for e in emp_data}
-    whitelist = set(persnr2meta)
+    whitelist = set(prim2meta)
 
     query_vac = """
         SELECT
+            p.Prim       AS Prim,  
             p.PersNr,
             p.Name       AS name,
             p.Vorname    AS firstname,
@@ -198,6 +196,7 @@ def export_free_shift_and_vacation_days_json(
 
     query_forb_days = """
         SELECT
+            p.Prim       AS Prim,  
             p.PersNr,
             p.Name       AS 'name',
             p.Vorname    AS 'firstname',
@@ -210,10 +209,11 @@ def export_free_shift_and_vacation_days_json(
 
     query_forb_shifts = """
         SELECT
+            p.Prim       AS Prim,  
             p.PersNr,
             p.Name       AS 'name',
             p.Vorname    AS 'firstname',
-            pkg.Datum    AS 'forbidden_days',
+            pkg.Datum    AS 'reserved',
 			d.KurzBez    AS 'dienst'
         FROM TPlanPersonalKommtGeht pkg
         JOIN TPersonal p ON pkg.RefPersonal = p.Prim
@@ -236,13 +236,13 @@ def export_free_shift_and_vacation_days_json(
     shift_df = pd.read_sql(query_forb_shifts, engine)
     acc_df = pd.read_sql(query_acc, engine)
 
-    vac_df = vac_df[vac_df["PersNr"].isin(whitelist_persnr)]
-    forb_df = forb_df[forb_df["PersNr"].isin(whitelist_persnr)]
-    shift_df = shift_df[shift_df["PersNr"].isin(whitelist_persnr)]
+    vac_df = vac_df[vac_df["Prim"].isin(whitelist)]
+    forb_df = forb_df[forb_df["Prim"].isin(whitelist)]
+    shift_df = shift_df[shift_df["Prim"].isin(whitelist)]
 
     vac_df["day"] = pd.to_datetime(vac_df["vacation_days"]).dt.day
     forb_df["day"] = pd.to_datetime(forb_df["forbidden_days"]).dt.day
-    shift_df["day"] = pd.to_datetime(shift_df["forbidden_days"]).dt.day
+    shift_df["day"] = pd.to_datetime(shift_df["reserved"]).dt.day
 
     acc_df["Prim"] = acc_df["Prim"].astype(int)
     acc_df["day"] = pd.to_datetime(acc_df["Datum"]).dt.day
@@ -258,7 +258,7 @@ def export_free_shift_and_vacation_days_json(
 
     # reserved:  List[ [day, KurzBez] ] – remove duplicates
     shift_map = (
-        shift_df.groupby("PersNr")
+        shift_df.groupby("Prim")
         .apply(lambda g: sorted({(d, kb) for d, kb in zip(g["day"], g["dienst"])}))
         .to_dict()
     )
@@ -268,29 +268,30 @@ def export_free_shift_and_vacation_days_json(
 
     # Mapping  Prim -> Set (present days in Konto)
     konto_map = acc_df.groupby("Prim")["day"].apply(set).to_dict()
+    
+    for prim_person in whitelist:
 
-    for prim_person, kontotage in konto_map.items():
-        persnr = prim_to_persnr.get(prim_person)  # if not present
-        if persnr is None or str(persnr) not in whitelist:
-            continue  # employee not relevant
+        kontotage = konto_map.get(prim_person, set())  
+        fehlende = sorted(all_days - kontotage)
 
-        fehlende = sorted(list(all_days - kontotage))
-        rec = forb_map.setdefault(str(persnr), {"forbidden_days": []})
+        rec = forb_map.setdefault(prim_person, {"forbidden_days": []})
         # merge (without duplicates) + sort
         rec["forbidden_days"] = sorted(set(rec["forbidden_days"]) | set(fehlende))
 
+        
     employees_out = []
-    for persnr, meta in persnr2meta.items():
-        vac = vac_map.get(persnr, {}).get("vacation_days", [])
-        forb = forb_map.get(persnr, {}).get("forbidden_days", [])
-        shift = shift_map.get(persnr, {}).get("reserved", [])
+    for prim, meta in prim2meta.items():
+        vac = vac_map.get(prim, {}).get("vacation_days", [])
+        forb = forb_map.get(prim, {}).get("forbidden_days", [])
+        shift = shift_map.get(prim, {}).get("reserved", [])
 
         # remove duplicates of forbidden days that are already in forbidden shifts
         shift_days = {d for d, _ in shift}
         forb_clean = [d for d in forb if d not in shift_days]
 
         rec = {
-            "PersNr": persnr,
+            "Prim": prim,
+            "PersNr": meta["PersNr"],
             "name": meta["name"],
             "firstname": meta["firstname"],
             "vacation_days": vac,
