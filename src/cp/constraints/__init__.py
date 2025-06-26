@@ -4,6 +4,9 @@ from .free_day_after_night_shift_phase import (
 )
 from .min_rest_time import MinRestTimeConstraint as MinRestTimeConstraint
 from .min_staffing import MinStaffingConstraint as MinStaffingConstraint
+from .rounds_in_early_shift import (
+    RoundsInEarlyShiftConstraint as RoundsInEarlyShiftConstraint,
+)
 from .max_one_shift_per_day import (
     MaxOneShiftPerDayConstraint as MaxOneShiftPerDayConstraint,
 )
