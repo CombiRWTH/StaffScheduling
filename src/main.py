@@ -12,7 +12,12 @@ def cli():
 
 @cli.command()
 @click.argument("case", type=click.INT)
-@click.option("--date", type=click.DateTime(formats=["%Y-%m-%d"]), default="2024-11-01", help="Start date in the format YYYY-MM-DD")
+@click.option(
+    "--date",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default="2024-11-01",
+    help="Start date in the format YYYY-MM-DD",
+)
 @click.option("--timeout", default=300, help="Timeout in seconds for the solver")
 def solve(case: int, date: click.DateTime, timeout: int):
     """
@@ -34,7 +39,7 @@ def plot(case: int, debug: bool):
 
     CASE is the case number to plot.
     """
-    
+
     loader = FSLoader(case)
     plotter(loader=loader, debug=debug)
 
