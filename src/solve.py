@@ -1,5 +1,4 @@
-from cli import CLIParser
-from loader import FSLoader
+from loader import Loader
 from cp import (
     Model,
     FreeDayAfterNightShiftPhaseConstraint,
@@ -17,6 +16,7 @@ from cp import (
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
 )
+from datetime import date
 import logging
 
 logging.basicConfig(
@@ -24,32 +24,9 @@ logging.basicConfig(
 )
 
 MAX_CONSECUTIVE_DAYS = 5
-TIMEOUT = 5 * 60
 
 
-def main():
-    cli = CLIParser(
-        [
-            FreeDayAfterNightShiftPhaseConstraint,
-            MinRestTimeConstraint,
-            MinStaffingConstraint,
-            MaxOneShiftPerDayConstraint,
-            TargetWorkingTimeConstraint,
-            VacationDaysAndShiftsConstraint,
-            FreeDaysNearWeekendObjective,
-            MinimizeConsecutiveNightShiftsObjective,
-            MinimizeHiddenEmployeesObjective,
-            MinimizeOvertimeObjective,
-            NotTooManyConsecutiveDaysObjective,
-            RotateShiftsForwardObjective,
-        ]
-    )
-    case_id = cli.get_case_id()
-    start_date = cli.get_start_date()
-    selected_constraints = cli.get_constraints()
-
-    loader = FSLoader(case_id)
-
+def main(loader: Loader, start_date: date, timeout: int):
     employees = loader.get_employees()
     days = loader.get_days(start_date)
     shifts = loader.get_shifts()
@@ -79,18 +56,6 @@ def main():
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
     ]
 
-    if selected_constraints is not None:
-        constraints = [
-            constraint
-            for constraint in constraints
-            if constraint.KEY in selected_constraints
-        ]
-        objectives = [
-            objective
-            for objective in objectives
-            if objective.KEY in selected_constraints
-        ]
-
     model = Model()
     for variable in variables:
         model.add_variable(variable)
@@ -101,7 +66,7 @@ def main():
     for constraint in constraints:
         model.add_constraint(constraint)
 
-    solution = model.solve(TIMEOUT)
+    solution = model.solve(timeout)
 
     loader.write_solution(
         solution,
