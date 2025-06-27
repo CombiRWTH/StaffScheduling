@@ -12,9 +12,15 @@ def cli():
 
 @cli.command()
 @click.argument("case", type=click.INT)
-@click.argument("date", type=click.DateTime(formats=["%Y-%m-%d"]))
+@click.option("--date", type=click.DateTime(formats=["%Y-%m-%d"]), default="2024-11-01", help="Start date in the format YYYY-MM-DD")
 @click.option("--timeout", default=300, help="Timeout in seconds for the solver")
 def solve(case: int, date: click.DateTime, timeout: int):
+    """
+    Solve the scheduling problem for a given case and start date.
+
+    CASE is the case number to solve.
+    """
+
     loader = FSLoader(case)
     solver(loader=loader, start_date=date.date(), timeout=timeout)
 
@@ -23,7 +29,12 @@ def solve(case: int, date: click.DateTime, timeout: int):
 @click.argument("case", type=click.INT)
 @click.option("--debug", is_flag=True, help="Run the plot in debug mode")
 def plot(case: int, debug: bool):
-    click.echo(f"Plotting case {case} with debug={debug}")
+    """
+    Plot the solution for a given case.
+
+    CASE is the case number to plot.
+    """
+    
     loader = FSLoader(case)
     plotter(loader=loader, debug=debug)
 
