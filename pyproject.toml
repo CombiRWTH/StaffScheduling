@@ -40,5 +40,3 @@ packages = ["src"]
 
 [project.scripts]
 staff-scheduling = "main:main"
-solve = "solve:main"
-plot = "plot:main"
