@@ -1,41 +1,10 @@
 from web import App
-from cli import CLIParser
-from cp import (
-    FreeDayAfterNightShiftPhaseConstraint,
-    MinRestTimeConstraint,
-    MinStaffingConstraint,
-    MaxOneShiftPerDayConstraint,
-    TargetWorkingTimeConstraint,
-    VacationDaysAndShiftsConstraint,
-    FreeDaysNearWeekendObjective,
-    MinimizeConsecutiveNightShiftsObjective,
-    MinimizeOvertimeObjective,
-    NotTooManyConsecutiveDaysObjective,
-    RotateShiftsForwardObjective,
-)
+from loader import Loader
 
 
-def main():
-    cli = CLIParser(
-        [
-            FreeDayAfterNightShiftPhaseConstraint,
-            MinRestTimeConstraint,
-            MinStaffingConstraint,
-            MaxOneShiftPerDayConstraint,
-            TargetWorkingTimeConstraint,
-            VacationDaysAndShiftsConstraint,
-            FreeDaysNearWeekendObjective,
-            MinimizeConsecutiveNightShiftsObjective,
-            MinimizeOvertimeObjective,
-            NotTooManyConsecutiveDaysObjective,
-            RotateShiftsForwardObjective,
-        ]
-    )
-    case_id = cli.get_case_id()
-    start_date = cli.get_start_date()
-
-    app = App(case_id, start_date)
-    app.run()
+def main(loader: Loader, debug: bool = False):
+    app = App(loader=loader)
+    app.run(debug=debug)
 
 
 if __name__ == "__main__":
