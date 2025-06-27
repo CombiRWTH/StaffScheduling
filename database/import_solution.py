@@ -47,24 +47,6 @@ def get_correct_path(filename):
     return output_path
 
 
-# Helper functions
-def norm(s: str) -> str:
-    """Lower case, Unicode normalization, merge spaces"""
-    s = unicodedata.normalize("NFKD", s)
-    return re.sub(r"\s+", " ", s).strip().lower()
-
-
-def variants(last: str, first: str):
-    """Generates common spellings of a name pair."""
-    raw = [
-        f"{last} {first}",
-        f"{first} {last}",
-        f"{last}, {first}",
-        f"{first}, {last}",
-    ]
-    return [norm(x) for x in raw]
-
-
 def load_person_to_job(engine) -> dict[int, int]:
     """Reads TPersonal (Prim, RefBerufe) and returns {Prim: RefBerufe}."""
     sql = text("SELECT Prim, RefBerufe FROM TPersonal")
@@ -132,9 +114,10 @@ def build_dataframe(
         for seg_idx, (von_t, bis_t, offset) in enumerate(
             shift_segments[shift_id], start=1
         ):
-            datum = base_date + timedelta(days=offset)
-            von_dt = datetime.combine(datum, von_t)
-            bis_dt = datetime.combine(datum, bis_t)
+            datum = base_date
+            vonbis_tag = base_date + timedelta(days=offset)
+            von_dt = datetime.combine(vonbis_tag, von_t)
+            bis_dt = datetime.combine(vonbis_tag, bis_t)
             dauer_min = int((bis_dt - von_dt).total_seconds() // 60)
 
             records.append(
@@ -224,7 +207,7 @@ def run():
     )
 
     # When needed to write into the database directly:
-    #insert_dataframe_to_db(df, engine)
+    insert_dataframe_to_db(df, engine)
 
     # Test export as a json file to check if the output is correct without actually writing into the db:
     test_file = df.to_dict(orient="records")
