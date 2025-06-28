@@ -269,7 +269,7 @@ def export_free_shift_and_vacation_days_json(
             p.Prim       AS Prim,
             p.Name       AS 'name',
             p.Vorname    AS 'firstname',
-            pkg.Datum    AS 'reserved',
+            pkg.Datum    AS 'planned_shifts',
 			d.KurzBez    AS 'dienst'
         FROM TPlanPersonalKommtGeht pkg
         JOIN TPersonal p ON pkg.RefPersonal = p.Prim
@@ -298,7 +298,7 @@ def export_free_shift_and_vacation_days_json(
 
     vac_df["day"] = pd.to_datetime(vac_df["vacation_days"]).dt.day
     forb_df["day"] = pd.to_datetime(forb_df["forbidden_days"]).dt.day
-    shift_df["day"] = pd.to_datetime(shift_df["reserved"]).dt.day
+    shift_df["day"] = pd.to_datetime(shift_df["planned_shifts"]).dt.day
 
     acc_df["Prim"] = acc_df["Prim"].astype(int)
     acc_df["day"] = pd.to_datetime(acc_df["Datum"]).dt.day
@@ -312,14 +312,14 @@ def export_free_shift_and_vacation_days_json(
     vac_map = collapse(vac_df, "vacation_days")
     forb_map = collapse(forb_df, "forbidden_days")
 
-    # reserved:  List[ [day, KurzBez] ] – remove duplicates
+    # planned_shifts:  List[ [day, KurzBez] ] – remove duplicates
     shift_map = (
         shift_df.groupby("Prim")
         .apply(lambda g: sorted({(d, kb) for d, kb in zip(g["day"], g["dienst"])}))
         .to_dict()
     )
     shift_map = {
-        k: {"reserved": [[d, kb] for d, kb in v]} for k, v in shift_map.items()
+        k: {"planned_shifts": [[d, kb] for d, kb in v]} for k, v in shift_map.items()
     }
 
     # Mapping  Prim -> Set (present days in Konto)
@@ -337,7 +337,7 @@ def export_free_shift_and_vacation_days_json(
     for prim, meta in prim2meta.items():
         vac = vac_map.get(prim, {}).get("vacation_days", [])
         forb = forb_map.get(prim, {}).get("forbidden_days", [])
-        shift = shift_map.get(prim, {}).get("reserved", [])
+        shift = shift_map.get(prim, {}).get("planned_shifts", [])
 
         # remove duplicates of forbidden days that are already in forbidden shifts
         shift_days = {d for d, _ in shift}
@@ -349,7 +349,7 @@ def export_free_shift_and_vacation_days_json(
             "firstname": meta["firstname"],
             "vacation_days": vac,
             "forbidden_days": forb_clean,
-            "reserved": shift,
+            "planned_shifts": shift,
         }
         employees_out.append(rec)
 
