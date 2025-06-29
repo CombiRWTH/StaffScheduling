@@ -2,12 +2,17 @@ site_name: Staff Scheduling
 
 nav:
   - Introduction: index.md
+  - User View:
+      - user-view/index.md
+  - Developer View:
+      - developer-view/index.md
   - Getting Started:
       - getting-started/index.md
       - Prerequisites: getting-started/prerequisites.md
       - Installation: getting-started/installation.md
       - First Steps: getting-started/first-steps.md
   - Concepts:
+      - concepts/index.md
       - Constraints: concepts/constraints.md
       - Objectives: concepts/objectives.md
       - Datatabase: concepts/database.md
