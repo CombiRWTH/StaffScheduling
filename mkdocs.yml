@@ -2,6 +2,10 @@ site_name: Staff Scheduling
 
 nav:
   - Introduction: index.md
+  - User View:
+      - user-view/index.md
+  - Developer View:
+      - developer-view/index.md
   - Getting Started:
       - getting-started/index.md
       - Prerequisites: getting-started/prerequisites.md
