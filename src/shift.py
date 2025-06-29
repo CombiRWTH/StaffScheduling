@@ -3,6 +3,7 @@ _COLORS = {
     1: "#3a9ea1",
     2: "#f69e17",
     3: "#225e62",
+    4: "oklch(0.5882 0.1751 10.15)",  # rot
 }
 
 
@@ -11,6 +12,7 @@ class Shift:
     INTERMEDIATE = 1
     LATE = 2
     NIGHT = 3
+    MANAGEMENT = 4
 
     _id: int
     _name: str
