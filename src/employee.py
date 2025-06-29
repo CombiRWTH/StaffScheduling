@@ -16,6 +16,7 @@ class Employee:
     _vacation_shifts: list[tuple[int, str]]
     _wish_days: list[int]
     _wish_shifts: list[tuple[int, str]]
+    _planned_shifts: list[tuple[int, str]] = []
 
     def __init__(
         self,
@@ -32,6 +33,7 @@ class Employee:
         vacation_shifts: list[int] = [],
         wish_days: list[int] = [],
         wish_shifts: list[tuple[int, str]] = [],
+        planned_shifts: list[tuple[int, str]] = [],
     ):
         """
         Initializes an Employee instance.
@@ -49,6 +51,7 @@ class Employee:
         self._vacation_shifts = vacation_shifts
         self._wish_days = wish_days
         self._wish_shifts = wish_shifts
+        self._planned_shifts = planned_shifts or []
 
     def get_key(self) -> int:
         return self._key

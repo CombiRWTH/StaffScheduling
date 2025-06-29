@@ -16,6 +16,7 @@ from cp import (
     MinimizeOvertimeObjective,
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
+    PlannedShiftsConstraint,
 )
 import logging
 
@@ -69,6 +70,7 @@ def main():
         MaxOneShiftPerDayConstraint(employees, days, shifts),
         TargetWorkingTimeConstraint(employees, days, shifts),
         VacationDaysAndShiftsConstraint(employees, days, shifts),
+        PlannedShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
         FreeDaysNearWeekendObjective(10.0, employees, days),
