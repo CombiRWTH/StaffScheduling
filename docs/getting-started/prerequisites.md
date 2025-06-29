@@ -1,18 +1,33 @@
-# Prerequisites
+## 🛠 Prerequisites
 
-1. **Install `uv` 🚀**
+Before setting up the project, make sure the following tools are installed on your system:
 
-    Uv is used as a python package manager and project manager. You can install it following the instructions in the official documentation:
+### 1. 🐍 Install [Python 3.10+](https://www.python.org/downloads/)
 
-    [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
+This project requires **Python 3.10 or higher**.
 
-2. **Install `unixodbc` (Mac only) 🍏**
-    You can install it following the instructions in the official documentation:
+You can check your version by running:
 
-    [https://pypi.org/project/pyodbc/](https://pypi.org/project/pyodbc/)
+```bash
+python3 --version
+```
 
-3. **Done** 🎉
+If not installed, download it from the official website: https://www.python.org/downloads/
 
+### 2. 🚀 Install `uv`
 
-## Next Steps
+uv is a fast Python package manager used to create and manage isolated environments.
+
+You can install it following the instructions in the official documentation:
+
+[https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
+
+### 3. 🍏 Install `unixodbc` (Mac only)
+
+You can install it following the instructions in the official documentation:
+
+[https://pypi.org/project/pyodbc/](https://pypi.org/project/pyodbc/)
+
+### 4. Next steps
+
 Proceed to the [Installation](/getting-started/installation) section to set up the project dependencies.
