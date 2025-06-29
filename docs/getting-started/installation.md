@@ -30,7 +30,7 @@ To manually run all pre-commit hooks across the entire project:
 uv run pre-commit run --all-files
 ```
 
-Use this to validate that your environment is correctly configured and all files meet the code quality standards.
+Use this to validate that your environment is configured correctly and that all files meet the code quality standards.
 
 ### 4. 🧪 Optional: Run Hooks Only on docs/
 To check only the docs/ folder:
