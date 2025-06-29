@@ -13,3 +13,4 @@ from .target_working_time import (
 from .vaction_days_and_shifts import (
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
 )
+from .planed_shifts import PlannedShiftsConstraint as PlannedShiftsConstraint

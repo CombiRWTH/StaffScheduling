@@ -50,7 +50,7 @@ class FSLoader(Loader):
         fs_employees_vacation_shifts: dict = {}
         fs_employees_wish_days: dict = {}
         fs_employees_wish_shifts: dict = {}
-
+        fs_employees_planned_shifts: dict = {}
         for fs_employee in fs_employees_vacation:
             if "forbidden_days" in fs_employee:
                 fs_employees_forbidden_days[fs_employee["PersNr"]] = fs_employee[
@@ -74,7 +74,10 @@ class FSLoader(Loader):
                 fs_employees_wish_shifts[fs_employee["PersNr"]] = list(
                     map(lambda x: (x[0], x[1]), fs_employee["wish_shifts"])
                 )
-
+            if "planned_shifts" in fs_employee:
+                fs_employees_planned_shifts[fs_employee["PersNr"]] = list(
+                    map(lambda x: (x[0], x[1]), fs_employee["planned_shifts"])
+                )
         employees: list[Employee] = []
         for i, fs_employee in enumerate(fs_employees):
             id = fs_employee["PersNr"]
@@ -97,7 +100,7 @@ class FSLoader(Loader):
             vacation_shifts = fs_employees_vacation_shifts.get(id, [])
             wish_days = fs_employees_wish_days.get(id, [])
             wish_shifts = fs_employees_wish_shifts.get(id, [])
-
+            planned_shifts = fs_employees_planned_shifts.get(id, [])
             employees.append(
                 Employee(
                     key=key if key is not None else i,
@@ -113,6 +116,7 @@ class FSLoader(Loader):
                     vacation_shifts=vacation_shifts,
                     wish_days=wish_days,
                     wish_shifts=wish_shifts,
+                    planned_shifts=planned_shifts,
                 )
             )
 
@@ -121,20 +125,21 @@ class FSLoader(Loader):
         return employees
 
     def get_shifts(self) -> list[Shift]:
-        """
-        Actual shifts from timeoffice:
-        return [
-            Shift(1, "Früh", 360, 850),
-            Shift(2, "Spät", 770, 1260),
-            Shift(3, "Nacht", 1220, 390),
-        ]
-        """
-        return [
+        base_shifts = [
             Shift(Shift.EARLY, "Früh", 360, 820),
             Shift(Shift.INTERMEDIATE, "Zwischen", 480, 940),
             Shift(Shift.LATE, "Spät", 805, 1265),
             Shift(Shift.NIGHT, "Nacht", 1250, 375),
         ]
+
+        # Zusätzliche Schichten je nach Case
+        if self._has_special_shifts():
+            base_shifts.append(
+                Shift(4, "Z60", 480, 540)  # 8:00-9:00 Uhr, 60 Min
+            )
+            logging.debug("Special shift Z60 added")
+
+        return base_shifts
 
     def get_days(self, start_date: date) -> list[date]:
         return [
@@ -192,3 +197,15 @@ class FSLoader(Loader):
 
     def _get_solutions_path(self, filename: str) -> str:
         return f"./found_solutions/{filename}.json"
+
+    def _has_special_shifts(self) -> bool:
+        # Prüft ob spezielle Schichten wie Z60 in den Daten vorkommen
+        vacation_data = self._load_json(
+            self._get_file_path("free_shifts_and_vacation_days")
+        )
+        for emp in vacation_data.get("employees", []):
+            if "planned_shifts" in emp:
+                for _, shift_code in emp["planned_shifts"]:
+                    if shift_code == "Z60":
+                        return True
+        return False
