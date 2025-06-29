@@ -16,6 +16,7 @@ class Employee:
     _vacation_shifts: list[tuple[int, str]]
     _wish_days: list[int]
     _wish_shifts: list[tuple[int, str]]
+    _qualifications: list[str]
 
     def __init__(
         self,
@@ -32,6 +33,7 @@ class Employee:
         vacation_shifts: list[int] = [],
         wish_days: list[int] = [],
         wish_shifts: list[tuple[int, str]] = [],
+        qualifications: list[str] = [],
     ):
         """
         Initializes an Employee instance.
@@ -49,6 +51,7 @@ class Employee:
         self._vacation_shifts = vacation_shifts
         self._wish_days = wish_days
         self._wish_shifts = wish_shifts
+        self._qualifications = qualifications
 
     def get_key(self) -> int:
         return self._key
@@ -64,6 +67,12 @@ class Employee:
     @property
     def name(self) -> str:
         return f"{self._surname} {self._name}"
+
+    def qualified(self, qualification: str) -> bool:
+        """
+        Checks if the employee has a specific qualification.
+        """
+        return qualification in self._qualifications
 
     def get_available_working_time(self) -> int:
         """
