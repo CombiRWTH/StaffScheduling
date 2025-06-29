@@ -10,7 +10,7 @@ Make sure [`uv`](https://github.com/astral-sh/uv) is installed.
 uv sync
 ```
 
-This will install all dependencies defined
+This will install all required dependencies.
 
 ### 2. 🔧 Set Up Pre-commit Hooks
 
