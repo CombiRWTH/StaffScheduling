@@ -21,3 +21,4 @@ from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,
     EmployeeDayVariable as EmployeeDayVariable,
 )
+from .objectives.free_days_after_night_shift_phase import FreeDaysAfterNightShiftPhaseObjective
