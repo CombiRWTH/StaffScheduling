@@ -11,4 +11,126 @@ Is this real data or dummy data? How many employees? And special constraints?
 - ...
 
 ## Case 3:
-Within this case the automatically extracted data from the database gets stored...
+Within this case the automatically extracted data from the database is stored. This excludes the `wishes_and_blocked.json` file as this includes all the manually submitted wishes of employees as well as special circumstances such as health or family-related restrictions. All different files are listed below with the corresponding description of each field within them.
+
+## 📁 File: `employees.json`
+
+### 📝 Description
+
+This file contains the list of all employees within our PE (Planungseinheit), including their internal ID, personnel number, name, and their job title.
+
+### 📐 Structure
+
+```jsonc
+{
+  "employees": [             // List of all employees
+    {
+      "PersNr": "string",    // Personnel number as a string
+      "Prim": "int",         // Internal primary key ID
+      "firstname": "string", // First name of the employee
+      "name": "string",      // Last name of the employee
+      "type": "string"       // Job title (may include an intern classification code)
+    }
+  ]
+}
+```
+
+## 📁 File: `free_shifts_and_vacation_days.json`
+
+### 📝 Description
+
+This file contains the list of employees within our PE (Planungseinheit) which already have submitted vacation days or shifts within TimeOffice or days that are either crossed off or worked within another PE.
+
+### 📐 Structure
+
+```jsonc
+{
+  "employees": [             // List of all employees
+    {
+      "Prim": "int",         // Internal primary key ID
+      "firstname": "string", // First name of the employee
+      "name": "string",      // Last name of the employee
+      "forbidden_days": [    // Days that are crossed off within TimeOffice = not available
+        ["int"]
+      ],
+      "reserved": [          // Shifts that are crossed off within TimeOffice and worked in
+        ["int", "string"]    // another PE = not available
+      ],
+      "vacation_days": [     // Days that are marked as vacation days = not available
+        ["int"]
+      ]
+    }
+  ]
+}
+```
+
+## 📁 File: `target_working_minutes.json`
+
+### 📝 Description
+
+This file contains the list of all employees within our PE (Planungseinheit) referring to their monthly target working minutes and the already existing working minutes within TimeOffice.
+
+### 📐 Structure
+
+```jsonc
+{
+  "employees": [             // List of all employees
+    {
+      "Prim": "int",         // Internal primary key ID
+      "firstname": "string", // First name of the employee
+      "name": "string",      // Last name of the employee
+      "actual": "float",     // Already worked/registered working minutes within TimeOffice
+      "target": "float"      // Target working minutes for the current month
+    }
+  ]
+}
+```
+
+## 📁 File: `wishes_and_blocked.json`
+
+### 📝 Description
+
+This file contains the list of employees within our PE (Planungseinheit) which have submitted wishes of their preferences for off-shifts and off-days as well as unavailability due to special circumstances such as health or family-related restrictions.
+
+### 📐 Structure
+
+```jsonc
+{
+  "employees": [               // List of all employees
+    {
+      "Prim": "int",           // Internal primary key ID
+      "firstname": "string",   // First name of the employee
+      "name": "string",        // Last name of the employee
+      "blocked_days": ["int"], // Unavailable days due to health reasons, family-related restrictions or personal unavailability
+      "blocked_shifts": [      // Unavailable shifts due to health reasons, family-related
+        ["int", "string"]      // restrictions or personal unavailability
+      ],
+      "wish_days": ["int"],    // Days that employee wishes to get off or avoid
+      "wish_shifts": [         // Shifts that employee wishes to get off or avoid
+        ["int", "string"]
+      ]
+    }
+  ]
+}
+```
+
+## 📁 File: `worked_sundays.json`
+
+### 📝 Description
+
+This file contains the list of all employees within our PE (Planungseinheit) and how many sundays they have already worked in the last 12 months.
+
+### 📐 Structure
+
+```jsonc
+{
+  "employees": [               // List of all employees
+    {
+      "Prim": "int",           // Internal primary key ID
+      "firstname": "string",   // First name of the employee
+      "name": "string",        // Last name of the employee
+      "worked_sundays": "int"  // Count of already worked sundays in last 12 months
+    }
+  ]
+}
+```
