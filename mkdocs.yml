@@ -8,6 +8,7 @@ nav:
       - Installation: getting-started/installation.md
       - First Steps: getting-started/first-steps.md
   - Concepts:
+      - concepts/index.md
       - Constraints: concepts/constraints.md
       - Objectives: concepts/objectives.md
       - Datatabase: concepts/database.md
