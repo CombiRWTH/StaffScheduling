@@ -25,5 +25,3 @@ from .variables import (
 from .objectives.free_days_after_night_shift_phase import (
     FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
 )
-
-
