@@ -207,7 +207,7 @@ def run():
     )
 
     # When needed to write into the database directly:
-    insert_dataframe_to_db(df, engine)
+    #insert_dataframe_to_db(df, engine)
 
     # Test export as a json file to check if the output is correct without actually writing into the db:
     test_file = df.to_dict(orient="records")
