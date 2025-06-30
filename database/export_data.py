@@ -18,32 +18,34 @@ def get_correct_path(filename):
     return output_path
 
 
-def export_planning_data(engine, plan_id):
+def export_planning_data(engine, planning_unit, from_date, till_date):
     """Export relevant basic plan data for retrieving all information for the algorithm."""
-    query = """SELECT
-                    Prim AS 'PlanID',
-                    RefPlanungseinheiten AS 'PE',
-                    VonDat,
-                    BisDat
+    query = f"""SELECT
+                    Prim AS 'plan_id',
+                    RefPlanungseinheiten AS 'planning_unit',
+                    VonDat AS 'from_date',
+                    BisDat AS 'till_date'
                 FROM TPlan
-                WHERE Prim = ?
+                WHERE RefPlanungseinheiten = {planning_unit}
+                AND VonDat = CONVERT(date,'{from_date}',23)
+                AND BisDat = CONVERT(date,'{till_date}',23)
             """
-    df = pd.read_sql(query, engine, params=(plan_id,))
+    df = pd.read_sql(query, engine)
     result = df.iloc[0].to_dict()
 
-    start_date = result["VonDat"]
-    year_month = f"{start_date.year}{start_date.month:02d}"
-    result["JahrMonat"] = year_month
+    year_month = f"{pd.Timestamp(from_date).year}{pd.Timestamp(from_date).month:02d}"
+    result["year_month"] = year_month
 
-    from_date = result["VonDat"]
-    till_date = result["BisDat"]
-    one_year_back = till_date - relativedelta(years=1)
-
-    result["MinusEinJahr"] = (
+    one_year_back = pd.Timestamp(till_date) - relativedelta(years=1)
+    result["minus_a_year"] = (
         f"{one_year_back.year}.{one_year_back.day:02d}.{one_year_back.month:02d}"
     )
-    result["VonDat"] = f"{from_date.year}.{from_date.day:02d}.{from_date.month:02d}"
-    result["BisDat"] = f"{till_date.year}.{till_date.day:02d}.{till_date.month:02d}"
+    result["from_date"] = (
+        f"{pd.Timestamp(from_date).year}.{pd.Timestamp(from_date).day:02d}.{pd.Timestamp(from_date).month:02d}"
+    )
+    result["till_date"] = (
+        f"{pd.Timestamp(till_date).year}.{pd.Timestamp(till_date).day:02d}.{pd.Timestamp(till_date).month:02d}"
+    )
 
     return result
 
