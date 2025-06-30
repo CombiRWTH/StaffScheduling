@@ -16,10 +16,14 @@ from .objectives import (
     MinimizeOvertimeObjective as MinimizeOvertimeObjective,
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
-    FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
+    
 )
 from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,
     EmployeeDayVariable as EmployeeDayVariable,
 )
+from .objectives.free_days_after_night_shift_phase import (
+    FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
+)
+
 
