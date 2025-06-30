@@ -19,6 +19,17 @@
                 </select>
             </div>
         </nav>
+        
+        <div class="mb-4">
+            <h4 class="text-success">Schedule Statistics</h4>
+            <ul>
+              {% for key, value in stats.items() %}
+                <li><strong>{{ key }}:</strong> {{ value }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          
         <main class="bg-body-tertiary p-2 rounded shadow-sm overflow-scroll">
             <table class="table table-bordered table-hover">
                 <thead>

@@ -4,6 +4,7 @@ from datetime import date
 from employee import Employee
 from day import Day
 from shift import Shift
+from .analyze_solution import analyze_solution
 
 
 class App:
@@ -29,6 +30,8 @@ class App:
         )
 
         solution = self._loader.get_solution(selected_solution_file_name)
+        stats = analyze_solution(solution.variables)
+
 
         return render_template(
             "index.html",
@@ -38,6 +41,7 @@ class App:
             employees=self._employees,
             days=self._days,
             shifts=self._shifts,
+            stats=stats
         )
 
     def run(self):
