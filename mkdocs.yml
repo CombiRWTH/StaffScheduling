@@ -4,6 +4,9 @@ nav:
   - Introduction: index.md
   - User View:
       - user-view/index.md
+      - Problem Definition: user-view/problem-definition.md
+      - List of Conditions: user-view/list-of-conditions.md
+
   - Developer View:
       - developer-view/index.md
   - Getting Started:
