@@ -1,6 +1,5 @@
 # Case Catalog
 This is the file where all the different cases can be explained in more detail.
-Is this real data or dummy data? How many employees? And special constraints?
 
 ## Case 1:
 - number of employees: 22
@@ -10,7 +9,7 @@ Is this real data or dummy data? How many employees? And special constraints?
 - number of employees: 371
 - ...
 
-## Case 3:
+## Case 3: - Real Data
 Within this case the automatically extracted data from the database is stored. This excludes the `wishes_and_blocked.json` file as this includes all the manually submitted wishes of employees as well as special circumstances such as health or family-related restrictions. All different files are listed below with the corresponding description of each field within them.
 
 ## 📁 File: `employees.json`
@@ -39,7 +38,7 @@ This file contains the list of all employees within our PE (Planungseinheit), in
 
 ### 📝 Description
 
-This file contains the list of employees within our PE (Planungseinheit) which already have submitted vacation days or shifts within TimeOffice or days that are either crossed off or worked within another PE.
+This file contains the list of all employees within our PE (Planungseinheit) which already have submitted vacation days or shifts within TimeOffice or days that are either crossed off or worked within another PE. If an employee is not working somewehere else or has blocked days then an empty entry exists.
 
 ### 📐 Structure
 
@@ -90,7 +89,7 @@ This file contains the list of all employees within our PE (Planungseinheit) ref
 
 ### 📝 Description
 
-This file contains the list of employees within our PE (Planungseinheit) which have submitted wishes of their preferences for off-shifts and off-days as well as unavailability due to special circumstances such as health or family-related restrictions.
+This file contains the list of employees within our PE (Planungseinheit) which have submitted wishes of their preferences for off-shifts and off-days as well as unavailability due to special circumstances such as health or family-related restrictions. This file need to be created by hand as the wishes currently cannot be inserted via TimeOffice.
 
 ### 📐 Structure
 
