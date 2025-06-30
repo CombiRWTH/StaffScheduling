@@ -30,7 +30,7 @@ class App:
         )
 
         solution = self._loader.get_solution(selected_solution_file_name)
-        stats = analyze_solution(solution.variables)
+        stats = analyze_solution(solution.variables, self._employees, self._shifts)
 
 
         return render_template(
