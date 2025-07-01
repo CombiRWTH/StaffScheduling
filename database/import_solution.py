@@ -89,6 +89,7 @@ def load_shift_segments(
 
 def build_dataframe(
     data,
+    emp_data,
     prim_to_refberuf,
     shift_segments,
     shift_to_refdienst,
@@ -97,12 +98,23 @@ def build_dataframe(
     status_id,
 ):
     """Build the solution into one DataFrame (one row per segment)."""
+
+    prim_whitelist = {int(e["Prim"]) for e in emp_data}
+
     records = []
     for key, val in data["variables"].items():
         if val != 1:
             continue
 
-        prim_person, date_str, shift_id = ast.literal_eval(key)
+        try:
+            prim_person, date_str, shift_id = ast.literal_eval(key)
+        except (ValueError, SyntaxError):
+            # f.e. ignore "e:459_d:2024-11-01" 
+         continue
+
+        if prim_person not in prim_whitelist:
+            continue
+
         base_date = datetime.strptime(date_str, "%Y-%m-%d").date()
         ref_dienst = shift_to_refdienst[shift_id]
         prim_beruf = prim_to_refberuf.get(prim_person)
@@ -218,6 +230,7 @@ def run():
 
     df = build_dataframe(
         data,
+        emp_data,
         prim_to_refberuf,
         SHIFT_SEGMENTS,
         SHIFT_TO_REFDIENST,
