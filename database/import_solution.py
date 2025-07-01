@@ -23,8 +23,7 @@ def load_json_files():
     sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
 
     solution_file = base_path / "solutions_test.json"
-    #employee_file = Path(base_folder) / sub_folder / "employees.json"
-    employee_file = base_path / "employees.json"
+    employee_file = Path(__file__).parent.parent.resolve() / base_folder / sub_folder / "employees.json"
 
     with open(solution_file, encoding="utf-8") as f:
         data = json.load(f)
@@ -180,6 +179,27 @@ def insert_dataframe_to_db(df, engine):
 
     print(f"{len(df):,} Lines inserted in TPlanPersonalKommtGeht.")
 
+def delete_dataframe_from_db(df, engine):
+    """Delete the solution in the dataframe from the database."""
+
+    delete_sql = text("""
+        DELETE FROM TPlanPersonalKommtGeht
+        WHERE RefPlan       = :RefPlan
+        AND RefPersonal     = :RefPersonal
+        AND Datum           = :Datum
+        AND lfdNr           = :lfdNr
+        AND RefDienste      = :RefDienste
+    """)
+
+    keys = df[["RefPlan", "RefPersonal", "Datum", "lfdNr", "RefDienste"]]
+    params = keys.to_dict(orient="records") 
+
+    with engine.begin() as conn:
+        conn.execution_options(fast_executemany=True)
+        conn.execute(delete_sql, params)
+
+    print(f"{len(df):,} Lines deleted in TPlanPersonalKommtGeht.")
+
 
 def run():
     engine = get_db_engine()
@@ -208,6 +228,9 @@ def run():
 
     # When needed to write into the database directly:
     #insert_dataframe_to_db(df, engine)
+
+    # When needed to delete from the database directly:
+    #delete_dataframe_from_db(df, engine)
 
     # Test export as a json file to check if the output is correct without actually writing into the db:
     test_file = df.to_dict(orient="records")
