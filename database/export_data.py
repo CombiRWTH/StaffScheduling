@@ -1,7 +1,10 @@
 import pandas as pd
 import json
 import os
+import logging
 from dateutil.relativedelta import relativedelta
+
+logging.basicConfig(level=logging.INFO)
 
 
 def get_correct_path(filename):
@@ -38,13 +41,13 @@ def export_planning_data(engine, planning_unit, from_date, till_date):
 
     one_year_back = pd.Timestamp(till_date) - relativedelta(years=1)
     result["minus_a_year"] = (
-        f"{one_year_back.year}.{one_year_back.day:02d}.{one_year_back.month:02d}"
+        f"{one_year_back.year}-{one_year_back.day:02d}-{one_year_back.month:02d}"
     )
     result["from_date"] = (
-        f"{pd.Timestamp(from_date).year}.{pd.Timestamp(from_date).day:02d}.{pd.Timestamp(from_date).month:02d}"
+        f"{pd.Timestamp(from_date).year}-{pd.Timestamp(from_date).day:02d}-{pd.Timestamp(from_date).month:02d}"
     )
     result["till_date"] = (
-        f"{pd.Timestamp(till_date).year}.{pd.Timestamp(till_date).day:02d}.{pd.Timestamp(till_date).month:02d}"
+        f"{pd.Timestamp(till_date).year}-{pd.Timestamp(till_date).day:02d}-{pd.Timestamp(till_date).month:02d}"
     )
 
     return result
@@ -88,7 +91,7 @@ def export_personal_data_to_json(engine, plan_id, filename="employees.json"):
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Print a message of completed export
-    print(f"✅ Export abgeschlossen – {filename} erstellt")
+    logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
 def export_target_working_minutes_to_json(
@@ -152,7 +155,7 @@ def export_target_working_minutes_to_json(
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Print a message of completed export
-    print(f"✅ Export abgeschlossen – {filename} erstellt")
+    logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
 def export_worked_sundays_to_json(
@@ -192,7 +195,7 @@ def export_worked_sundays_to_json(
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Print a message of completed export
-    print(f"✅ Export abgeschlossen – {filename} erstellt")
+    logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
 # Helper function for export_free_shift_and_vacation_days_json()
@@ -358,4 +361,4 @@ def export_free_shift_and_vacation_days_json(
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Print a message of completed export
-    print(f"✅ Export abgeschlossen – {filename} erstellt")
+    logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
