@@ -23,6 +23,7 @@ import logging
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 MAX_CONSECUTIVE_DAYS = 5
 TIMEOUT = 5 * 60
