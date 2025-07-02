@@ -26,5 +26,3 @@ __all__ = [
     # existing exports...
     "FreeDaysAfterNightShiftPhaseObjective",
 ]
-
-
