@@ -16,7 +16,6 @@ from cp import (
     MinimizeHiddenEmployeesObjective,
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
-    PlannedShiftsConstraint,
     FreeDaysAfterNightShiftPhaseObjective,
 )
 import logging
@@ -45,7 +44,6 @@ def main():
             MinimizeOvertimeObjective,
             NotTooManyConsecutiveDaysObjective,
             RotateShiftsForwardObjective,
-            PlannedShiftsConstraint,
         ]
     )
     case_id = cli.get_case_id()
