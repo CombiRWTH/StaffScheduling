@@ -90,7 +90,7 @@ def export_personal_data_to_json(engine, plan_id, filename="employees.json"):
     store_path = get_correct_path(filename)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
-    # Print a message of completed export
+    # Log a message of completed export
     logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
@@ -154,7 +154,7 @@ def export_target_working_minutes_to_json(
     store_path = get_correct_path(filename)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
-    # Print a message of completed export
+    # Log a message of completed export
     logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
@@ -194,7 +194,7 @@ def export_worked_sundays_to_json(
     store_path = get_correct_path(filename)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
-    # Print a message of completed export
+    # Log a message of completed export
     logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
@@ -360,5 +360,5 @@ def export_free_shift_and_vacation_days_json(
     store_path = get_correct_path(filename)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
-    # Print a message of completed export
+    # Log a message of completed export
     logging.info(f"✅ Export abgeschlossen – {filename} erstellt")

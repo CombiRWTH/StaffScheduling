@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from datetime import date
 from connection_setup import get_db_engine
 import export_data
 
@@ -6,7 +7,7 @@ import export_data
 load_dotenv()
 
 
-def main(planning_unit=77, from_date="2024-11-01", till_date="2024-11-30"):
+def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11, 30)):
     """Sets up a basic connection to the TimeOffice database and exports all needed data for the algorithm."""
     engine = get_db_engine()
     base_data = export_data.export_planning_data(
