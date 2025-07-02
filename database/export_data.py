@@ -53,6 +53,73 @@ def export_planning_data(engine, planning_unit, from_date, till_date):
     return result
 
 
+def export_shift_data_to_json(engine, filename="shift_information.json"):
+    """Export all shift related information such as times and breaks and create a JSON-file."""
+    shift_ids = {
+        "Frühschicht": {"id": "2939", "name": "F2_"},
+        "Spätschicht": {"id": "2947", "name": "S2_"},
+        "Nachtschicht": {"id": "2953", "name": "N2_"},
+        "Zwischendienst": {"id": "2906", "name": "T75_"},
+        "Sonderdienst": {"id": "1406", "name": "Z60"},
+    }
+    shift_id_to_name = {v["id"]: v["name"] for v in shift_ids.values()}
+
+    query = f"""SELECT
+                    RefDienste AS 'shift_id',
+                    Kommt AS 'start',
+                    Geht AS 'end'
+                FROM TDiensteSollzeiten
+                WHERE RefDienste = '{shift_ids["Frühschicht"]["id"]}'
+                OR RefDienste = '{shift_ids["Spätschicht"]["id"]}'
+                OR RefDienste = '{shift_ids["Nachtschicht"]["id"]}'
+                OR RefDienste = '{shift_ids["Zwischendienst"]["id"]}'
+                OR RefDienste = '{shift_ids["Sonderdienst"]["id"]}'
+            """
+    df = pd.read_sql(query, engine)
+
+    df["start"] = pd.to_datetime(df["start"])
+    df["end"] = pd.to_datetime(df["end"])
+    df = df.sort_values(["shift_id", "start"])
+
+    # Compute total working minutes of shift
+    df["working_minutes"] = (df["end"] - df["start"]).dt.total_seconds() / 60
+
+    # Compute total pause duration of shift
+    df["pause"] = df.groupby("shift_id")["start"].shift(-1) - df["end"]
+    df["pause_min"] = df["pause"].dt.total_seconds() / 60
+    df["pause_min"] = df["pause_min"].fillna(0)
+
+    # Group by shift type and aggregate all given values
+    agg = (
+        df.groupby("shift_id")
+        .agg(
+            start_time=("start", "min"),
+            end_time=("end", "max"),
+            working_minutes=("working_minutes", "sum"),
+            break_duration=("pause_min", "sum"),
+        )
+        .reset_index()
+    )
+
+    agg["shift_duration"] = (
+        agg["end_time"] - agg["start_time"]
+    ).dt.total_seconds() / 60
+    agg["shift_id"] = agg["shift_id"].astype(str)
+    agg["shift_name"] = agg["shift_id"].map(shift_id_to_name).fillna("unknown")
+    agg["start_time"] = agg["start_time"].dt.strftime("%Y-%m-%dT%H:%M:%S")
+    agg["end_time"] = agg["end_time"].dt.strftime("%Y-%m-%dT%H:%M:%S")
+
+    # Store JSON-file within given directory
+    json_output = json.dumps(
+        agg.to_dict(orient="records"), ensure_ascii=False, indent=2
+    )
+    store_path = get_correct_path(filename)
+    with open(store_path, "w", encoding="utf-8") as f:
+        f.write(json_output)
+    # Log a message of completed export
+    logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
+
+
 def export_personal_data_to_json(engine, plan_id, filename="employees.json"):
     """Export all personal staff information found within TPersonal and create a JSON-file."""
     # Write SQL-query to retrieve personal data
