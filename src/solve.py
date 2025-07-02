@@ -12,20 +12,23 @@ from cp import (
     EmployeeDayVariable,
     FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective,
-    MinimizeHiddenEmployeesObjective,
     MinimizeOvertimeObjective,
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
+    PlannedShiftsConstraint,
     FreeDaysAfterNightShiftPhaseObjective,
 )
 import logging
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+#logging.basicConfig(
+ #   level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+#)
+
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 MAX_CONSECUTIVE_DAYS = 5
-TIMEOUT = 5 * 60
+SOLUTIONS_LIMIT = 10
 
 
 def main():
@@ -39,10 +42,10 @@ def main():
             VacationDaysAndShiftsConstraint,
             FreeDaysNearWeekendObjective,
             MinimizeConsecutiveNightShiftsObjective,
-            MinimizeHiddenEmployeesObjective,
             MinimizeOvertimeObjective,
             NotTooManyConsecutiveDaysObjective,
             RotateShiftsForwardObjective,
+            PlannedShiftsConstraint,
         ]
     )
     case_id = cli.get_case_id()
@@ -74,11 +77,11 @@ def main():
     objectives = [
         FreeDaysNearWeekendObjective(10.0, employees, days),
         MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
-        MinimizeHiddenEmployeesObjective(100.0, employees, days, shifts),
-        MinimizeOvertimeObjective(4.0, employees, days, shifts),
+        MinimizeOvertimeObjective(1.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
+
     ]
 
     if selected_constraints is not None:
@@ -103,7 +106,7 @@ def main():
     for constraint in constraints:
         model.add_constraint(constraint)
 
-    solution = model.solve(TIMEOUT)
+    solution = model.solve()
 
     loader.write_solution(
         solution,
