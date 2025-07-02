@@ -13,6 +13,7 @@ from cp import (
     FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective,
     MinimizeOvertimeObjective,
+    MinimizeHiddenEmployeesObjective,
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
     PlannedShiftsConstraint,
@@ -20,14 +21,11 @@ from cp import (
 )
 import logging
 
-#logging.basicConfig(
- #   level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-#)
-
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 
 MAX_CONSECUTIVE_DAYS = 5
+TIMEOUT = 5 * 60
 SOLUTIONS_LIMIT = 10
 
 
@@ -42,6 +40,7 @@ def main():
             VacationDaysAndShiftsConstraint,
             FreeDaysNearWeekendObjective,
             MinimizeConsecutiveNightShiftsObjective,
+            MinimizeHiddenEmployeesObjective,
             MinimizeOvertimeObjective,
             NotTooManyConsecutiveDaysObjective,
             RotateShiftsForwardObjective,
@@ -77,7 +76,8 @@ def main():
     objectives = [
         FreeDaysNearWeekendObjective(10.0, employees, days),
         MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
-        MinimizeOvertimeObjective(1.0, employees, days, shifts),
+        MinimizeHiddenEmployeesObjective(100.0, employees, days, shifts),
+        MinimizeOvertimeObjective(4.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
@@ -106,7 +106,7 @@ def main():
     for constraint in constraints:
         model.add_constraint(constraint)
 
-    solution = model.solve()
+    solution = model.solve(TIMEOUT)
 
     loader.write_solution(
         solution,
