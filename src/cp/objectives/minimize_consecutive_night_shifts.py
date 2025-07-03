@@ -4,7 +4,6 @@ from employee import Employee
 from day import Day
 from shift import Shift
 from ortools.sat.python.cp_model import CpModel, IntVar
-from datetime import timedelta
 
 
 class MinimizeConsecutiveNightShiftsObjective(Objective):
@@ -24,37 +23,66 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):
         penalties = []
-        for phase_length in range(2, 5):
-            possible_night_shift_phase_variables: list[IntVar] = []
-            for employee in self._employees:
-                if employee.hidden:
-                    continue
 
-                for day in self._days[: -(phase_length - 1)]:
-                    night_shift_phase_variable = model.NewBoolVar(
-                        f"night_shift_phase_e:{employee.get_key()}_d:{day}_l:{phase_length}"
+        night_shift = self._shifts[Shift.NIGHT]
+
+        for employee in self._employees:
+            if employee.hidden:
+                continue
+
+            employee_night_shift_variables = [
+                variables[EmployeeDayShiftVariable.get_key(employee, day, night_shift)]
+                for day in self._days
+            ]
+
+            current_streak_vars = []
+
+            for i, var in enumerate(
+                employee_night_shift_variables + [None]
+            ):  # add None to stop the last run
+                if var is not None:
+                    is_night = model.NewBoolVar(f"is_night_{employee.get_key()}_{i}")
+                    model.Add(var == 1).OnlyEnforceIf(is_night)
+                    model.Add(var != 1).OnlyEnforceIf(is_night.Not())
+                    current_streak_vars.append((var, is_night))
+                    streak_bools = [is_night for (_, is_night) in current_streak_vars]
+                    is_consecutive = model.NewBoolVar(
+                        f"is_consecutive_{employee.get_key()}_{i}"
                     )
-                    window = [
-                        variables[
-                            EmployeeDayShiftVariable.get_key(
-                                employee, day + timedelta(i), self._shifts[Shift.NIGHT]
+                    model.AddBoolAnd(streak_bools).OnlyEnforceIf(is_consecutive)
+                    model.AddBoolOr([b.Not() for b in streak_bools]).OnlyEnforceIf(
+                        is_consecutive.Not()
+                    )
+                    penalty = is_consecutive * (self.weight ** len(current_streak_vars))
+                    if penalty is not None:
+                        continue
+                    else:
+                        if len(current_streak_vars) >= 3:
+                            penalties.append(
+                                self.weight ** (len(current_streak_vars) - 1)
                             )
-                        ]
-                        for i in range(phase_length)
-                    ]
-                    model.add_bool_and(window).only_enforce_if(
-                        night_shift_phase_variable
+                            current_streak_vars = []
+                        else:
+                            current_streak_vars = []
+                if var is None:
+                    streak_bools = [is_night for (_, is_night) in current_streak_vars]
+                    is_consecutive = model.NewBoolVar(
+                        f"is_consecutive_{employee.get_key()}_{i}"
                     )
-                    model.add_bool_or(
-                        [night.Not() for night in window]
-                    ).only_enforce_if(night_shift_phase_variable.Not())
-
-                    possible_night_shift_phase_variables.append(
-                        night_shift_phase_variable
+                    model.AddBoolAnd(streak_bools).OnlyEnforceIf(is_consecutive)
+                    model.AddBoolOr([b.Not() for b in streak_bools]).OnlyEnforceIf(
+                        is_consecutive.Not()
                     )
-
-            penalties.append(
-                sum(possible_night_shift_phase_variables) * (self._weight**phase_length)
-            )
-
+                    penalty = is_consecutive * (self.weight ** len(current_streak_vars))
+                    if penalty is not None:
+                        if len(current_streak_vars) >= 2:
+                            penalties.append(
+                                self.weight ** (len(current_streak_vars) - 1)
+                            )
+                    else:
+                        if len(current_streak_vars) >= 3:
+                            penalties.append(
+                                self.weight ** (len(current_streak_vars) - 1)
+                            )
+                    current_streak_vars = []
         return sum(penalties)
