@@ -26,8 +26,6 @@ logging.basicConfig(
 
 MAX_CONSECUTIVE_DAYS = 5
 TIMEOUT = 5 * 60
-SOLUTIONS_LIMIT = 10
-
 
 def main():
     cli = CLIParser(
