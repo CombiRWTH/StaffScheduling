@@ -21,57 +21,35 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
     def create(self, model: CpModel, variables: dict[str, IntVar]):
         penalties = []
 
+        night_shifts = [
+            shift for shift in self._shifts if shift.get_id() == Shift.NIGHT
+        ]
+
         for employee in self._employees:
-            for i in range(len(self._days) - 2):
-                day = self._days[i]
+            for i in range(len(self._days) - 1):
+                current_day = self._days[i]
                 next_day = self._days[i + 1]
-                next_next_day = self._days[i + 2]
 
-                # Get night shift variable on current day
-                for shift in self._shifts:
-                    if shift.get_id() == 3:  # Assuming 3 is night shift
-                        night_key = EmployeeDayShiftVariable.get_key(
-                            employee, day, shift
-                        )
-                        if night_key not in variables:
-                            continue
+                for night_shift in night_shifts:
+                    night_key = EmployeeDayShiftVariable.get_key(
+                        employee, current_day, night_shift
+                    )
 
-                        # Get EmployeeDayVariables for next two days
-                        next_day_key = EmployeeDayVariable.get_key(employee, next_day)
-                        next_next_day_key = EmployeeDayVariable.get_key(
-                            employee, next_next_day
-                        )
+                    is_night = variables[night_key]
+                    next_day_key = EmployeeDayVariable.get_key(employee, next_day)
 
-                        if (
-                            next_day_key not in variables
-                            or next_next_day_key not in variables
-                        ):
-                            continue
+                    is_penalty = model.NewBoolVar(
+                        f"penalty_day_after_night_{employee.get_id()}_{current_day}"
+                    )
 
-                        next_day_var = variables[next_day_key]
-                        next_next_day_var = variables[next_next_day_key]
+                    model.Add(variables[next_day_key] == 1).OnlyEnforceIf(is_penalty)
+                    model.Add(variables[next_day_key] != 1).OnlyEnforceIf(
+                        is_penalty.Not()
+                    )
 
-                        # Penalize if employee works the next day or the day after that
-                        penalty_next_day = model.new_bool_var(
-                            f"penalty_next_day_after_night_{employee.get_id()}_{day}"
-                        )
-                        penalty_next_next_day = model.new_bool_var(
-                            f"penalty_second_day_after_night_{employee.get_id()}_{day}"
-                        )
+                    model.AddHint(is_penalty, 0)
+                    model.AddHint(is_night, 0)
 
-                        model.add(next_day_var == 1).only_enforce_if(penalty_next_day)
-                        model.add(next_day_var != 1).only_enforce_if(
-                            penalty_next_day.Not()
-                        )
-
-                        model.add(next_next_day_var == 1).only_enforce_if(
-                            penalty_next_next_day
-                        )
-                        model.add(next_next_day_var != 1).only_enforce_if(
-                            penalty_next_next_day.Not()
-                        )
-
-                        penalties.append(penalty_next_day)
-                        penalties.append(penalty_next_next_day)
+                    penalties.append(is_penalty)
 
         return sum(penalties) * self.weight
