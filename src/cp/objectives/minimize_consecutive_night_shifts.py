@@ -54,7 +54,7 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
                         is_consecutive.Not()
                     )
                     penalty = is_consecutive * (self.weight ** len(current_streak_vars))
-                    if penalty != 0:
+                    if penalty is not None:
                         continue
                     else:
                         if len(current_streak_vars) >= 3:
@@ -74,7 +74,7 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
                         is_consecutive.Not()
                     )
                     penalty = is_consecutive * (self.weight ** len(current_streak_vars))
-                    if penalty != 0:
+                    if penalty is not None:
                         if len(current_streak_vars) >= 2:
                             penalties.append(
                                 self.weight ** (len(current_streak_vars) - 1)
