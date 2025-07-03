@@ -4,7 +4,6 @@ from employee import Employee
 from day import Day
 from shift import Shift
 from ortools.sat.python.cp_model import CpModel, IntVar
-from datetime import timedelta
 
 
 class FreeDaysAfterNightShiftPhaseObjective(Objective):
@@ -31,16 +30,22 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
                 # Get night shift variable on current day
                 for shift in self._shifts:
                     if shift.get_id() == 3:  # Assuming 3 is night shift
-                        night_key = EmployeeDayShiftVariable.get_key(employee, day, shift)
+                        night_key = EmployeeDayShiftVariable.get_key(
+                            employee, day, shift
+                        )
                         if night_key not in variables:
                             continue
-                        night_var = variables[night_key]
 
                         # Get EmployeeDayVariables for next two days
                         next_day_key = EmployeeDayVariable.get_key(employee, next_day)
-                        next_next_day_key = EmployeeDayVariable.get_key(employee, next_next_day)
+                        next_next_day_key = EmployeeDayVariable.get_key(
+                            employee, next_next_day
+                        )
 
-                        if next_day_key not in variables or next_next_day_key not in variables:
+                        if (
+                            next_day_key not in variables
+                            or next_next_day_key not in variables
+                        ):
                             continue
 
                         next_day_var = variables[next_day_key]
@@ -55,10 +60,16 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
                         )
 
                         model.add(next_day_var == 1).only_enforce_if(penalty_next_day)
-                        model.add(next_day_var != 1).only_enforce_if(penalty_next_day.Not())
+                        model.add(next_day_var != 1).only_enforce_if(
+                            penalty_next_day.Not()
+                        )
 
-                        model.add(next_next_day_var == 1).only_enforce_if(penalty_next_next_day)
-                        model.add(next_next_day_var != 1).only_enforce_if(penalty_next_next_day.Not())
+                        model.add(next_next_day_var == 1).only_enforce_if(
+                            penalty_next_next_day
+                        )
+                        model.add(next_next_day_var != 1).only_enforce_if(
+                            penalty_next_next_day.Not()
+                        )
 
                         penalties.append(penalty_next_day)
                         penalties.append(penalty_next_next_day)
