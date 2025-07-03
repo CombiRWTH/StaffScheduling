@@ -26,10 +26,18 @@ logging.basicConfig(
 MAX_CONSECUTIVE_DAYS = 5
 
 
-def main(loader: Loader, start_date: date, timeout: int):
+def main(loader: Loader, start_date: date, end_date: date, timeout: int):
     employees = loader.get_employees()
-    days = loader.get_days(start_date)
+    days = loader.get_days(start_date, end_date)
     shifts = loader.get_shifts()
+
+    logging.info("General information:")
+    logging.info(f"  - planning unit: {loader.get_case_id()}")
+    logging.info(f"  - start date: {start_date}")
+    logging.info(f"  - end date: {end_date}")
+    logging.info(f"  - number of employees: {len(employees)}")
+    logging.info(f"  - number of days: {len(days)}")
+    logging.info(f"  - number of shifts: {len(shifts)}")
 
     min_staffing = loader.get_min_staffing()
 
