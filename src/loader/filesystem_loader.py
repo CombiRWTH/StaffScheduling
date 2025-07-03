@@ -4,6 +4,7 @@ from employee import Employee
 from shift import Shift
 from solution import Solution
 from json import load, dump
+from datetime import datetime
 import logging
 from os import listdir
 from datetime import date
@@ -163,12 +164,17 @@ class FSLoader(Loader):
 
         return sorted(solutions)
 
-    def write_solution(self, solution: Solution, solution_name: str):
+    def write_solution(
+        self,
+        solution: Solution,
+    ):
         data = {
             "variables": solution.variables,
             "objective": solution.objective,
         }
-        self._write_json(solution_name, data)
+        self._write_json(
+            f"solutions_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}", data
+        )
 
     def _load_json(self, file_path: str) -> dict:
         with open(file_path, "r") as file:
@@ -178,8 +184,6 @@ class FSLoader(Loader):
         file_path = self._get_solutions_path(filename)
         if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path))
-        else:
-            os.remove(file_path)
         with open(file_path, "w") as file:
             dump(data, file, indent=4)
 

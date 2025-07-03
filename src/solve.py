@@ -46,8 +46,6 @@ def main():
     )
     case_id = cli.get_case_id()
     start_date = cli.get_start_date()
-    startMonth = start_date.month
-    startYear = start_date.year
     selected_constraints = cli.get_constraints()
 
     loader = FSLoader(case_id)
@@ -81,12 +79,6 @@ def main():
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
     ]
 
-    original_constraints = []
-    for constraint in constraints:
-        original_constraints.append(constraint.KEY)
-    for objective in objectives:
-        original_constraints.append(objective.KEY)
-
     if selected_constraints is not None:
         constraints = [
             constraint
@@ -111,29 +103,8 @@ def main():
 
     solution = model.solve(TIMEOUT)
 
-    combined_constraints = []
-    for constraint in constraints:
-        combined_constraints.append(constraint.KEY)
-    for objective in objectives:
-        combined_constraints.append(objective.KEY)
-
-    constraint_index = get_combined_indices_string(
-        original_constraints, combined_constraints
-    )
-    solution_name = create_solutionNameData(startYear, startMonth, constraint_index)
-
-    loader.write_solution(solution, solution_name)
-
-
-def create_solutionNameData(startYear, startMonth, constraintIndex):
-    return f"{startYear}_{startMonth}_CON{constraintIndex}"
-
-
-def get_combined_indices_string(original_constraints, combined_constraints):
-    return "".join(
-        str(original_constraints.index(item))
-        for item in combined_constraints
-        if item in original_constraints
+    loader.write_solution(
+        solution,
     )
 
 

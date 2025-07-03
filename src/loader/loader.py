@@ -67,7 +67,10 @@ class Loader(ABC):
         pass
 
     @abstractmethod
-    def write_solution(self, solution: Solution, solution_name: str):
+    def write_solution(
+        self,
+        solution: Solution,
+    ):
         """
         Writes the solution back to the source.
         """
