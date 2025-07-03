@@ -30,8 +30,7 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
             if employee.hidden:
                 continue
 
-            # get the variable list, which represent if that worker work on night shift on each days
-            employee_shift_vars = [
+            employee_night_shift_variables = [
                 variables[EmployeeDayShiftVariable.get_key(employee, day, night_shift)]
                 for day in self._days
             ]
@@ -39,39 +38,51 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
             current_streak_vars = []
 
             for i, var in enumerate(
-                employee_shift_vars + [None]
+                employee_night_shift_variables + [None]
             ):  # add None to stop the last run
                 if var is not None:
                     is_night = model.NewBoolVar(f"is_night_{employee.get_key()}_{i}")
                     model.Add(var == 1).OnlyEnforceIf(is_night)
                     model.Add(var != 1).OnlyEnforceIf(is_night.Not())
-
                     current_streak_vars.append((var, is_night))
-                if var is None or (
-                    i > 0
-                    and current_streak_vars
-                    and current_streak_vars[-1][1] is not None
-                ):
-                    if len(current_streak_vars) >= 2:
-                        # legal consecutive night shifts
-                        start_index = i - len(current_streak_vars)
-                        streak_indicator = model.NewBoolVar(
-                            f"night_streak_{employee.get_key()}_{start_index}"
-                        )
-                        streak_bools = [
-                            is_night for (_, is_night) in current_streak_vars
-                        ]
-
-                        # streak_indicator == 1 ⇔ all days are night shift
-                        model.AddBoolAnd(streak_bools).OnlyEnforceIf(streak_indicator)
-                        model.AddBoolOr([b.Not() for b in streak_bools]).OnlyEnforceIf(
-                            streak_indicator.Not()
-                        )
-
-                        # Index penalties
-                        penalties.append(
-                            streak_indicator * (self.weight ** len(streak_bools))
-                        )
+                    streak_bools = [is_night for (_, is_night) in current_streak_vars]
+                    is_consecutive = model.NewBoolVar(
+                        f"is_consecutive_{employee.get_key()}_{i}"
+                    )
+                    model.AddBoolAnd(streak_bools).OnlyEnforceIf(is_consecutive)
+                    model.AddBoolOr([b.Not() for b in streak_bools]).OnlyEnforceIf(
+                        is_consecutive.Not()
+                    )
+                    penalty = is_consecutive * (self.weight ** len(current_streak_vars))
+                    if penalty != 0:
+                        continue
+                    else:
+                        if len(current_streak_vars) >= 3:
+                            penalties.append(
+                                self.weight ** (len(current_streak_vars) - 1)
+                            )
+                            current_streak_vars = []
+                        else:
+                            current_streak_vars = []
+                if var is None:
+                    streak_bools = [is_night for (_, is_night) in current_streak_vars]
+                    is_consecutive = model.NewBoolVar(
+                        f"is_consecutive_{employee.get_key()}_{i}"
+                    )
+                    model.AddBoolAnd(streak_bools).OnlyEnforceIf(is_consecutive)
+                    model.AddBoolOr([b.Not() for b in streak_bools]).OnlyEnforceIf(
+                        is_consecutive.Not()
+                    )
+                    penalty = is_consecutive * (self.weight ** len(current_streak_vars))
+                    if penalty != 0:
+                        if len(current_streak_vars) >= 2:
+                            penalties.append(
+                                self.weight ** (len(current_streak_vars) - 1)
+                            )
+                    else:
+                        if len(current_streak_vars) >= 3:
+                            penalties.append(
+                                self.weight ** (len(current_streak_vars) - 1)
+                            )
                     current_streak_vars = []
-
         return sum(penalties)
