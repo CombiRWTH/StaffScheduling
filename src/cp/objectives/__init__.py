@@ -17,3 +17,6 @@ from .not_too_many_consecutive_days import (
 from .rotate_shifts_forward import (
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
 )
+from .free_days_after_night_shift_phase import (
+    FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
+)
