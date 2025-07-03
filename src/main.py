@@ -11,23 +11,27 @@ def cli():
 
 
 @cli.command()
-@click.argument("case", type=click.INT)
-@click.option(
-    "--date",
-    type=click.DateTime(formats=["%Y-%m-%d"]),
-    default="2024-11-01",
-    help="Start date in the format YYYY-MM-DD",
-)
+@click.argument("unit", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%Y-%m-%d"]))
+@click.argument("end", type=click.DateTime(formats=["%Y-%m-%d"]))
 @click.option("--timeout", default=300, help="Timeout in seconds for the solver")
-def solve(case: int, date: click.DateTime, timeout: int):
+def solve(unit: int, start: click.DateTime, end: click.DateTime, timeout: int):
     """
     Solve the scheduling problem for a given case and start date.
 
-    CASE is the case number to solve.
+    UNIT is the case number to solve.
+
+    START is the start date for the planning period in YYYY-MM-DD format.
+
+    END is the end date for the planning period in YYYY-MM-DD format.
     """
 
-    loader = FSLoader(case)
-    solver(loader=loader, start_date=date.date(), timeout=timeout)
+    click.echo(
+        f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()}."
+    )
+
+    loader = FSLoader(unit)
+    solver(loader=loader, start_date=start.date(), end_date=end.date(), timeout=timeout)
 
 
 @cli.command()
