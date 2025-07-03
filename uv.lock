@@ -912,6 +912,7 @@ name = "staffscheduling"
 version = "0.0.0"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "flask" },
     { name = "matplotlib" },
     { name = "numpy" },
@@ -936,6 +937,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.2.0" },
     { name = "flask", specifier = ">=3.1.0" },
     { name = "matplotlib", specifier = ">=3.10.1" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.4.2" },
