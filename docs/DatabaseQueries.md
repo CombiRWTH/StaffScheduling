@@ -32,4 +32,5 @@ Some employees only have a "19" Arbeitsstunden Konto, which represents the "Arbe
 Other employees have both a "19" and a "55" Konto.
 In that case the "55" Konto represents the correct "IST Stunden" ("19" = "55" or "19" < "55").
 
-Once we have identified the right values using "RefKonten", we can get the hours from **Wert2**. As we use the working minutes and not hours, we finally have to multiply by 60 to get the right amount of working minutes.
+Once we have identified the correct values using the entity `RefKonten`, we can obtain the hours from `Wert2`. 
+Since we are using working minutes and not hours, we must multiply by 60 to get the correct number of working minutes.
