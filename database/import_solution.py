@@ -4,6 +4,7 @@ import os
 import re
 import unicodedata
 import pandas as pd
+import logging
 from datetime import datetime, time, timedelta
 from dotenv import load_dotenv
 from pathlib import Path
@@ -13,6 +14,8 @@ from sqlalchemy import text
 
 # Load the .env-file for file import purposes
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO)
 
 
 def load_json_files():
@@ -189,7 +192,7 @@ def insert_dataframe_to_db(df, engine):
         conn.execution_options(fast_executemany=True)
         conn.execute(insert_sql, params)
 
-    print(f"{len(df):,} Lines inserted in TPlanPersonalKommtGeht.")
+    logging.info(f"{len(df):,} Lines inserted in TPlanPersonalKommtGeht.")
 
 def delete_dataframe_from_db(df, engine):
     """Delete the solution in the dataframe from the database."""
@@ -210,7 +213,7 @@ def delete_dataframe_from_db(df, engine):
         conn.execution_options(fast_executemany=True)
         conn.execute(delete_sql, params)
 
-    print(f"{len(df):,} Lines deleted in TPlanPersonalKommtGeht.")
+    logging.info(f"{len(df):,} Lines deleted in TPlanPersonalKommtGeht.")
 
 
 def run():
@@ -257,7 +260,7 @@ def run():
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Print a message of completed export
-    print(f"✅ Export abgeschlossen – {filename} erstellt")
+    logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
 if __name__ == "__main__":
