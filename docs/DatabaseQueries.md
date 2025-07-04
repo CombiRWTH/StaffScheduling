@@ -16,7 +16,7 @@ WHERE (pkt.RefKonten = 1  OR pkt.RefKonten = 19 OR pkt.RefKonten = 55) AND pkt.M
 ORDER BY p.Name asc
 ```
 
-We use the **TPersonalKontenJeMonat** table to retrieve the working hours of each employee per month.
+We use the entity `TPersonalKontenJeMonat` to retrieve the working hours of each employee per month.
 We JOIN that table with **TPersonal** to directly get the corresponding names and PersNr of the employee.
 RefKonten in TPersonalKontenJeMonat gives us the relevant type of Konto (f.e. SOLL_Monat). You can find all types of Konten in **TKonten**.
 
