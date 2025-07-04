@@ -17,7 +17,7 @@ ORDER BY p.Name asc
 ```
 
 We use the entity `TPersonalKontenJeMonat` to retrieve the working hours of each employee per month.
-We JOIN that table with **TPersonal** to directly get the corresponding names and PersNr of the employee.
+We join this entity with `TPersonal` to obtain the employee's `Name` and `PersNr`.
 The `RefKonten` field in the `TPersonalKontenJeMonat` entity provides the relevant type of Konto (e.g., SOLL_Monat). All types of Konten can be found in the entity `TKonten`.
 
 In our case these are:
