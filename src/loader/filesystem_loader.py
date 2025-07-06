@@ -49,6 +49,7 @@ class FSLoader(Loader):
         fs_employees_wish_days: dict = {}
         fs_employees_wish_shifts: dict = {}
         fs_employees_planned_shifts: dict = {}
+
         for fs_employee in fs_employees_vacation:
             if "forbidden_days" in fs_employee:
                 fs_employees_forbidden_days[fs_employee["PersNr"]] = fs_employee[
