@@ -41,7 +41,7 @@ class MinStaffingConstraint(Constraint):
                 eligible_employees = self._get_eligible_employees(required_level)
 
                 for shift in self._shifts:
-                    if shift._id in Shift.EXCLUDED_SHIFTS:
+                    if shift._id in Shift.EXCLUSIVE_SHIFTS:
                         continue
                     min_staffing = self._min_staffing[required_level][weekday].get(
                         shift.abbreviation, None
