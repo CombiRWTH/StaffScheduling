@@ -39,10 +39,6 @@ class PlannedShiftsConstraint(Constraint):
             if not hasattr(employee, "_planned_shifts") or not employee._planned_shifts:
                 continue
 
-            logging.info(
-                f"Processing planned shifts for {employee.name} {employee._surname}: {employee._planned_shifts}"
-            )
-
             for day_num, shift_code in employee._planned_shifts:
                 # Tracke exklusive Schichten
                 if shift_code in self.EXCLUSIVE_SHIFTS:
@@ -76,9 +72,6 @@ class PlannedShiftsConstraint(Constraint):
                 variable_key = EmployeeDayShiftVariable.get_key(employee, day, shift)
                 if variable_key in variables:
                     model.add(variables[variable_key] == 1)
-                    logging.info(
-                        f"Set planned shift: {employee.name} - Day {day_num} - {shift_code} (ID: {shift_id})"
-                    )
                 else:
                     logging.warning(f"Variable not found: {variable_key}")
 
@@ -105,10 +98,6 @@ class PlannedShiftsConstraint(Constraint):
 
             authorized_employees = employees_with_exclusive_shifts.get(
                 exclusive_shift_code, set()
-            )
-
-            logging.info(
-                f"Exclusive shift {exclusive_shift_code}: authorized employees: {authorized_employees}"
             )
 
             # Verbiete diese Schicht für alle anderen
