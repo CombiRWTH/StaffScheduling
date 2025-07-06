@@ -9,24 +9,6 @@ import logging
 class PlannedShiftsConstraint(Constraint):
     KEY = "planned-shifts"
 
-    # Erweiterte Mapping-Tabelle
-    SHIFT_MAPPING = {
-        # Standard-Schichten
-        "F": 0,  # Frühschicht
-        "Z": 1,  # Zwischenschicht
-        "S": 2,  # Spätschicht
-        "N": 3,  # Nachtschicht
-        # Special Shifts
-        "Z60": 4,  # Leitungsschicht
-        # Alternative Shiftcodes
-        "F2_": 0,  # Frühschicht Variante
-        "S2_": 2,  # Spätschicht Variante
-        "N5": 3,  # Nachtschicht Variante
-    }
-
-    # Only these shifts are exclusive (only for explicitly planned employees)
-    EXCLUSIVE_SHIFTS = ["Z60"]
-
     def __init__(self, employees: list[Employee], days: list, shifts: list[Shift]):
         super().__init__(employees, days, shifts)
 
@@ -36,12 +18,9 @@ class PlannedShiftsConstraint(Constraint):
 
         # Process all planned shifts
         for employee in self._employees:
-            if not hasattr(employee, "_planned_shifts") or not employee._planned_shifts:
-                continue
-
             for day_num, shift_code in employee._planned_shifts:
                 # Track exclusive shifts
-                if shift_code in self.EXCLUSIVE_SHIFTS:
+                if shift_code in Shift.EXCLUSIVE_SHIFTS:
                     if shift_code not in employees_with_exclusive_shifts:
                         employees_with_exclusive_shifts[shift_code] = set()
                     employees_with_exclusive_shifts[shift_code].add(employee.get_key())
@@ -53,7 +32,7 @@ class PlannedShiftsConstraint(Constraint):
                     continue
 
                 # Map the shift code to ID
-                shift_id = self.SHIFT_MAPPING.get(shift_code)
+                shift_id = Shift.SHIFT_MAPPING.get(shift_code)
                 if shift_id is None:
                     logging.warning(
                         f"Unknown shift code: {shift_code} for {employee.name}"
@@ -76,8 +55,8 @@ class PlannedShiftsConstraint(Constraint):
                     logging.warning(f"Variable not found: {variable_key}")
 
         # Forbidden exclusive shifts for unauthorized employees
-        for exclusive_shift_code in self.EXCLUSIVE_SHIFTS:
-            shift_id = self.SHIFT_MAPPING.get(exclusive_shift_code)
+        for exclusive_shift_code in Shift.EXCLUSIVE_SHIFTS:
+            shift_id = Shift.SHIFT_MAPPING.get(exclusive_shift_code)
             if shift_id is None:
                 continue
 
@@ -91,7 +70,7 @@ class PlannedShiftsConstraint(Constraint):
                 exclusive_shift_code, set()
             )
 
-            # Verbiete diese Schicht für alle anderen
+            # Forbidden exclusive shifts for employees not having the shift assigned
             for employee in self._employees:
                 if employee.get_key() not in authorized_employees:
                     for day in self._days:
