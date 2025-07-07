@@ -16,6 +16,7 @@ from cp import (
     MinimizeOvertimeObjective,
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
+    HierarchyOfIntermediateShiftsConstraint,
 )
 import logging
 
@@ -42,6 +43,7 @@ def main():
             MinimizeOvertimeObjective,
             NotTooManyConsecutiveDaysObjective,
             RotateShiftsForwardObjective,
+            HierarchyOfIntermediateShiftsConstraint,
         ]
     )
     case_id = cli.get_case_id()
@@ -69,6 +71,7 @@ def main():
         MaxOneShiftPerDayConstraint(employees, days, shifts),
         TargetWorkingTimeConstraint(employees, days, shifts),
         VacationDaysAndShiftsConstraint(employees, days, shifts),
+        HierarchyOfIntermediateShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
         FreeDaysNearWeekendObjective(10.0, employees, days),
@@ -77,6 +80,7 @@ def main():
         MinimizeOvertimeObjective(4.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
+        FreeDaysNearWeekendObjective(10.0, employees, days),
     ]
 
     if selected_constraints is not None:
