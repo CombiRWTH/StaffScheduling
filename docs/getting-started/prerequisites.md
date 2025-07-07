@@ -12,7 +12,7 @@ You can check your version by running:
 python3 --version
 ```
 
-If not installed, download it from the official website: https://www.python.org/downloads/
+If not installed, download it from the official website: [https://www.python.org/downloads/](https://www.python.org/downloads/)
 
 ### 2. 🚀 Install `uv`
 
