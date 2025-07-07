@@ -88,6 +88,9 @@ class FSLoader(Loader):
                     map(lambda x: (x[0], x[1]), fs_employee["wish_shifts"])
                 )
 
+        fs_general_settings = self._load_json(self._get_file_path("general_settings"))
+        fs_qualifications = fs_general_settings.get("qualifications", {})
+
         employees: list[Employee] = []
         for i, fs_employee in enumerate(fs_employees):
             id = fs_employee["key"]
@@ -96,7 +99,7 @@ class FSLoader(Loader):
             firstname = fs_employee["firstname"]
             type = fs_employee["type"]
             level = fs_employees_levels[type]
-            qualifications = fs_employee.get("qualifications", [])
+            qualifications = fs_qualifications.get(f"{key}", [])
 
             target = fs_employees_target.get(id)
             if target is None:
