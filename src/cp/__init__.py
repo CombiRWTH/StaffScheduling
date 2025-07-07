@@ -16,6 +16,7 @@ from .objectives import (
     MinimizeOvertimeObjective as MinimizeOvertimeObjective,
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
+    HierarchyOfIntermediateShifts as HierarchyOfIntermediateShifts,
 )
 from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,

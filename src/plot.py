@@ -12,6 +12,7 @@ from cp import (
     MinimizeOvertimeObjective,
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
+    HierarchyOfIntermediateShifts,
 )
 
 
@@ -29,6 +30,7 @@ def main():
             MinimizeOvertimeObjective,
             NotTooManyConsecutiveDaysObjective,
             RotateShiftsForwardObjective,
+            HierarchyOfIntermediateShifts,
         ]
     )
     case_id = cli.get_case_id()
