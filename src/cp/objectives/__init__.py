@@ -17,6 +17,3 @@ from .not_too_many_consecutive_days import (
 from .rotate_shifts_forward import (
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
 )
-from .hierarchy_of_intermediate_shifts import (
-    HierarchyOfIntermediateShifts as HierarchyOfIntermediateShifts,
-)

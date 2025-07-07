@@ -7,6 +7,7 @@ from .constraints import (
     MaxOneShiftPerDayConstraint as MaxOneShiftPerDayConstraint,
     TargetWorkingTimeConstraint as TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
+    HierarchyOfIntermediateShiftsConstraint as HierarchyOfIntermediateShiftsConstraint,
 )
 from .objectives import (
     Objective as Objective,
@@ -16,7 +17,6 @@ from .objectives import (
     MinimizeOvertimeObjective as MinimizeOvertimeObjective,
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
-    HierarchyOfIntermediateShifts as HierarchyOfIntermediateShifts,
 )
 from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,

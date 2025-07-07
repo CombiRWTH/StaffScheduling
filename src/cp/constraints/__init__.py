@@ -13,3 +13,6 @@ from .target_working_time import (
 from .vaction_days_and_shifts import (
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
 )
+from .hierarchy_of_intermediate_shifts import (
+    HierarchyOfIntermediateShiftsConstraint as HierarchyOfIntermediateShiftsConstraint,
+)
