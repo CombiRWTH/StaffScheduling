@@ -29,7 +29,6 @@ class HierarchyOfIntermediateShifts(Objective):
         possible_2nd_z_shift_on_weekend: list[IntVar] = []
         possible_2nd_shift_on_weekday: list[IntVar] = []
 
-        # hidden employees should not have any z shifts
         for employee in self._employees:
             if employee.hidden:
                 continue
@@ -50,20 +49,20 @@ class HierarchyOfIntermediateShifts(Objective):
 
                 if len(z_today) > 0:
                     # number of z shifts per day
-                    total_z_variable = model.NewIntVar(
+                    total_z_variable = model.new_int_var(
                         0, len(self._employees), f"total_z_variable_d:{day}"
                     )
 
-                    model.Add(total_z_variable == sum(z_today))
+                    model.add(total_z_variable == sum(z_today))
 
                     # helper variables for single and double z shifts per day
-                    is_second_z = model.NewBoolVar(f"is_2nd_z_d:{day}")
-                    model.Add(total_z_variable >= 2).OnlyEnforceIf(is_second_z)
-                    model.Add(total_z_variable < 2).OnlyEnforceIf(is_second_z.Not())
+                    is_second_z = model.new_bool_var(f"is_2nd_z_d:{day}")
+                    model.add(total_z_variable >= 2).only_enforce_if(is_second_z)
+                    model.add(total_z_variable < 2).only_enforce_if(is_second_z.Not())
 
                     is_any_z = model.NewBoolVar(f"is_any_z_d:{day}")
-                    model.Add(total_z_variable >= 1).OnlyEnforceIf(is_any_z)
-                    model.Add(total_z_variable < 1).OnlyEnforceIf(is_any_z.Not())
+                    model.add(total_z_variable >= 1).only_enforce_if(is_any_z)
+                    model.add(total_z_variable < 1).only_enforce_if(is_any_z.Not())
 
                     if is_weekend:
                         # 1st Z on weekend
