@@ -6,14 +6,11 @@ import unicodedata
 import pandas as pd
 import logging
 from datetime import datetime, time, timedelta
-from dotenv import load_dotenv
 from pathlib import Path
 from collections import Counter
 from connection_setup import get_db_engine
 from sqlalchemy import text
 
-# Load the .env-file for file import purposes
-load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 
@@ -214,54 +211,3 @@ def delete_dataframe_from_db(df, engine):
         conn.execute(delete_sql, params)
 
     logging.info(f"{len(df):,} Lines deleted in TPlanPersonalKommtGeht.")
-
-
-def run():
-    engine = get_db_engine()
-    data, emp_data = load_json_files()
-    prim_to_refberuf = load_person_to_job(engine)
-
-    # Currently hardcoded at the "wrong" spot!
-    PE_ID = 77
-    PLAN_ID = 17193
-    STATUS_ID = 20
-
-    # Corresponding shift IDs to given counts of shifts
-    SHIFT_TO_REFDIENST = {0: 2939, 1: 2947, 2: 2953, 3: 2906}
-    # Shift mapping with format: shift_id : [ (von_time, bis_time, day_offset) , … ]
-    SHIFT_SEGMENTS = load_shift_segments(engine, SHIFT_TO_REFDIENST)
-
-    df = build_dataframe(
-        data,
-        emp_data,
-        prim_to_refberuf,
-        SHIFT_SEGMENTS,
-        SHIFT_TO_REFDIENST,
-        PE_ID,
-        PLAN_ID,
-        STATUS_ID,
-    )
-
-    # When needed to write into the database directly:
-    #insert_dataframe_to_db(df, engine)
-
-    # When needed to delete from the database directly:
-    #delete_dataframe_from_db(df, engine)
-
-    # Test export as a json file to check if the output is correct without actually writing into the db:
-    test_file = df.to_dict(orient="records")
-    output_json = {"test": test_file}
-
-    filename = "test_file.json"
-
-    # Store JSON-file within given directory
-    json_output = json.dumps(output_json, ensure_ascii=False, indent=2, default=str)
-    store_path = get_correct_path(filename)
-    with open(store_path, "w", encoding="utf-8") as f:
-        f.write(json_output)
-    # Print a message of completed export
-    logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
-
-
-if __name__ == "__main__":
-    run()
