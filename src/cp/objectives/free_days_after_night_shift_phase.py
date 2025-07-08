@@ -40,7 +40,7 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
                     f"free_days_after_night_{employee.get_id()}_{day}"
                 )
 
-                model.Add(penalty_var == 1).OnlyEnforceIf(
+                model.add(penalty_var == 1).only_enforce_if(
                     [night_var, next_day_var.Not(), after_next_day_var]
                 )
                 model.add(penalty_var == 0).only_enforce_if(night_var.Not())
