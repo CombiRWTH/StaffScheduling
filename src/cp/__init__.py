@@ -23,7 +23,3 @@ from .variables import (
     EmployeeDayVariable as EmployeeDayVariable,
 )
 
-__all__ = [
-    # existing exports...
-    "FreeDaysAfterNightShiftPhaseObjective",
-]

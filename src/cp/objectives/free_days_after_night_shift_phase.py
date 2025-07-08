@@ -39,7 +39,7 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
                 ]
 
                 penalty_var = model.new_bool_var(
-                    f"free_days_after_night_{employee.get_id()}_{day}"
+                    f"free_days_after_night_{employee.get_key()}_{day}"
                 )
 
                 model.add(penalty_var == 1).only_enforce_if(
