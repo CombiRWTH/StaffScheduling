@@ -99,7 +99,7 @@ def build_dataframe(
 ):
     """Build the solution into one DataFrame (one row per segment)."""
 
-    prim_whitelist = {int(e["Prim"]) for e in emp_data}
+    prim_whitelist = {int(e["key"]) for e in emp_data}
 
     records = []
     for key, val in data["variables"].items():

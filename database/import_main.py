@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 from connection_setup import get_db_engine
+from datetime import date
 import import_solution
+import export_data
 import logging
 import json
 import pandas as pd
@@ -9,16 +11,21 @@ import pandas as pd
 load_dotenv()
 
 
-def main():
+def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11, 30)):
     """Sets up a basic connection to the TimeOffice database and imports the solution found by the algorithm."""
     engine = get_db_engine()
+
+    base_data = export_data.export_planning_data(
+        engine, planning_unit, from_date, till_date
+    )
+
     data, emp_data = import_solution.load_json_files()
     prim_to_refberuf = import_solution.load_person_to_job(engine)
 
     # Currently hardcoded at the "wrong" spot!
-    PE_ID = 77
-    PLAN_ID = 17193
-    STATUS_ID = 20
+    PE_ID = planning_unit
+    PLAN_ID = base_data["plan_id"]
+    STATUS_ID = 20 # Always "Sollplanung" as we only generate such plans
 
     # Corresponding shift IDs to given counts of shifts
     SHIFT_TO_REFDIENST = {0: 2939, 1: 2947, 2: 2953, 3: 2906}
