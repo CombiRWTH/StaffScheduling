@@ -36,7 +36,7 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
                     EmployeeDayVariable.get_key(employee, day + timedelta(days=2))
                 ]
 
-                penalty_var = model.NewBoolVar(
+                penalty_var = model.new_bool_var(
                     f"penalty_after_night_{employee.get_id()}_{day}"
                 )
 
