@@ -23,7 +23,6 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
         penalties: list[IntVar] = []
 
         for employee in self._employees:
-            
             for day in self._days[:-2]:
                 night_var = variables[
                     EmployeeDayShiftVariable.get_key(
