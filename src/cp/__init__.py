@@ -22,4 +22,3 @@ from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,
     EmployeeDayVariable as EmployeeDayVariable,
 )
-
