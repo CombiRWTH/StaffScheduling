@@ -4,6 +4,7 @@ from employee import Employee
 from day import Day
 from shift import Shift
 from ortools.sat.python.cp_model import CpModel, IntVar
+from datetime import timedelta
 
 
 class FreeDaysAfterNightShiftPhaseObjective(Objective):
@@ -19,37 +20,32 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
         super().__init__(weight, employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):
-        penalties = []
-
-        night_shifts = [
-            shift for shift in self._shifts if shift.get_id() == Shift.NIGHT
-        ]
+        penalties: list[IntVar] = []
 
         for employee in self._employees:
-            for i in range(len(self._days) - 1):
-                current_day = self._days[i]
-                next_day = self._days[i + 1]
-
-                for night_shift in night_shifts:
-                    night_key = EmployeeDayShiftVariable.get_key(
-                        employee, current_day, night_shift
+            
+            for day in self._days[:-2]:
+                night_var = variables[
+                    EmployeeDayShiftVariable.get_key(
+                        employee, day, self._shifts[Shift.NIGHT]
                     )
+                ]
+                next_day_var = variables[
+                    EmployeeDayVariable.get_key(employee, day + timedelta(days=1))
+                ]
+                after_next_day_var = variables[
+                    EmployeeDayVariable.get_key(employee, day + timedelta(days=2))
+                ]
 
-                    is_night = variables[night_key]
-                    next_day_key = EmployeeDayVariable.get_key(employee, next_day)
+                penalty_var = model.NewBoolVar(
+                    f"penalty_after_night_{employee.get_id()}_{day}"
+                )
 
-                    is_penalty = model.NewBoolVar(
-                        f"penalty_day_after_night_{employee.get_id()}_{current_day}"
-                    )
+                model.Add(penalty_var == 1).OnlyEnforceIf(
+                    [night_var, next_day_var.Not(), after_next_day_var]
+                )
+                model.Add(penalty_var == 0).OnlyEnforceIf(night_var.Not())
 
-                    model.Add(variables[next_day_key] == 1).OnlyEnforceIf(is_penalty)
-                    model.Add(variables[next_day_key] != 1).OnlyEnforceIf(
-                        is_penalty.Not()
-                    )
-
-                    model.AddHint(is_penalty, 0)
-                    model.AddHint(is_night, 0)
-
-                    penalties.append(is_penalty)
+                penalties.append(penalty_var)
 
         return sum(penalties) * self.weight
