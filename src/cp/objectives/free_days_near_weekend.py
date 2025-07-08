@@ -26,10 +26,13 @@ class FreeDaysNearWeekendObjective(Objective):
         possible_free_both_days_variables: list[IntVar] = []
 
         for employee in self._employees:
+            if employee.hidden:
+                continue
+
             for day in self._days:
                 if day.isoweekday() in [5, 6, 7]:
                     free_day_variable = model.new_bool_var(
-                        f"free_first_day_e:{employee.get_id()}_d:{day}"
+                        f"free_first_day_e:{employee.get_key()}_d:{day}"
                     )
                     day_today_variable = variables[
                         EmployeeDayVariable.get_key(employee, day)
@@ -45,7 +48,7 @@ class FreeDaysNearWeekendObjective(Objective):
 
                     if day + timedelta(1) in self._days:
                         free_next_day_variable = model.new_bool_var(
-                            f"free_second_day_e:{employee.get_id()}_d:{day + timedelta(1)}"
+                            f"free_second_day_e:{employee.get_key()}_d:{day + timedelta(1)}"
                         )
                         day_tomorrow_variable = variables[
                             EmployeeDayVariable.get_key(employee, day + timedelta(1))
@@ -62,7 +65,7 @@ class FreeDaysNearWeekendObjective(Objective):
                         )
 
                         free_both_days_variable = model.new_bool_var(
-                            f"free_both_days_e:{employee.get_id()}_d:{day}"
+                            f"free_both_days_e:{employee.get_key()}_d:{day}"
                         )
                         model.add_bool_and(
                             [free_day_variable, free_next_day_variable]

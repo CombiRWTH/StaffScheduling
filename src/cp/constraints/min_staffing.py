@@ -43,7 +43,7 @@ class MinStaffingConstraint(Constraint):
 
                 for shift in self._shifts:
                     min_staffing = self._min_staffing[required_level][weekday].get(
-                        shift.abbreviation, 0
+                        shift.abbreviation, None
                     )
 
                     potential_working_staff = []
@@ -55,7 +55,10 @@ class MinStaffingConstraint(Constraint):
                         ]
                         potential_working_staff.append(variable)
 
-                    model.add(sum(potential_working_staff) >= min_staffing)
+                    if min_staffing is not None:
+                        model.add(sum(potential_working_staff) == min_staffing)
+                    else:
+                        model.add(sum(potential_working_staff) >= 0)
 
     def _get_eligible_employees(self, required_level: str) -> list[Employee]:
         return [
