@@ -6,9 +6,7 @@ from shift import Shift
 
 
 def analyze_solution(
-    variables: dict[str, int],
-    employees: list[Employee],
-    shifts: list[Shift]
+    variables: dict[str, int], employees: list[Employee], shifts: list[Shift]
 ) -> dict[str, int]:
     parsed = defaultdict(dict)  # employee_id → {date: shift_id}
     shift_duration_map = {s.get_id(): s.duration for s in shifts}

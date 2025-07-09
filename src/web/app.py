@@ -32,7 +32,6 @@ class App:
         solution = self._loader.get_solution(selected_solution_file_name)
         stats = analyze_solution(solution.variables, self._employees, self._shifts)
 
-
         return render_template(
             "index.html",
             solution_file_names=solution_file_names,
@@ -41,7 +40,7 @@ class App:
             employees=self._employees,
             days=self._days,
             shifts=self._shifts,
-            stats=stats
+            stats=stats,
         )
 
     def run(self):
