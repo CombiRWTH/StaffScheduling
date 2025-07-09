@@ -10,7 +10,7 @@ This is the file where all the different cases can be explained in more detail.
 - ...
 
 ## Case 3: - Real Data
-Within this case the automatically extracted data from the database is stored. This excludes the `wishes_and_blocked.json` file as this includes all the manually submitted wishes of employees as well as special circumstances such as health or family-related restrictions. All different files are listed below with the corresponding description of each field within them.
+In this case, the automatically extracted data from the database is stored. The `wishes_and_blocked.json` file is an exception because it includes all the manually submitted wishes of employees, as well as special circumstances, such as health- or family-related restrictions. The different files and their corresponding descriptions are listed below.
 
 ## 📁 File: `employees.json`
 
