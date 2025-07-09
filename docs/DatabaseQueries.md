@@ -1,5 +1,5 @@
 # Database Queries
-Overview of the Queries used to retrieve the needed personal data from the database and explanation.
+This is an overview of the queries used to retrieve the necessary personal data from the database, along with an explanation.
 
 ## target_working_minutes.json
 
