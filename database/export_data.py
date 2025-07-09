@@ -127,7 +127,6 @@ def export_personal_data_to_json(engine, plan_id, filename="employees.json"):
                     a.Prim,
                     a.Name,
                     a.Vorname,
-                    a.PersNr,
                     t.Bezeichnung AS 'Beruf'
                 FROM TPlanPersonal b
                 JOIN
@@ -143,7 +142,6 @@ def export_personal_data_to_json(engine, plan_id, filename="employees.json"):
     df_renamed = df.rename(
         columns={
             "Prim": "key",
-            "PersNr": "PersNr",
             "Vorname": "firstname",
             "Name": "name",
             "Beruf": "type",

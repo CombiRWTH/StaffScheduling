@@ -24,8 +24,7 @@ This file contains a list of all employees within our planning unit (Planungsein
 {
   "employees": [             // List of all employees
     {
-      "PersNr": "string",    // Personnel number as a string
-      "Prim": "int",         // Internal primary key ID
+      "key": "int",          // Internal primary key ID
       "firstname": "string", // First name of the employee
       "name": "string",      // Last name of the employee
       "type": "string"       // Job title (may include an intern classification code)
@@ -46,7 +45,7 @@ This file contains the list of all employees within our PE (Planungseinheit) whi
 {
   "employees": [             // List of all employees
     {
-      "Prim": "int",         // Internal primary key ID
+      "key": "int",          // Internal primary key ID
       "firstname": "string", // First name of the employee
       "name": "string",      // Last name of the employee
       "forbidden_days": [    // Days that are crossed off within TimeOffice = not available
@@ -75,7 +74,7 @@ This file contains the list of all employees within our PE (Planungseinheit) ref
 {
   "employees": [             // List of all employees
     {
-      "Prim": "int",         // Internal primary key ID
+      "key": "int",          // Internal primary key ID
       "firstname": "string", // First name of the employee
       "name": "string",      // Last name of the employee
       "actual": "float",     // Already worked/registered working minutes within TimeOffice
@@ -97,7 +96,7 @@ This file contains the list of employees within our PE (Planungseinheit) which h
 {
   "employees": [               // List of all employees
     {
-      "Prim": "int",           // Internal primary key ID
+      "key": "int",            // Internal primary key ID
       "firstname": "string",   // First name of the employee
       "name": "string",        // Last name of the employee
       "blocked_days": ["int"], // Unavailable days due to health reasons, family-related restrictions or personal unavailability
@@ -125,7 +124,7 @@ This file contains the list of all employees within our PE (Planungseinheit) and
 {
   "employees": [               // List of all employees
     {
-      "Prim": "int",           // Internal primary key ID
+      "key": "int",            // Internal primary key ID
       "firstname": "string",   // First name of the employee
       "name": "string",        // Last name of the employee
       "worked_sundays": "int"  // Count of already worked sundays in last 12 months
