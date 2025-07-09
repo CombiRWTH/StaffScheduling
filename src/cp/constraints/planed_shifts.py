@@ -46,13 +46,12 @@ class PlannedShiftsConstraint(Constraint):
                         f"Shift with ID {shift_id} (code: {shift_code}) not found"
                     )
                     continue
-
                 # Set the planned shift
                 variable_key = EmployeeDayShiftVariable.get_key(employee, day, shift)
                 if variable_key in variables:
                     model.add(variables[variable_key] == 1)
                 else:
-                    logging.warning(f"Variable not found: {variable_key}")
+                    raise Exception(f"Variable not found: {variable_key}")
 
         # Forbidden exclusive shifts for unauthorized employees
         for exclusive_shift_code in Shift.EXCLUSIVE_SHIFTS:
