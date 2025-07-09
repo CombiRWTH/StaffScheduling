@@ -17,7 +17,7 @@ def analyze_solution(
         "Consecutive Working Days > 5": 0,
         "No Free Weekend": 0,
         "Consecutive Night Shifts > 3": 0,
-        "Total Overtime Minutes": 0,
+        "Total Overtime Hours": 0,
         "No Free Days Around Weekend": 0,
     }
 
@@ -73,7 +73,8 @@ def analyze_solution(
         soll_minutes = emp._target_working_time
         overtime = ist_minutes - soll_minutes
         if overtime > 0:
-            stats["Total Overtime Minutes"] += overtime
+            stats["Total Overtime Hours"] += overtime / 60
+            stats["Total Overtime Hours"] = round(stats["Total Overtime Hours"], 2)
 
         # No Free Days Around Weekend (Fri+Sat or Sat+Sun)
         for d in days:
