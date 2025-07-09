@@ -62,7 +62,6 @@ class Model:
             solver.parameters.max_time_in_seconds = timeout
         solver.parameters.linearization_level = 0
 
-        solver.parameters.stop_after_first_solution = True  # comment out when done
         start_time = timeit.default_timer()
 
         solver.solve(self._model)
