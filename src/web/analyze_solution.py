@@ -10,7 +10,7 @@ def analyze_solution(
 ) -> dict[str, int]:
     parsed = defaultdict(dict)  # employee_id → {date: shift_id}
     shift_duration_map = {s.get_id(): s.duration for s in shifts}
-    employee_map = {e.get_id(): e for e in employees}
+    employee_map = {e.get_key(): e for e in employees}
 
     stats = {
         "Forward Rotation Violations": 0,
@@ -70,7 +70,7 @@ def analyze_solution(
 
         # Overtime: IST - SOLL
         ist_minutes = sum(shift_duration_map.get(s, 450) for s in shifts_assigned)
-        soll_minutes = emp.get_target_working_time(shifts)
+        soll_minutes = emp._target_working_time
         overtime = ist_minutes - soll_minutes
         if overtime > 0:
             stats["Total Overtime Minutes"] += overtime
