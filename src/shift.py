@@ -48,6 +48,10 @@ class Shift:
         return self._id
 
     @property
+    def is_exclusive(self) -> bool:
+        return self._name in Shift.EXCLUSIVE_SHIFTS
+
+    @property
     def abbreviation(self) -> str:
         return self._name[:1]
 
