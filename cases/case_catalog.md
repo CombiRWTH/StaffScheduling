@@ -16,7 +16,7 @@ Within this case the automatically extracted data from the database is stored. T
 
 ### 📝 Description
 
-This file contains the list of all employees within our PE (Planungseinheit), including their internal ID, personnel number, name, and their job title.
+This file contains a list of all employees within our planning unit (Planungseinheit), including their `key` (internal ID), `personnel_number`, `name`, `firstname`, and `title` (job title).
 
 ### 📐 Structure
 
