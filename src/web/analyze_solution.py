@@ -84,7 +84,7 @@ def analyze_solution(
             elif d.weekday() == 5 and (d + timedelta(days=1)) in schedule:
                 stats["No Free Days Around Weekend"] += 1
 
-        #48 hrs free after night shift
+        # 48 hrs free after night shift
         for d in days:
             if schedule[d] == Shift.NIGHT:
                 next_day = d + timedelta(days=1)
