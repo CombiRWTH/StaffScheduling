@@ -15,14 +15,14 @@ from sqlalchemy import text
 logging.basicConfig(level=logging.INFO)
 
 
-def load_json_files():
+def load_json_files(start_date, end_date, planning_unit):
     """Load the needed Employee file and the corresponding solution file,
     which includes the shifts references to employees."""
     base_path = Path(__file__).parent.resolve()
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
     sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
 
-    solution_file = base_path / "solutions_test.json"
+    solution_file = base_path / f"{start_date}_to_{end_date}_CASE{planning_unit}.json"
     employee_file = Path(__file__).parent.parent.resolve() / base_folder / sub_folder / "employees.json"
 
     with open(solution_file, encoding="utf-8") as f:

@@ -19,10 +19,9 @@ def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11,
         engine, planning_unit, from_date, till_date
     )
 
-    data, emp_data = import_solution.load_json_files()
+    data, emp_data = import_solution.load_json_files(from_date, till_date, planning_unit)
     prim_to_refberuf = import_solution.load_person_to_job(engine)
 
-    # Currently hardcoded at the "wrong" spot!
     PE_ID = planning_unit
     PLAN_ID = base_data["plan_id"]
     STATUS_ID = 20 # Always "Sollplanung" as we only generate such plans
