@@ -15,8 +15,6 @@ class PlannedShiftsConstraint(Constraint):
     def create(self, model: CpModel, variables: dict[str, Variable]):
         # Collect employees with exclusive shifts
         employees_with_exclusive_shifts = {}
-
-        # Process all planned shifts
         for employee in self._employees:
             for day_num, shift_code in employee._planned_shifts:
                 # Track exclusive shifts
