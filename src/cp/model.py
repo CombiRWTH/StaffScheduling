@@ -45,15 +45,15 @@ class Model:
         logging.info(f"  - number of objectives: {len(self._objectives)}")
         logging.info(f"  - number of constraints: {len(self._constraints)}")
 
+        logging.info("Constraints:")
+        for constraint in self._constraints:
+            logging.info(f"  - {constraint.name}")
+
         logging.info("Objectives:")
         for objective in self._objectives:
             logging.info(f"  - {objective.name} (weight: {objective.weight})")
 
         self._model.minimize(sum(self._penalties))
-
-        logging.info("Constraints:")
-        for constraint in self._constraints:
-            logging.info(f"  - {constraint.name}")
 
         solver = CpSolver()
         solver.parameters.num_workers = 0
