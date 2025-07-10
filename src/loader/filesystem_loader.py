@@ -129,15 +129,8 @@ class FSLoader(Loader):
             Shift(Shift.INTERMEDIATE, "Zwischen", 480, 940),
             Shift(Shift.LATE, "Spät", 805, 1265),
             Shift(Shift.NIGHT, "Nacht", 1250, 375),
+            Shift(Shift.MANAGEMENT, "Z60", 480, 840),
         ]
-
-        # Zusätzliche Schichten je nach Case
-        if self._has_special_shifts():
-            base_shifts.append(
-                Shift(4, "Z60", 480, 540)  # 8:00-9:00 Uhr, 60 Min
-            )
-            logging.debug("Special shift Z60 added")
-
         return base_shifts
 
     def get_days(self, start_date: date, end_date: date) -> list[date]:
@@ -193,15 +186,3 @@ class FSLoader(Loader):
 
     def _get_solutions_path(self, filename: str) -> str:
         return f"./found_solutions/{filename}.json"
-
-    def _has_special_shifts(self) -> bool:
-        # Prüft ob spezielle Schichten wie Z60 in den Daten vorkommen
-        vacation_data = self._load_json(
-            self._get_file_path("free_shifts_and_vacation_days")
-        )
-        for emp in vacation_data.get("employees", []):
-            if "planned_shifts" in emp:
-                for _, shift_code in emp["planned_shifts"]:
-                    if shift_code == "Z60":
-                        return True
-        return False
