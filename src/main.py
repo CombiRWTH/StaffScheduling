@@ -31,7 +31,13 @@ def solve(unit: int, start: click.DateTime, end: click.DateTime, timeout: int):
     )
 
     loader = FSLoader(unit)
-    solver(loader=loader, start_date=start.date(), end_date=end.date(), timeout=timeout)
+    solver(
+        loader=loader,
+        start_date=start.date(),
+        end_date=end.date(),
+        timeout=timeout,
+        planning_unit=unit,
+    )
 
 
 @cli.command()

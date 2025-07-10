@@ -48,7 +48,7 @@ class Loader(ABC):
         pass
 
     @abstractmethod
-    def get_days(self, start_date: date) -> list[date]:
+    def get_days(self, start_date: date, end_date: date) -> list[date]:
         pass
 
     @abstractmethod

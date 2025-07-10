@@ -27,13 +27,15 @@ logging.basicConfig(
 MAX_CONSECUTIVE_DAYS = 5
 
 
-def main(loader: Loader, start_date: date, end_date: date, timeout: int):
+def main(
+    loader: Loader, start_date: date, end_date: date, timeout: int, planning_unit: int
+):
     employees = loader.get_employees()
     days = loader.get_days(start_date, end_date)
     shifts = loader.get_shifts()
 
     logging.info("General information:")
-    logging.info(f"  - planning unit: {loader.get_case_id()}")
+    logging.info(f"  - planning unit: {planning_unit}")
     logging.info(f"  - start date: {start_date}")
     logging.info(f"  - end date: {end_date}")
     logging.info(f"  - number of employees: {len(employees)}")
@@ -65,7 +67,7 @@ def main(loader: Loader, start_date: date, end_date: date, timeout: int):
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
     ]
-    
+
     model = Model()
     for variable in variables:
         model.add_variable(variable)
@@ -78,13 +80,13 @@ def main(loader: Loader, start_date: date, end_date: date, timeout: int):
 
     solution = model.solve(timeout)
 
-    solution_name = create_solutionNameData(start_date, case_id)
+    solution_name = create_solutionNameData(start_date, end_date, planning_unit)
 
     loader.write_solution(solution, solution_name)
 
 
-def create_solutionNameData(start_date, planning_unit):
-    return f"{start_date}_CASE{planning_unit}"
+def create_solutionNameData(start_date, end_date, planning_unit):
+    return f"{start_date}_to_{end_date}_CASE{planning_unit}"
 
 
 if __name__ == "__main__":
