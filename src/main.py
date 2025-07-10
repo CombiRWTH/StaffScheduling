@@ -30,8 +30,12 @@ def solve(unit: int, start: click.DateTime, end: click.DateTime, timeout: int):
         f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()}."
     )
 
-    loader = FSLoader(unit)
-    solver(loader=loader, start_date=start.date(), end_date=end.date(), timeout=timeout)
+    solver(
+        unit=unit,
+        start_date=start.date(),
+        end_date=end.date(),
+        timeout=timeout,
+    )
 
 
 @cli.command()
