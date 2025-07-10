@@ -1,4 +1,4 @@
-from loader import Loader
+from loader import FSLoader
 from cp import (
     Model,
     FreeDayAfterNightShiftPhaseConstraint,
@@ -27,15 +27,14 @@ logging.basicConfig(
 MAX_CONSECUTIVE_DAYS = 5
 
 
-def main(
-    loader: Loader, start_date: date, end_date: date, timeout: int, planning_unit: int
-):
+def main(unit: int, start_date: date, end_date: date, timeout: int):
+    loader = FSLoader(unit)
     employees = loader.get_employees()
     days = loader.get_days(start_date, end_date)
     shifts = loader.get_shifts()
 
     logging.info("General information:")
-    logging.info(f"  - planning unit: {planning_unit}")
+    logging.info(f"  - planning unit: {unit}")
     logging.info(f"  - start date: {start_date}")
     logging.info(f"  - end date: {end_date}")
     logging.info(f"  - number of employees: {len(employees)}")
@@ -80,13 +79,8 @@ def main(
 
     solution = model.solve(timeout)
 
-    solution_name = create_solutionNameData(start_date, end_date, planning_unit)
-
+    solution_name = f"solution_{unit}_{start_date}-{end_date}.json"
     loader.write_solution(solution, solution_name)
-
-
-def create_solutionNameData(start_date, end_date, planning_unit):
-    return f"{start_date}_to_{end_date}_CASE{planning_unit}"
 
 
 if __name__ == "__main__":
