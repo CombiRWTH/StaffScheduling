@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from loader import Loader
 from employee import Employee
 from shift import Shift
+from .analyze_solution import analyze_solution
 from re import match
 from datetime import datetime
 
@@ -27,6 +28,7 @@ class App:
         )
 
         solution = self._loader.get_solution(selected_solution_file_name)
+        stats = analyze_solution(solution.variables, self._employees, self._shifts)
         start_date = min(
             datetime.strptime(
                 match(r"\(\d+, '([\d-]+)', \d+\)", key).group(1), "%Y-%m-%d"
@@ -44,6 +46,7 @@ class App:
             employees=self._employees,
             days=days,
             shifts=self._shifts,
+            stats=stats,
         )
 
     def run(self, debug: bool = False):
