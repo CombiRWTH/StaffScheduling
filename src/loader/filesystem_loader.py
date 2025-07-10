@@ -8,7 +8,6 @@ import logging
 from os import listdir
 from datetime import date
 from datetime import timedelta
-from calendar import monthrange
 
 
 class FSLoader(Loader):
@@ -135,10 +134,10 @@ class FSLoader(Loader):
             Shift(Shift.NIGHT, "Nacht", 1250, 375),
         ]
 
-    def get_days(self, start_date: date) -> list[date]:
+    def get_days(self, start_date: date, end_date: date) -> list[date]:
         return [
             start_date + timedelta(days=i)
-            for i in range(monthrange(start_date.year, start_date.month)[1])
+            for i in range(end_date.day - start_date.day + 1)
         ]
 
     def get_min_staffing(self) -> dict[str, dict[str, dict[str, int]]]:
