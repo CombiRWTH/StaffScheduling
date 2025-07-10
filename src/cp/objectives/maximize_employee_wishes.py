@@ -15,7 +15,9 @@ class MaximizeEmployeeWishesObjective(Objective):
                 for day in self._days:
                     if day.day == wish_day:
                         var = variables[EmployeeDayVariable.get_key(employee, day)]
-                        wish_reward = model.NewBoolVar(f"wish_day_off_{employee.get_key()}_{day}")
+                        wish_reward = model.NewBoolVar(
+                            f"wish_day_off_{employee.get_key()}_{day}"
+                        )
                         model.Add(var == 0).OnlyEnforceIf(wish_reward)
                         rewards.append(wish_reward)
 
@@ -23,7 +25,9 @@ class MaximizeEmployeeWishesObjective(Objective):
             for wish_day, abbr in employee.get_wish_shifts:
                 for day in self._days:
                     if day.day == wish_day:
-                        shift = next((s for s in self._shifts if s.abbreviation == abbr), None)
+                        shift = next(
+                            (s for s in self._shifts if s.abbreviation == abbr), None
+                        )
                         if shift is None:
                             continue
                         key = EmployeeDayShiftVariable.get_key(employee, day, shift)

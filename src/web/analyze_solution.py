@@ -75,6 +75,7 @@ def calculate_not_free_after_night_shift(schedule: Dict[datetime.date, int]) -> 
                 violations += 1
     return violations
 
+
 def calculate_granted_shift_wishes(
     emp: Employee, schedule: Dict[datetime.date, int], shifts: List[Shift]
 ) -> int:
