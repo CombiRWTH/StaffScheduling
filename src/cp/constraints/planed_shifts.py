@@ -40,7 +40,7 @@ class PlannedShiftsConstraint(Constraint):
                     continue
 
                 # Find the shift
-                shift = next((s for s in self._shifts if s.get_id() == shift_id), None)
+                shift = self._find_shift_by_id(shift_id)
                 if not shift:
                     logging.warning(
                         f"Shift with ID {shift_id} (code: {shift_code}) not found"
@@ -78,3 +78,9 @@ class PlannedShiftsConstraint(Constraint):
                         )
                         if variable_key in variables:
                             model.add(variables[variable_key] == 0)
+
+    def _find_shift_by_id(self, shift_id):
+        for shift in self._shifts:
+            if shift.get_id() == shift_id:
+                return shift
+        return None
