@@ -6,8 +6,8 @@ from shift import Shift
 from ortools.sat.python.cp_model import CpModel, IntVar
 
 
-class MinimizeOvertimeObjective(Objective):
-    KEY = "minimize-overtime"
+class MinimizeHiddenEmployeesObjective(Objective):
+    KEY = "minimize-hidden-employees"
 
     def __init__(
         self,
@@ -23,14 +23,15 @@ class MinimizeOvertimeObjective(Objective):
         super().__init__(weight, employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):
-        possible_overtime_absolute_variables: list[IntVar] = []
+        possible_hidden_employee_variables: list[IntVar] = []
 
         max_duration = 31 * 24 * 60
 
         for employee in self._employees:
-            target_working_time = employee.get_available_working_time()
-            possible_working_time = []
+            if not employee.hidden:
+                continue
 
+            possible_working_time = []
             for day in self._days:
                 for shift in self._shifts:
                     variable = variables[
@@ -38,24 +39,11 @@ class MinimizeOvertimeObjective(Objective):
                     ]
                     possible_working_time.append(variable * shift.duration)
 
-            possible_overtime_variable = model.new_int_var(
-                -max_duration, max_duration, f"overtime_e:{employee.get_key()}"
+            possible_hidden_employee_variable = model.new_int_var(
+                0, max_duration, f"hidden_e:{employee.get_key()}"
             )
 
-            possible_overtime_absolute_variable = model.new_int_var(
-                0, max_duration, f"overtime_absolute_e:{employee.get_key()}"
-            )
-            model.add(
-                possible_overtime_variable
-                == sum(possible_working_time) - target_working_time
-            )
-            model.add_abs_equality(
-                possible_overtime_absolute_variable,
-                possible_overtime_variable,
-            )
+            model.add(possible_hidden_employee_variable == sum(possible_working_time))
+            possible_hidden_employee_variables.append(possible_hidden_employee_variable)
 
-            possible_overtime_absolute_variables.append(
-                possible_overtime_absolute_variable
-            )
-
-        return sum(possible_overtime_absolute_variables) * self._weight
+        return sum(possible_hidden_employee_variables) * self._weight

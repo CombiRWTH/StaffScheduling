@@ -1,7 +1,16 @@
+_COLORS = {
+    0: "oklch(45.3% 0.124 130.933)",
+    1: "oklch(78.9% 0.154 211.53)",
+    2: "oklch(76.9% 0.188 70.08)",
+    3: "oklch(20.8% 0.042 265.755)",
+}
+
+
 class Shift:
     EARLY = 0
-    LATE = 1
-    NIGHT = 2
+    INTERMEDIATE = 1
+    LATE = 2
+    NIGHT = 3
 
     _id: int
     _name: str
@@ -19,6 +28,18 @@ class Shift:
 
     def get_id(self) -> int:
         return self._id
+
+    @property
+    def abbreviation(self) -> str:
+        return self._name[:1]
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def color(self) -> str:
+        return _COLORS.get(self._id, "#FFFFFF")
 
     @property
     def start_time(self) -> int:

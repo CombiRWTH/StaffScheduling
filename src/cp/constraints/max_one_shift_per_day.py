@@ -17,6 +17,9 @@ class MaxOneShiftPerDayConstraint(Constraint):
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for employee in self._employees:
+            if employee.hidden:
+                continue
+
             for day in self._days:
                 model.add_at_most_one(
                     variables[EmployeeDayShiftVariable.get_key(employee, day, shift)]

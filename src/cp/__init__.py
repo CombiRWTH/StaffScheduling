@@ -13,8 +13,10 @@ from .objectives import (
     FreeDaysNearWeekendObjective as FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
     MinimizeOvertimeObjective as MinimizeOvertimeObjective,
+    MinimizeHiddenEmployeesObjective as MinimizeHiddenEmployeesObjective,
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
+    FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
 )
 from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,

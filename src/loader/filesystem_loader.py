@@ -1,3 +1,4 @@
+import os
 from .loader import Loader
 from employee import Employee
 from shift import Shift
@@ -5,6 +6,9 @@ from solution import Solution
 from json import load, dump
 from datetime import datetime
 import logging
+from os import listdir
+from datetime import date
+from datetime import timedelta
 
 
 class FSLoader(Loader):
@@ -16,17 +20,17 @@ class FSLoader(Loader):
         self._case_id = case_id
 
     def get_employees(self) -> list[Employee]:
-        fs_employees = self._load_json("employees")["employees"]
-        fs_employees_levels = self._load_json("employee_types")
+        fs_employees = self._load_json(self._get_file_path("employees"))["employees"]
+        fs_employees_levels = self._load_json(self._get_file_path("employee_types"))
         fs_employees_levels: dict = {
             type: level
             for level, types in fs_employees_levels.items()
             for type in types
         }
 
-        fs_employees_target_working: list = self._load_json("target_working_minutes")[
-            "employees"
-        ]
+        fs_employees_target_working: list = self._load_json(
+            self._get_file_path("target_working_minutes")
+        )["employees"]
         fs_employees_target: dict = {}
         fs_employees_actual: dict = {}
 
@@ -36,9 +40,9 @@ class FSLoader(Loader):
             if "actual" in fs_employee:
                 fs_employees_actual[fs_employee["PersNr"]] = fs_employee["actual"]
 
-        fs_employees_vacation: list = self._load_json("free_shifts_and_vacation_days")[
-            "employees"
-        ]
+        fs_employees_vacation: list = self._load_json(
+            self._get_file_path("free_shifts_and_vacation_days")
+        )["employees"]
         fs_employees_forbidden_days: dict = {}
         fs_employees_forbidden_shifts: dict = {}
         fs_employees_vacation_days: dict = {}
@@ -70,9 +74,10 @@ class FSLoader(Loader):
                     map(lambda x: (x[0], x[1]), fs_employee["wish_shifts"])
                 )
 
-        employees = []
+        employees: list[Employee] = []
         for i, fs_employee in enumerate(fs_employees):
             id = fs_employee["PersNr"]
+            key = fs_employee.get("key")
             surname = fs_employee["name"]
             firstname = fs_employee["firstname"]
             type = fs_employee["type"]
@@ -94,11 +99,11 @@ class FSLoader(Loader):
 
             employees.append(
                 Employee(
-                    id=i,
+                    key=key if key is not None else i,
                     surname=surname,
                     name=firstname,
-                    type=type,
                     level=level,
+                    type=type,
                     target_working_time=target,
                     actual_working_time=actual,
                     forbidden_days=forbidden_days,
@@ -109,6 +114,8 @@ class FSLoader(Loader):
                     wish_shifts=wish_shifts,
                 )
             )
+
+        employees += super().get_employees(len(employees))
 
         return employees
 
@@ -123,50 +130,59 @@ class FSLoader(Loader):
         """
         return [
             Shift(Shift.EARLY, "Früh", 360, 820),
+            Shift(Shift.INTERMEDIATE, "Zwischen", 480, 940),
             Shift(Shift.LATE, "Spät", 805, 1265),
             Shift(Shift.NIGHT, "Nacht", 1250, 375),
         ]
 
-    def get_min_staffing(self) -> dict[str, dict[str, dict[dict[str, int]]]]:
-        fs_min_staffing = self._load_json("minimal_number_of_staff")
+    def get_days(self, start_date: date, end_date: date) -> list[date]:
+        return [
+            start_date + timedelta(days=i)
+            for i in range(end_date.day - start_date.day + 1)
+        ]
+
+    def get_min_staffing(self) -> dict[str, dict[str, dict[str, int]]]:
+        fs_min_staffing = self._load_json(
+            self._get_file_path("minimal_number_of_staff")
+        )
         return fs_min_staffing
 
-    def write_solutions(
+    def get_solution(self, solution_file_name: str) -> Solution:
+        fs_solution = self._load_json(self._get_solutions_path(solution_file_name))
+        variables = fs_solution["variables"]
+        objective = fs_solution.get("objective", 0)
+
+        return Solution(variables=variables, objective=objective)
+
+    def load_solution_file_names(self) -> list[str]:
+        files = listdir("./found_solutions")
+        solutions = []
+        for file in files:
+            if file.startswith("solutions_") and file.endswith(".json"):
+                solutions.append(file[:-5])
+
+        return sorted(solutions)
+
+    def write_solution(
         self,
-        case: int,
-        employees: list[Employee],
-        constraints: list[str],
-        shifts: list[Shift],
-        solutions: list[Solution],
+        solution: Solution,
     ):
         data = {
-            "case_id": case,
-            "employees": {
-                "name_to_index": {
-                    employee._surname: int(employee.get_id()) for employee in employees
-                },
-                "name_to_target": {
-                    employee._surname: employee.get_target_working_time(shifts)
-                    for employee in employees
-                },
-            },
-            "constraints": constraints,
-            "num_of_solutions": len(solutions),
-            "givenSolutionLimit": len(solutions),
-            "shiftDurations": {shift._name[0]: shift.duration for shift in shifts},
-            "solutions": [solution.variables for solution in solutions],
+            "variables": solution.variables,
+            "objective": solution.objective,
         }
         self._write_json(
             f"solutions_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}", data
         )
 
-    def _load_json(self, filename: str):
-        file_path = self._get_file_path(filename)
+    def _load_json(self, file_path: str) -> dict:
         with open(file_path, "r") as file:
             return load(file)
 
     def _write_json(self, filename: str, data: dict):
         file_path = self._get_solutions_path(filename)
+        if not os.path.exists(os.path.dirname(file_path)):
+            os.makedirs(os.path.dirname(file_path))
         with open(file_path, "w") as file:
             dump(data, file, indent=4)
 
