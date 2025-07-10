@@ -11,10 +11,11 @@ from cp import (
     EmployeeDayVariable,
     FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective,
-    MinimizeHiddenEmployeesObjective,
     MinimizeOvertimeObjective,
+    MinimizeHiddenEmployeesObjective,
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
+    FreeDaysAfterNightShiftPhaseObjective,
 )
 from datetime import date
 import logging
@@ -62,6 +63,7 @@ def main(loader: Loader, start_date: date, end_date: date, timeout: int):
         MinimizeOvertimeObjective(4.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
+        FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
     ]
 
     model = Model()
