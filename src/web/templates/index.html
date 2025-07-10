@@ -108,7 +108,10 @@
                                 {% for shift in shifts %}
                                 {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
                                 {% if variables[key] == 1 %}
-                                <div class="w-100 h-100 rounded" style="background-color: {{ shift.color }};">
+                                {% set is_wish = (day.day, shift.abbreviation) in employee.get_wish_shifts %}
+                                <div class="w-100 h-100 rounded"
+                                    style="background-color: {{ 'lightgreen' if is_wish else shift.color }};"
+                                    title="{{ 'Granted Wish' if is_wish else '' }}">
                                     {{ shift.name }}
                                 </div>
                                 {% endif %}
