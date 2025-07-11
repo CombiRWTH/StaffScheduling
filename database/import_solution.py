@@ -88,6 +88,10 @@ def load_shift_segments(
 
     with engine.connect() as conn:
         for shift_id, ref_dienst in shift_id_map.items():
+
+            if shift_id > 4:
+                continue
+
             rows = conn.execute(sql, {"ref": ref_dienst}).fetchall()
             if not rows:
                 raise ValueError(
@@ -132,6 +136,10 @@ def build_dataframe(
             # f.e. ignore "e:459_d:2024-11-01" 
          continue
 
+        if shift_id not in shift_to_refdienst:
+            continue 
+
+
         if prim_person not in prim_whitelist:
             continue
 
@@ -140,7 +148,7 @@ def build_dataframe(
         planned_days = planned_map.get(prim_person, set())
         if base_date.day in planned_days:
             continue
-
+        
         ref_dienst = shift_to_refdienst[shift_id]
         prim_beruf = prim_to_refberuf.get(prim_person)
 
