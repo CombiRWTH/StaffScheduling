@@ -35,51 +35,62 @@ class FSLoader(Loader):
 
         for fs_employee in fs_employees_target_working:
             if "target" in fs_employee:
-                fs_employees_target[fs_employee["PersNr"]] = fs_employee["target"]
+                fs_employees_target[fs_employee["key"]] = int(fs_employee["target"])
             if "actual" in fs_employee:
-                fs_employees_actual[fs_employee["PersNr"]] = fs_employee["actual"]
+                fs_employees_actual[fs_employee["key"]] = int(fs_employee["actual"])
 
         fs_employees_vacation: list = self._load_json(
             self._get_file_path("free_shifts_and_vacation_days")
         )["employees"]
+
         fs_employees_forbidden_days: dict = {}
         fs_employees_forbidden_shifts: dict = {}
         fs_employees_vacation_days: dict = {}
         fs_employees_vacation_shifts: dict = {}
-        fs_employees_wish_days: dict = {}
-        fs_employees_wish_shifts: dict = {}
         fs_employees_planned_shifts: dict = {}
 
         for fs_employee in fs_employees_vacation:
             if "forbidden_days" in fs_employee:
-                fs_employees_forbidden_days[fs_employee["PersNr"]] = fs_employee[
+                fs_employees_forbidden_days[fs_employee["key"]] = fs_employee[
                     "forbidden_days"
                 ]
-            if "forbidden_shifts" in fs_employee:
-                fs_employees_forbidden_shifts[fs_employee["PersNr"]] = list(
-                    map(lambda x: (x[0], x[1]), fs_employee["forbidden_shifts"])
-                )
             if "vacation_days" in fs_employee:
-                fs_employees_vacation_days[fs_employee["PersNr"]] = fs_employee[
+                fs_employees_vacation_days[fs_employee["key"]] = fs_employee[
                     "vacation_days"
                 ]
             if "vacation_shifts" in fs_employee:
-                fs_employees_vacation_shifts[fs_employee["PersNr"]] = list(
+                fs_employees_vacation_shifts[fs_employee["key"]] = list(
                     map(lambda x: (x[0], x[1]), fs_employee["vacation_shifts"])
                 )
-            if "wish_days" in fs_employee:
-                fs_employees_wish_days[fs_employee["PersNr"]] = fs_employee["wish_days"]
-            if "wish_shifts" in fs_employee:
-                fs_employees_wish_shifts[fs_employee["PersNr"]] = list(
-                    map(lambda x: (x[0], x[1]), fs_employee["wish_shifts"])
-                )
             if "planned_shifts" in fs_employee:
-                fs_employees_planned_shifts[fs_employee["PersNr"]] = list(
+                fs_employees_planned_shifts[fs_employee["key"]] = list(
                     map(lambda x: (x[0], x[1]), fs_employee["planned_shifts"])
                 )
+
+        fs_employees_wish_days: dict = {}
+        fs_employees_wish_shifts: dict = {}
+        fs_employees_wishes_and_blocked: list = self._load_json(
+            self._get_file_path("wishes_and_blocked")
+        )["employees"]
+        for fs_employee in fs_employees_wishes_and_blocked:
+            if "blocked_days" in fs_employee:
+                fs_employees_forbidden_days[fs_employee["key"]].extend(
+                    fs_employee["blocked_days"]
+                )
+            if "blocked_shifts" in fs_employee:
+                fs_employees_forbidden_shifts[fs_employee["key"]] = list(
+                    map(lambda x: (x[0], x[1]), fs_employee["blocked_shifts"])
+                )
+            if "wish_days" in fs_employee:
+                fs_employees_wish_days[fs_employee["key"]] = fs_employee["wish_days"]
+            if "wish_shifts" in fs_employee:
+                fs_employees_wish_shifts[fs_employee["key"]] = list(
+                    map(lambda x: (x[0], x[1]), fs_employee["wish_shifts"])
+                )
+
         employees: list[Employee] = []
         for i, fs_employee in enumerate(fs_employees):
-            id = fs_employee["PersNr"]
+            id = fs_employee["key"]
             key = fs_employee.get("key")
             surname = fs_employee["name"]
             firstname = fs_employee["firstname"]
@@ -130,6 +141,9 @@ class FSLoader(Loader):
             Shift(Shift.LATE, "Spät", 805, 1265),
             Shift(Shift.NIGHT, "Nacht", 1250, 375),
             Shift(Shift.MANAGEMENT, "Z60", 480, 840),
+            Shift(5, "F2_", 360, 820),
+            Shift(6, "S2_", 805, 1265),
+            Shift(7, "N5", 1250, 375),
         ]
         return base_shifts
 

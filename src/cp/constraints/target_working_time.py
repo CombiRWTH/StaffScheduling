@@ -25,6 +25,9 @@ class TargetWorkingTimeConstraint(Constraint):
             possible_working_time = []
             for day in self._days:
                 for shift in self._shifts:
+                    if shift.is_exclusive:
+                        continue
+
                     variable = variables[
                         EmployeeDayShiftVariable.get_key(employee, day, shift)
                     ]

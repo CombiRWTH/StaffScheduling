@@ -68,10 +68,12 @@
                             {% set ns = namespace(actual_minutes=0,actual_shifts=0) %}
                             {% for day in days %}
                                 {% for shift in shifts %}
-                                    {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
-                                    {% if variables[key] == 1 %}
-                                        {% set ns.actual_shifts = ns.actual_shifts + 1%}
-                                        {% set ns.actual_minutes = ns.actual_minutes + shift.duration %}
+                                    {% if not shift.is_exclusive %}
+                                        {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
+                                        {% if variables[key] == 1 %}
+                                            {% set ns.actual_shifts = ns.actual_shifts + 1 %}
+                                            {% set ns.actual_minutes = ns.actual_minutes + shift.duration %}
+                                        {% endif %}
                                     {% endif %}
                                 {% endfor %}
                             {% endfor %}
