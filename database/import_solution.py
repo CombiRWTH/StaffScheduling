@@ -31,6 +31,25 @@ def load_json_files(start_date, end_date, planning_unit):
         emp_data = json.load(f)["employees"]
     return data, emp_data
 
+def load_planned_shifts() -> dict[int, set[int]]:
+    """
+    Returns Dict {Key : {Day1, Day2, …}},
+    based on planned_shifts in free_shifts_and_vacation_days.json.
+    """
+
+    base_folder = os.getenv("BASE_OUTPUT_FOLDER")
+    sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
+
+    path = Path(__file__).parent.parent.resolve() / base_folder / sub_folder / "free_shifts_and_vacation_days.json"
+    with path.open(encoding="utf-8") as f:
+        data = json.load(f)["employees"]
+
+    prim2days = {}
+    for emp in data:
+        days = {d for d, _ in emp.get("planned_shifts", [])}
+        prim2days[int(emp["key"])] = days
+    return prim2days
+
 
 def get_correct_path(filename):
     """Return the correct path to store the given file in."""
@@ -96,6 +115,7 @@ def build_dataframe(
     pe_id,
     plan_id,
     status_id,
+    planned_map,
 ):
     """Build the solution into one DataFrame (one row per segment)."""
 
@@ -116,6 +136,11 @@ def build_dataframe(
             continue
 
         base_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+
+        planned_days = planned_map.get(prim_person, set())
+        if base_date.day in planned_days:
+            continue
+
         ref_dienst = shift_to_refdienst[shift_id]
         prim_beruf = prim_to_refberuf.get(prim_person)
 

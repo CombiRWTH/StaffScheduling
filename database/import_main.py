@@ -21,6 +21,7 @@ def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11,
 
     data, emp_data = import_solution.load_json_files(from_date, till_date, planning_unit)
     prim_to_refberuf = import_solution.load_person_to_job(engine)
+    planned_map = import_solution.load_planned_shifts() 
 
     PE_ID = planning_unit
     PLAN_ID = base_data["plan_id"]
@@ -40,6 +41,7 @@ def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11,
         PE_ID,
         PLAN_ID,
         STATUS_ID,
+        planned_map
     )
 
     action = input("Press i for importing, d for deleting or j to generate a test json:")
