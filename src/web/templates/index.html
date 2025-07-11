@@ -37,7 +37,7 @@
         'total_overtime_hours': 'Total Overtime Hours',
         'no_free_days_around_weekend': 'No Free Days Around Weekend',
         'not_free_after_night_shift': '48 Hrs Not Free After Night Shift'
-        'granted_wish_shifts': 'Wishes Considered'
+        'granted_wish_shifts': 'Wish Shifts Assigned',
         } %}
         <ul>
             {% for key, value in stats.items() %}
@@ -96,16 +96,16 @@
                                                 {% endfor %}
                                             </div>
 
-                                {% for shift in shifts %}
-                                {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
-                                {% if variables[key] == 1 %}
-                                {% set is_wish = (day.day, shift.abbreviation) in employee.get_wish_shifts %}
-                                <div class="w-100 h-100 rounded"
-                                    style="background-color: {{ 'lightgreen' if is_wish else shift.color }};"
-                                    title="{{ 'Granted Wish' if is_wish else '' }}">
-                                    {{ shift.name }}
-                                </div>
-                                {% endif %}
+                                            {% for shift in shifts %}
+                                                {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
+                                                {% if variables[key] == 1 %}
+                                                    <div class="w-100 h-100 rounded" style="background-color: {{ shift.color }};">
+                                                        {{ shift.name }}
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </td>
                                 {% endfor %}
                             </tr>
                         {% endfor %}
