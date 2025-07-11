@@ -1,32 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Staff Scheduling Preview</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Scheduling Preview</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+    <body class="bg-body p-4 container-fluid">
+        <nav class="bg-body-tertiary mb-4 p-2 rounded shadow-sm">
+            <h1 class="text-primary">Staff Scheduling Preview</h1>
+            <div class="d-flex w-100" style="column-gap: .5rem;">
+                <div class="w-100">
+                    <label for="solution_file_select" class="form-label">Select Solution</label>
+                    <select id="solution_file_select" class="form-select">
+                        {% for solution_file_name in solution_file_names %}#
+                            <option value="{{ solution_file_name }}" {{ 'selected' if solution_file_name == selected_solution_file_name }}>{{ solution_file_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="fullscreen_button" class="form-label">Fullscreen</label>
+                    <button id="fullscreen_button" class="btn btn-primary">Go Fullscreen</button>
+                </div>
+            </div>
+        </nav>
 
-<body class="bg-body p-4 container-fluid">
-    <nav class="bg-body-tertiary mb-4 p-2 rounded shadow-sm">
-        <h1 class="text-primary">Staff Scheduling Preview</h1>
-        <div class="d-flex w-100" style="column-gap: .5rem;">
-            <div class="w-100">
-                <label for="solution_file_select" class="form-label">Select Solution</label>
-                <select id="solution_file_select" class="form-select">
-                    {% for solution_file_name in solution_file_names %}#
-                    <option value="{{ solution_file_name }}" {{ 'selected' if
-                        solution_file_name==selected_solution_file_name }}>{{ solution_file_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <label for="fullscreen_button" class="form-label">Fullscreen</label>
-                <button id="fullscreen_button" class="btn btn-primary">Go Fullscreen</button>
-            </div>
-        </div>
-    </nav>
 
     <div class="mb-4">
         <h4 class="text-success">Schedule Statistics</h4>
@@ -47,64 +46,55 @@
             {% endfor %}
         </ul>
 
-    </div>
+      </div>
 
-
-    <main class="bg-body-tertiary p-2 rounded shadow-sm">
-        <div class="w-100 overflow-scroll vh-100" id="schedule_table">
-            <table class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th class="text-center text-nowrap" style="position: sticky; top: 0; left: 0; z-index: 3;">
-                            Employee</th>
-                        {% for day in days %}
-                        <th class="text-center text-nowrap"
-                            style="position: sticky; top: 0; z-index: 2;{{ 'background-color: oklch(92.2% 0 0); ' if day.isoweekday() in [6,7] }}">
-                            {{ day }}
-                            <br />
-                            <span class="text-secondary">{{ day.strftime("%A") }}</span>
-                        </th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-
-                    {% for employee in employees %}
-                    {% set ns = namespace(actual_minutes=0,actual_shifts=0) %}
-                    {% for day in days %}
-                    {% for shift in shifts %}
-                    {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
-                    {% if variables[key] == 1 %}
-                    {% set ns.actual_shifts = ns.actual_shifts + 1%}
-                    {% set ns.actual_minutes = ns.actual_minutes + shift.duration %}
-                    {% endif %}
-                    {% endfor %}
-                    {% endfor %}
-                    {% set actual_shifts = ns.actual_shifts %}
-                    {% set actual_hours = ns.actual_minutes / 60 %}
-                    {% set target_hours = employee._target_working_time / 60 %}
-                    {% set overtime = (actual_hours - target_hours)|abs > 7.67 %}
-                    <tr>
-                        <td class="text-center text-nowrap"
-                            style="position: sticky; left: 0; z-index: 1;{{ ' background-color: oklch(89.2% 0.058 10.001); ' if overtime }}"
-                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true"
-                            title="{{ actual_shifts }} shifts </br> {{ '%.2f'|format(actual_hours) }}h of {{ '%.2f'|format(target_hours) }}h">
-                            {{ employee.name }}
-                            <br />
-                            <span class="text-secondary">{{ employee.level }}</span>
-                        </td>
-                        {% for day in days %}
-                        <td class="text-center text-light"
-                            style="position: relative; height: 1px;{{ ' background-color: oklch(92.2% 0 0); ' if day.isoweekday() in [6,7] }}{{ ' background-color: oklch(97.1% 0.013 17.38); ' if employee.unavailable(day) }}">
-                            <div class="d-flex flex-column w-100 h-100" style="row-gap: .5rem;">
-                                <div class="d-flex">
-                                    {% for shift in shifts %}
-                                    {% if employee.unavailable(day, shift) %}
-                                    <div class="rounded"
-                                        style="width: .5rem; height: .5rem; background-color: {{ shift.color }};"></div>
+        <main class="bg-body-tertiary p-2 rounded shadow-sm">
+            <div class="w-100 overflow-scroll vh-100" id="schedule_table" >
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center text-nowrap" style="position: sticky; top: 0; left: 0; z-index: 3;">Employee</th>
+                            {% for day in days %}
+                                <th class="text-center text-nowrap" style="position: sticky; top: 0; z-index: 2;{{ 'background-color: oklch(92.2% 0 0); ' if day.isoweekday() in [6,7] }}">
+                                    {{ day }}
+                                    <br />
+                                    <span class="text-secondary">{{ day.strftime("%A") }}</span>
+                                </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                            {% set ns = namespace(actual_minutes=0,actual_shifts=0) %}
+                            {% for day in days %}
+                                {% for shift in shifts %}
+                                    {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
+                                    {% if variables[key] == 1 %}
+                                        {% set ns.actual_shifts = ns.actual_shifts + 1%}
+                                        {% set ns.actual_minutes = ns.actual_minutes + shift.duration %}
                                     {% endif %}
-                                    {% endfor %}
-                                </div>
+                                {% endfor %}
+                            {% endfor %}
+                            {% set actual_shifts = ns.actual_shifts %}
+                            {% set actual_hours = ns.actual_minutes / 60 %}
+                            {% set target_hours = employee.get_available_working_time() / 60 %}
+                            {% set overtime = (actual_hours - target_hours)|abs > 7.67  %}
+                            <tr>
+                                <td class="text-center text-nowrap" style="position: sticky; left: 0; z-index: 1;{{ ' background-color: oklch(89.2% 0.058 10.001); ' if overtime }}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="{{ actual_shifts }} shifts </br> {{ '%.2f'|format(actual_hours) }}h of {{ '%.2f'|format(target_hours) }}h">
+                                    {{ employee.name }}
+                                    <br />
+                                    <span class="text-secondary">{{ employee.level }}</span>
+                                </td>
+                                {% for day in days %}
+                                    <td class="text-center text-light" style="position: relative; height: 1px;{{ ' background-color: oklch(92.2% 0 0); ' if day.isoweekday() in [6,7] }}{{ ' background-color: oklch(97.1% 0.013 17.38); ' if employee.unavailable(day) }}">
+                                        <div class="d-flex flex-column w-100 h-100" style="row-gap: .5rem;">
+                                            <div class="d-flex">
+                                                {% for shift in shifts %}
+                                                    {% if employee.unavailable(day, shift) %}
+                                                        <div class="rounded" style="width: .5rem; height: .5rem; background-color: {{ shift.color }};"></div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
 
                                 {% for shift in shifts %}
                                 {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
@@ -117,36 +107,32 @@
                                 </div>
                                 {% endif %}
                                 {% endfor %}
-                            </div>
-                        </td>
+                            </tr>
                         {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </main>
+                    </tbody>
+                </table>
+            </div>
+        </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
+        <script>
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-        });
+            document.addEventListener('DOMContentLoaded', function () {
+                const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+                const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+            });
 
-        document.getElementById('solution_file_select').addEventListener('change', e => {
-            const file = encodeURIComponent(e.target.value);
-            window.location.href = `/?solution_file_name=${file}`;
-        });
+            document.getElementById('solution_file_select').addEventListener('change', e => {
+                const file = encodeURIComponent(e.target.value);
+                window.location.href = `/?solution_file_name=${file}`;
+            });
 
-        document.getElementById('fullscreen_button').addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.getElementById('schedule_table').requestFullscreen();
-            }
-        });
-    </script>
-</body>
-
+            document.getElementById('fullscreen_button').addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.getElementById('schedule_table').requestFullscreen();
+                }
+            });
+        </script>
+    </body>
 </html>
