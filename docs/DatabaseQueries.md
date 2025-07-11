@@ -203,7 +203,7 @@ This query retrieves the already planned work shifts for other planning units fo
 To do this, we again use `TPlanPersonalKommtGeht` and `TPersonal` for the same information, as well as `TDienste` to identify the already planned shift.
 To obtain the desired records, i.e., the actual scheduled shifts, we exclude all absence records, with `RefgAbw` set to `NULL`. This means that the employees are already scheduled to work.
 
-### 
+###
 
 ```sql
 SELECT

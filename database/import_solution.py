@@ -1,14 +1,10 @@
 import json
 import ast
 import os
-import re
-import unicodedata
 import pandas as pd
 import logging
 from datetime import datetime, time, timedelta
 from pathlib import Path
-from collections import Counter
-from connection_setup import get_db_engine
 from sqlalchemy import text
 
 
@@ -18,19 +14,28 @@ logging.basicConfig(level=logging.INFO)
 def load_json_files(start_date, end_date, planning_unit):
     """Load the needed Employee file and the corresponding solution file,
     which includes the shifts references to employees."""
-    base_path = Path(__file__).parent.resolve()
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
     sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
     sol_folder = "found_solutions"
 
-    solution_file = Path(__file__).parent.parent.resolve() / sol_folder / f"solution_{planning_unit}_{start_date}-{end_date}.json"
-    employee_file = Path(__file__).parent.parent.resolve() / base_folder / sub_folder / "employees.json"
+    solution_file = (
+        Path(__file__).parent.parent.resolve()
+        / sol_folder
+        / f"solution_{planning_unit}_{start_date}-{end_date}.json"
+    )
+    employee_file = (
+        Path(__file__).parent.parent.resolve()
+        / base_folder
+        / sub_folder
+        / "employees.json"
+    )
 
     with open(solution_file, encoding="utf-8") as f:
         data = json.load(f)
     with open(employee_file, encoding="utf-8") as f:
         emp_data = json.load(f)["employees"]
     return data, emp_data
+
 
 def load_planned_shifts() -> dict[int, set[int]]:
     """
@@ -41,7 +46,12 @@ def load_planned_shifts() -> dict[int, set[int]]:
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
     sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
 
-    path = Path(__file__).parent.parent.resolve() / base_folder / sub_folder / "free_shifts_and_vacation_days.json"
+    path = (
+        Path(__file__).parent.parent.resolve()
+        / base_folder
+        / sub_folder
+        / "free_shifts_and_vacation_days.json"
+    )
     with path.open(encoding="utf-8") as f:
         data = json.load(f)["employees"]
 
@@ -89,7 +99,6 @@ def load_shift_segments(
 
     with engine.connect() as conn:
         for shift_id, ref_dienst in shift_id_map.items():
-
             if shift_id > 4:
                 continue
 
@@ -134,12 +143,11 @@ def build_dataframe(
         try:
             prim_person, date_str, shift_id = ast.literal_eval(key)
         except (ValueError, SyntaxError):
-            # f.e. ignore "e:459_d:2024-11-01" 
-         continue
+            # f.e. ignore "e:459_d:2024-11-01"
+            continue
 
         if shift_id not in shift_to_refdienst:
-            continue 
-
+            continue
 
         if prim_person not in prim_whitelist:
             continue
@@ -149,7 +157,7 @@ def build_dataframe(
         planned_days = planned_map.get(prim_person, set())
         if base_date.day in planned_days:
             continue
-        
+
         ref_dienst = shift_to_refdienst[shift_id]
         prim_beruf = prim_to_refberuf.get(prim_person)
 
@@ -217,13 +225,14 @@ def insert_dataframe_to_db(df, engine):
         )
     """)
 
-    params = df.to_dict(orient="records") 
+    params = df.to_dict(orient="records")
 
     with engine.begin() as conn:
         conn.execution_options(fast_executemany=True)
         conn.execute(insert_sql, params)
 
     logging.info(f"{len(df):,} Lines inserted in TPlanPersonalKommtGeht.")
+
 
 def delete_dataframe_from_db(df, engine):
     """Delete the solution in the dataframe from the database."""
@@ -238,7 +247,7 @@ def delete_dataframe_from_db(df, engine):
     """)
 
     keys = df[["RefPlan", "RefPersonal", "Datum", "lfdNr", "RefDienste"]]
-    params = keys.to_dict(orient="records") 
+    params = keys.to_dict(orient="records")
 
     with engine.begin() as conn:
         conn.execution_options(fast_executemany=True)

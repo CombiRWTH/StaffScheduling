@@ -5,7 +5,6 @@ import import_solution
 import export_data
 import logging
 import json
-import pandas as pd
 
 # Load the .env-file for login purposes
 load_dotenv()
@@ -19,16 +18,18 @@ def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11,
         engine, planning_unit, from_date, till_date
     )
 
-    data, emp_data = import_solution.load_json_files(from_date, till_date, planning_unit)
+    data, emp_data = import_solution.load_json_files(
+        from_date, till_date, planning_unit
+    )
     prim_to_refberuf = import_solution.load_person_to_job(engine)
-    planned_map = import_solution.load_planned_shifts() 
+    planned_map = import_solution.load_planned_shifts()
 
     PE_ID = planning_unit
     PLAN_ID = base_data["plan_id"]
-    STATUS_ID = 20 # Always "Sollplanung" as we only generate such plans
+    STATUS_ID = 20  # Always "Sollplanung" as we only generate such plans
 
     # Corresponding shift IDs to given counts of shifts
-    SHIFT_TO_REFDIENST = {0: 2939, 1: 2906, 2: 2947, 3: 2953, 4:1406}
+    SHIFT_TO_REFDIENST = {0: 2939, 1: 2906, 2: 2947, 3: 2953, 4: 1406}
     # Shift mapping with format: shift_id : [ (von_time, bis_time, day_offset) , … ]
     SHIFT_SEGMENTS = import_solution.load_shift_segments(engine, SHIFT_TO_REFDIENST)
 
@@ -41,10 +42,12 @@ def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11,
         PE_ID,
         PLAN_ID,
         STATUS_ID,
-        planned_map
+        planned_map,
     )
 
-    action = input("Press i for importing, d for deleting or j to generate a test json:")
+    action = input(
+        "Press i for importing, d for deleting or j to generate a test json:"
+    )
 
     match action:
         case "i":
@@ -61,13 +64,14 @@ def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11,
             filename = "test_file.json"
 
             # Store JSON-file within given directory
-            json_output = json.dumps(output_json, ensure_ascii=False, indent=2, default=str)
+            json_output = json.dumps(
+                output_json, ensure_ascii=False, indent=2, default=str
+            )
             store_path = import_solution.get_correct_path(filename)
             with open(store_path, "w", encoding="utf-8") as f:
                 f.write(json_output)
             # Print a message of completed export
             logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
-
 
 
 if __name__ == "__main__":
