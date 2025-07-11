@@ -79,7 +79,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
 
     solution = model.solve(timeout)
 
-    solution_name = f"solution_{unit}_{start_date}-{end_date}.json"
+    solution_name = f"solution_{unit}_{start_date}-{end_date}"
     loader.write_solution(solution, solution_name)
 
 

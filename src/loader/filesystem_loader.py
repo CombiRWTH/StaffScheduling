@@ -157,7 +157,7 @@ class FSLoader(Loader):
         files = listdir("./found_solutions")
         solutions = []
         for file in files:
-            if file.startswith("solutions_") and file.endswith(".json"):
+            if file.startswith("solution_") and file.endswith(".json"):
                 solutions.append(file[:-5])
 
         return sorted(solutions)
@@ -177,7 +177,7 @@ class FSLoader(Loader):
         file_path = self._get_solutions_path(filename)
         if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path))
-        else:
+        if os.path.exists(file_path):
             os.remove(file_path)
         with open(file_path, "w") as file:
             dump(data, file, indent=4)
