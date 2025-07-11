@@ -21,8 +21,9 @@ def load_json_files(start_date, end_date, planning_unit):
     base_path = Path(__file__).parent.resolve()
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
     sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
+    sol_folder = "found_solutions"
 
-    solution_file = base_path / f"solution_{planning_unit}_{start_date}-{end_date}.json"
+    solution_file = Path(__file__).parent.parent.resolve() / sol_folder / f"solution_{planning_unit}_{start_date}-{end_date}.json"
     employee_file = Path(__file__).parent.parent.resolve() / base_folder / sub_folder / "employees.json"
 
     with open(solution_file, encoding="utf-8") as f:
