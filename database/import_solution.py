@@ -146,14 +146,17 @@ def build_dataframe(
             # f.e. ignore "e:459_d:2024-11-01"
             continue
 
+        # Filter for unknown shift ids (f.e. from other PEs)
         if shift_id not in shift_to_refdienst:
             continue
 
+        # Filter for unknown employees (f.e. ghost employees)
         if prim_person not in prim_whitelist:
             continue
 
         base_date = datetime.strptime(date_str, "%Y-%m-%d").date()
 
+        # Filter for already planned shifts (shifts already in DB)
         planned_days = planned_map.get(prim_person, set())
         if base_date.day in planned_days:
             continue
