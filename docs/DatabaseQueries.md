@@ -215,4 +215,4 @@ AND Datum BETWEEN CONVERT(date,'{START_DATE}',23)
 AND CONVERT(date,'{END_DATE}',23)
 ```
 
-We use `TPersonalKontenJeTag` to retrieve the present days of employee of a desired planning unit. The `CONVERT`-function again uses the style code "23" that specifies the date format `yyyy-mm-dd`.
+We use `TPersonalKontenJeTag` to retrieve the present days of the employees of a desired planning unit. The `CONVERT`-function again uses the style code "23" that specifies the date format `yyyy-mm-dd`.
