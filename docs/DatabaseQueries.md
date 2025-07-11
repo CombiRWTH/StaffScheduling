@@ -1,6 +1,25 @@
 # Database Queries
 Overview of the Queries used to retrieve the needed personal data from the database and explanation.
 
+## planning data
+
+```sql
+SELECT
+	Prim AS 'plan_id',
+	RefPlanungseinheiten AS 'planning_unit',
+	VonDat AS 'from_date',
+	BisDat AS 'till_date'
+FROM TPlan
+WHERE RefPlanungseinheiten = {planning_unit}
+    AND VonDat = CONVERT(date,'{from_date}',23)
+    AND BisDat = CONVERT(date,'{till_date}',23)
+```
+
+We use the entity `TPlan` to retrieve the `plan identification number` of a corresponding schedule. The ID is the numeric primay key `Prim` of the entity. It is unique by a given planning unit and a period of time.
+`RefPlanungseinheiten` is the reference to the underlying planning unit and stored in `TPlanungseinheiten`.
+To get a certain id `VonDat` needs to be the first day of a month and `BisDat` the last day of a month.
+The `CONVERT`-function uses the style code "23" that specifies the date format `yyyy-mm-dd`.
+
 ## target_working_minutes.json
 
 ```sql
