@@ -3,16 +3,7 @@
     {
       "PersNr": "9753626269",
       "firstname": "Janett",
-      "forbidden_days": [
-        5,
-        7,
-        12,
-        14,
-        19,
-        21,
-        26,
-        28
-      ],
+      "forbidden_days": [],
       "forbidden_shifts": [
         [
           1,
@@ -136,6 +127,40 @@
         ]
       ],
       "name": "Branz",
+      "planned_shifts": [
+        [
+          5,
+          "Z60"
+        ],
+        [
+          7,
+          "Z60"
+        ],
+        [
+          12,
+          "Z60"
+        ],
+        [
+          14,
+          "Z60"
+        ],
+        [
+          19,
+          "Z60"
+        ],
+        [
+          21,
+          "Z60"
+        ],
+        [
+          26,
+          "Z60"
+        ],
+        [
+          28,
+          "Z60"
+        ]
+      ],
       "vacation_days": [],
       "vacation_shifts": [],
       "wish_days": [],

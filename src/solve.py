@@ -15,6 +15,7 @@ from cp import (
     MinimizeHiddenEmployeesObjective,
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
+    PlannedShiftsConstraint,
     FreeDaysAfterNightShiftPhaseObjective,
 )
 from datetime import date
@@ -56,6 +57,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         MaxOneShiftPerDayConstraint(employees, days, shifts),
         TargetWorkingTimeConstraint(employees, days, shifts),
         VacationDaysAndShiftsConstraint(employees, days, shifts),
+        PlannedShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
         FreeDaysNearWeekendObjective(10.0, employees, days),

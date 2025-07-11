@@ -29,17 +29,15 @@ class App:
 
         solution = self._loader.get_solution(selected_solution_file_name)
         stats = analyze_solution(solution.variables, self._employees, self._shifts)
-        days = [datetime.strptime(
+        days = [
+            datetime.strptime(
                 match(r"\(\d+, '([\d-]+)', \d+\)", key).group(1), "%Y-%m-%d"
             ).date()
             for key in solution.variables.keys()
-            if match(r"\(\d+, '([\d-]+)', \d+\)", key)]
-        start_date = min(
-            days
-        )
-        end_date = max(
-            days
-        )
+            if match(r"\(\d+, '([\d-]+)', \d+\)", key)
+        ]
+        start_date = min(days)
+        end_date = max(days)
         days = self._loader.get_days(start_date, end_date)
 
         return render_template(
