@@ -1,7 +1,37 @@
+_COLORS = {
+    0: "#a8d51f",
+    1: "#3a9ea1",
+    2: "#f69e17",
+    3: "#225e62",
+    4: "oklch(82.1% 0.087 285.6)",  # Purple
+    5: "#dadada",
+    6: "#dadada",
+    7: "#dadada",
+}
+
+
 class Shift:
     EARLY = 0
-    LATE = 1
-    NIGHT = 2
+    INTERMEDIATE = 1
+    LATE = 2
+    NIGHT = 3
+    MANAGEMENT = 4
+
+    SHIFT_MAPPING = {
+        # Standard-Schichten
+        "F": EARLY,  # Frühschicht
+        "Z": INTERMEDIATE,  # Zwischenschicht
+        "S": LATE,  # Spätschicht
+        "N": NIGHT,  # Nachtschicht
+        # Special Shifts
+        "Z60": MANAGEMENT,  # Leitungsschicht
+        # Alternative Shiftcodes
+        "F2_": 5,
+        "S2_": 6,
+        "N5": 7,
+    }
+    # Only these shifts are exclusive (only for explicitly planned employees and will not count for min staffing)
+    EXCLUSIVE_SHIFTS = ["Z60", "F2_", "S2_", "N5"]
 
     _id: int
     _name: str
@@ -19,6 +49,22 @@ class Shift:
 
     def get_id(self) -> int:
         return self._id
+
+    @property
+    def is_exclusive(self) -> bool:
+        return self._name in Shift.EXCLUSIVE_SHIFTS
+
+    @property
+    def abbreviation(self) -> str:
+        return self._name[:1]
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def color(self) -> str:
+        return _COLORS.get(self._id, "#FFFFFF")
 
     @property
     def start_time(self) -> int:

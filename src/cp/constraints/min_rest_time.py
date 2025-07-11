@@ -18,6 +18,9 @@ class MinRestTimeConstraint(Constraint):
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for employee in self._employees:
+            if employee.hidden:
+                continue
+
             for day in self._days[:-1]:
                 late_today = variables[
                     EmployeeDayShiftVariable.get_key(

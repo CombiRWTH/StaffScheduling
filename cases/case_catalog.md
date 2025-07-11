@@ -10,13 +10,13 @@ This is the file where all the different cases can be explained in more detail.
 - ...
 
 ## Case 3: - Real Data
-Within this case the automatically extracted data from the database is stored. This excludes the `wishes_and_blocked.json` file as this includes all the manually submitted wishes of employees as well as special circumstances such as health or family-related restrictions. All different files are listed below with the corresponding description of each field within them.
+In this case, the automatically extracted data from the database is stored. The `wishes_and_blocked.json` file is an exception because it includes all the manually submitted wishes of employees, as well as special circumstances, such as health- or family-related restrictions. The different files and their corresponding descriptions are listed below.
 
 ## 📁 File: `employees.json`
 
 ### 📝 Description
 
-This file contains the list of all employees within our PE (Planungseinheit), including their internal ID, personnel number, name, and their job title.
+This file contains a list of all employees within our planning unit (Planungseinheit), including their `key` (internal ID), `personnel_number`, `name`, `firstname`, and `title` (job title).
 
 ### 📐 Structure
 
@@ -24,8 +24,7 @@ This file contains the list of all employees within our PE (Planungseinheit), in
 {
   "employees": [             // List of all employees
     {
-      "PersNr": "string",    // Personnel number as a string
-      "Prim": "int",         // Internal primary key ID
+      "key": "int",          // Internal primary key ID
       "firstname": "string", // First name of the employee
       "name": "string",      // Last name of the employee
       "type": "string"       // Job title (may include an intern classification code)
@@ -46,7 +45,7 @@ This file contains the list of all employees within our PE (Planungseinheit) whi
 {
   "employees": [             // List of all employees
     {
-      "Prim": "int",         // Internal primary key ID
+      "key": "int",          // Internal primary key ID
       "firstname": "string", // First name of the employee
       "name": "string",      // Last name of the employee
       "forbidden_days": [    // Days that are crossed off within TimeOffice = not available
@@ -75,7 +74,7 @@ This file contains the list of all employees within our PE (Planungseinheit) ref
 {
   "employees": [             // List of all employees
     {
-      "Prim": "int",         // Internal primary key ID
+      "key": "int",          // Internal primary key ID
       "firstname": "string", // First name of the employee
       "name": "string",      // Last name of the employee
       "actual": "float",     // Already worked/registered working minutes within TimeOffice
@@ -97,7 +96,7 @@ This file contains the list of employees within our PE (Planungseinheit) which h
 {
   "employees": [               // List of all employees
     {
-      "Prim": "int",           // Internal primary key ID
+      "key": "int",            // Internal primary key ID
       "firstname": "string",   // First name of the employee
       "name": "string",        // Last name of the employee
       "blocked_days": ["int"], // Unavailable days due to health reasons, family-related restrictions or personal unavailability
@@ -125,7 +124,7 @@ This file contains the list of all employees within our PE (Planungseinheit) and
 {
   "employees": [               // List of all employees
     {
-      "Prim": "int",           // Internal primary key ID
+      "key": "int",            // Internal primary key ID
       "firstname": "string",   // First name of the employee
       "name": "string",        // Last name of the employee
       "worked_sundays": "int"  // Count of already worked sundays in last 12 months

@@ -5,6 +5,7 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "click>=8.2.0",
     "flask>=3.1.0",
     "matplotlib>=3.10.1",
     "numpy>=2.2.5",
@@ -38,4 +39,4 @@ sources = ["src"]
 packages = ["src"]
 
 [project.scripts]
-solve = "main:main"
+staff-scheduling = "main:main"

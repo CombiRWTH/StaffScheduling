@@ -69,7 +69,40 @@
       "forbidden_days": [],
       "key": 791,
       "name": "Branz",
-      "planned_shifts": [],
+      "planned_shifts": [
+        [
+          5,
+          "Z60"
+        ],
+        [
+          7,
+          "Z60"
+        ],
+        [
+          12,
+          "Z60"
+        ],
+        [
+          14,
+          "Z60"
+        ],
+        [
+          19,
+          "Z60"
+        ],
+        [
+          21,
+          "Z60"
+        ],
+        [
+          26,
+          "Z60"
+        ],
+        [
+          28,
+          "Z60"
+        ]
+      ],
       "vacation_days": []
     },
     {
@@ -806,12 +839,7 @@
       "forbidden_days": [],
       "key": 7848,
       "name": "Winters",
-      "planned_shifts": [
-        [
-          29,
-          "T75_"
-        ]
-      ],
+      "planned_shifts": [],
       "vacation_days": []
     },
     {

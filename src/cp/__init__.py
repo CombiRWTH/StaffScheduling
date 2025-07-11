@@ -7,14 +7,17 @@ from .constraints import (
     MaxOneShiftPerDayConstraint as MaxOneShiftPerDayConstraint,
     TargetWorkingTimeConstraint as TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
+    PlannedShiftsConstraint as PlannedShiftsConstraint,
 )
 from .objectives import (
     Objective as Objective,
     FreeDaysNearWeekendObjective as FreeDaysNearWeekendObjective,
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
     MinimizeOvertimeObjective as MinimizeOvertimeObjective,
+    MinimizeHiddenEmployeesObjective as MinimizeHiddenEmployeesObjective,
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
+    FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
 )
 from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,

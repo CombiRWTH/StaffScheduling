@@ -2,15 +2,15 @@
   "employees": [
     {
       "PersNr": "6606292809",
-      "Prim": 459,
       "firstname": "Sandra",
+      "key": 459,
       "name": "Shoemake",
       "type": "Krankenschwester/-pfleger (81302-008)"
     },
     {
       "PersNr": "9205490147",
-      "Prim": 790,
       "firstname": "Adriane",
+      "key": 790,
       "name": "Mccomas",
       "type": "Stationshilfe (81301-018)"
     },
@@ -18,27 +18,28 @@
       "PersNr": "9753626269",
       "Prim": 791,
       "firstname": "Janett",
+      "key": 791,
       "name": "Branz",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
       "PersNr": "2422197372",
-      "Prim": 822,
       "firstname": "Nele",
+      "key": 822,
       "name": "Sewell",
       "type": "Pflegeassistent/in (81302-014)"
     },
     {
       "PersNr": "7696197975",
-      "Prim": 839,
       "firstname": "Liselotte",
+      "key": 839,
       "name": "S\u00e4uffert",
       "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
     },
     {
       "PersNr": "2652384320",
-      "Prim": 914,
       "firstname": "Silvia",
+      "key": 914,
       "name": "Harkins",
       "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
     },
@@ -46,48 +47,49 @@
       "PersNr": "7158423338",
       "Prim": 917,
       "firstname": "Ingbert",
+      "key": 917,
       "name": "Catoe",
       "type": "Krankenschwester/-pfleger (81302-008)"
     },
     {
       "PersNr": "6040241459",
-      "Prim": 921,
       "firstname": "Jenny",
+      "key": 921,
       "name": "Keese",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
       "PersNr": "6304544803",
-      "Prim": 924,
       "firstname": "B\u00e4rbl",
+      "key": 924,
       "name": "Merriweather",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "8467222196",
-      "Prim": 925,
       "firstname": "Lina",
+      "key": 925,
       "name": "Farniok",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "2432833811",
-      "Prim": 927,
       "firstname": "Margaritt",
+      "key": 927,
       "name": "Mittrach",
       "type": "Stationshilfe (81301-018)"
     },
     {
       "PersNr": "7336293778",
-      "Prim": 928,
       "firstname": "Daniele",
+      "key": 928,
       "name": "Wunderlich",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "1328220945",
-      "Prim": 1230,
       "firstname": "Constance",
+      "key": 1230,
       "name": "Palacio",
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
@@ -95,34 +97,35 @@
       "PersNr": "4307335425",
       "Prim": 2932,
       "firstname": "Kersten",
+      "key": 2932,
       "name": "Devers",
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
       "PersNr": "4524391957",
-      "Prim": 2963,
       "firstname": "Renilde",
+      "key": 2963,
       "name": "Hoots",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
       "PersNr": "4731372662",
-      "Prim": 3566,
       "firstname": "Elgine",
+      "key": 3566,
       "name": "Seligman",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
       "PersNr": "4847485892",
-      "Prim": 3868,
       "firstname": "Eike",
+      "key": 3868,
       "name": "Vanfleet",
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
       "PersNr": "5559101710",
-      "Prim": 4566,
       "firstname": "Hannah",
+      "key": 4566,
       "name": "Woodcock",
       "type": "A-Pflegeassistent/in (A-81302-014)"
     },
@@ -130,27 +133,28 @@
       "PersNr": "5301690706",
       "Prim": 5367,
       "firstname": "Henni",
+      "key": 5367,
       "name": "Donis",
       "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
     },
     {
       "PersNr": "0558391409",
-      "Prim": 5920,
       "firstname": "Augustin",
+      "key": 5920,
       "name": "Carreras",
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
       "PersNr": "4216350736",
-      "Prim": 6475,
       "firstname": "Heinz",
+      "key": 6475,
       "name": "Binford",
       "type": "Helfer/in - station\u00e4re Krankenpflege (81301-002)"
     },
     {
       "PersNr": "0935373412",
-      "Prim": 6507,
       "firstname": "Roseliese",
+      "key": 6507,
       "name": "Rashid",
       "type": "Altenpfleger/in (82102-002)"
     },
@@ -158,34 +162,28 @@
       "PersNr": "4601161545",
       "Prim": 6677,
       "firstname": "Christfri",
+      "key": 6677,
       "name": "Fullerton",
       "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
     },
     {
       "PersNr": "6200464921",
-      "Prim": 6681,
       "firstname": "Saskia",
+      "key": 6681,
       "name": "Labelle",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "3663084827",
-      "Prim": 6715,
       "firstname": "Lioba",
+      "key": 6715,
       "name": "Burris",
       "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
       "PersNr": "9263090286",
-      "Prim": 6836,
       "firstname": "Trude",
-      "name": "Valentino",
-      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
-    },
-    {
-      "PersNr": "9263090286",
-      "Prim": 6836,
-      "firstname": "Trude",
+      "key": 6836,
       "name": "Valentino",
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
@@ -193,13 +191,14 @@
       "PersNr": "6478661190",
       "Prim": 6928,
       "firstname": "Annelene",
+      "key": 6928,
       "name": "Izzo",
       "type": "Medizinische/r Fachangestellte/r (81102-004)"
     },
     {
       "PersNr": "0314863608",
-      "Prim": 7496,
       "firstname": "Marcus",
+      "key": 7496,
       "name": "Demarco",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
@@ -207,13 +206,14 @@
       "PersNr": "2964555583",
       "Prim": 7603,
       "firstname": "Ludger",
+      "key": 7603,
       "name": "Roberson",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
       "PersNr": "7192281437",
-      "Prim": 7741,
       "firstname": "Sieghardt",
+      "key": 7741,
       "name": "Tharp",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
@@ -221,34 +221,35 @@
       "PersNr": "2382310716",
       "Prim": 7752,
       "firstname": "Kilian",
+      "key": 7752,
       "name": "Rodriques",
       "type": "Bundesfreiwilligendienst (BFD)"
     },
     {
       "PersNr": "6688644312",
-      "Prim": 7770,
       "firstname": "Julia",
+      "key": 7770,
       "name": "Yeh",
       "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
       "PersNr": "5277020481",
-      "Prim": 7796,
       "firstname": "Burkhild",
+      "key": 7796,
       "name": "Hertzler",
       "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
       "PersNr": "5275675416",
-      "Prim": 7835,
       "firstname": "Karena",
+      "key": 7835,
       "name": "Driggers",
       "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
       "PersNr": "5075364389",
-      "Prim": 7848,
       "firstname": "Gertraute",
+      "key": 7848,
       "name": "Winters",
       "type": "A-Pflegeassistent/in (A-81302-014)"
     },
@@ -256,6 +257,7 @@
       "PersNr": "0247345630",
       "Prim": 7877,
       "firstname": "Janett",
+      "key": 7877,
       "name": "Staggs",
       "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
@@ -263,13 +265,14 @@
       "PersNr": "7586945135",
       "Prim": 7919,
       "firstname": "Irma",
+      "key": 7919,
       "name": "Weathers",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "PersNr": "4939555116",
-      "Prim": 7990,
       "firstname": "Loremarie",
+      "key": 7990,
       "name": "Milburn",
       "type": "A-Pflegeassistent/in (A-81302-014)"
     }

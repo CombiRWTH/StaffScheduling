@@ -1,117 +1,60 @@
-from cli import CLIParser
+import click
+from solve import main as solver
+from plot import main as plotter
 from loader import FSLoader
-from cp import (
-    Model,
-    FreeDayAfterNightShiftPhaseConstraint,
-    MinRestTimeConstraint,
-    MinStaffingConstraint,
-    MaxOneShiftPerDayConstraint,
-    TargetWorkingTimeConstraint,
-    VacationDaysAndShiftsConstraint,
-    EmployeeDayShiftVariable,
-    EmployeeDayVariable,
-    FreeDaysNearWeekendObjective,
-    MinimizeConsecutiveNightShiftsObjective,
-    MinimizeOvertimeObjective,
-    NotTooManyConsecutiveDaysObjective,
-    RotateShiftsForwardObjective,
-)
-from datetime import timedelta
-from calendar import monthrange
-import logging
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
-MAX_CONSECUTIVE_DAYS = 5
-SOLUTIONS_LIMIT = 10
+@click.group()
+def cli():
+    """Staff Scheduling CLI"""
+    pass
+
+
+@cli.command()
+@click.argument("unit", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%Y-%m-%d"]))
+@click.argument("end", type=click.DateTime(formats=["%Y-%m-%d"]))
+@click.option("--timeout", default=300, help="Timeout in seconds for the solver")
+def solve(unit: int, start: click.DateTime, end: click.DateTime, timeout: int):
+    """
+    Solve the scheduling problem for a given case and start date.
+
+    UNIT is the case number to solve.
+
+    START is the start date for the planning period in YYYY-MM-DD format.
+
+    END is the end date for the planning period in YYYY-MM-DD format.
+    """
+
+    click.echo(
+        f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()}."
+    )
+
+    solver(
+        unit=unit,
+        start_date=start.date(),
+        end_date=end.date(),
+        timeout=timeout,
+    )
+
+
+@cli.command()
+@click.argument("case", type=click.INT)
+@click.option("--debug", is_flag=True, help="Run the plot in debug mode")
+def plot(case: int, debug: bool):
+    """
+    Plot the solution for a given case.
+
+    CASE is the case number to plot.
+    """
+
+    loader = FSLoader(case)
+    plotter(loader=loader, debug=debug)
 
 
 def main():
-    cli = CLIParser(
-        [
-            FreeDayAfterNightShiftPhaseConstraint,
-            MinRestTimeConstraint,
-            MinStaffingConstraint,
-            MaxOneShiftPerDayConstraint,
-            TargetWorkingTimeConstraint,
-            VacationDaysAndShiftsConstraint,
-            FreeDaysNearWeekendObjective,
-            MinimizeConsecutiveNightShiftsObjective,
-            MinimizeOvertimeObjective,
-            NotTooManyConsecutiveDaysObjective,
-            RotateShiftsForwardObjective,
-        ]
-    )
-    case_id = cli.get_case_id()
-    start_date = cli.get_start_date()
-    selected_constraints = cli.get_constraints()
-
-    loader = FSLoader(case_id)
-
-    employees = loader.get_employees()
-    days = [
-        start_date + timedelta(days=i)
-        for i in range(monthrange(start_date.year, start_date.month)[1])
-    ]
-    shifts = loader.get_shifts()
-
-    min_staffing = loader.get_min_staffing()
-
-    variables = [
-        EmployeeDayShiftVariable(employees, days, shifts),
-        EmployeeDayVariable(
-            employees, days, shifts
-        ),  # Based on EmployeeDayShiftVariable
-    ]
-    constraints = [
-        FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts),
-        MinRestTimeConstraint(employees, days, shifts),
-        MinStaffingConstraint(min_staffing, employees, days, shifts),
-        MaxOneShiftPerDayConstraint(employees, days, shifts),
-        TargetWorkingTimeConstraint(employees, days, shifts),
-        VacationDaysAndShiftsConstraint(employees, days, shifts),
-    ]
-    objectives = [
-        FreeDaysNearWeekendObjective(10.0, employees, days),
-        MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
-        MinimizeOvertimeObjective(1.0, employees, days, shifts),
-        NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
-        RotateShiftsForwardObjective(1.0, employees, days, shifts),
-    ]
-
-    if selected_constraints is not None:
-        constraints = [
-            constraint
-            for constraint in constraints
-            if constraint.KEY in selected_constraints
-        ]
-        objectives = [
-            objective
-            for objective in objectives
-            if objective.KEY in selected_constraints
-        ]
-
-    model = Model()
-    for variable in variables:
-        model.add_variable(variable)
-
-    for objective in objectives:
-        model.add_objective(objective)
-
-    for constraint in constraints:
-        model.add_constraint(constraint)
-
-    solutions = model.solve(SOLUTIONS_LIMIT)
-
-    loader.write_solutions(
-        case_id,
-        employees,
-        [constraint.name for constraint in constraints + objectives],
-        shifts,
-        solutions,
-    )
+    """Main entry point for the CLI."""
+    cli()
 
 
 if __name__ == "__main__":
