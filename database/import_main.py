@@ -28,7 +28,7 @@ def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11,
     STATUS_ID = 20 # Always "Sollplanung" as we only generate such plans
 
     # Corresponding shift IDs to given counts of shifts
-    SHIFT_TO_REFDIENST = {0: 2939, 1: 2947, 2: 2953, 3: 2906}
+    SHIFT_TO_REFDIENST = {0: 2939, 1: 2947, 2: 2953, 3: 2906, 4:1406}
     # Shift mapping with format: shift_id : [ (von_time, bis_time, day_offset) , … ]
     SHIFT_SEGMENTS = import_solution.load_shift_segments(engine, SHIFT_TO_REFDIENST)
 
