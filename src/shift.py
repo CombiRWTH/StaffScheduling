@@ -4,6 +4,9 @@ _COLORS = {
     2: "#f69e17",
     3: "#225e62",
     4: "oklch(82.1% 0.087 285.6)",  # Purple
+    5: "#dadada",
+    6: "#dadada",
+    7: "#dadada",
 }
 
 
@@ -23,12 +26,12 @@ class Shift:
         # Special Shifts
         "Z60": MANAGEMENT,  # Leitungsschicht
         # Alternative Shiftcodes
-        "F2_": EARLY,
-        "S2_": LATE,
-        "N5": NIGHT,
+        "F2_": 5,
+        "S2_": 6,
+        "N5": 7,
     }
     # Only these shifts are exclusive (only for explicitly planned employees and will not count for min staffing)
-    EXCLUSIVE_SHIFTS = ["Z60"]
+    EXCLUSIVE_SHIFTS = ["Z60", "F2_", "S2_", "N5"]
 
     _id: int
     _name: str

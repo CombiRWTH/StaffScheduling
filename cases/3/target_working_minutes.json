@@ -1,5 +1,5 @@
 {
-  "target_working_minutes": [
+  "employees": [
     {
       "actual": 1920.0,
       "firstname": "Sandra",
@@ -15,7 +15,7 @@
       "target": 9360.0
     },
     {
-      "actual": 0.0,
+      "actual": 2880.0,
       "firstname": "Janett",
       "key": 791,
       "name": "Branz",
@@ -239,7 +239,7 @@
       "target": 9240.0
     },
     {
-      "actual": 460.0,
+      "actual": 0.0,
       "firstname": "Gertraute",
       "key": 7848,
       "name": "Winters",
