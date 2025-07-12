@@ -5,6 +5,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Staff Scheduling Preview</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            .wish-shift {
+                border: 2px dashed #FFC107;
+                box-shadow: 0 0 4px #FFD700;
+                font-weight: bold;
+            }
+        </style>
     </head>
 
     <body class="bg-body p-4 container-fluid">
@@ -99,8 +106,10 @@
                                             {% for shift in shifts %}
                                                 {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
                                                 {% if variables[key] == 1 %}
-                                                    <div class="w-100 h-100 rounded" style="background-color: {{ shift.color }};">
-                                                        {{ shift.name }}
+                                                    {% set is_wish = key in wish_assigned_keys %}
+                                                    <div class="w-100 h-100 rounded {{ 'wish-shift' if is_wish else '' }}"
+                                                        style="background-color: {{ '#FFD700' if is_wish else shift.color }};">
+                                                        {{ shift.name }}{% if is_wish %} ⭐{% endif %}
                                                     </div>
                                                 {% endif %}
                                             {% endfor %}
