@@ -229,7 +229,7 @@ def export_worked_sundays_to_json(
     """Export the number of worked sundays found within TPersonalKontenJeTag and create a JSON-file."""
     # Write SQL-query to retrieve worked sundays (for November 2024 and 12 months prior)
     query = f"""SELECT
-                p.Prim,
+                p.Prim AS 'key',
                 p.Name AS name,
                 p.Vorname AS firstname,
                 COUNT(DISTINCT CAST(pkt.Datum AS DATE)) AS worked_sundays
@@ -237,8 +237,8 @@ def export_worked_sundays_to_json(
             JOIN TPersonal p ON pkt.RefPersonal = p.Prim
             WHERE
                 pkt.RefKonten = 40
-                AND pkt.Datum BETWEEN {from_date} AND {till_date}
-                --AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'
+                AND pkt.Datum BETWEEN '{from_date}' AND '{till_date}'
+                AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'
                 AND pkt.Wert > 0
             GROUP BY
                 p.Prim,
@@ -250,8 +250,7 @@ def export_worked_sundays_to_json(
     df = pd.read_sql(query, engine)
 
     # Restructure and rename to the desired JSON-output-format
-    df_renamed = df.rename(columns={"Prim": "key"})
-    worked_sundays = df_renamed.to_dict(orient="records")
+    worked_sundays = df.to_dict(orient="records")
     output_json = {"worked_sundays": worked_sundays}
 
     # Store JSON-file within given directory
