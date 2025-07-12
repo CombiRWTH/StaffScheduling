@@ -19,10 +19,12 @@ def calculate_consecutive_working_days(days: List[datetime.date]) -> int:
     for i in range(1, len(days)):
         if (days[i] - days[i - 1]).days == 1:
             streak += 1
+        else:
             if streak > 5:
                 violations += 1
-        else:
             streak = 1
+    if streak > 5:
+        violations += 1
     return violations
 
 
