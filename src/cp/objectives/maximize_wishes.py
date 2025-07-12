@@ -24,16 +24,17 @@ class MaximizeEmployeeWishesObjective(Objective):
 
             # Wish to work specific shifts
             for wish_day, abbr in employee.get_wish_shifts:
-                shift = next(
-                    (s for s in self._shifts if s.abbreviation == abbr), None
-                )
-                key = EmployeeDayShiftVariable.get_key(employee, wish_day, shift)
-                var = variables[key]
-                shift_reward = model.NewBoolVar(
-                    f"wish_shift_{employee.get_key()}_{wish_day}_{abbr}"
-                )
-                model.Add(var == 1).OnlyEnforceIf(shift_reward)
-                model.Add(shift_reward == 1).OnlyEnforceIf(var)
-                rewards.append(shift_reward)
+                for day in self._days:
+                    shift = next(
+                        (s for s in self._shifts if s.abbreviation == abbr), None
+                    )
+                    key = EmployeeDayShiftVariable.get_key(employee, day, shift)
+                    var = variables[key]
+                    shift_reward = model.NewBoolVar(
+                        f"wish_shift_{employee.get_key()}_{day}_{abbr}"
+                    )
+                    model.Add(var == 1).OnlyEnforceIf(shift_reward)
+                    model.Add(shift_reward == 1).OnlyEnforceIf(var)
+                    rewards.append(shift_reward)
 
         return sum(rewards) * self.weight
