@@ -7,10 +7,9 @@ from shift import Shift
 
 
 def calculate_forward_rotation_violations(shifts_assigned: List[int]) -> int:
+    valid_shifts = [s for s in shifts_assigned if s in {0, 2, 3}]
     return sum(
-        1
-        for i in range(len(shifts_assigned) - 1)
-        if shifts_assigned[i + 1] < shifts_assigned[i]
+        1 for i in range(len(valid_shifts) - 1) if valid_shifts[i + 1] < valid_shifts[i]
     )
 
 
