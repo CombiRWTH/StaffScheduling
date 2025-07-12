@@ -1,4 +1,4 @@
-from loader import Loader
+from loader import FSLoader
 from cp import (
     Model,
     FreeDayAfterNightShiftPhaseConstraint,
@@ -15,6 +15,7 @@ from cp import (
     MinimizeHiddenEmployeesObjective,
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
+    PlannedShiftsConstraint,
     FreeDaysAfterNightShiftPhaseObjective,
 )
 from datetime import date
@@ -27,13 +28,14 @@ logging.basicConfig(
 MAX_CONSECUTIVE_DAYS = 5
 
 
-def main(loader: Loader, start_date: date, end_date: date, timeout: int):
+def main(unit: int, start_date: date, end_date: date, timeout: int):
+    loader = FSLoader(unit)
     employees = loader.get_employees()
     days = loader.get_days(start_date, end_date)
     shifts = loader.get_shifts()
 
     logging.info("General information:")
-    logging.info(f"  - planning unit: {loader.get_case_id()}")
+    logging.info(f"  - planning unit: {unit}")
     logging.info(f"  - start date: {start_date}")
     logging.info(f"  - end date: {end_date}")
     logging.info(f"  - number of employees: {len(employees)}")
@@ -55,6 +57,7 @@ def main(loader: Loader, start_date: date, end_date: date, timeout: int):
         MaxOneShiftPerDayConstraint(employees, days, shifts),
         TargetWorkingTimeConstraint(employees, days, shifts),
         VacationDaysAndShiftsConstraint(employees, days, shifts),
+        PlannedShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
         FreeDaysNearWeekendObjective(10.0, employees, days),
@@ -78,9 +81,8 @@ def main(loader: Loader, start_date: date, end_date: date, timeout: int):
 
     solution = model.solve(timeout)
 
-    loader.write_solution(
-        solution,
-    )
+    solution_name = f"solution_{unit}_{start_date}-{end_date}"
+    loader.write_solution(solution, solution_name)
 
 
 if __name__ == "__main__":

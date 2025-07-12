@@ -34,7 +34,6 @@ class MinStaffingConstraint(Constraint):
             6: "Sa",
             7: "So",
         }
-
         for day in self._days:
             weekday = weekday_abbreviations[day.isoweekday()]
 
@@ -42,6 +41,8 @@ class MinStaffingConstraint(Constraint):
                 eligible_employees = self._get_eligible_employees(required_level)
 
                 for shift in self._shifts:
+                    if shift.is_exclusive:
+                        continue
                     min_staffing = self._min_staffing[required_level][weekday].get(
                         shift.abbreviation, None
                     )
