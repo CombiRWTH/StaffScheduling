@@ -20,6 +20,6 @@ from .rotate_shifts_forward import (
 from .free_days_after_night_shift_phase import (
     FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
 )
-from .maximize_employee_wishes import (
+from .maximize_wishes import (
     MaximizeEmployeeWishesObjective as MaximizeEmployeeWishesObjective,
 )
