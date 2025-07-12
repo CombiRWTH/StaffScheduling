@@ -18,7 +18,7 @@ class MaximizeEmployeeWishesObjective(Objective):
                         wish_reward = model.NewBoolVar(
                             f"wish_day_off_{employee.get_key()}_{day}"
                         )
-                        model.Add(var == 0).OnlyEnforceIf(wish_reward)
+                        model.Add(wish_reward == 0).OnlyEnforceIf(var)
                         model.Add(wish_reward == 1).OnlyEnforceIf(var.Not())
                         rewards.append(wish_reward)
 
