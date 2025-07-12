@@ -29,6 +29,7 @@ class App:
 
         solution = self._loader.get_solution(selected_solution_file_name)
         stats = analyze_solution(solution.variables, self._employees, self._shifts)
+
         days = [
             datetime.strptime(
                 match(r"\(\d+, '([\d-]+)', \d+\)", key).group(1), "%Y-%m-%d"
@@ -40,6 +41,21 @@ class App:
         end_date = max(days)
         days = self._loader.get_days(start_date, end_date)
 
+        # fulfilled wishes
+        wish_assigned_keys = set()
+        for employee in self._employees:
+            for wish_day, abbr in employee.get_wish_shifts:
+                for day in days:
+                    if day.day == wish_day:
+                        shift = next(
+                            (s for s in self._shifts if s.abbreviation == abbr), None
+                        )
+                        if not shift:
+                            continue
+                        key = f"({employee.get_key()}, '{day}', {shift.get_id()})"
+                        if solution.variables.get(key) == 1:
+                            wish_assigned_keys.add(key)
+
         return render_template(
             "index.html",
             solution_file_names=solution_file_names,
@@ -49,6 +65,7 @@ class App:
             days=days,
             shifts=self._shifts,
             stats=stats,
+            wish_assigned_keys=wish_assigned_keys,
         )
 
     def run(self, debug: bool = False):
