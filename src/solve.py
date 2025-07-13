@@ -15,6 +15,7 @@ from cp import (
     MinimizeHiddenEmployeesObjective,
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
+    HierarchyOfIntermediateShiftsConstraint,
     PlannedShiftsConstraint,
     FreeDaysAfterNightShiftPhaseObjective,
     MaximizeEmployeeWishesObjective,
@@ -58,6 +59,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         MaxOneShiftPerDayConstraint(employees, days, shifts),
         TargetWorkingTimeConstraint(employees, days, shifts),
         VacationDaysAndShiftsConstraint(employees, days, shifts),
+        HierarchyOfIntermediateShiftsConstraint(employees, days, shifts),
         PlannedShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
@@ -67,8 +69,8 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         MinimizeOvertimeObjective(4.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
-        FreeDaysAfterNightShiftPhaseObjective(6.0, employees, days, shifts),
         MaximizeEmployeeWishesObjective(3.0, employees, days, shifts),
+        FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
     ]
 
     model = Model()
