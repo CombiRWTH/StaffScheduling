@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 from datetime import date
-from connection_setup import get_db_engine
-import export_data
+from .connection_setup import get_db_engine
+from . import export_data
 
 # Load the .env-file for login purposes
 load_dotenv()

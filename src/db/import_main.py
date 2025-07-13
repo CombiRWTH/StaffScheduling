@@ -1,10 +1,11 @@
-from dotenv import load_dotenv
-from connection_setup import get_db_engine
-from datetime import date
-import import_solution
-import export_data
 import logging
 import json
+from datetime import date
+from dotenv import load_dotenv
+from .connection_setup import get_db_engine
+from . import import_solution
+from . import export_data
+
 
 # Load the .env-file for login purposes
 load_dotenv()
