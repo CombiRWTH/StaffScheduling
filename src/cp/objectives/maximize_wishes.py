@@ -7,22 +7,22 @@ class MaximizeEmployeeWishesObjective(Objective):
     KEY = "maximize-employee-wishes"
 
     def create(self, model: CpModel, variables: dict[str, IntVar]):
-        rewards: list[IntVar] = []
+        penalties: list[IntVar] = []
 
         for employee in self._employees:
-            # Wish to be OFF on specific days
+            # Wish to have specific days off
             for wish_day in employee.get_wish_days:
                 for day in self._days:
                     if day.day == wish_day:
                         var = variables[EmployeeDayVariable.get_key(employee, day)]
-                        wish_reward = model.NewBoolVar(
-                            f"wish_day_off_{employee.get_key()}_{day}"
+                        penalty = model.NewBoolVar(
+                            f"penalty_on_assigned_wish_day_off_{employee.get_key()}_{day}"
                         )
-                        model.Add(wish_reward == 0).OnlyEnforceIf(var)
-                        model.Add(wish_reward == 1).OnlyEnforceIf(var.Not())
-                        rewards.append(wish_reward)
+                        model.Add(penalty == 1).OnlyEnforceIf(var)
+                        model.Add(penalty == 0).OnlyEnforceIf(var.Not())
+                        penalties.append(penalty)
 
-            # Wish to work specific shifts
+            # Wish to have specific shifts off
             for wish_day, abbr in employee.get_wish_shifts:
                 for day in self._days:
                     shift = next(
@@ -30,11 +30,11 @@ class MaximizeEmployeeWishesObjective(Objective):
                     )
                     key = EmployeeDayShiftVariable.get_key(employee, day, shift)
                     var = variables[key]
-                    shift_reward = model.NewBoolVar(
-                        f"wish_shift_{employee.get_key()}_{day}_{abbr}"
+                    penalty = model.NewBoolVar(
+                        f"penalty_on_assigned_wish_shift_off_{employee.get_key()}_{day}_{abbr}"
                     )
-                    model.Add(var == 0).OnlyEnforceIf(shift_reward)
-                    model.Add(shift_reward == 1).OnlyEnforceIf(var.Not())
-                    rewards.append(shift_reward)
+                    model.Add(penalty == 1).OnlyEnforceIf(var)
+                    model.Add(penalty == 0).OnlyEnforceIf(var.Not())
+                    penalties.append(penalty)
 
-        return sum(rewards) * self.weight
+        return sum(penalties) * self.weight
