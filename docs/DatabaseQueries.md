@@ -104,7 +104,7 @@ SELECT
 FROM TPersonalKontenJeTag pkt
 JOIN TPersonal p ON pkt.RefPersonal = p.Prim
 WHERE pkt.RefKonten = 40
-    AND pkt.Datum BETWEEN {from_date} AND {till_date}
+    AND pkt.Datum BETWEEN '{from_date}' AND '{till_date}'
     --AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'
     AND pkt.Wert > 0
 GROUP BY
@@ -117,8 +117,8 @@ ORDER BY
 
 We use the `TPersonalKontenjeTag` table to retrieve the number of worked sunday shifts for each employee for the last 12 months. The table stores daily entries and account types per employee. The `Inner Join` links this table with `TPersonal` to receive the employees' unique primary key `Prim`, as well as the surname `Name` and the first name `Vorname`. In the following the conditions are described:
 - `pkt.RefKonten = 40`:  "40" is the account key for a sunday shift
-- `pkt.Datum BETWEEN {from_date} AND {till_date}`: defines the date range, in our case, of 12 months
-- ´--AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'´: die wird nicht mehr auskommentiert??
+- `pkt.Datum BETWEEN {from_date} AND {till_date}`: defines the date range, in our case, of 12 months. `{from_date}` and `{till_date}` needs to be in `yyyy/dd/mm` format. 
+- ´AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'´: only sundays are considered
 - `pkt.Wert > 0`: includes only days with positive values, means actual work days
 
 Lastly we aggregate the worked days per employee with `GROUP` and rank them by the number of worked shifts on a sunday with `ORDER BY`.
