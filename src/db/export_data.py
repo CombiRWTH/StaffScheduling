@@ -12,7 +12,6 @@ def get_correct_path(filename, planning_unit):
 
     # Get the defined folder names out of the .env-file
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
-    current_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Create the output path to store the file in
     target_dir = os.path.join("./", base_folder, str(planning_unit))
