@@ -7,6 +7,7 @@ For soft constraints, see the [Objectives](/concepts/objectives) chapter.
 - [Max one shift per day](#max-one-shift-per-day)
 - [Minimum rest time between shifts](#minimum-rest-time-between-shifts)
 - [Minimum number of staff per shift](#minimum-number-of-staff-per-shift)
+- [Rounds in early shift](#rounds-in-early-shift)
 - [Target working time per month](#target-working-time-per-month)
 - [Vacation days and free shifts](#vacation-days-and-free-shifts)
 
@@ -43,6 +44,25 @@ model.add(sum(potential_working_staff) >= min_staffing)
 /// caption
 Staff requirements per weekday and professional group.
 ///
+
+## Rounds in early shift [^2]
+
+In the early shift, at least one employee must conduct a round.
+Employees need to have a proper qualification to conduct a round.
+Therefore, at least one qualified employee needs to be assigned to an early shift on workdays.
+
+```python title="src/cp/constraints/rounds_in_early_shift.py"
+early_shift_variables = [
+    variables[
+        EmployeeDayShiftVariable.get_key(
+            employee, day, self._shifts[Shift.EARLY]
+        )
+    ]
+    for employee in qualified_employees
+]
+
+model.add_at_least_one(early_shift_variables)
+```
 
 ## Target working time per month [^1]
 
