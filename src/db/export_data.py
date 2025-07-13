@@ -7,16 +7,15 @@ from dateutil.relativedelta import relativedelta
 logging.basicConfig(level=logging.INFO)
 
 
-def get_correct_path(filename):
+def get_correct_path(filename, planning_unit):
     """Return the correct path to store the given file in."""
 
     # Get the defined folder names out of the .env-file
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
-    sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Create the output path to store the file in
-    target_dir = os.path.join(current_dir, "..", base_folder, sub_folder)
+    target_dir = os.path.join("./", base_folder, str(planning_unit))
     target_dir = os.path.abspath(target_dir)
     output_path = os.path.join(target_dir, filename)
     return output_path
@@ -71,7 +70,7 @@ def export_planning_data(engine, planning_unit, from_date, till_date):
     return result
 
 
-def export_shift_data_to_json(engine, filename="shift_information.json"):
+def export_shift_data_to_json(engine, planning_unit, filename="shift_information.json"):
     """Export all shift related information such as times and breaks and create a JSON-file.
 
     Args:
@@ -141,14 +140,16 @@ def export_shift_data_to_json(engine, filename="shift_information.json"):
     json_output = json.dumps(
         agg.to_dict(orient="records"), ensure_ascii=False, indent=2
     )
-    store_path = get_correct_path(filename)
+    store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Log a message of completed export
     logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
-def export_personal_data_to_json(engine, plan_id, filename="employees.json"):
+def export_personal_data_to_json(
+    engine, planning_unit, plan_id, filename="employees.json"
+):
     """Export all personal staff information found within TPersonal and create a JSON-file.
     Args:
             engine: SQLAlchemy engine object used to connect to the database.
@@ -187,7 +188,7 @@ def export_personal_data_to_json(engine, plan_id, filename="employees.json"):
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
-    store_path = get_correct_path(filename)
+    store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Log a message of completed export
@@ -195,7 +196,7 @@ def export_personal_data_to_json(engine, plan_id, filename="employees.json"):
 
 
 def export_target_working_minutes_to_json(
-    engine, month, filename="target_working_minutes.json"
+    engine, planning_unit, month, filename="target_working_minutes.json"
 ):
     """Export all target working minutes found within TPersonalKontenJeMonat and create a JSON-file.
 
@@ -259,7 +260,7 @@ def export_target_working_minutes_to_json(
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
-    store_path = get_correct_path(filename)
+    store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Log a message of completed export
@@ -267,7 +268,7 @@ def export_target_working_minutes_to_json(
 
 
 def export_worked_sundays_to_json(
-    engine, from_date, till_date, filename="worked_sundays.json"
+    engine, planning_unit, from_date, till_date, filename="worked_sundays.json"
 ):
     """Export the number of worked sundays found within TPersonalKontenJeTag and create a JSON-file.
 
@@ -307,7 +308,7 @@ def export_worked_sundays_to_json(
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
-    store_path = get_correct_path(filename)
+    store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Log a message of completed export
@@ -343,7 +344,7 @@ def get_plan_dates(engine, plan_id):
 
 
 def export_free_shift_and_vacation_days_json(
-    engine, plan_id, planning_unit, filename="free_shifts_and_vacation_days.json"
+    engine, planning_unit, plan_id, filename="free_shifts_and_vacation_days.json"
 ):
     """Export the free shifts and vacation daysfound within TPersonalKommtGeht and create a JSON-file.
 
@@ -360,7 +361,7 @@ def export_free_shift_and_vacation_days_json(
     START_DATE = dates.loc[0, "START"]
     END_DATE = dates.loc[0, "END"]
 
-    EMP_FILE = get_correct_path("employees.json")
+    EMP_FILE = get_correct_path("employees.json", planning_unit)
     with open(EMP_FILE, encoding="utf-8") as f:
         emp_data = json.load(f)["employees"]
 
