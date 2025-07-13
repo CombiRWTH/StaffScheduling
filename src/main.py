@@ -2,6 +2,7 @@ import click
 from solve import main as solver
 from plot import main as plotter
 from .db.export_main import main as fetcher
+from .db.import_main import main as inserter
 from loader import FSLoader
 
 
@@ -64,6 +65,19 @@ def fetch(UNIT: int, start, end):
     start = start.date()  # convert datetime.datetime to datetime.date
     end = end.date()
     fetcher(planning_unit=UNIT, from_date=start, till_date=end)
+
+
+@cli.command()
+@click.argument("UNIT", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%Y-%m-%d"]))
+@click.argument("end", type=click.DateTime(formats=["%Y-%m-%d"]))
+def insert(UNIT: int, start, end):
+    """
+    Inser data from Json Solution Files to DB
+    """
+    start = start.date()  # convert datetime.datetime to datetime.date
+    end = end.date()
+    inserter(planning_unit=UNIT, from_date=start, till_date=end, cli_input="i")
 
 
 def main():
