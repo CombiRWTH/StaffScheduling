@@ -11,24 +11,28 @@ from sqlalchemy import text
 logging.basicConfig(level=logging.INFO)
 
 
+def get_correct_path(filename, planning_unit):
+    """Return the correct path to store the given file in."""
+
+    # Get the defined folder names out of the .env-file
+    base_folder = os.getenv("BASE_OUTPUT_FOLDER")
+
+    # Create the output path to store the file in
+    target_dir = os.path.join("./", base_folder, str(planning_unit))
+    target_dir = os.path.abspath(target_dir)
+    output_path = os.path.join(target_dir, filename)
+    return output_path
+
 def load_json_files(start_date, end_date, planning_unit):
     """Load the needed Employee file and the corresponding solution file,
     which includes the shifts references to employees."""
-    base_folder = os.getenv("BASE_OUTPUT_FOLDER")
-    sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
     sol_folder = "found_solutions"
+    base_folder = os.getenv("BASE_OUTPUT_FOLDER")
 
-    solution_file = (
-        Path(__file__).parent.parent.resolve()
-        / sol_folder
-        / f"solution_{planning_unit}_{start_date}-{end_date}.json"
-    )
-    employee_file = (
-        Path(__file__).parent.parent.resolve()
-        / base_folder
-        / sub_folder
-        / "employees.json"
-    )
+    solution_dir = os.path.join("./", sol_folder)
+    solution_file = os.path.join(solution_dir, f"solution_{planning_unit}_{start_date}-{end_date}.json")
+
+    employee_file = get_correct_path("employees.json", planning_unit)
 
     with open(solution_file, encoding="utf-8") as f:
         data = json.load(f)
@@ -37,22 +41,14 @@ def load_json_files(start_date, end_date, planning_unit):
     return data, emp_data
 
 
-def load_planned_shifts() -> dict[int, set[int]]:
+def load_planned_shifts(planning_unit) -> dict[int, set[int]]:
     """
     Returns Dict {Key : {Day1, Day2, …}},
     based on planned_shifts in free_shifts_and_vacation_days.json.
     """
 
-    base_folder = os.getenv("BASE_OUTPUT_FOLDER")
-    sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
-
-    path = (
-        Path(__file__).parent.parent.resolve()
-        / base_folder
-        / sub_folder
-        / "free_shifts_and_vacation_days.json"
-    )
-    with path.open(encoding="utf-8") as f:
+    file_path = get_correct_path("free_shifts_and_vacation_days.json", planning_unit)
+    with open(file_path, encoding="utf-8") as f:
         data = json.load(f)["employees"]
 
     prim2days = {}
@@ -60,21 +56,6 @@ def load_planned_shifts() -> dict[int, set[int]]:
         days = {d for d, _ in emp.get("planned_shifts", [])}
         prim2days[int(emp["key"])] = days
     return prim2days
-
-
-def get_correct_path(filename):
-    """Return the correct path to store the given file in."""
-    # Get the defined folder names out of the .env-file
-    base_folder = os.getenv("BASE_OUTPUT_FOLDER")
-    sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # Create the output path to store the file in
-    target_dir = os.path.join(current_dir, "..", base_folder, sub_folder)
-    target_dir = os.path.abspath(target_dir)
-    output_path = os.path.join(target_dir, filename)
-    return output_path
-
 
 def load_person_to_job(engine) -> dict[int, int]:
     """Reads TPersonal (Prim, RefBerufe) and returns {Prim: RefBerufe}."""
