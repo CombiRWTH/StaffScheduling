@@ -1,6 +1,7 @@
 import click
 from solve import main as solver
 from plot import main as plotter
+from .db.export_main import main as fetcher
 from loader import FSLoader
 
 
@@ -50,6 +51,19 @@ def plot(case: int, debug: bool):
 
     loader = FSLoader(case)
     plotter(loader=loader, debug=debug)
+
+
+@cli.command()
+@click.argument("UNIT", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%Y-%m-%d"]))
+@click.argument("end", type=click.DateTime(formats=["%Y-%m-%d"]))
+def fetch(UNIT: int, start, end):
+    """
+    Fetch data from the DB and write Json Files
+    """
+    start = start.date()  # convert datetime.datetime to datetime.date
+    end = end.date()
+    fetcher(planning_unit=UNIT, from_date=start, till_date=end)
 
 
 def main():
