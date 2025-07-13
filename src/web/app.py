@@ -43,51 +43,56 @@ class App:
         days = self._loader.get_days(start_date, end_date)
 
         # fulfilled wishes
-        wish_granted_cells = (
-            set()
-        )  # (employee_id, day) if ANY wish was granted on that day
-        granted_shift_wish_colors = defaultdict(
-            list
-        )  # shift colors for granted wished-off shifts
-        violated_shift_wish_keys = set()  # for stats only
+        fulfilled_shift_wish_cells = set()
+        fulfilled_day_off_cells = set()
+        all_shift_wish_colors = defaultdict(list)
+        all_day_off_wish_cells = set()
 
         for employee in self._employees:
             e_key = employee.get_key()
 
             for day in days:
                 day_key = f"{day}"
-                granted = True  # Assume granted unless we find a violation
+                cell_key = (e_key, day)
 
-                # Check day-off wish
+                # --- DAY OFF WISHES ---
                 if day.day in employee.get_wish_days:
-                    key = f"({e_key}, '{day_key}')"
-                    if key not in solution.variables or solution.variables[key] == 1:
-                        granted = False  # assigned on a wished-off day
+                    all_day_off_wish_cells.add(cell_key)
 
-                # Check all shift-off wishes for this day
-                for wish_day, abbr in employee.get_wish_shifts:
-                    if day.day != wish_day:
-                        continue
-                    shift = next(
-                        (s for s in self._shifts if s.abbreviation == abbr), None
+                    # Now: check if ANY shift is assigned on that day
+                    shift_assigned = any(
+                        solution.variables.get(
+                            f"({e_key}, '{day_key}', {shift.get_id()})"
+                        )
+                        == 1
+                        for shift in self._shifts
+                        if not shift.is_exclusive
                     )
-                    if not shift:
-                        continue
-                    key = f"({e_key}, '{day_key}', {shift.get_id()})"
-                    if key not in solution.variables:
-                        granted = False
-                    elif solution.variables[key] == 1:
-                        violated_shift_wish_keys.add(key)
-                        granted = False
-                    elif solution.variables[key] == 0:
-                        granted_shift_wish_colors[(e_key, day)].append(shift.color)
 
-                has_day_off_wish = day.day in employee.get_wish_days
-                has_shift_off_wish = any(
-                    day.day == wd for wd, _ in employee.get_wish_shifts
-                )
-                if granted and (has_day_off_wish or has_shift_off_wish):
-                    wish_granted_cells.add((e_key, day))
+                    if not shift_assigned:
+                        fulfilled_day_off_cells.add(cell_key)
+
+                # --- SHIFT OFF WISHES ---
+                shift_wishes = [
+                    s
+                    for wd, abbr in employee.get_wish_shifts
+                    if wd == day.day
+                    for s in self._shifts
+                    if s.abbreviation == abbr
+                ]
+
+                if shift_wishes:
+                    all_shift_wish_colors[cell_key] += [s.color for s in shift_wishes]
+
+                    # fulfilled only if NONE of the wished shifts are assigned
+                    fulfilled = True
+                    for shift in shift_wishes:
+                        key = f"({e_key}, '{day_key}', {shift.get_id()})"
+                        if solution.variables.get(key) == 1:
+                            fulfilled = False
+                            break
+                    if fulfilled and day.day not in employee.get_wish_days:
+                        fulfilled_shift_wish_cells.add(cell_key)
 
         return render_template(
             "index.html",
@@ -98,8 +103,10 @@ class App:
             days=days,
             shifts=self._shifts,
             stats=stats,
-            wish_granted_cells=wish_granted_cells,  # Changed from wish_assigned_keys
-            granted_shift_wish_colors=granted_shift_wish_colors,  # Added
+            fulfilled_shift_wish_cells=fulfilled_shift_wish_cells,
+            fulfilled_day_off_cells=fulfilled_day_off_cells,
+            all_shift_wish_colors=all_shift_wish_colors,
+            all_day_off_wish_cells=all_day_off_wish_cells,
         )
 
     def run(self, debug: bool = False):

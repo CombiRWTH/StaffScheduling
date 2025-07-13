@@ -89,13 +89,26 @@
                                 </td>
                                     {% for day in days %}
                                     {% set bg_style = '' %}
-                                    {% if (employee.get_key(), day) in wish_granted_cells %}
+                                    {% set key_day = (employee.get_key(), day) %}
+                                    {% set is_day_off_wished = key_day in all_day_off_wish_cells %}
+                                    {% set shift_assigned = false %}
+                                    {% for shift in shifts %}
+                                        {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
+                                        {% if variables[key] == 1 %}
+                                            {% set shift_assigned = true %}
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if key_day in fulfilled_day_off_cells %}
+                                        {% set bg_style = 'background-color: #fff9c4;' %}
+                                    {% elif key_day in fulfilled_shift_wish_cells %}
                                         {% set bg_style = 'background-color: #E0F8E0;' %}
                                     {% elif employee.unavailable(day) %}
                                         {% set bg_style = 'background-color: oklch(97.1% 0.013 17.38);' %}
                                     {% elif day.isoweekday() in [6,7] %}
                                         {% set bg_style = 'background-color: oklch(92.2% 0 0);' %}
                                     {% endif %}
+
                                     <td class="text-center text-light" style="position: relative; height: 1px; {{ bg_style }}">
                                         <div class="d-flex flex-column w-100 h-100" style="row-gap: .5rem;">
                                             <div class="d-flex">
@@ -106,10 +119,24 @@
                                                 {% endfor %}
                                             </div>
                                             <div class="d-flex">
-                                                {% for color in granted_shift_wish_colors.get((employee.get_key(), day), []) %}
+                                                {% for color in all_shift_wish_colors.get((employee.get_key(), day), []) %}
                                                     <div style="width: .5rem; height: .5rem; background-color: {{ color }}; transform: rotate(45deg);"></div>
                                                 {% endfor %}
                                             </div>
+
+                                            {% if is_day_off_wished %}
+                                            <div class="d-flex">
+                                                <!-- day-off wish triangle -->
+                                                <div style="
+                                                    width: 0;
+                                                    height: 0;
+                                                    border-left: 0.25rem solid transparent;
+                                                    border-right: 0.25rem solid transparent;
+                                                    border-bottom: 0.5rem solid #b77c02;
+                                                    margin-left: .1rem;">
+                                                </div>
+                                            </div>
+                                            {% endif %}
 
                                             {% for shift in shifts %}
                                                 {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
