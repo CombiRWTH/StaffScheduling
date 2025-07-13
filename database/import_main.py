@@ -11,10 +11,10 @@ load_dotenv()
 
 
 def main(
-    planning_unit=77,
-    from_date=date(2024, 11, 1),
-    till_date=date(2024, 11, 30),
-    cli_input: str | None = None,
+    planning_unit=77, # Default planning unit ID
+    from_date=date(2024, 11, 1), # Planning period start date
+    till_date=date(2024, 11, 30), # Planning period end date
+    cli_input: str | None = None, # Optional user input for action type
 ):
     """Sets up a basic connection to the TimeOffice database and imports the solution found by the algorithm."""
     engine = get_db_engine()
@@ -38,7 +38,7 @@ def main(
     STATUS_ID = 20  # Always "Sollplanung" as we only generate such plans
 
     # Corresponding shift IDs to given counts of shifts
-    # 2939: F2_ , 2906: T75_ , 2947: S2_ , 2953: N2_ , 1406: Z60
+    # 2939: F2_ (Frühschicht), 2906: T75_ (Zwischendienst), 2947: S2_ (Spätschicht), 2953: N2_ (Nachtschicht), 1406: Z60 (Sonderschicht)
     SHIFT_TO_REFDIENST = {0: 2939, 1: 2906, 2: 2947, 3: 2953, 4: 1406}
 
     # Shift mapping with format: shift_id : [ (von_time, bis_time, day_offset) , … ]
