@@ -27,7 +27,7 @@ def main(
 
     # Load mapping of employee to their job and their already planned shifts
     prim_to_refberuf = import_solution.load_person_to_job(engine)
-    planned_map = import_solution.load_planned_shifts()
+    planned_map = import_solution.load_planned_shifts(planning_unit)
 
     PE_ID = planning_unit
     PLAN_ID = base_data["plan_id"]
