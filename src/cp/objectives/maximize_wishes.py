@@ -33,8 +33,8 @@ class MaximizeEmployeeWishesObjective(Objective):
                     shift_reward = model.NewBoolVar(
                         f"wish_shift_{employee.get_key()}_{day}_{abbr}"
                     )
-                    model.Add(var == 1).OnlyEnforceIf(shift_reward)
-                    model.Add(shift_reward == 1).OnlyEnforceIf(var)
+                    model.Add(var == 0).OnlyEnforceIf(shift_reward)
+                    model.Add(shift_reward == 1).OnlyEnforceIf(var.Not())
                     rewards.append(shift_reward)
 
         return sum(rewards) * self.weight
