@@ -1,4 +1,6 @@
 site_name: Staff Scheduling
+site_url: https://combirwth.github.io/StaffScheduling/
+use_directory_urls: false
 
 nav:
   - Introduction: index.md
