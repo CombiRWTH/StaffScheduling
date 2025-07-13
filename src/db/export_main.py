@@ -1,10 +1,6 @@
-from dotenv import load_dotenv
 from datetime import date
 from .connection_setup import get_db_engine
 from . import export_data
-
-# Load the .env-file for login purposes
-load_dotenv()
 
 
 def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11, 30)):

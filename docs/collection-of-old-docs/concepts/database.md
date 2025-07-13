@@ -22,7 +22,7 @@ StaffScheduling/
 * Python 3.x
 * A valid SQL Server ODBC driver (e.g., ODBC Driver 17 or 18)
 * Database credentials
-* `pyodbc`, `pandas`, `python-dotenv` installed (see below)
+* `pyodbc`, `pandas` installed (see below)
 
 ---
 
