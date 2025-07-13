@@ -14,8 +14,8 @@ def cli():
 
 @cli.command()
 @click.argument("unit", type=click.INT)
-@click.argument("start", type=click.DateTime(formats=["%d.%m-%Y"]))
-@click.argument("end", type=click.DateTime(formats=["%d.%m-%Y"]))
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.option("--timeout", default=300, help="Timeout in seconds for the solver")
 def solve(unit: int, start: click.DateTime, end: click.DateTime, timeout: int):
     """
@@ -56,8 +56,8 @@ def plot(case: int, debug: bool):
 
 @cli.command()
 @click.argument("unit", type=click.INT)
-@click.argument("start", type=click.DateTime(formats=["%d.%m-%Y"]))
-@click.argument("end", type=click.DateTime(formats=["%d.%m-%Y"]))
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
 def fetch(unit: int, start, end):
     """
     Fetch data from the DB and write Json Files
@@ -69,8 +69,8 @@ def fetch(unit: int, start, end):
 
 @cli.command()
 @click.argument("unit", type=click.INT)
-@click.argument("start", type=click.DateTime(formats=["%d.%m-%Y"]))
-@click.argument("end", type=click.DateTime(formats=["%d.%m-%Y"]))
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
 def insert(unit: int, start, end):
     """
     Insert data from Json Solution Files to DB
@@ -82,8 +82,8 @@ def insert(unit: int, start, end):
 
 @cli.command()
 @click.argument("unit", type=click.INT)
-@click.argument("start", type=click.DateTime(formats=["%d.%m-%Y"]))
-@click.argument("end", type=click.DateTime(formats=["%d.%m-%Y"]))
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
 def delete(unit: int, start, end):
     """
     Delete data from Json Solution Files to DB, effectivly resetting the changes
