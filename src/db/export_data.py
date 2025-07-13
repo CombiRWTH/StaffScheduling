@@ -255,7 +255,7 @@ def export_target_working_minutes_to_json(
     )
 
     target_working_minutes_list = df_wide.to_dict(orient="records")
-    output_json = {"target_working_minutes": target_working_minutes_list}
+    output_json = {"employees": target_working_minutes_list}
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
