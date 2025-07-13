@@ -18,6 +18,7 @@ def load_json_files(start_date, end_date, planning_unit):
     sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
     sol_folder = "found_solutions"
 
+    # Build full path to the generated solution file for the selected planning unit and date range
     solution_file = (
         Path(__file__).parent.parent.resolve()
         / sol_folder
@@ -78,7 +79,7 @@ def get_correct_path(filename):
 
 def load_person_to_job(engine) -> dict[int, int]:
     """Reads TPersonal (Prim, RefBerufe) and returns {Prim: RefBerufe}."""
-    sql = text("SELECT Prim, RefBerufe FROM TPersonal")
+    sql = text("SELECT Prim, RefBerufe FROM TPersonal") # SQL query to get the mapping
     with engine.connect() as connection:
         result = connection.execute(sql)
         return {row.Prim: row.RefBerufe for row in result}
@@ -99,7 +100,7 @@ def load_shift_segments(
 
     with engine.connect() as conn:
         for shift_id, ref_dienst in shift_id_map.items():
-            if shift_id > 4:
+            if shift_id > 4: 
                 continue
 
             rows = conn.execute(sql, {"ref": ref_dienst}).fetchall()
@@ -133,7 +134,7 @@ def build_dataframe(
 ):
     """Build the solution into one DataFrame (one row per segment)."""
 
-    prim_whitelist = {int(e["key"]) for e in emp_data}
+    prim_whitelist = {int(e["key"]) for e in emp_data} # Only allow known employees
 
     records = []
     for key, val in data["variables"].items():
@@ -208,7 +209,7 @@ def build_dataframe(
 
 
 def insert_dataframe_to_db(df, engine):
-    """Insert the correctly formatted solution into the database."""
+    """Insert the correctly formated solution into the database."""
 
     insert_sql = text("""
         INSERT INTO TPlanPersonalKommtGeht
