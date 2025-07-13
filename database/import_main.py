@@ -10,7 +10,12 @@ import json
 load_dotenv()
 
 
-def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11, 30)):
+def main(
+    planning_unit=77,
+    from_date=date(2024, 11, 1),
+    till_date=date(2024, 11, 30),
+    cli_input: str | None = None,
+):
     """Sets up a basic connection to the TimeOffice database and imports the solution found by the algorithm."""
     engine = get_db_engine()
 
@@ -51,10 +56,18 @@ def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11,
         planned_map,
     )
 
-    # User input to determine between inserting/deleting/generating test json
-    action = input(
-        "Press i for importing, d for deleting or j to generate a test json:"
-    )
+    if cli_input is None:
+        # User input to determine between inserting/deleting/generating test json
+        action = input(
+            "Press i for importing, d for deleting or j to generate a test json:"
+        )
+    elif cli_input in ["i", "d", "j"]:
+        action = cli_input
+    else:
+        raise ValueError(
+            f"{cli_input} is not a valid value for 'cli_input'.\n"
+            "Accepted values are 'i', 'd', 'j', None."
+        )
 
     match action:
         case "i":
