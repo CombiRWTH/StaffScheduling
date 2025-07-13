@@ -73,11 +73,25 @@ def fetch(UNIT: int, start, end):
 @click.argument("end", type=click.DateTime(formats=["%Y-%m-%d"]))
 def insert(UNIT: int, start, end):
     """
-    Inser data from Json Solution Files to DB
+    Insert data from Json Solution Files to DB
     """
     start = start.date()  # convert datetime.datetime to datetime.date
     end = end.date()
     inserter(planning_unit=UNIT, from_date=start, till_date=end, cli_input="i")
+
+
+@cli.command()
+@click.argument("UNIT", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%Y-%m-%d"]))
+@click.argument("end", type=click.DateTime(formats=["%Y-%m-%d"]))
+def delete(UNIT: int, start, end):
+    """
+    Delete data from Json Solution Files to DB, effectivly resetting the changes
+    stored in solution.
+    """
+    start = start.date()  # convert datetime.datetime to datetime.date
+    end = end.date()
+    inserter(planning_unit=UNIT, from_date=start, till_date=end, cli_input="d")
 
 
 def main():
