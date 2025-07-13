@@ -3,5 +3,16 @@
     "Early": 0,
     "Late": 1,
     "Night": 2
+  },
+  "qualifications": {
+    "2963": [
+      "rounds"
+    ],
+    "3868": [
+      "rounds"
+    ],
+    "791": [
+      "rounds"
+    ]
   }
 }
