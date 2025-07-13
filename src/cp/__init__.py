@@ -4,6 +4,7 @@ from .constraints import (
     FreeDayAfterNightShiftPhaseConstraint as FreeDayAfterNightShiftPhaseConstraint,
     MinRestTimeConstraint as MinRestTimeConstraint,
     MinStaffingConstraint as MinStaffingConstraint,
+    RoundsInEarlyShiftConstraint as RoundsInEarlyShiftConstraint,
     MaxOneShiftPerDayConstraint as MaxOneShiftPerDayConstraint,
     TargetWorkingTimeConstraint as TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
