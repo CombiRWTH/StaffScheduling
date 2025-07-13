@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 def get_correct_path(filename):
     """Return the correct path to store the given file in."""
-    
+
     # Get the defined folder names out of the .env-file
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
     sub_folder = os.getenv("SUB_OUTPUT_FOLDER")
@@ -24,18 +24,18 @@ def get_correct_path(filename):
 
 def export_planning_data(engine, planning_unit, from_date, till_date):
     """Export relevant basic plan data for retrieving all information for the algorithm.
-	
- 	Args:
-        	engine: SQLAlchemy database engine used to execute queries.
-        	planning_unit: ID of the planning unit to filter the data.
-        	from_date: Start date (string in 'YYYY-MM-DD' format).
-        	till_date: End date (string in 'YYYY-MM-DD' format).
 
-	Returns:
-        	dict: Dictionary containing plan data
-	 
+    Args:
+            engine: SQLAlchemy database engine used to execute queries.
+            planning_unit: ID of the planning unit to filter the data.
+            from_date: Start date (string in 'YYYY-MM-DD' format).
+            till_date: End date (string in 'YYYY-MM-DD' format).
+
+    Returns:
+            dict: Dictionary containing plan data
+
     """
-    
+
     # Construct and execute a SQL query to retrieve planning data within the given date range
     query = f"""SELECT
                     Prim AS 'plan_id',
@@ -53,13 +53,13 @@ def export_planning_data(engine, planning_unit, from_date, till_date):
     # Construct a string in 'YYYYMM' format from the from_date
     year_month = f"{pd.Timestamp(from_date).year}{pd.Timestamp(from_date).month:02d}"
     result["year_month"] = year_month
-    
+
     # Calculate the date one year before till_date and store it in 'YYYY-DD-MM' format
     one_year_back = pd.Timestamp(till_date) - relativedelta(years=1)
     result["minus_a_year"] = (
         f"{one_year_back.year}-{one_year_back.day:02d}-{one_year_back.month:02d}"
     )
-    
+
     # Reformat from_date and till_date into 'YYYY-DD-MM' format for consistency
     result["from_date"] = (
         f"{pd.Timestamp(from_date).year}-{pd.Timestamp(from_date).day:02d}-{pd.Timestamp(from_date).month:02d}"
@@ -73,13 +73,13 @@ def export_planning_data(engine, planning_unit, from_date, till_date):
 
 def export_shift_data_to_json(engine, filename="shift_information.json"):
     """Export all shift related information such as times and breaks and create a JSON-file.
-	
- 	Args:
-        	engine: SQLAlchemy engine used for executing the database query.
-        	filename (str): Name of the output JSON file (default: 'shift_information.json').
-    
+
+    Args:
+            engine: SQLAlchemy engine used for executing the database query.
+            filename (str): Name of the output JSON file (default: 'shift_information.json').
+
     """
-    
+
     # Define relevant shift types with their associated IDs and shorthand names
     shift_ids = {
         "Frühschicht": {"id": "2939", "name": "F2_"},
@@ -89,7 +89,7 @@ def export_shift_data_to_json(engine, filename="shift_information.json"):
         "Sonderdienst": {"id": "1406", "name": "Z60"},
     }
     shift_id_to_name = {v["id"]: v["name"] for v in shift_ids.values()}
-    
+
     # SQL query to retrieve planned shift times for the relevant shift types
     query = f"""SELECT
                     RefDienste AS 'shift_id',
@@ -127,7 +127,7 @@ def export_shift_data_to_json(engine, filename="shift_information.json"):
         )
         .reset_index()
     )
-    
+
     # Compute total duration from first start to last end (not subtracting breaks)
     agg["shift_duration"] = (
         agg["end_time"] - agg["start_time"]
@@ -150,13 +150,13 @@ def export_shift_data_to_json(engine, filename="shift_information.json"):
 
 def export_personal_data_to_json(engine, plan_id, filename="employees.json"):
     """Export all personal staff information found within TPersonal and create a JSON-file.
-    	Args:
-        	engine: SQLAlchemy engine object used to connect to the database.
-        	plan_id (int): ID of the plan for which staff data should be exported.
-        	filename (str): Name of the JSON file to be created (default: 'employees.json').
-    
+    Args:
+            engine: SQLAlchemy engine object used to connect to the database.
+            plan_id (int): ID of the plan for which staff data should be exported.
+            filename (str): Name of the JSON file to be created (default: 'employees.json').
+
     """
-    
+
     # Write SQL-query to retrieve personal data linked to a specific plan ID
     query = f"""SELECT
                     a.Prim,
@@ -199,13 +199,13 @@ def export_target_working_minutes_to_json(
 ):
     """Export all target working minutes found within TPersonalKontenJeMonat and create a JSON-file.
 
- 	Args:
-        	engine: SQLAlchemy engine object used to connect to the database.
-        	month (int): Numeric representation of the target month (e.g., 202411 for November 2024).
-        	filename (str): Name of the JSON file to be created (default: 'target_working_minutes.json').
-    
+    Args:
+            engine: SQLAlchemy engine object used to connect to the database.
+            month (int): Numeric representation of the target month (e.g., 202411 for November 2024).
+            filename (str): Name of the JSON file to be created (default: 'target_working_minutes.json').
+
     """
-    
+
     # SQL Query to export the target working hours from TPersonalKontenJeMonat
     query = f"""SELECT
                     p.Prim,
@@ -270,15 +270,15 @@ def export_worked_sundays_to_json(
     engine, from_date, till_date, filename="worked_sundays.json"
 ):
     """Export the number of worked sundays found within TPersonalKontenJeTag and create a JSON-file.
-    
-	Args:
-        	engine: SQLAlchemy engine object to connect to the database.
-        	from_date (str): Start date (inclusive) of the period to query, format 'YYYY/DD/MM'.
-        	till_date (str): End date (inclusive) of the period to query, format 'YYYY/DD/MM'.
-        	filename (str): Name of the JSON output file (default: 'worked_sundays.json').
-    
+
+    Args:
+            engine: SQLAlchemy engine object to connect to the database.
+            from_date (str): Start date (inclusive) of the period to query, format 'YYYY/DD/MM'.
+            till_date (str): End date (inclusive) of the period to query, format 'YYYY/DD/MM'.
+            filename (str): Name of the JSON output file (default: 'worked_sundays.json').
+
     """
-    
+
     # Write SQL-query to retrieve worked sundays (for November 2024 and 12 months prior)
     query = f"""SELECT
                 p.Prim AS 'key',
@@ -346,14 +346,14 @@ def export_free_shift_and_vacation_days_json(
     engine, plan_id, planning_unit, filename="free_shifts_and_vacation_days.json"
 ):
     """Export the free shifts and vacation daysfound within TPersonalKommtGeht and create a JSON-file.
-    
-    	Args:
-        	engine: SQLAlchemy engine object to connect to the database.
-        	plan_id (int or str): The unique identifier for the plan.
-        	planning_unit (int or str): Identifier for the planning unit to filter employees.
-        	filename (str, optional): Output JSON file name. Defaults to 'free_shifts_and_vacation_days.json'.
+
+    Args:
+            engine: SQLAlchemy engine object to connect to the database.
+            plan_id (int or str): The unique identifier for the plan.
+            planning_unit (int or str): Identifier for the planning unit to filter employees.
+            filename (str, optional): Output JSON file name. Defaults to 'free_shifts_and_vacation_days.json'.
     """
-    
+
     # Fetch the plan's start and end dates from the database
     dates = get_plan_dates(engine, plan_id)
 
@@ -370,7 +370,7 @@ def export_free_shift_and_vacation_days_json(
     }
 
     whitelist = set(prim2meta)
-    
+
     # Query for vacation days (specific codes in RefgAbw)
     query_vac = f"""
         SELECT
@@ -384,7 +384,7 @@ def export_free_shift_and_vacation_days_json(
             pkg.Datum BETWEEN CONVERT(date,'{START_DATE}',23) AND CONVERT(date,'{END_DATE}',23)
             AND pkg.RefgAbw IN (20, 2434, 2435, 2091);
             """
-   
+
     # Query for forbidden days (all entries that are NOT vacation but still blocked availability)
     query_forb_days = f"""
         SELECT
@@ -397,7 +397,7 @@ def export_free_shift_and_vacation_days_json(
         WHERE pkg.Datum BETWEEN CONVERT(date,'{START_DATE}',23) AND CONVERT(date,'{END_DATE}',23)
             AND pkg.RefgAbw NOT IN (20, 2434, 2435, 2091)
             """
-    
+
     # Query for planned shifts (RefgAbw is NULL → workday in another unit)
     query_forb_shifts = f"""
         SELECT
@@ -412,7 +412,7 @@ def export_free_shift_and_vacation_days_json(
         WHERE pkg.Datum BETWEEN CONVERT(date,'{START_DATE}',23) AND CONVERT(date,'{END_DATE}',23)
             AND pkg.RefgAbw IS NULL
             """
-    
+
     # Query for accounting entries per employee per day
     query_acc = f"""
         SELECT
@@ -422,7 +422,7 @@ def export_free_shift_and_vacation_days_json(
         WHERE RefPlanungsEinheiten = {planning_unit}
         AND Datum BETWEEN CONVERT(date,'{START_DATE}',23) AND CONVERT(date,'{END_DATE}',23);
         """
-    
+
     # Execute all queries
     vac_df = pd.read_sql(query_vac, engine)
     forb_df = pd.read_sql(query_forb_days, engine)
@@ -469,8 +469,8 @@ def export_free_shift_and_vacation_days_json(
         fehlende = sorted(all_days - kontotage)
 
         rec = forb_map.setdefault(prim_person, {"forbidden_days": []})
-        
-	# merge (without duplicates) + sort
+
+        # merge (without duplicates) + sort
         rec["forbidden_days"] = sorted(set(rec["forbidden_days"]) | set(fehlende))
 
     employees_out = []
