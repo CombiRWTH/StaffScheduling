@@ -2,16 +2,65 @@ site_name: Staff Scheduling
 
 nav:
   - Introduction: index.md
-  - Getting Started:
-      - getting-started/index.md
-      - Prerequisites: getting-started/prerequisites.md
-      - Installation: getting-started/installation.md
-      - First Steps: getting-started/first-steps.md
-  - Concepts:
-      - Constraints: concepts/constraints.md
-      - Objectives: concepts/objectives.md
-      - Datatabase: concepts/database.md
-      - Visualization: concepts/visualization.md
+  - User View:
+      - user-view/index.md
+      - Problem Definition: user-view/problem-definition.md
+      - List of Conditions: user-view/list-of-conditions.md
+      - Getting Started (Light):
+          - user-view/getting-started-light-version/index.md
+          - Prerequisites: user-view/getting-started-light-version/prerequisites-light.md
+          - Installation: user-view/getting-started-light-version/installation-light.md
+          - Usage: user-view/getting-started-light-version/usage-light.md
+      - Configuration:
+          - Overview of Configurations: user-view/configuration/index.md
+          - Assemble Staff: user-view/configuration/staff.md
+          - Modify Vacation Days: user-view/configuration/vacation-days.md
+          - Modify Forbidden Days / Shifts: user-view/configuration/forbidden-days.md
+          - Adapting Weights: user-view/configuration/weights.md
+          - Modify Round Permissions: user-view/configuration/rounds-permissions.md
+          - Qualification Mapping: user-view/configuration/qualifications.md
+
+  - Developer View:
+      - developer-view/index.md
+      - Mathematical Problem Formulation: developer-view/mathematical-problem-formulation.md
+      - Google's OR Tools and SAT-Solver: developer-view/ortools.md
+      - Codebase Overview: developer-view/codebase-overview.md
+      - Getting-Started (Dev):
+          - developer-view/getting-started-dev/index.md
+          - Prerequisites: developer-view/getting-started-dev/prerequisites-dev.md
+          - Connect to Database: developer-view/getting-started-dev/connect-to-db.md
+          - Installation: developer-view/getting-started-dev/installation-dev.md
+          - Usage: developer-view/getting-started-dev/usage-dev.md
+      - Conditions:
+          - Constraints:
+              - Free day after night shift phase: developer-view/conditions/free-day-after-night-shift-phase.md
+              - Max one shift per day: developer-view/conditions/max-one-shift-per-day.md
+              - Minimum rest time between shifts: developer-view/conditions/minimum-rest-time-between-shifts.md
+              - Minimum number of staff per shift: developer-view/conditions/minimum-number-of-staff-per-shift.md
+              - Target working time per month: developer-view/conditions/target-working-time-per-month.md
+              - Vacation days and free shifts: developer-view/conditions/vacation-days-and-free-shifts.md
+          - Objectives:
+              - Total Objective Function: developer-view/conditions/total-objective-function.md
+              - Free days near weekend: developer-view/conditions/free-days-near-weekend.md
+              - Minimize number of consecutive night shifts: developer-view/conditions/Minimize-number-of-consecutive-night-shifts.md
+              - Minimize hidden employees: developer-view/conditions/minimize-hidden-employees.md
+              - Minimize overtime and undertime: developer-view/conditions/minimize-overtime-and-undertime.md
+              - Not too many consecutive working days: developer-view/conditions/not-too-many-consecutive-working-days.md
+              - Rotate shifts forwards: developer-view/conditions/Rotate-shifts-forwards.md
+      - Shifts: developer-view/shifts.md
+      - Variables: developer-view/variables.md
+      - Database: developer-view/database.md
+      - How-to-Add Guides:
+          - How to add a Constraint: developer-view/how-to-add/how-to-add-constraint.md
+          - How to add a Objective: developer-view/how-to-add/how-to-add-objective.md
+          - How to add a Variable: developer-view/how-to-add/how-to-add-variable.md
+      - JSON Dataformat:
+          - Employees: developer-view/dataformat/df-employees.md
+          - Employee Types: developer-view/dataformat/df-employee-types.md
+          - Free Shifts, Vacation Days: developer-view/dataformat/df-vacation-days.md
+          - Minimal Number of Staff: developer-view/dataformat/df-min-staff.md
+          - Target Working Minutes: developer-view/dataformat/df-target-working-minutes.md
+
 
 theme:
   name: material

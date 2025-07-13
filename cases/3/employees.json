@@ -1,100 +1,232 @@
-[
-  {
-    "ATZArbeitsphaseBis": null,
-    "ATZArbeitsphaseVon": null,
-    "ATZFreistellungBis": null,
-    "ATZFreistellungVon": null,
-    "AkademischerAbschluss": null,
-    "AntragStufenlosJN": false,
-    "AusDat": 7258032000000,
-    "Ausbildungsberuf": null,
-    "AutoMailTimeStamp": null,
-    "BefristungsDatum": null,
-    "BeginnBerufserfahrung": null,
-    "Bekleidungsnummer": "930-93-540023",
-    "Bemerkung1": null,
-    "Bemerkung10": null,
-    "Bemerkung2": null,
-    "Bemerkung3": null,
-    "Bemerkung4": null,
-    "Bemerkung5": null,
-    "Bemerkung6": null,
-    "Bemerkung7": null,
-    "Bemerkung8": null,
-    "Bemerkung9": null,
-    "CsgStempeluhrBenutzer": false,
-    "DienstausweisGueltigBis": null,
-    "DienstausweisNr": null,
-    "DienstausweisTerminFotoDatum": null,
-    "DienstausweisTerminFotoUhrzeit": null,
-    "EMail": null,
-    "EMailDienstlich": null,
-    "EinDat": 575856000000,
-    "ErsterTagAttestNotwendig": false,
-    "ExportToHeartbeat": true,
-    "FingerPrintActivated": false,
-    "GebDat": -96076800000,
-    "Geburtsort": null,
-    "IdentifikationMAPortal": "6606292809",
-    "IdentifikationTelZE": null,
-    "IstBefristet": false,
-    "IstExternJN": false,
-    "JubilaeumsStartdatum": null,
-    "KeinDruckPwdMA": true,
-    "KeinDruckPwdZE": false,
-    "Konzerneintritt": null,
-    "KurzName": "Sandra",
-    "LastMobileSync": null,
-    "LastUpdate": 1743175038090,
-    "LogonNameAnlage": null,
-    "MagnetKarte": "6606292809",
-    "MagnetKarte2": null,
-    "MailEreignisAdressTyp": null,
-    "MutterschutzEnde": null,
-    "MutterschutzStart": null,
-    "Name": "Shoemake",
-    "PLZ": null,
-    "PLZNebenwohnsitz": null,
-    "PersNr": "6606292809",
-    "PersNrIntern": null,
-    "PersonalSort": 1,
-    "Prim": 459,
-    "Pwd": null,
-    "PwdGueltigBis": 1603929600000,
-    "PwdMAPortal": null,
-    "PwdMAPortalGueltigBis": 7258032000000,
-    "PwdTelZE": null,
-    "RefBenutzer": null,
-    "RefBerufe": 736,
-    "RefEinrichtungen": 1,
-    "RefEreignisgruppenPersonal": null,
-    "RefFamilienstand": 2,
-    "RefKatalogeDienstArt": null,
-    "RefKatalogeMaGruppe": 672,
-    "RefKatalogeMitarbeiterTypen": 41,
-    "RefKatalogeStufenFilter": 27,
-    "RefKatalogeZustaendigkeiten": 26,
-    "RefKostenStellen": null,
-    "RefKstNr": null,
-    "RefPersonalBerechtigungsTypWeb": 5,
-    "RefPersonalBerechtigungsTypen": 5,
-    "RefPersonalTmp": null,
-    "RefPlanungsEinheit": 59,
-    "RefPlanungseinheitenGruppen": null,
-    "Strasse": null,
-    "StrasseNebenwohnsitz": null,
-    "TelZEAktivJN": false,
-    "Telefax": null,
-    "Telefon": null,
-    "TelefonDienstlich": null,
-    "TelefonMobil": null,
-    "TelefonMobilDienstlich": null,
-    "Titel": "",
-    "VbaCalcDate": 1732924800000,
-    "Vorname": "Sandra",
-    "WegfallLohnfortNachAUTagen": 43,
-    "Wohnort": null,
-    "WohnortNebenwohnsitz": null,
-    "refGeschlechter": 2
-  }
-]
+{
+  "employees": [
+    {
+      "firstname": "Sandra",
+      "key": 459,
+      "name": "Shoemake",
+      "type": "Krankenschwester/-pfleger (81302-008)"
+    },
+    {
+      "firstname": "Adriane",
+      "key": 790,
+      "name": "Mccomas",
+      "type": "Stationshilfe (81301-018)"
+    },
+    {
+      "firstname": "Janett",
+      "key": 791,
+      "name": "Branz",
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    {
+      "firstname": "Nele",
+      "key": 822,
+      "name": "Sewell",
+      "type": "Pflegeassistent/in (81302-014)"
+    },
+    {
+      "firstname": "Liselotte",
+      "key": 839,
+      "name": "S\u00e4uffert",
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
+    },
+    {
+      "firstname": "Silvia",
+      "key": 914,
+      "name": "Harkins",
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
+    },
+    {
+      "firstname": "Ingbert",
+      "key": 917,
+      "name": "Catoe",
+      "type": "Krankenschwester/-pfleger (81302-008)"
+    },
+    {
+      "firstname": "Jenny",
+      "key": 921,
+      "name": "Keese",
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    {
+      "firstname": "B\u00e4rbl",
+      "key": 924,
+      "name": "Merriweather",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Lina",
+      "key": 925,
+      "name": "Farniok",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Margaritt",
+      "key": 927,
+      "name": "Mittrach",
+      "type": "Stationshilfe (81301-018)"
+    },
+    {
+      "firstname": "Daniele",
+      "key": 928,
+      "name": "Wunderlich",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Constance",
+      "key": 1230,
+      "name": "Palacio",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
+    },
+    {
+      "firstname": "Kersten",
+      "key": 2932,
+      "name": "Devers",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
+    },
+    {
+      "firstname": "Renilde",
+      "key": 2963,
+      "name": "Hoots",
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    {
+      "firstname": "Elgine",
+      "key": 3566,
+      "name": "Seligman",
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    {
+      "firstname": "Eike",
+      "key": 3868,
+      "name": "Vanfleet",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
+    },
+    {
+      "firstname": "Hannah",
+      "key": 4566,
+      "name": "Woodcock",
+      "type": "A-Pflegeassistent/in (A-81302-014)"
+    },
+    {
+      "firstname": "Henni",
+      "key": 5367,
+      "name": "Donis",
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
+    },
+    {
+      "firstname": "Augustin",
+      "key": 5920,
+      "name": "Carreras",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
+    },
+    {
+      "firstname": "Heinz",
+      "key": 6475,
+      "name": "Binford",
+      "type": "Helfer/in - station\u00e4re Krankenpflege (81301-002)"
+    },
+    {
+      "firstname": "Roseliese",
+      "key": 6507,
+      "name": "Rashid",
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    {
+      "firstname": "Christfri",
+      "key": 6677,
+      "name": "Fullerton",
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
+    },
+    {
+      "firstname": "Saskia",
+      "key": 6681,
+      "name": "Labelle",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Lioba",
+      "key": 6715,
+      "name": "Burris",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    {
+      "firstname": "Trude",
+      "key": 6836,
+      "name": "Valentino",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
+    },
+    {
+      "firstname": "Annelene",
+      "key": 6928,
+      "name": "Izzo",
+      "type": "Medizinische/r Fachangestellte/r (81102-004)"
+    },
+    {
+      "firstname": "Marcus",
+      "key": 7496,
+      "name": "Demarco",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Ludger",
+      "key": 7603,
+      "name": "Roberson",
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    {
+      "firstname": "Sieghardt",
+      "key": 7741,
+      "name": "Tharp",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Kilian",
+      "key": 7752,
+      "name": "Rodriques",
+      "type": "Bundesfreiwilligendienst (BFD)"
+    },
+    {
+      "firstname": "Julia",
+      "key": 7770,
+      "name": "Yeh",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    {
+      "firstname": "Burkhild",
+      "key": 7796,
+      "name": "Hertzler",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    {
+      "firstname": "Karena",
+      "key": 7835,
+      "name": "Driggers",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    {
+      "firstname": "Gertraute",
+      "key": 7848,
+      "name": "Winters",
+      "type": "A-Pflegeassistent/in (A-81302-014)"
+    },
+    {
+      "firstname": "Janett",
+      "key": 7877,
+      "name": "Staggs",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    {
+      "firstname": "Irma",
+      "key": 7919,
+      "name": "Weathers",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Loremarie",
+      "key": 7990,
+      "name": "Milburn",
+      "type": "A-Pflegeassistent/in (A-81302-014)"
+    }
+  ]
+}
