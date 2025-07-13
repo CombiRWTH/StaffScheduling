@@ -14,7 +14,7 @@
                 <div class="w-100">
                     <label for="solution_file_select" class="form-label">Select Solution</label>
                     <select id="solution_file_select" class="form-select">
-                        {% for solution_file_name in solution_file_names %}#
+                        {% for solution_file_name in solution_file_names %}
                             <option value="{{ solution_file_name }}" {{ 'selected' if solution_file_name == selected_solution_file_name }}>{{ solution_file_name }}</option>
                         {% endfor %}
                     </select>
