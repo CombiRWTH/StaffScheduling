@@ -41,10 +41,12 @@ def calculate_consecutive_night_shifts(shifts_assigned: List[int]) -> int:
     for s in shifts_assigned:
         if s == 2:
             night_streak += 1
+        else:
             if night_streak > 3:
                 violations += 1
-        else:
             night_streak = 0
+    if night_streak > 3:
+        violations += 1
     return violations
 
 
