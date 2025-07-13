@@ -7,6 +7,7 @@ from .constraints import (
     MaxOneShiftPerDayConstraint as MaxOneShiftPerDayConstraint,
     TargetWorkingTimeConstraint as TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
+    HierarchyOfIntermediateShiftsConstraint as HierarchyOfIntermediateShiftsConstraint,
     PlannedShiftsConstraint as PlannedShiftsConstraint,
 )
 from .objectives import (
