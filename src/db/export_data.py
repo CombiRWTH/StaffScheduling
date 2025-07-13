@@ -499,7 +499,7 @@ def export_free_shift_and_vacation_days_json(
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=False, indent=2, default=str)
-    store_path = get_correct_path(filename)
+    store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Log a message of completed export
