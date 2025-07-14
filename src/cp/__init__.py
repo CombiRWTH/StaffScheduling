@@ -4,6 +4,7 @@ from .constraints import (
     FreeDayAfterNightShiftPhaseConstraint as FreeDayAfterNightShiftPhaseConstraint,
     MinRestTimeConstraint as MinRestTimeConstraint,
     MinStaffingConstraint as MinStaffingConstraint,
+    RoundsInEarlyShiftConstraint as RoundsInEarlyShiftConstraint,
     MaxOneShiftPerDayConstraint as MaxOneShiftPerDayConstraint,
     TargetWorkingTimeConstraint as TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
@@ -19,6 +20,7 @@ from .objectives import (
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
     FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
+    MaximizeEmployeeWishesObjective as MaximizeEmployeeWishesObjective,
 )
 from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,
