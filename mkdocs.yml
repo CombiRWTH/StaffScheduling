@@ -16,6 +16,7 @@ nav:
           - Assemble Staff: user-view/configuration/staff.md
           - Modify Vacation Days: user-view/configuration/vacation-days.md
           - Modify Forbidden Days / Shifts: user-view/configuration/forbidden-days.md
+          - Modify Planned Shifts: user-view/configuration/planned-shifts.md  # NEW
           - Adapting Weights: user-view/configuration/weights.md
           - Modify Round Permissions: user-view/configuration/rounds-permissions.md
           - Qualification Mapping: user-view/configuration/qualifications.md
@@ -37,6 +38,7 @@ nav:
               - Max one shift per day: developer-view/conditions/max-one-shift-per-day.md
               - Minimum rest time between shifts: developer-view/conditions/minimum-rest-time-between-shifts.md
               - Minimum number of staff per shift: developer-view/conditions/minimum-number-of-staff-per-shift.md
+              - Planned shifts: developer-view/conditions/planned-shifts.md
               - Target working time per month: developer-view/conditions/target-working-time-per-month.md
               - Vacation days and free shifts: developer-view/conditions/vacation-days-and-free-shifts.md
           - Objectives:
@@ -59,8 +61,8 @@ nav:
           - Employee Types: developer-view/dataformat/df-employee-types.md
           - Free Shifts, Vacation Days: developer-view/dataformat/df-vacation-days.md
           - Minimal Number of Staff: developer-view/dataformat/df-min-staff.md
+          - Planned Shifts: developer-view/dataformat/df-planned-shifts.md  # NEW
           - Target Working Minutes: developer-view/dataformat/df-target-working-minutes.md
-
 
 theme:
   name: material
@@ -98,8 +100,6 @@ markdown_extensions:
   - pymdownx.tilde
   - pymdownx.tabbed
   - attr_list
-  - pymdownx.arithmatex:
-      generic: true
   - pymdownx.highlight:
       linenums: false
   - pymdownx.superfences
@@ -121,11 +121,7 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+
 plugins:
   - include-markdown
   - search:
@@ -134,7 +130,15 @@ plugins:
       handlers:
         python:
           options:
-            # disable by default, as it can not do attributes anyways
             inherited_members: true
             merge_init_into_class: true
             show_source: false
+
+# NEW: JavaScript support for LaTeX math rendering
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - stylesheets/extra.css
