@@ -37,7 +37,7 @@
         'total_overtime_hours': 'Total Overtime Hours',
         'no_free_days_around_weekend': 'No Free Days Around Weekend',
         'not_free_after_night_shift': '48 Hrs Not Free After Night Shift',
-        'granted_wish_shifts': 'Wish Shifts not given Free',
+        'violated_wish_total': 'Violated Wishes',
         } %}
         <ul>
             {% for key, value in stats.items() %}
@@ -87,16 +87,56 @@
                                     <br />
                                     <span class="text-secondary">{{ employee.level }}</span>
                                 </td>
-                                {% for day in days %}
-                                    <td class="text-center text-light" style="position: relative; height: 1px;{{ ' background-color: oklch(92.2% 0 0); ' if day.isoweekday() in [6,7] }}{{ ' background-color: oklch(97.1% 0.013 17.38); ' if employee.unavailable(day) }}">
+                                    {% for day in days %}
+                                    {% set bg_style = '' %}
+                                    {% set key_day = (employee.get_key(), day) %}
+                                    {% set is_day_off_wished = key_day in all_day_off_wish_cells %}
+                                    {% set shift_assigned = false %}
+                                    {% for shift in shifts %}
+                                        {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
+                                        {% if variables[key] == 1 %}
+                                            {% set shift_assigned = true %}
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if key_day in fulfilled_day_off_cells %}
+                                        {% set bg_style = 'background-color: #fff9c4;' %}
+                                    {% elif key_day in fulfilled_shift_wish_cells %}
+                                        {% set bg_style = 'background-color: #E0F8E0;' %}
+                                    {% elif employee.unavailable(day) %}
+                                        {% set bg_style = 'background-color: oklch(97.1% 0.013 17.38);' %}
+                                    {% elif day.isoweekday() in [6,7] %}
+                                        {% set bg_style = 'background-color: oklch(92.2% 0 0);' %}
+                                    {% endif %}
+
+                                    <td class="text-center text-light" style="position: relative; height: 1px; {{ bg_style }}">
                                         <div class="d-flex flex-column w-100 h-100" style="row-gap: .5rem;">
                                             <div class="d-flex">
                                                 {% for shift in shifts %}
                                                     {% if employee.unavailable(day, shift) %}
-                                                        <div class="rounded" style="width: .5rem; height: .5rem; background-color: {{ shift.color }};"></div>
+                                                        <div class="rounded" style="width: .5rem; height: .5rem; background-color: {{ shift.color }}; border-radius: 50%;"></div>
                                                     {% endif %}
                                                 {% endfor %}
                                             </div>
+                                            <div class="d-flex">
+                                                {% for color in all_shift_wish_colors.get((employee.get_key(), day), []) %}
+                                                    <div style="width: .5rem; height: .5rem; background-color: {{ color }}; transform: rotate(45deg);"></div>
+                                                {% endfor %}
+                                            </div>
+
+                                            {% if is_day_off_wished %}
+                                            <div class="d-flex">
+                                                <!-- day-off wish triangle -->
+                                                <div style="
+                                                    width: 0;
+                                                    height: 0;
+                                                    border-left: 0.25rem solid transparent;
+                                                    border-right: 0.25rem solid transparent;
+                                                    border-bottom: 0.5rem solid #b77c02;
+                                                    margin-left: .1rem;">
+                                                </div>
+                                            </div>
+                                            {% endif %}
 
                                             {% for shift in shifts %}
                                                 {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}

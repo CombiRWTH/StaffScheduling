@@ -5,6 +5,7 @@ from shift import Shift
 from .analyze_solution import analyze_solution
 from re import match
 from datetime import datetime
+from collections import defaultdict
 
 
 class App:
@@ -42,19 +43,56 @@ class App:
         days = self._loader.get_days(start_date, end_date)
 
         # fulfilled wishes
-        wish_assigned_keys = set()
+        fulfilled_shift_wish_cells = set()
+        fulfilled_day_off_cells = set()
+        all_shift_wish_colors = defaultdict(list)
+        all_day_off_wish_cells = set()
+
         for employee in self._employees:
-            for wish_day, abbr in employee.get_wish_shifts:
-                for day in days:
-                    if day.day == wish_day:
-                        shift = next(
-                            (s for s in self._shifts if s.abbreviation == abbr), None
+            e_key = employee.get_key()
+
+            for day in days:
+                day_key = f"{day}"
+                cell_key = (e_key, day)
+
+                # --- DAY OFF WISHES ---
+                if day.day in employee.get_wish_days:
+                    all_day_off_wish_cells.add(cell_key)
+
+                    # Now: check if ANY shift is assigned on that day
+                    shift_assigned = any(
+                        solution.variables.get(
+                            f"({e_key}, '{day_key}', {shift.get_id()})"
                         )
-                        if not shift:
-                            continue
-                        key = f"({employee.get_key()}, '{day}', {shift.get_id()})"
+                        == 1
+                        for shift in self._shifts
+                        if not shift.is_exclusive
+                    )
+
+                    if not shift_assigned:
+                        fulfilled_day_off_cells.add(cell_key)
+
+                # --- SHIFT OFF WISHES ---
+                shift_wishes = [
+                    s
+                    for wd, abbr in employee.get_wish_shifts
+                    if wd == day.day
+                    for s in self._shifts
+                    if s.abbreviation == abbr
+                ]
+
+                if shift_wishes:
+                    all_shift_wish_colors[cell_key] += [s.color for s in shift_wishes]
+
+                    # fulfilled only if NONE of the wished shifts are assigned
+                    fulfilled = True
+                    for shift in shift_wishes:
+                        key = f"({e_key}, '{day_key}', {shift.get_id()})"
                         if solution.variables.get(key) == 1:
-                            wish_assigned_keys.add(key)
+                            fulfilled = False
+                            break
+                    if fulfilled and day.day not in employee.get_wish_days:
+                        fulfilled_shift_wish_cells.add(cell_key)
 
         return render_template(
             "index.html",
@@ -65,7 +103,10 @@ class App:
             days=days,
             shifts=self._shifts,
             stats=stats,
-            wish_assigned_keys=wish_assigned_keys,
+            fulfilled_shift_wish_cells=fulfilled_shift_wish_cells,
+            fulfilled_day_off_cells=fulfilled_day_off_cells,
+            all_shift_wish_colors=all_shift_wish_colors,
+            all_day_off_wish_cells=all_day_off_wish_cells,
         )
 
     def run(self, debug: bool = False):

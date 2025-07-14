@@ -79,16 +79,31 @@ def calculate_not_free_after_night_shift(schedule: Dict[datetime.date, int]) -> 
     return violations
 
 
-def calculate_granted_shift_wishes(
+def calculate_total_wish_violations(
     emp: Employee, schedule: Dict[datetime.date, int], shifts: List[Shift]
 ) -> int:
-    count = 0
-    for wish_day, wish_shift_abbr in emp.get_wish_shifts:
-        for day, assigned_shift_id in schedule.items():
-            if day.day == wish_day:
-                if shifts[assigned_shift_id].abbreviation == wish_shift_abbr:
-                    count += 1
-    return count
+    violations = 0
+
+    # --- SHIFT-OFF WISH VIOLATIONS ---
+    shift_wish_map = defaultdict(list)
+    for wish_day, wish_abbr in emp.get_wish_shifts:
+        shift_wish_map[wish_day].append(wish_abbr)
+
+    for day, assigned_shift_id in schedule.items():
+        assigned_abbr = shifts[assigned_shift_id].abbreviation
+        wished_abbrs = shift_wish_map.get(day.day, [])
+
+        if assigned_abbr in wished_abbrs:
+            violations += 1
+
+    # --- DAY-OFF WISH VIOLATIONS ---
+    for wish_day in emp.get_wish_days:
+        # If the person worked *any* shift on that day, it's a violation
+        worked_that_day = any(d.day == wish_day for d in schedule.keys())
+        if worked_that_day:
+            violations += 1
+
+    return violations
 
 
 def analyze_solution(
@@ -105,7 +120,7 @@ def analyze_solution(
     total_overtime_hours = 0.0
     no_free_days_around_weekend = 0
     not_free_after_night_shift = 0
-    granted_wish_shifts = 0
+    total_wish_violations = 0
 
     for key, value in variables.items():
         if value != 1:
@@ -136,7 +151,7 @@ def analyze_solution(
         no_free_days_around_weekend += calculate_no_free_days_around_weekend(schedule)
         not_free_after_night_shift += calculate_not_free_after_night_shift(schedule)
 
-        granted_wish_shifts += calculate_granted_shift_wishes(emp, schedule, shifts)
+        total_wish_violations += calculate_total_wish_violations(emp, schedule, shifts)
 
     return {
         "forward_rotation_violations": forward_rotation_violations,
@@ -146,5 +161,5 @@ def analyze_solution(
         "total_overtime_hours": round(total_overtime_hours, 2),
         "no_free_days_around_weekend": no_free_days_around_weekend,
         "not_free_after_night_shift": not_free_after_night_shift,
-        "granted_wish_shifts": granted_wish_shifts,
+        "violated_wish_total": total_wish_violations,
     }
