@@ -95,3 +95,11 @@ class Employee:
             day.day,
             shift.abbreviation,
         ) in self._forbidden_shifts
+
+    @property
+    def get_wish_days(self) -> list[int]:
+        return self._wish_days
+
+    @property
+    def get_wish_shifts(self) -> list[tuple[int, str]]:
+        return self._wish_shifts

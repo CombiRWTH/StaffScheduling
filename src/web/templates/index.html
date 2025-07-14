@@ -14,7 +14,7 @@
                 <div class="w-100">
                     <label for="solution_file_select" class="form-label">Select Solution</label>
                     <select id="solution_file_select" class="form-select">
-                        {% for solution_file_name in solution_file_names %}#
+                        {% for solution_file_name in solution_file_names %}
                             <option value="{{ solution_file_name }}" {{ 'selected' if solution_file_name == selected_solution_file_name }}>{{ solution_file_name }}</option>
                         {% endfor %}
                     </select>
@@ -26,27 +26,27 @@
             </div>
         </nav>
 
-        <div class="mb-4">
-            <h4 class="text-success">Schedule Statistics</h4>
-            {% set stat_labels = {
-                'forward_rotation_violations': 'Forward Rotation Violations',
-                'consecutive_working_days_gt_5': 'Consecutive Working Days > 5',
-                'no_free_weekend': 'No Free Weekend',
-                'consecutive_night_shifts_gt_3': 'Consecutive Night Shifts > 3',
-                'total_overtime_hours': 'Total Overtime Hours',
-                'no_free_days_around_weekend': 'No Free Days Around Weekend',
-                'not_free_after_night_shift': '48 Hrs Not Free After Night Shift'
-            } %}
-            <ul>
-                {% for key, value in stats.items() %}
-                    <li>
-                        <strong>{{ stat_labels[key] or key }}:</strong>
-                        {{ '%.2f' | format(value) if value is number else value}}
-                    </li>
-                {% endfor %}
-            </ul>
 
-        </div>
+    <div class="mb-4">
+        <h4 class="text-success">Schedule Statistics</h4>
+        {% set stat_labels = {
+        'forward_rotation_violations': 'Forward Rotation Violations',
+        'consecutive_working_days_gt_5': 'Consecutive Working Days > 5',
+        'no_free_weekend': 'No Free Weekend',
+        'consecutive_night_shifts_gt_3': 'Consecutive Night Shifts > 3',
+        'total_overtime_hours': 'Total Overtime Hours',
+        'no_free_days_around_weekend': 'No Free Days Around Weekend',
+        'not_free_after_night_shift': '48 Hrs Not Free After Night Shift',
+        'granted_wish_shifts': 'Wish Shifts not given Free',
+        } %}
+        <ul>
+            {% for key, value in stats.items() %}
+            <li><strong>{{ stat_labels[key] or key }}:</strong> {{ '%.2f' | format(value) if value is number else value
+                }}</li>
+            {% endfor %}
+        </ul>
+
+      </div>
 
         <main class="bg-body-tertiary p-2 rounded shadow-sm">
             <div class="w-100 overflow-scroll vh-100" id="schedule_table" >
@@ -101,6 +101,7 @@
                                             {% for shift in shifts %}
                                                 {% set key = "(" ~ employee.get_key() ~ ", '" ~ day ~ "', " ~ shift.get_id() ~ ")" %}
                                                 {% if variables[key] == 1 %}
+                                                    {% set is_wish = key in wish_assigned_keys %}
                                                     <div class="w-100 h-100 rounded" style="background-color: {{ shift.color }};">
                                                         {{ shift.name }}
                                                     </div>
