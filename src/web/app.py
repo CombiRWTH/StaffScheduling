@@ -94,7 +94,6 @@ class App:
                     if fulfilled and day.day not in employee.get_wish_days:
                         fulfilled_shift_wish_cells.add(cell_key)
 
-
         return render_template(
             "index.html",
             solution_file_names=solution_file_names,

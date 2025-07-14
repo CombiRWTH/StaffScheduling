@@ -122,7 +122,6 @@ def analyze_solution(
     not_free_after_night_shift = 0
     total_wish_violations = 0
 
-
     for key, value in variables.items():
         if value != 1:
             continue
@@ -154,7 +153,6 @@ def analyze_solution(
 
         total_wish_violations += calculate_total_wish_violations(emp, schedule, shifts)
 
-
     return {
         "forward_rotation_violations": forward_rotation_violations,
         "consecutive_working_days_gt_5": consecutive_working_days_gt_5,
@@ -164,5 +162,4 @@ def analyze_solution(
         "no_free_days_around_weekend": no_free_days_around_weekend,
         "not_free_after_night_shift": not_free_after_night_shift,
         "violated_wish_total": total_wish_violations,
-
     }
