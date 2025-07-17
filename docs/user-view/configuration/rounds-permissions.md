@@ -1,5 +1,7 @@
 Currently, our application lacks a user-friendly interface for comfortably managing configurations. Instead, these settings are stored in a JSON file, which requires manual editing to make any changes.
 
+### Configuration of Rounds (Visiten)
+
 In our application, rounds, or Visiten, are a specific type of qualification that ensures certain employees are available to fulfill this important role during designated shifts. The configuration for rounds is managed within the `cases/{case_id}/general_settings.json` file, where special qualifications are defined.
 
 The relevant section in the JSON file appears as follows:
