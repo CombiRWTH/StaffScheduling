@@ -19,6 +19,7 @@ nav:
           - Adapting Weights: user-view/configuration/weights.md
           - Modify Round Permissions: user-view/configuration/rounds-permissions.md
           - Qualification Mapping: user-view/configuration/qualifications.md
+          - Minmal Number of Staff: user-view/configuration/min-staff.md
 
   - Developer View:
       - developer-view/index.md
