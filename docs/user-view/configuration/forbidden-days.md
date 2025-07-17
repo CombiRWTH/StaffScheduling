@@ -1,6 +1,6 @@
 Currently, our application lacks a user-friendly interface for comfortably managing configurations. Instead, these settings are stored in a JSON file, which requires manual editing to make any changes.
 
-#### Forbidden Days
+### Forbidden Days
 
 Forbidden days are designated by TimeOffice as days when an employee is not permitted to work, except during vacation periods. These days are typically marked with a cross in the TimeOffice system.
 
