@@ -4,7 +4,6 @@ import os
 import pandas as pd
 import logging
 from datetime import datetime, time, timedelta
-from pathlib import Path
 from sqlalchemy import text
 
 
@@ -23,14 +22,16 @@ def get_correct_path(filename, planning_unit):
     output_path = os.path.join(target_dir, filename)
     return output_path
 
+
 def load_json_files(start_date, end_date, planning_unit):
     """Load the needed Employee file and the corresponding solution file,
     which includes the shifts references to employees."""
     sol_folder = "found_solutions"
-    base_folder = os.getenv("BASE_OUTPUT_FOLDER")
 
     solution_dir = os.path.join("./", sol_folder)
-    solution_file = os.path.join(solution_dir, f"solution_{planning_unit}_{start_date}-{end_date}.json")
+    solution_file = os.path.join(
+        solution_dir, f"solution_{planning_unit}_{start_date}-{end_date}.json"
+    )
 
     employee_file = get_correct_path("employees.json", planning_unit)
 
@@ -56,6 +57,7 @@ def load_planned_shifts(planning_unit) -> dict[int, set[int]]:
         days = {d for d, _ in emp.get("planned_shifts", [])}
         prim2days[int(emp["key"])] = days
     return prim2days
+
 
 def load_person_to_job(engine) -> dict[int, int]:
     """Reads TPersonal (Prim, RefBerufe) and returns {Prim: RefBerufe}."""
