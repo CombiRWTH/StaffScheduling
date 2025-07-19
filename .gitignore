@@ -8,3 +8,4 @@ algorihtm/__pycache__
 .idea
 /.vscode
 site
+.env

@@ -1,10 +1,6 @@
-from dotenv import load_dotenv
 from datetime import date
-from connection_setup import get_db_engine
-import export_data
-
-# Load the .env-file for login purposes
-load_dotenv()
+from .connection_setup import get_db_engine
+from . import export_data
 
 
 def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11, 30)):
@@ -13,15 +9,19 @@ def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11,
     base_data = export_data.export_planning_data(
         engine, planning_unit, from_date, till_date
     )
-    export_data.export_shift_data_to_json(engine)
+    export_data.export_shift_data_to_json(engine, planning_unit)
 
-    export_data.export_personal_data_to_json(engine, base_data["plan_id"])
-    export_data.export_target_working_minutes_to_json(engine, base_data["year_month"])
+    export_data.export_personal_data_to_json(
+        engine, planning_unit, base_data["plan_id"]
+    )
+    export_data.export_target_working_minutes_to_json(
+        engine, planning_unit, base_data["year_month"]
+    )
     export_data.export_worked_sundays_to_json(
-        engine, base_data["minus_a_year"], base_data["till_date"]
+        engine, planning_unit, base_data["minus_a_year"], base_data["till_date"]
     )
     export_data.export_free_shift_and_vacation_days_json(
-        engine, base_data["plan_id"], base_data["planning_unit"]
+        engine, planning_unit, base_data["plan_id"]
     )
 
 
