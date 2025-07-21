@@ -70,9 +70,10 @@ Therefore, the total working time must fall within the range of all possible shi
 # --8<-- [end:target-working-time]
 
 ### Vacation days and free shifts [^1]
-
+# --8<-- [start:vacation-days-and-free-shifts]
 Vacation days must remain free, and the day before a vacation day no night shift is allowed.
 There are also forbidden days (shifts), which are simply days (shifts) on which a person is not allowed to work, e.g. "Miss Jane Doe is not allowed to work night shifts" or "John Q. Citizen" does not work on Fridays".
+# --8<-- [end:vacation-days-and-free-shifts]
 
 
 # Objectives
