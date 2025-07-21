@@ -62,12 +62,12 @@ The required number of staff can be changed in `cases/{caseID}/minimal_number_of
 
 
 ### Target working time per month [^1]
-
+# --8<-- [start:target-working-time]
 Each employee has an individual monthly work target.
 This target is considered a hard constraint because it must be met within a certain range.
 A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the [objective](/concepts/objectives/#minimize-overtime-and-undertime) function to ensure minimal overtime/undertime.
 Therefore, the total working time must fall within the range of all possible shift combinations and the target working time range.
-
+# --8<-- [end:target-working-time]
 
 ### Vacation days and free shifts [^1]
 
