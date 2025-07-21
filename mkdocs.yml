@@ -1,4 +1,8 @@
 site_name: Staff Scheduling
+site_url: https://combirwth.github.io/StaffScheduling/
+repo_url: https://github.com/CombiRWTH/StaffScheduling/
+repo_name: CombiRWTH/StaffScheduling
+
 
 nav:
   - Introduction: index.md
