@@ -26,3 +26,5 @@ Let’s explore the available configurations!
 - **Vacation Days**: Manually configure vacation days and free shifts, as they are normally set in TimeOffice and imported automatically [here](/user-view/configuration/vacation-days).
 
 - **Employees**: Modify employee information that is typically managed in TimeOffice [here](/user-view/configuration/staff).
+
+- **Planned Shifts:** Preplan fixed shifts, e.g. special shifts (Z60). Normally done in TimeOffice, but in light-version it can be changed [here](/user-view/configuration/planned-shifts)
