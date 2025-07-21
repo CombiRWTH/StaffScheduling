@@ -69,10 +69,19 @@ A maximum deviation of one day shift is allowed (±7.67 hours), but this is mini
 Therefore, the total working time must fall within the range of all possible shift combinations and the target working time range.
 # --8<-- [end:target-working-time]
 
+
 ### Vacation days and free shifts [^1]
 # --8<-- [start:vacation-days-and-free-shifts]
 Vacation days must remain free, and the day before a vacation day no night shift is allowed. This vacation days are automatically read from the database / TimeOffice.
 # --8<-- [end:vacation-days-and-free-shifts]
+
+
+### Hierarchy of Intermediate Shifts
+# --8<-- [start:hierarchy-of-intermediate-shifts]
+Intermediate shifts are assigned once the minimum staffing requirement is met and sufficient personnel resources are available. The assignment of these shifts follows a specific pattern: we prioritize one shift per day for each weekday, followed by weekend shifts. After that, we aim to assign two shifts on weekdays, and then again on weekends.
+
+In cases where two or more intermediate shifts are scheduled in a single day, the station management will convert them into early and late shifts, as these options tend to be more popular among staff. However, it’s important to note that this conversion process is currently manual and not automated by our application.
+# --8<-- [end:hierarchy-of-intermediate-shifts]
 
 
 # Objectives
