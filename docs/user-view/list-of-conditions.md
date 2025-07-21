@@ -27,10 +27,6 @@ Therefore, if an employee works the night shift today and does not work the nigh
 Each employee is permitted to work only one shift per day. It is important to note that a night shift counts as part of the day on which it begins.
 # --8<-- [end:user-max-one-shift-per-day]
 
-### Minimum rest time between shifts [^3]
- @todo !!! STILL MISSING !!! We are not quite sure yet, if we use a flexible rest
- time between shifts or if we use 9 hours or 10...
-
 ### Minimum number of staff per shift [^2]
 Each shift has a minimum required number of staff.
 This is a hard constraint that must be met.
