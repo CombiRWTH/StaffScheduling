@@ -16,9 +16,11 @@ We differentiate between two types of conditions:
 ## All Constraints
 
 ### Free day after night shift phase [^4]
+# --8<-- [start:user-free-day-after-night-shift-phase]
 According to recommendations for the healthy organization of night and shift work, workers should have at least 24 hours of free time after a night shift.
 This ensures that workers have sufficient rest after a night shift.
 Therefore, if an employee works the night shift today and does not work the night shift tomorrow, they must take the day off.
+# --8<-- [end:user-free-day-after-night-shift-phase]
 
 ### Max one shift per day
 Each employee is permitted to work only one shift per day. It is important to note that a night shift counts as part of the day on which it begins.
