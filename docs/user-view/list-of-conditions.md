@@ -28,6 +28,7 @@ Each employee is permitted to work only one shift per day. It is important to no
 # --8<-- [end:user-max-one-shift-per-day]
 
 ### Minimum number of staff per shift [^2]
+# --8<-- [start:min-number-of-staff-per-shift]
 Each shift has a minimum required number of staff.
 This is a hard constraint that must be met.
 The goal is to ensure that the required number of qualified staff members are present for each shift.
@@ -57,6 +58,7 @@ The required number of staff can be changed in `cases/{caseID}/minimal_number_of
 | Early | 1  | 1  | 1  | 1  | 1  | 1  | 1  |
 | Late  | 1  | 1  | 1  | 1  | 1  | 1  | 1  |
 | Night | 0  | 0  | 0  | 0  | 0  | 0  | 0  |
+# --8<-- [end:min-number-of-staff-per-shift]
 
 
 ### Target working time per month [^1]
