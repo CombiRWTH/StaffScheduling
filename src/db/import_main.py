@@ -1,13 +1,9 @@
-from dotenv import load_dotenv
-from connection_setup import get_db_engine
-from datetime import date
-import import_solution
-import export_data
 import logging
 import json
-
-# Load the .env-file for login purposes
-load_dotenv()
+from datetime import date
+from .connection_setup import get_db_engine
+from . import import_solution
+from . import export_data
 
 
 def main(
@@ -31,7 +27,7 @@ def main(
 
     # Load mapping of employee to their job and their already planned shifts
     prim_to_refberuf = import_solution.load_person_to_job(engine)
-    planned_map = import_solution.load_planned_shifts()
+    planned_map = import_solution.load_planned_shifts(planning_unit)
 
     PE_ID = planning_unit
     PLAN_ID = base_data["plan_id"]

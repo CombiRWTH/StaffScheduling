@@ -4,6 +4,7 @@ from cp import (
     FreeDayAfterNightShiftPhaseConstraint,
     MinRestTimeConstraint,
     MinStaffingConstraint,
+    RoundsInEarlyShiftConstraint,
     MaxOneShiftPerDayConstraint,
     TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint,
@@ -18,6 +19,7 @@ from cp import (
     HierarchyOfIntermediateShiftsConstraint,
     PlannedShiftsConstraint,
     FreeDaysAfterNightShiftPhaseObjective,
+    MaximizeEmployeeWishesObjective,
 )
 from datetime import date
 import logging
@@ -55,6 +57,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts),
         MinRestTimeConstraint(employees, days, shifts),
         MinStaffingConstraint(min_staffing, employees, days, shifts),
+        RoundsInEarlyShiftConstraint(employees, days, shifts),
         MaxOneShiftPerDayConstraint(employees, days, shifts),
         TargetWorkingTimeConstraint(employees, days, shifts),
         VacationDaysAndShiftsConstraint(employees, days, shifts),
@@ -68,7 +71,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         MinimizeOvertimeObjective(4.0, employees, days, shifts),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
-        FreeDaysNearWeekendObjective(10.0, employees, days),
+        MaximizeEmployeeWishesObjective(3.0, employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
     ]
 
