@@ -1,12 +1,10 @@
-# Google's OR-Tools and SAT-Solver
-
-## Introduction
+# Introduction
 
 When faced with difficult scheduling, routing, or optimization problems, traditional programming methods often don't work well. These problems are known as combinatorial optimization problems. They can have millions or billions of possible solutions. This means that brute-force approaches are not a good way to solve them.
 
-## What is SAT-Solving?
+# What is SAT-Solving?
 
-### The Boolean Satisfiability Problem
+## The Boolean Satisfiability Problem
 
 SAT (Boolean Satisfiability) is one of the most fundamental problems in computer science. At its core, SAT-solving asks a deceptively simple question: **Given a Boolean formula, is there an assignment of true/false values to its variables that makes the entire formula true?**
 
@@ -16,8 +14,8 @@ For example, consider this Boolean formula:
 ```
 
 A SAT-solver would try to find values for A, B, and C that make this entire expression true. In this case, A=false, B=true, C=false would satisfy the formula.
-## How SAT-Solving Works
-### The Search Process
+# How SAT-Solving Works
+## The Search Process
 
 ```
 1. Make a decision (assign a variable)
@@ -30,7 +28,7 @@ A SAT-solver would try to find values for A, B, and C that make this entire expr
 5. Repeat until solution found or problem proven unsatisfiable
 ```
 
-### Example: Simple Scheduling Problem
+## Example: Simple Scheduling Problem
 
 Consider scheduling 3 employees (A, B, C) to 2 shifts (Morning, Evening) where:
 - Each shift needs exactly 1 person
@@ -56,9 +54,9 @@ C_Morning + C_Evening ≤ 1
 
 A SAT-solver would systematically explore assignments until finding a valid solution.
 
-## Google's OR-Tools
+# Google's OR-Tools
 
-#### Basic Variables and Constraints
+## Basic Variables and Constraints
 
 ```python
 from ortools.sat.python import cp_model
@@ -80,7 +78,7 @@ model.add(x < 5).only_enforce_if(z.not())
 model.maximize(x + 2*y)
 ```
 
-#### Advanced Constraints
+## Advanced Constraints
 
 CP-SAT provides specialized constraints for common patterns:
 
@@ -99,7 +97,7 @@ model.add_allowed_assignments([x, y, z],
 model.add_circuit(nexts)
 ```
 
-### Solving Process
+## Solving Process
 
 ```python
 # Create solver
