@@ -7,10 +7,10 @@ from . import export_data
 
 
 def main(
-    planning_unit=77, # Default planning unit ID
-    from_date=date(2024, 11, 1), # Planning period start date
-    till_date=date(2024, 11, 30), # Planning period end date
-    cli_input: str | None = None, # Optional user input for action type
+    planning_unit=77,  # Default planning unit ID
+    from_date=date(2024, 11, 1),  # Planning period start date
+    till_date=date(2024, 11, 30),  # Planning period end date
+    cli_input: str | None = None,  # Optional user input for action type
 ):
     """Sets up a basic connection to the TimeOffice database and imports the solution found by the algorithm."""
     engine = get_db_engine()

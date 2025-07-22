@@ -62,7 +62,7 @@ def load_planned_shifts(planning_unit) -> dict[int, set[int]]:
 
 def load_person_to_job(engine) -> dict[int, int]:
     """Reads TPersonal (Prim, RefBerufe) and returns {Prim: RefBerufe}."""
-    sql = text("SELECT Prim, RefBerufe FROM TPersonal") # SQL query to get the mapping
+    sql = text("SELECT Prim, RefBerufe FROM TPersonal")  # SQL query to get the mapping
     with engine.connect() as connection:
         result = connection.execute(sql)
         return {row.Prim: row.RefBerufe for row in result}
@@ -83,7 +83,7 @@ def load_shift_segments(
 
     with engine.connect() as conn:
         for shift_id, ref_dienst in shift_id_map.items():
-            if shift_id > 4: 
+            if shift_id > 4:
                 continue
 
             rows = conn.execute(sql, {"ref": ref_dienst}).fetchall()
@@ -117,7 +117,7 @@ def build_dataframe(
 ):
     """Build the solution into one DataFrame (one row per segment)."""
 
-    prim_whitelist = {int(e["key"]) for e in emp_data} # Only allow known employees
+    prim_whitelist = {int(e["key"]) for e in emp_data}  # Only allow known employees
 
     records = []
     for key, val in data["variables"].items():

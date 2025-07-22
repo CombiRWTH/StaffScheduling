@@ -1,231 +1,231 @@
 {
   "employees": [
     {
+      "firstname": "Sandra",
       "key": 459,
       "name": "Shoemake",
-      "firstname": "Sandra",
       "type": "Krankenschwester/-pfleger (81302-008)"
     },
     {
+      "firstname": "Adriane",
       "key": 790,
       "name": "Mccomas",
-      "firstname": "Adriane",
       "type": "Stationshilfe (81301-018)"
     },
     {
+      "firstname": "Janett",
       "key": 791,
       "name": "Branz",
-      "firstname": "Janett",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
+      "firstname": "Nele",
       "key": 822,
       "name": "Sewell",
-      "firstname": "Nele",
       "type": "Pflegeassistent/in (81302-014)"
     },
     {
-      "key": 839,
-      "name": "Säuffert",
       "firstname": "Liselotte",
-      "type": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
+      "key": 839,
+      "name": "S\u00e4uffert",
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
     },
     {
+      "firstname": "Silvia",
       "key": 914,
       "name": "Harkins",
-      "firstname": "Silvia",
-      "type": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
     },
     {
+      "firstname": "Ingbert",
       "key": 917,
       "name": "Catoe",
-      "firstname": "Ingbert",
       "type": "Krankenschwester/-pfleger (81302-008)"
     },
     {
+      "firstname": "Jenny",
       "key": 921,
       "name": "Keese",
-      "firstname": "Jenny",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
+      "firstname": "B\u00e4rbl",
       "key": 924,
       "name": "Merriweather",
-      "firstname": "Bärbl",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
+      "firstname": "Lina",
       "key": 925,
       "name": "Farniok",
-      "firstname": "Lina",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
+      "firstname": "Margaritt",
       "key": 927,
       "name": "Mittrach",
-      "firstname": "Margaritt",
       "type": "Stationshilfe (81301-018)"
     },
     {
+      "firstname": "Daniele",
       "key": 928,
       "name": "Wunderlich",
-      "firstname": "Daniele",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
+      "firstname": "Constance",
       "key": 1230,
       "name": "Palacio",
-      "firstname": "Constance",
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
+      "firstname": "Kersten",
       "key": 2932,
       "name": "Devers",
-      "firstname": "Kersten",
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
+      "firstname": "Renilde",
       "key": 2963,
       "name": "Hoots",
-      "firstname": "Renilde",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
+      "firstname": "Elgine",
       "key": 3566,
       "name": "Seligman",
-      "firstname": "Elgine",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
+      "firstname": "Eike",
       "key": 3868,
       "name": "Vanfleet",
-      "firstname": "Eike",
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
+      "firstname": "Hannah",
       "key": 4566,
       "name": "Woodcock",
-      "firstname": "Hannah",
       "type": "A-Pflegeassistent/in (A-81302-014)"
     },
     {
+      "firstname": "Henni",
       "key": 5367,
       "name": "Donis",
-      "firstname": "Henni",
-      "type": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
     },
     {
+      "firstname": "Augustin",
       "key": 5920,
       "name": "Carreras",
-      "firstname": "Augustin",
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
+      "firstname": "Heinz",
       "key": 6475,
       "name": "Binford",
-      "firstname": "Heinz",
-      "type": "Helfer/in - stationäre Krankenpflege (81301-002)"
+      "type": "Helfer/in - station\u00e4re Krankenpflege (81301-002)"
     },
     {
+      "firstname": "Roseliese",
       "key": 6507,
       "name": "Rashid",
-      "firstname": "Roseliese",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
+      "firstname": "Christfri",
       "key": 6677,
       "name": "Fullerton",
-      "firstname": "Christfri",
-      "type": "Krankenpflegehelfer/in (1 jährige A.) (81301-006)"
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
     },
     {
+      "firstname": "Saskia",
       "key": 6681,
       "name": "Labelle",
-      "firstname": "Saskia",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
+      "firstname": "Lioba",
       "key": 6715,
       "name": "Burris",
-      "firstname": "Lioba",
       "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
+      "firstname": "Trude",
       "key": 6836,
       "name": "Valentino",
-      "firstname": "Trude",
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
+      "firstname": "Annelene",
       "key": 6928,
       "name": "Izzo",
-      "firstname": "Annelene",
       "type": "Medizinische/r Fachangestellte/r (81102-004)"
     },
     {
+      "firstname": "Marcus",
       "key": 7496,
       "name": "Demarco",
-      "firstname": "Marcus",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
+      "firstname": "Ludger",
       "key": 7603,
       "name": "Roberson",
-      "firstname": "Ludger",
       "type": "Altenpfleger/in (82102-002)"
     },
     {
+      "firstname": "Sieghardt",
       "key": 7741,
       "name": "Tharp",
-      "firstname": "Sieghardt",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
+      "firstname": "Kilian",
       "key": 7752,
       "name": "Rodriques",
-      "firstname": "Kilian",
       "type": "Bundesfreiwilligendienst (BFD)"
     },
     {
+      "firstname": "Julia",
       "key": 7770,
       "name": "Yeh",
-      "firstname": "Julia",
       "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
+      "firstname": "Burkhild",
       "key": 7796,
       "name": "Hertzler",
-      "firstname": "Burkhild",
       "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
+      "firstname": "Karena",
       "key": 7835,
       "name": "Driggers",
-      "firstname": "Karena",
       "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
+      "firstname": "Gertraute",
       "key": 7848,
       "name": "Winters",
-      "firstname": "Gertraute",
       "type": "A-Pflegeassistent/in (A-81302-014)"
     },
     {
+      "firstname": "Janett",
       "key": 7877,
       "name": "Staggs",
-      "firstname": "Janett",
       "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     {
+      "firstname": "Irma",
       "key": 7919,
       "name": "Weathers",
-      "firstname": "Irma",
       "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
+      "firstname": "Loremarie",
       "key": 7990,
       "name": "Milburn",
-      "firstname": "Loremarie",
       "type": "A-Pflegeassistent/in (A-81302-014)"
     }
   ]
