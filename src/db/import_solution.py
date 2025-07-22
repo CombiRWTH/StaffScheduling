@@ -28,6 +28,7 @@ def load_json_files(start_date, end_date, planning_unit):
     which includes the shifts references to employees."""
     sol_folder = "found_solutions"
 
+    # Build full path to the generated solution file for the selected planning unit and date range
     solution_dir = os.path.join("./", sol_folder)
     solution_file = os.path.join(
         solution_dir, f"solution_{planning_unit}_{start_date}-{end_date}.json"
@@ -61,7 +62,7 @@ def load_planned_shifts(planning_unit) -> dict[int, set[int]]:
 
 def load_person_to_job(engine) -> dict[int, int]:
     """Reads TPersonal (Prim, RefBerufe) and returns {Prim: RefBerufe}."""
-    sql = text("SELECT Prim, RefBerufe FROM TPersonal")
+    sql = text("SELECT Prim, RefBerufe FROM TPersonal")  # SQL query to get the mapping
     with engine.connect() as connection:
         result = connection.execute(sql)
         return {row.Prim: row.RefBerufe for row in result}
@@ -116,7 +117,7 @@ def build_dataframe(
 ):
     """Build the solution into one DataFrame (one row per segment)."""
 
-    prim_whitelist = {int(e["key"]) for e in emp_data}
+    prim_whitelist = {int(e["key"]) for e in emp_data}  # Only allow known employees
 
     records = []
     for key, val in data["variables"].items():
