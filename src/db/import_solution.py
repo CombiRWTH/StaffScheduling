@@ -192,7 +192,7 @@ def build_dataframe(
 
 
 def insert_dataframe_to_db(df, engine):
-    """Insert the correctly formated solution into the database."""
+    """Insert the correctly formatted solution into the database."""
 
     insert_sql = text("""
         INSERT INTO TPlanPersonalKommtGeht
