@@ -14,7 +14,7 @@ src/
 └── plot.py                  # Visualization utilities
 ```
 
-Additianal there are the follwing helper classes:
+Additianal there are the following helper classes:
 ```
 src/
 ├── employee.py
