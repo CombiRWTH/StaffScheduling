@@ -1,0 +1,47 @@
+[
+  {
+    "shift_id": "1406",
+    "start_time": "2000-01-01T08:00:00",
+    "end_time": "2000-01-01T14:00:00",
+    "working_minutes": 360.0,
+    "break_duration": 0.0,
+    "shift_duration": 360.0,
+    "shift_name": "Z60"
+  },
+  {
+    "shift_id": "2906",
+    "start_time": "2000-01-01T08:00:00",
+    "end_time": "2000-01-01T16:10:00",
+    "working_minutes": 460.0,
+    "break_duration": 30.0,
+    "shift_duration": 490.0,
+    "shift_name": "T75_"
+  },
+  {
+    "shift_id": "2939",
+    "start_time": "2000-01-01T06:00:00",
+    "end_time": "2000-01-01T14:10:00",
+    "working_minutes": 460.0,
+    "break_duration": 30.0,
+    "shift_duration": 490.0,
+    "shift_name": "F2_"
+  },
+  {
+    "shift_id": "2947",
+    "start_time": "2000-01-01T12:50:00",
+    "end_time": "2000-01-01T21:00:00",
+    "working_minutes": 460.0,
+    "break_duration": 30.0,
+    "shift_duration": 490.0,
+    "shift_name": "S2_"
+  },
+  {
+    "shift_id": "2953",
+    "start_time": "2000-01-01T20:20:00",
+    "end_time": "2000-01-02T06:30:00",
+    "working_minutes": 565.0,
+    "break_duration": 45.0,
+    "shift_duration": 610.0,
+    "shift_name": "N2_"
+  }
+]
