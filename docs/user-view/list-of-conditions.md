@@ -98,6 +98,13 @@ Employees need to have a proper qualification to conduct a round.
 Therefore, at least one qualified employee needs to be assigned to an early shift on workdays.
 # --8<-- [end:rounds]
 
+### Minimum Rest Time
+# --8<-- [start:min-rest-time]
+According to Occupational Health and Safety Law (Arbeitsschutzgesetz) the minimum rest time for normal employees need to be at least 11 hours. In hospitals there can be exception to this rule.
+We did not implement a solution that can vary the minimum rest time, but we just do not allow an early shift following a late shift, because then the rest time would only be 9 hours.
+# --8<-- [end:min-rest-time]
+
+
 
 # Objectives
 All the objectives are combined (added) to a total objective function
