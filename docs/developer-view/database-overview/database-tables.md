@@ -2,11 +2,11 @@
 To get a better overlook of the referenced tables within the TIMEOFFICE database, each one is listed with a general description of its usage and all defined entries. A complete visual of the relations is shown in the picture below.
 
 
-## Visualization of table relations:
+## Visualization of table relations
 ![Database tables](database-visual-overview.png)
 
 
-## TPlan:
+## TPlan
 TPlan describes the set of working schedule managed in TIMEOFFICE. A working schedule is always assigned to a planning unit (Planungseinheit) and a time period. The time period is determined by the planning interval of the underlying planning unit.
 
 | Attribute    | Description | Data type |
@@ -19,7 +19,7 @@ TPlan describes the set of working schedule managed in TIMEOFFICE. A working sch
 | RefPlanungsIntervalle    | The planning interval of the plan. Reference to STPlanungsIntervalle (de facto only relevant: 1 = monthly planning, 3 = annual planning) See also TPlanungseinheiten.RefPlanungsintervalle. Special: A planning unit can (and often will) have both plans with status 1 AND 3. Planning interval 3 is then the annual plan, in which long-term absence planning usually takes place. The actual work schedule then have interval 1.    | int |
 
 
-## TPlanPersonal:
+## TPlanPersonal
 TPlanPersonal describes the assignment of an employee to a specific work schedule.
 
 | Attribute    | Description | Data type |
@@ -33,7 +33,7 @@ TPlanPersonal describes the assignment of an employee to a specific work schedul
 | IstVonErsatz  | Indicator as to whether it is a substitute assignment    | bit |
 
 
-## TPersonal:
+## TPersonal
 TPersonal describes the master data of an individual employee.
 #### This table contains many fields that are now obsolete.
 
@@ -52,7 +52,7 @@ TPersonal describes the master data of an individual employee.
 | RefEinrichtungen  | The institution to which this employee is assigned.    | int |
 
 
-## TPlanPersonalKommtGeht:
+## TPlanPersonalKommtGeht
 TPlanPersonalKommtGeht describes the individual assignments of an employee on a work schedule. These are available in different statuses, so that it is possible in principle to make comparisons, e.g. between target and actual planning.
 
 | Attribute    | Description | Data type |
@@ -69,7 +69,7 @@ TPlanPersonalKommtGeht describes the individual assignments of an employee on a 
 | BereitBis  | If it is an on-call duty, the hours worked can be documented within a planned on-call duty. In these cases, ReadyFrom / ReadyTo is filled    | datetime |
 
 
-## TPersonalKontenJeTag:
+## TPersonalKontenJeTag
 TPersonalKontenJeTag describes the different daily account types per employee. Holiday days, night shifts and other important data can be taken from here via the external key RefPersonal (for example, the holiday as key number 85 or night shift as key 20 in the RefAccounts field).
 
 | Attribute    | Description | Data type |
@@ -85,7 +85,7 @@ TPersonalKontenJeTag describes the different daily account types per employee. H
 | WertSoll  | The calculated VBA value of the account when the plan was < status 40    | float |
 
 
-## TPersonalKontenJeWoche:
+## TPersonalKontenJeWoche
 TPersonalKontenJeWoche describes the different weekly account types per employee. The count of working hours can be accessed with key 19. The count of total services can be accessed with key 67. The important value for each week is then written in column Wert2.
 
 | Attribute    | Description | Data type |
@@ -114,7 +114,7 @@ TPersonalKontenJeWoche describes the different weekly account types per employee
 | RefStationOnSave  | Reference to the state    | int |
 
 
-## TPersonalKontenJeMonat:
+## TPersonalKontenJeMonat
 TPersonalKontenJeWoche describes the different monthly account types per employee. The count of target working hours can be accessed with key 1 and the important value for each month is then written in column Wert2.
 
 | Attribute    | Description | Data type |
@@ -134,7 +134,7 @@ TPersonalKontenJeWoche describes the different monthly account types per employe
 | RefStationOnSave  | Reference to the state    | int |
 
 
-## TDienste:
+## TDienste
 TDienste describes the shifts that can be entered in the work schedule. In combination with TDiensteSollzeiten, this results in the working times scheduled for an employee.
 
 | Attribute    | Description | Data type |
@@ -146,7 +146,7 @@ TDienste describes the shifts that can be entered in the work schedule. In combi
 | RefDiensteStatistikGruppen  | Group in which a service is classified.  Reference to TDiensteStatistikGruppen.Prim. Highly relevant for calculation. Classics are 1 = early shift, 2 = late shift, 3 = night shift    | int |
 
 
-## TDiensteSollzeiten:
+## TDiensteSollzeiten
 TDiensteSollzeiten describes the given target times of various services. Different types become important within the internship, which can be selected using the connection to TDienste via RefDienste: Late shift (2947), early shift (2939), night shift (2953) and intermediate shift (2906). The times and breaks can be calculated via Kommt and Geht.
 
 | Attribute    | Description | Data type |
@@ -162,7 +162,7 @@ TDiensteSollzeiten describes the given target times of various services. Differe
 | Wert  | Fixed rate for standby duties    | float |
 
 
-## TPlanungseinheiten:
+## TPlanungseinheiten
 TPlanungseinheiten describe the number of possible locations of a facility. It can be imagined as a ward in a hospital where work is carried out directly.
 
 | Attribute    | Description | Datatype |
@@ -177,7 +177,7 @@ TPlanungseinheiten describe the number of possible locations of a facility. It c
 | AblaufDat  | Expiration date of the planning unit; set if this planning unit ceases operations at some point, NULL otherwise.    | datetime |
 
 
-## TPlanungseinheitenPersonal:
+## TPlanungseinheitenPersonal
 TPlanungseinheitenPersonal describes the assignment of employees to planning units, in the sense of: Which employee should be assigned where and when.
 
 | Attribute    | Description | Data type |
@@ -191,7 +191,7 @@ TPlanungseinheitenPersonal describes the assignment of employees to planning uni
 | IstHeimat  | Indicator whether the assignment is to the employee's "home station". Can be understood as the "main" planning unit where the employee is also accounted for. There can only be ONE home station assignment at any given time.    | bit |
 
 
-## TKataloge:
+## TKataloge
 
 | Attribute    | Description | Data type |
 | -------- | ------- | ------- |
@@ -201,7 +201,7 @@ TPlanungseinheitenPersonal describes the assignment of employees to planning uni
 | RefEinrichtungen  | The facility to which this catalog entry belongs.  Refers to TEinrichtungen.    | int |
 
 
-## TEinrichtungen:
+## TEinrichtungen
 TEinrichtungen describes the different facilities managed in a database. These facilities exist in order to be able to logically isolate data from one another. This is done in the relevant tables via a foreign key on TEinrichtungen.Prim; the corresponding attribute is usually named RefEinrichtung. If the corresponding data is then to be read for a facility, the corresponding tables must always be read with a constraint on RefEinrichtung = [TEinrichtung.Prim].
 
 #### There are only two facilities in the St. Marien-Krankenhaus database; facility 1 and the global facility 999. Therefore, a specific consideration of the facility structure is probably unnecessary.
