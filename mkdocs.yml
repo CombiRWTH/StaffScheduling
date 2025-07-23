@@ -51,6 +51,7 @@ nav:
               - Minimize overtime and undertime: developer-view/conditions/minimize-overtime-and-undertime.md
               - Not too many consecutive working days: developer-view/conditions/not-too-many-consecutive-working-days.md
               - Rotate shifts forwards: developer-view/conditions/Rotate-shifts-forwards.md
+              - Free days after night shift phase: developer-view/conditions/free-days-after-night-shift-phase-objective.md
       - Shifts: developer-view/shifts.md
       - Variables: developer-view/variables.md
       - Database: developer-view/database.md

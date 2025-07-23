@@ -99,6 +99,18 @@ objectives = [
 
 ## All Objectives
 
+### Free days after night shift phase
+# --8<-- [start:free-days-after-night-shift-phase]
+
+!!! note Likelihood of Confusion
+
+    Different then the constraint [Free day after Night Shift Phase](#free-day-after-night-shift-phase-4)
+
+There is also a constraint (soft) called Free day after night shift phase, which ensures that there are at least 24h free after a night shift phase.
+This objective promotes anthoher 24h free after night shift phase (in total 48h, meaning two days).
+# --8<-- [end:free-days-after-night-shift-phase]
+
+
 ### Free days near weekend
 A schedule is found that increases the number of free days near weekends for employees.
 
