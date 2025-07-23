@@ -119,12 +119,14 @@ The aim is to minimize the length of night shift phases, defined as consecutive 
 # --8<-- [end:min-num-of-cons-night-shifts]
 
 ### Minimize hidden employees
+# --8<-- [start:minimize-hidden-employees]
 Hidden employees are employees that do not exist. Shifts should only be assigned to
 them if otherwise a valid solution cannot be found. This for example happens, if there
 is a shortage on skilled employees.
 Hidden employees do not have the same rules as real employees, they can work multiple
 shifts per day. They should indicate how many employees / how many shifts are missing
 to get a valid schedule.
+# --8<-- [end:minimize-hidden-employees]
 
 ### Minimize overtime and undertime
 The goal is to minimize both overtime and undertime to ensure a fair and equitable distribution of work among employees. Hard limits are established, as outlined in the section on [Target Working Time per Month](#target-working-time-per-month).
