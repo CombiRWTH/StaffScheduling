@@ -84,6 +84,13 @@ In cases where two or more intermediate shifts are scheduled in a single day, th
 # --8<-- [end:hierarchy-of-intermediate-shifts]
 
 
+### Planned Shifts
+# --8<-- [start:planned-shifts]
+Planned shifts are shifts that are already assigned in TimeOffice. All planned shifts are hard constraints, meaning they are automatically assigned and there will be not solution without those.
+An example would be the special shift (Z60), which can be assigned to an employee each Thursday in TimeOffice and then also be assigned in our application.
+# --8<-- [end:planned-shifts]
+
+
 # Objectives
 All the objectives are combined (added) to a total objective function
 that the minimum will be approximated from. Each objective has a weight by which one
