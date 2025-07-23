@@ -35,7 +35,7 @@ TPlanPersonal describes the assignment of an employee to a specific work schedul
 
 ## TPersonal
 TPersonal describes the master data of an individual employee.
-#### This table contains many fields that are now obsolete.
+ #### This table contains many fields that are now obsolete.
 
 | Attribute    | Description | Data type |
 | -------- | ------- | ------- |
@@ -204,7 +204,7 @@ TPlanungseinheitenPersonal describes the assignment of employees to planning uni
 ## TEinrichtungen
 TEinrichtungen describes the different facilities managed in a database. These facilities exist in order to be able to logically isolate data from one another. This is done in the relevant tables via a foreign key on TEinrichtungen.Prim; the corresponding attribute is usually named RefEinrichtung. If the corresponding data is then to be read for a facility, the corresponding tables must always be read with a constraint on RefEinrichtung = [TEinrichtung.Prim].
 
-#### There are only two facilities in the St. Marien-Krankenhaus database; facility 1 and the global facility 999. Therefore, a specific consideration of the facility structure is probably unnecessary.
+ #### There are only two facilities in the St. Marien-Krankenhaus database; facility 1 and the global facility 999. Therefore, a specific consideration of the facility structure is probably unnecessary.
 
 | Attribute    | Description | Data type |
 | -------- | ------- | ------- |
