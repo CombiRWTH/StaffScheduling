@@ -40,6 +40,7 @@ nav:
               - Vacation days and free shifts: developer-view/conditions/vacation-days-and-free-shifts.md
               - Hierarchy of intermediate shifts: developer-view/conditions/hierarchy-of-intermediate-shifts.md
               - Planned shifts: developer-view/conditions/planned-shifts.md
+              - Rounds (Visiten): developer-view/conditions/rounds.md
           - Objectives:
               - Total Objective Function: developer-view/conditions/total-objective-function.md
               - Free days near weekend: developer-view/conditions/free-days-near-weekend.md

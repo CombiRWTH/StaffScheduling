@@ -91,6 +91,14 @@ An example would be the special shift (Z60), which can be assigned to an employe
 # --8<-- [end:planned-shifts]
 
 
+### Rounds (Visiten)
+# --8<-- [start:rounds]
+In the early shift, at least one employee must conduct a round.
+Employees need to have a proper qualification to conduct a round.
+Therefore, at least one qualified employee needs to be assigned to an early shift on workdays.
+# --8<-- [end:rounds]
+
+
 # Objectives
 All the objectives are combined (added) to a total objective function
 that the minimum will be approximated from. Each objective has a weight by which one
