@@ -207,3 +207,5 @@ TEinrichtungen describes the different facilities managed in a database. These f
 | AktivJN  | Boolflag, which indicates whether the facility is still actively in operation    | bit |
 | AktivVon  | Spans a period in which the facility is in operation with AktivBis    | datetime |
 | AktivBis  | Spans a period in which the facility is in operation with AktivVon    | datetime |
+
+![Alternativ‑Text](\StaffScheduling\docs\developer-view\database\Datenbankübersicht_Neu.png "Optionaler Titel")

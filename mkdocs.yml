@@ -56,7 +56,10 @@ nav:
               - Rotate shifts forwards: developer-view/conditions/Rotate-shifts-forwards.md
       - Shifts: developer-view/shifts.md
       - Variables: developer-view/variables.md
-      - Database: developer-view/database.md
+      - Database:
+            - Overview: developer-view/database/database.md
+            - Database Queries: developer-view/database/databasequeries.md
+            - Database Tables: developer-view/database/databasetableexplanation.md
       - How-to-Add Guides:
           - How to add a Constraint: developer-view/how-to-add/how-to-add-constraint.md
           - How to add a Objective: developer-view/how-to-add/how-to-add-objective.md
