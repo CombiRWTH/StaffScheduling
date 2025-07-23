@@ -139,10 +139,11 @@ The aim is to minimize consecutive working days that extend to six or more, in o
 # --8<-- [end:min-working-phases]
 
 ### Rotate shifts forwards
+# --8<-- [start:rotate-shifts-forwards]
 The forward shift rotation constraint requires employees to transition from earlier shifts to later shifts, promoting better health and reducing fatigue.
 
 An employee's weekly schedule should progress from early shifts to late shifts and then to night shifts, not the other way around.
-
+# --8<-- [end:rotate-shifts-forwards]
 
 ### Maximize Wishes
 # --8<-- [start:maximize-wishes]
