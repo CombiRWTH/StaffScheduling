@@ -46,7 +46,7 @@ nav:
           - Objectives:
               - Total Objective Function: developer-view/conditions/total-objective-function.md
               - Free days near weekend: developer-view/conditions/free-days-near-weekend.md
-              - Minimize number of consecutive night shifts: developer-view/conditions/Minimize-number-of-consecutive-night-shifts.md
+              - Minimize number of consecutive night shifts: developer-view/conditions/minimize-number-of-consecutive-night-shifts.md
               - Minimize hidden employees: developer-view/conditions/minimize-hidden-employees.md
               - Minimize overtime and undertime: developer-view/conditions/minimize-overtime-and-undertime.md
               - Not too many consecutive working days: developer-view/conditions/not-too-many-consecutive-working-days.md

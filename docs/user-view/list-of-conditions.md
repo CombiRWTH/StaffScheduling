@@ -114,7 +114,9 @@ This objective promotes anthoher 24h free after night shift phase (in total 48h,
 A schedule is found that increases the number of free days near weekends for employees.
 
 ### Minimize number of consecutive night shifts
+# --8<-- [start:min-num-of-cons-night-shifts]
 The aim is to minimize the length of night shift phases, defined as consecutive night shifts occurring one after another.
+# --8<-- [end:min-num-of-cons-night-shifts]
 
 ### Minimize hidden employees
 Hidden employees are employees that do not exist. Shifts should only be assigned to
