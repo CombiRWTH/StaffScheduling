@@ -101,7 +101,6 @@ objectives = [
 
 ### Free days after night shift phase
 # --8<-- [start:free-days-after-night-shift-phase]
-
 !!! note Likelihood of Confusion
 
     Different then the constraint [Free day after Night Shift Phase](#free-day-after-night-shift-phase-4)
@@ -137,6 +136,17 @@ The forward shift rotation constraint requires employees to transition from earl
 
 An employee's weekly schedule should progress from early shifts to late shifts and then to night shifts, not the other way around.
 
+
+### Maximize Wishes
+# --8<-- [start:maximize-wishes]
+We try to grant as many wishes of the employees as possible. The employee can wish for a free shift or a complete free day.
+In our visualization wishes are also shown:
+
+- colored small diamond: employee wishes to have shift corresponding to the color off
+- brown triangle: employee wished to have the whole day off
+- green background: wish for specific shift off was granted
+- yellow background: wish for complete day off was granted
+# --8<-- [end:maximize-wishes]
 
 <!--
 
