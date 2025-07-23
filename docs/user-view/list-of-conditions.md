@@ -129,7 +129,9 @@ to get a valid schedule.
 # --8<-- [end:minimize-hidden-employees]
 
 ### Minimize overtime and undertime
+# --8<-- [start:min-over-and-undertime]
 The goal is to minimize both overtime and undertime to ensure a fair and equitable distribution of work among employees. Hard limits are established, as outlined in the section on [Target Working Time per Month](#target-working-time-per-month).
+# --8<-- [end:min-over-and-undertime]
 
 ### Not too many consecutive working days
 The aim is to minimize consecutive working days that extend to six or more, in order to prevent prolonged periods of work.
