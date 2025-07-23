@@ -134,8 +134,9 @@ The goal is to minimize both overtime and undertime to ensure a fair and equitab
 # --8<-- [end:min-over-and-undertime]
 
 ### Not too many consecutive working days
+# --8<-- [start:min-working-phases]
 The aim is to minimize consecutive working days that extend to six or more, in order to prevent prolonged periods of work.
-
+# --8<-- [end:min-working-phases]
 
 ### Rotate shifts forwards
 The forward shift rotation constraint requires employees to transition from earlier shifts to later shifts, promoting better health and reducing fatigue.
