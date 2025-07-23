@@ -60,7 +60,6 @@ nav:
             - Overview: developer-view/database-overview/database-connection.md
             - Database Queries: developer-view/database-overview/database-queries.md
             - Database Tables: developer-view/database-overview/database-tables.md
-            - Database Table diagram: developer-view/database-overview/database-visual-overview.png
       - How-to-Add Guides:
           - How to add a Constraint: developer-view/how-to-add/how-to-add-constraint.md
           - How to add a Objective: developer-view/how-to-add/how-to-add-objective.md
