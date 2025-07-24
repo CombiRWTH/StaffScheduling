@@ -21,7 +21,7 @@ Let’s explore the available configurations!
 
 - **Weights**: Adjust the importance of objectives in the general objective function [here](/user-view/configuration/weights).
 
-- **Blocked Shifts and Days:** Adjust availability of employees manually (!= vacation days) [here](/user-view/configuration/blocked-shifts), e.g. block all night shifts, if person is not allowed to work at night or block each thursday if employee does not have to work on thursdays.
+- **Blocked Shifts and Days:** Adjust availability of employees manually (!= vacation days) [here](/user-view/configuration/blocked-shifts), e.g. block all night shifts if the person is not allowed to work at night, or block each Thursday if the employee does not work on Thursdays.
 
 
 ## Light-Version Exclusives
