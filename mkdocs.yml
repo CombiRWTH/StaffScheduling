@@ -10,11 +10,7 @@ nav:
       - user-view/index.md
       - Problem Definition: user-view/problem-definition.md
       - List of Conditions: user-view/list-of-conditions.md
-      - Getting Started (Light):
-          - user-view/getting-started-light-version/index.md
-          - Prerequisites: user-view/getting-started-light-version/prerequisites-light.md
-          - Installation: user-view/getting-started-light-version/installation-light.md
-          - Usage: user-view/getting-started-light-version/usage-light.md
+      - Getting Started (Light): user-view/getting-started-light-version.md
       - Configuration:
           - Overview of Configurations: user-view/configuration/index.md
           - Assemble Staff: user-view/configuration/staff.md
