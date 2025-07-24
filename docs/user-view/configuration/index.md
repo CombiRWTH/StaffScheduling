@@ -12,7 +12,7 @@ Let’s explore the available configurations!
 
 - **Forbidden Days and Shifts**: Configure specific days or shifts when certain employees are not allowed to work [here](/user-view/configuration/forbidden-days).
 
-- **Rounds Permission**: Set up which employees need to be available for early weekday rounds (*german: Visiten*) [here](/user-view/configuration/rounds-permission). Our application ensures at least one of these employees is assigned an early shift.
+- **Rounds Permission**: Set up which employees need to be available for early weekday rounds (*german: Visiten*) [here](/user-view/configuration/rounds-permission). Our application ensures at least one of these employees is assigned to an early shift.
 
 - **Minimum Number of Staff**: Define the minimal number of staff required per type ("Hilfskraft", "Fachkraft" or "Azubi") for each day of the week and shift [here](/user-view/configuration/minimal-staff).
 
