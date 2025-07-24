@@ -3,7 +3,7 @@ This chapter aims to give users a clear understanding of the various configurati
 Our application features two modes: the full version, which connects to a centralized database, and the light version, designed for use without database access. In the light version without database access you can adjust all configurations, in contrast to the full version
 where many configurations are already defined through the database.
 
-In this overview, we will differentiate between user-adjustable configurations that can be modified at any time and those specific to the light version.
+This overview will explain the difference between configurations that can be modified at any time by the user and configurations specific to the light version.
 
 Let’s explore the available configurations!
 
