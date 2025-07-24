@@ -25,12 +25,7 @@ nav:
       - Mathematical Problem Formulation: developer-view/mathematical-problem-formulation.md
       - Google's OR Tools and SAT-Solver: developer-view/ortools.md
       - Codebase Overview: developer-view/codebase-overview.md
-      - Getting-Started (Dev):
-          - developer-view/getting-started-dev/index.md
-          - Prerequisites: developer-view/getting-started-dev/prerequisites-dev.md
-          - Connect to Database: developer-view/getting-started-dev/connect-to-db.md
-          - Installation: developer-view/getting-started-dev/installation-dev.md
-          - Usage: developer-view/getting-started-dev/usage-dev.md
+      - Getting-Started (Dev): developer-view/getting-started-dev.md
       - Conditions:
           - Constraints:
               - Free day after night shift phase: developer-view/conditions/free-day-after-night-shift-phase.md
@@ -121,7 +116,8 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      base_path: 'docs'
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
