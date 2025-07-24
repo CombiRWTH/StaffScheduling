@@ -1,4 +1,4 @@
-Welcome to the configuration overview of our project! This document aims to provide users with a clear understanding of the various settings available within our application.
+This chapter aims to give users a clear understanding of the various configuration options available in our application.
 
 Our application features two modes: the full version, which connects to a centralized database, and the light version, designed for use without database access. In the light version without database access you can adjust all configurations, in contrast to the full version
 where many configurations are already defined through the database.
