@@ -1,6 +1,6 @@
 # Adding a New Constraint to the Staff Scheduling System
 
-This guide explains how to create and integrate a new constraint into the shift scheduling system.
+This guide explains how to create and integrate a new constraint into the staff scheduling system.
 
 ## Overview
 
