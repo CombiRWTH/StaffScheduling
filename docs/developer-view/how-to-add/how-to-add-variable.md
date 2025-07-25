@@ -5,6 +5,9 @@ This guide explains how to create and integrate a new variable into the shift sc
 ## Overview
 
 Variables are the decision elements that the solver can set when creating a schedule. They represent choices like "Does employee X work shift Y on day Z?"
+## Why Variable Classes?
+- **Consistent Referencing**: Variables are used in multiple constraints and objectives. Having dedicated classes makes it easier to reference them consistently instead of needing to remember the keys by hard.
+- **Export Integration**: Variables are part of the export functionality. Having well-defined classes ensures proper serialization and data exchange.
 
 ## Step 1: Create the Variable Class
 
