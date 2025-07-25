@@ -1,7 +1,7 @@
 # Database Queries
-Overview of the queries used to retrieve the needed personal data from the database and explanation:
+Overview of the queries used to retrieve the needed personal data from the database. All of these queries can be found within the `export_data.py`-file, each capsulated in a separate function for simplified expansion.
 
-## Basic plan data
+## Basic Plan Data
 
 ```sql
 SELECT

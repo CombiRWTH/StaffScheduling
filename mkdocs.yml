@@ -48,7 +48,7 @@ nav:
       - Shifts: developer-view/shifts.md
       - Variables: developer-view/variables.md
       - Database:
-            - Overview: developer-view/database-overview/database-connection.md
+            - Connection and Overview: developer-view/database-overview/database-connection.md
             - Tables: developer-view/database-overview/database-tables.md
             - Queries: developer-view/database-overview/database-queries.md
       - How-to-Add Guides:
