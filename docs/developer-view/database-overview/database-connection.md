@@ -13,7 +13,7 @@ StaffScheduling/
         ├── connection_setup.py  # Establishes a connection to the TimeOffice Database
         ├── export_data.py       # Includes separate functions retrieving data for our algorithm
         ├── export_main.py       # Collects all function calls from 'export_data.py' with an established connection
-        ├── import_main.py       # Collects all function calls from 'import_data.py' with an established connection
+        ├── import_main.py       # Collects all function calls from 'import_solution.py' with an established connection
         └── import_solution.py   # Includes separate functions importing solution data from our algorithm
 
 ├── .env                         # Holds credentials for the database connection
