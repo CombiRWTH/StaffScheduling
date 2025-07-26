@@ -1,7 +1,7 @@
 # Database Queries
-Overview of the Queries used to retrieve the needed personal data from the database and explanation.
+Overview of the queries used to retrieve the needed personal data from the database. All of these queries can be found within the `export_data.py`-file, each capsulated in a separate function for simplified expansion.
 
-## planning data
+## Basic Plan Data
 
 ```sql
 SELECT
@@ -20,7 +20,7 @@ We use the entity `TPlan` to retrieve the `plan identification number` of a corr
 To get a certain id `VonDat` needs to be the first day of a month and `BisDat` the last day of a month.
 The `CONVERT`-function uses the style code "23" that specifies the date format `yyyy-mm-dd`.
 
-## shift_information.json
+## Export shift_information.json
 
 ```sql
 SELECT
@@ -40,7 +40,7 @@ The unique identifier for a shift is a reference in `TDiensteSollzeiten` and sto
 The entity contains the start `Kommt` and the end `Geht` of a shift, referenced by their shift ID. The date format is `yyyy-mm-dd hh-mi-ss`.
 These values are further used to compute the shift duration, break duration and the total working minutes of a shift.
 
-## employees.json
+## Export employees.json
 
 ```sql
 SELECT
@@ -63,7 +63,7 @@ The `Inner Join` ensures that only staff information with exisiting records are 
 
 For a specific `plan_id` we obtain the unique numeric primary key `Prim`, the surname `Name` and first name `Vorname`, the personnel number `PersNr` and the occupation `Bezeichnung` of all employees within the underlying work schedule.
 
-## target_working_minutes.json
+## Export target_working_minutes.json
 
 ```sql
 SELECT
@@ -98,7 +98,7 @@ In that case the "55" Konto represents the correct "IST Stunden" ("19" = "55" or
 Once we have identified the correct values using the entity `RefKonten`, we can obtain the hours from `Wert2`.
 Since we are using working minutes and not hours, we must multiply by 60 to get the correct number of working minutes.
 
-## worked_sundays.json
+## Export worked_sundays.json
 
 ```sql
 SELECT
@@ -110,7 +110,7 @@ FROM TPersonalKontenJeTag pkt
 JOIN TPersonal p ON pkt.RefPersonal = p.Prim
 WHERE pkt.RefKonten = 40
     AND pkt.Datum BETWEEN {from_date} AND {till_date}
-    --AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'
+    AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'
     AND pkt.Wert > 0
 GROUP BY
     p.Prim,
@@ -123,12 +123,12 @@ ORDER BY
 We use the `TPersonalKontenjeTag` table to retrieve the number of worked sunday shifts for each employee for the last 12 months. The table stores daily entries and account types per employee. The `Inner Join` links this table with `TPersonal` to receive the employees' unique primary key `Prim`, as well as the surname `Name` and the first name `Vorname`. In the following the conditions are described:
 - `pkt.RefKonten = 40`:  "40" is the account key for a sunday shift
 - `pkt.Datum BETWEEN {from_date} AND {till_date}`: defines the date range, in our case, of 12 months
-- ´--AND DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'´: die wird nicht mehr auskommentiert??
+- `DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'`: filters the weekday, for this query it is `sunday`
 - `pkt.Wert > 0`: includes only days with positive values, means actual work days
 
 Lastly we aggregate the worked days per employee with `GROUP` and rank them by the number of worked shifts on a sunday with `ORDER BY`.
 
-## get plan dates
+## Get plan dates
 
 ```sql
 SELECT
@@ -139,9 +139,9 @@ FROM TPlan WHERE Prim = '{plan_id}'
 
 We use the `TPlan` table to get the start and the end dates of a specific plan defined by the given plan ID `plan_id`. The date format is `yyyy-mm-dd`.
 
-## free_shifts_and_vacation_days.json
+## Export free_shifts_and_vacation_days.json
 
-### vacation query
+### Query for vacation days
 
 ```sql
 SELECT
@@ -159,7 +159,7 @@ WHERE pkg.Datum BETWEEN CONVERT(date,'{START_DATE}',23)
 This SQL query retrieves a list of employees and the dates they took (additional) vacation days within a specified date range. To get these information we use the `TPlanPersonalKommtGeht` table which stores the attendance and absence records, including absence types, for each employee. To obtain the surname `Name` and the first name `Vorname` we use the `Inner Join` with the `TPersonal` table. The last column `vacation_days` stores the days when the vacation will take place.
 In the `WHERE` section, we first filter the records in the desired date period. The `CONVERT`-function again uses the style code "23" that specifies the date format `yyyy-mm-dd`. In addition, we filter the `RefgAbw` for specific vacation types: "20", "2434", "2435" represent a standard vacation day `Urlaub`, "2091" represents an additional vacation day `Zusatzurlaub`. Full-day absence are stored in `RefgAbw`.
 
-### forbidden days query
+### Query for forbidden days
 
 ```sql
 SELECT
@@ -182,7 +182,7 @@ The difference is that for each employee, we want to retrieve the full-day absen
 
 The distinction is necessary here because a vacation day has an impact on an employee's target working hours, while a day off, for example, has no impact.
 
-### forbidden shifts query
+### Query for forbidden shifts
 
 ```sql
 SELECT
@@ -203,7 +203,7 @@ This query retrieves the already planned work shifts for other planning units fo
 To do this, we again use `TPlanPersonalKommtGeht` and `TPersonal` for the same information, as well as `TDienste` to identify the already planned shift.
 To obtain the desired records, i.e., the actual scheduled shifts, we exclude all absence records, with `RefgAbw` set to `NULL`. This means that the employees are already scheduled to work.
 
-###
+### Query for accounting entries
 
 ```sql
 SELECT
