@@ -130,6 +130,7 @@ This file contains three tables in JSON Format: ["Azubi"](/docs/user-view/list-o
 ```
 
 ---
+
 # File: `shift_information.json`
 
 ### Description
