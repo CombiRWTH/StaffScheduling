@@ -46,6 +46,7 @@ nav:
       - Variables: developer-view/variables.md
       - Database: developer-view/database.md
       - How-to-Add Guides:
+          - developer-view/how-to-add/index.md
           - How to add a Constraint: developer-view/how-to-add/how-to-add-constraint.md
           - How to add a Objective: developer-view/how-to-add/how-to-add-objective.md
           - How to add a Variable: developer-view/how-to-add/how-to-add-variable.md
