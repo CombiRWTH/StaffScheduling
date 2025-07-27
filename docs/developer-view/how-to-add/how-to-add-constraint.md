@@ -1,10 +1,10 @@
-# Adding a New Constraint to the Shift Scheduling System
+# Adding a New Constraint to the Staff Scheduling System
 
-This guide explains how to create and integrate a new constraint into the shift scheduling system.
+This guide explains how to create and integrate a new constraint into the staff scheduling system.
 
 ## Overview
 
-Constraints are rules that must be satisfied in the generated shift plans. They ensure legal requirements, company policies, and employee preferences are respected.
+Constraints are rules that must be satisfied in the generated shift plans. They ensure legal requirements and company policies. Also specific customer rules can be implemented.
 
 ## Step 1: Create the Constraint Class
 
