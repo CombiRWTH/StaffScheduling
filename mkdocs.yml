@@ -33,10 +33,13 @@ nav:
           - Constraints:
               - Free day after night shift phase: developer-view/conditions/free-day-after-night-shift-phase.md
               - Max one shift per day: developer-view/conditions/max-one-shift-per-day.md
-              - Minimum rest time between shifts: developer-view/conditions/minimum-rest-time-between-shifts.md
               - Minimum number of staff per shift: developer-view/conditions/minimum-number-of-staff-per-shift.md
               - Target working time per month: developer-view/conditions/target-working-time-per-month.md
               - Vacation days and free shifts: developer-view/conditions/vacation-days-and-free-shifts.md
+              - Hierarchy of intermediate shifts: developer-view/conditions/hierarchy-of-intermediate-shifts.md
+              - Planned shifts: developer-view/conditions/planned-shifts.md
+              - Rounds (Visiten): developer-view/conditions/rounds.md
+              - Minimum rest time: developer-view/conditions/min-rest-time.md
           - Objectives:
               - Total Objective Function: developer-view/conditions/total-objective-function.md
               - Free days near weekend: developer-view/conditions/free-days-near-weekend.md
