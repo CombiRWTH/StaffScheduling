@@ -1,6 +1,8 @@
 import click
 from solve import main as solver
 from plot import main as plotter
+from db.export_main import main as fetcher
+from db.import_main import main as inserter
 from loader import FSLoader
 
 
@@ -12,8 +14,8 @@ def cli():
 
 @cli.command()
 @click.argument("unit", type=click.INT)
-@click.argument("start", type=click.DateTime(formats=["%Y-%m-%d"]))
-@click.argument("end", type=click.DateTime(formats=["%Y-%m-%d"]))
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.option("--timeout", default=300, help="Timeout in seconds for the solver")
 def solve(unit: int, start: click.DateTime, end: click.DateTime, timeout: int):
     """
@@ -50,6 +52,46 @@ def plot(case: int, debug: bool):
 
     loader = FSLoader(case)
     plotter(loader=loader, debug=debug)
+
+
+@cli.command()
+@click.argument("unit", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
+def fetch(unit: int, start, end):
+    """
+    Fetch data from the DB and write Json Files
+    """
+    start = start.date()  # convert datetime.datetime to datetime.date
+    end = end.date()
+    fetcher(planning_unit=unit, from_date=start, till_date=end)
+
+
+@cli.command()
+@click.argument("unit", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
+def insert(unit: int, start, end):
+    """
+    Insert data from Json Solution Files to DB
+    """
+    start = start.date()  # convert datetime.datetime to datetime.date
+    end = end.date()
+    inserter(planning_unit=unit, from_date=start, till_date=end, cli_input="i")
+
+
+@cli.command()
+@click.argument("unit", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
+def delete(unit: int, start, end):
+    """
+    Delete data from Json Solution Files to DB, effectivly resetting the changes
+    stored in solution.
+    """
+    start = start.date()  # convert datetime.datetime to datetime.date
+    end = end.date()
+    inserter(planning_unit=unit, from_date=start, till_date=end, cli_input="d")
 
 
 def main():
