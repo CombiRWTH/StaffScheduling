@@ -23,8 +23,4 @@ We differentiate between two types of conditions: constraints (hard) and objecti
 
 - **Objectives**, on the other hand, represent aspects that can be optimized but do not constitute strict requirements. An example of this would be minimizing the number of consecutive night shifts.
 
-A list of all the conditions can be found here: [**List of Conditions**](/user-view/list-of-conditions.md).
-
-## Related Links
-- [Mathematical / Technical Problem Formulation](/developer-view/mathematical-problem-formulation.md)
-- [List of Conditions](/user-view(list-of-conditions.md))
+A list of all the conditions can be found here: [**List of Conditions**](./list-of-conditions.md).

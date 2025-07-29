@@ -63,7 +63,7 @@ The required number of staff can be changed in `cases/{caseID}/minimal_number_of
 
 Each employee has an individual monthly work target.
 This target is considered a hard constraint because it must be met within a certain range.
-A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the [objective](/concepts/objectives/#minimize-overtime-and-undertime) function to ensure minimal overtime/undertime.
+A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the [objective](#minimize-overtime-and-undertime) function to ensure minimal overtime/undertime.
 Therefore, the total working time must fall within the range of all possible shift combinations and the target working time range.
 
 
@@ -126,71 +126,6 @@ The forward shift rotation constraint requires employees to transition from earl
 An employee's weekly schedule should progress from early shifts to late shifts and then to night shifts, not the other way around.
 
 
-<!--
-
-## All Constraints
-
-### Minimal Number of Staff (1)
-
-1. Mo - Fr an additional "Zwischendienst" (T75)
-2. "Zwischendienst" on the weekends
-3. If there are enough people, Mo - Fr no "Zwischendienst" but one addtional staff member to the first and second shift
-
-
-### Weekend Rhythm (Kickoff Meeting)
-Some kind of regularity for the free weekends
-
-### No Late to Early Shifts (from Rest Time (2) (§5 (1,2)))
-This is the essence of the "Rest Time Constraint" below adjusted to our case.
-No Late to Early Shifts means that it is not allowed that an early shift follows a late shift, because then the rest time would not be long enough.
-
-### At least 15 Sundays free per year (2) (§11 (1))
-That is a compensation for the work on sundays and holidays
-
-### Replacement day when working on Sunday/Holiday (2) (§11 (2))
-- Work on Sunday: Free compensation day in the next two weeks
-- Work on a Holiday: Free compensation day in the next 8 weeks
-
-
-### More free days for people with many night shifts (3.4)
-### !!! This constraint may lead to the case that the night shift worker has too much free days, we need to add more constraint to adjust it
-This constraint is feasible for our project, we achieve it by the following way:
-1. Calculate the night shift times for each worker and denote it as "num_night_shifts" in the model
-2. Calculate the free days for each worker and denote it as "num_rest_days" in the model
-3. Calculate "surplus" using the following code
-```python
-model.Add(surplus == num_rest_days - num_night_shifts)
-```
-4. Add the constraint to maximaize the surplus to ensure night shift worker has more free days
-
-
-### Rest Time (2) (§5 (1,2))
-11 hours of rest time between shift. There is an exception for employees in the hospital: there it could only be 10 hours, if this is balanced during the current month by one rest time with 12 hours.
-For us it is easier to check if there are always two empty shifts between two working shifts. This is automatically the case for almost all cases, by restricting the employees to only have one shift per day. There are three cases where this "one-per-day" restriction does not cover the "Rest Time" Condition:
-
-- Night to Early: Less than 11 hours, but covered by the "24h rest time after night shift"
-- Night to Late: Less than 11 hours, but covered by the "24h rest time after night shift"
-- Late to Early: Here we only have 9 hours of rest time. **That is why we must not allow this combination!**
-
-### Rest Time On Call Duty (2) (§5 (3)) (?)
-On Call Duty is someone who is resting at that shift, but we mark him as "On Call Duty", which means he needs to work only if there is an emergency, and the lost rest time will be compensated later.
-
-1. We need another parameter - "lost rest time" for the worker, to calculate the rest time to be compensated.
-2. The working hours during the "On Call Duty" can't be longer than 5.5 hours, since the rest time for a hospital worker is a maximum of 11 hours.
-**Do we have "On Call Duty"?**
-
-### Not to long shifts (3.9)
-This constraint means: Die Massierung von Arbeitstagen oder Arbeitszeiten auf einen Tag sollte begrenzt sein.
-
-The way we achieve it is to create a window to watch if every worker consecutive works in 5 days, then we punish the situation that worker consevutive works.
-When in the window of 5 days, the worker consecutive works, we set the overwork to 1, and we try to minimize the value of overwork
-```python
-window = [work[(n, d + i)] for i in range(MAX_CONSECUTIVE_WORK_DAYS + 1)]
-model.Add(sum(window) == MAX_CONSECUTIVE_WORK_DAYS + 1).OnlyEnforceIf(overwork)
-model.Add(sum(window) != MAX_CONSECUTIVE_WORK_DAYS + 1).OnlyEnforceIf(overwork.Not())
-```
-
-Essentially that means that longs shifts (12h plus) should be restricted. -->
 [^1]: [OR Tools Documentation](https://developers.google.com/optimization/reference/python/sat/python/cp_model#cp_model.CpModel)
 [^2]: Problem definition (PDF file from Moodle)
 [^3]: Occupational Health and Safety Law (Arbeitsschutzgesetz) (PDF file from Moodle)

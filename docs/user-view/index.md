@@ -5,6 +5,6 @@ and to use our program (light version) yourself.
 
 Get right into it:
 
-- Understand the problem: [Problem Defintion](/user-view/problem-definition)
-- Know the Conditions: [List of Conditions](/user-view/conditions)
-- Run it yourself: [Getting Started]((/user-view/getting-started-light-version))
+- Understand the problem: [Problem Defintion](./problem-definition)
+- Know the Conditions: [List of Conditions](./list-of-conditions)
+- Run it yourself: [Getting Started](./getting-started-light-version)
