@@ -1,3 +1,8 @@
+# --8<-- [start:only-json-files-note]
+!!! note
+    Currently, our application lacks a user-friendly interface for comfortably managing configurations. Instead, these settings are stored in JSON files, which requires manual editing to make any changes.
+# --8<-- [end:only-json-files-note]
+
 This chapter aims to give users a clear understanding of the various configuration options available in our application.
 
 The application has two modes: a fully integrated version that connects to a centralized database and a light version designed for use without database access.

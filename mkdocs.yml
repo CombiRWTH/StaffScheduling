@@ -128,7 +128,8 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      base_path: 'docs'
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid

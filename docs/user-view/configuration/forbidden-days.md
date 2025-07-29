@@ -1,4 +1,6 @@
-Currently, our application lacks a user-friendly interface for comfortably managing configurations. Instead, these settings are stored in a JSON file, which requires manual editing to make any changes.
+--8<--
+user-view/configuration/index.md:only-json-files-note
+--8<--
 
 ### Forbidden Days
 
