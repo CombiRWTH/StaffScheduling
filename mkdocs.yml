@@ -10,11 +10,7 @@ nav:
       - user-view/index.md
       - Problem Definition: user-view/problem-definition.md
       - List of Conditions: user-view/list-of-conditions.md
-      - Getting Started (Light):
-          - user-view/getting-started-light-version/index.md
-          - Prerequisites: user-view/getting-started-light-version/prerequisites-light.md
-          - Installation: user-view/getting-started-light-version/installation-light.md
-          - Usage: user-view/getting-started-light-version/usage-light.md
+      - Getting Started (Light): user-view/getting-started-light-version.md
       - Configuration:
           - Overview of Configurations: user-view/configuration/index.md
           - Assemble Staff: user-view/configuration/staff.md
@@ -23,18 +19,16 @@ nav:
           - Adapting Weights: user-view/configuration/weights.md
           - Modify Round Permissions: user-view/configuration/rounds-permissions.md
           - Qualification Mapping: user-view/configuration/qualifications.md
+          - Minmal Number of Staff: user-view/configuration/min-staff.md
+          - Blocking Shifts: user-view/configuration/blocked-shifts.md
+          - Preplanning Shifts: user-view/configuration/planned-shifts.md
 
   - Developer View:
       - developer-view/index.md
       - Mathematical Problem Formulation: developer-view/mathematical-problem-formulation.md
       - Google's OR Tools and SAT-Solver: developer-view/ortools.md
       - Codebase Overview: developer-view/codebase-overview.md
-      - Getting-Started (Dev):
-          - developer-view/getting-started-dev/index.md
-          - Prerequisites: developer-view/getting-started-dev/prerequisites-dev.md
-          - Connect to Database: developer-view/getting-started-dev/connect-to-db.md
-          - Installation: developer-view/getting-started-dev/installation-dev.md
-          - Usage: developer-view/getting-started-dev/usage-dev.md
+      - Getting-Started (Dev): developer-view/getting-started-dev.md
       - Conditions:
           - Constraints:
               - Free day after night shift phase: developer-view/conditions/free-day-after-night-shift-phase.md
@@ -58,7 +52,10 @@ nav:
               - Maximize Wishes: developer-view/conditions/maximize-wishes.md
       - Shifts: developer-view/shifts.md
       - Variables: developer-view/variables.md
-      - Database: developer-view/database.md
+      - Database:
+            - Connection and Overview: developer-view/database-overview/database-connection.md
+            - Tables: developer-view/database-overview/database-tables.md
+            - Queries: developer-view/database-overview/database-queries.md
       - How-to-Add Guides:
           - developer-view/how-to-add/index.md
           - How to add a Constraint: developer-view/how-to-add/how-to-add-constraint.md
