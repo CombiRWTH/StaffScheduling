@@ -7,7 +7,7 @@ repo_name: CombiRWTH/StaffScheduling
 nav:
   - Introduction: index.md
   - User View:
-      - user-view/index.md
+      - User View: user-view/index.md
       - Problem Definition: user-view/problem-definition.md
       - List of Conditions: user-view/list-of-conditions.md
       - Getting Started (Light): user-view/getting-started-light-version.md
@@ -24,7 +24,7 @@ nav:
           - Preplanning Shifts: user-view/configuration/planned-shifts.md
 
   - Developer View:
-      - developer-view/index.md
+      - Developer View: developer-view/index.md
       - Mathematical Problem Formulation: developer-view/mathematical-problem-formulation.md
       - Google's OR Tools and SAT-Solver: developer-view/ortools.md
       - Codebase Overview: developer-view/codebase-overview.md
@@ -50,14 +50,12 @@ nav:
               - Rotate shifts forwards: developer-view/conditions/rotate-shifts-forwards.md
               - Free days after night shift phase: developer-view/conditions/free-days-after-night-shift-phase-objective.md
               - Maximize Wishes: developer-view/conditions/maximize-wishes.md
-      - Shifts: developer-view/shifts.md
-      - Variables: developer-view/variables.md
       - Database:
             - Connection and Overview: developer-view/database-overview/database-connection.md
             - Tables: developer-view/database-overview/database-tables.md
             - Queries: developer-view/database-overview/database-queries.md
       - How-to-Add Guides:
-          - developer-view/how-to-add/index.md
+          - How-to-Add Guides: developer-view/how-to-add/index.md
           - How to add a Constraint: developer-view/how-to-add/how-to-add-constraint.md
           - How to add a Objective: developer-view/how-to-add/how-to-add-objective.md
           - How to add a Variable: developer-view/how-to-add/how-to-add-variable.md
