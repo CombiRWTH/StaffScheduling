@@ -15,6 +15,7 @@ For example, consider this Boolean formula:
 
 A SAT-solver would try to find values for A, B, and C that make this entire expression true. In this case, A=false, B=true, C=false would satisfy the formula.
 
+
 # How SAT-Solving Works
 ## The Search Process
 
