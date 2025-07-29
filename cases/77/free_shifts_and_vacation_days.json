@@ -1,0 +1,879 @@
+{
+  "employees": [
+    {
+      "firstname": "Sandra",
+      "forbidden_days": [
+        18,
+        22,
+        23,
+        24,
+        25
+      ],
+      "key": 459,
+      "name": "Shoemake",
+      "planned_shifts": [],
+      "vacation_days": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12
+      ]
+    },
+    {
+      "firstname": "Adriane",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "key": 790,
+      "name": "Mccomas",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Janett",
+      "forbidden_days": [],
+      "key": 791,
+      "name": "Branz",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Nele",
+      "forbidden_days": [
+        4,
+        5,
+        9,
+        10,
+        15,
+        16,
+        17,
+        18,
+        19,
+        25,
+        26,
+        27
+      ],
+      "key": 822,
+      "name": "Sewell",
+      "planned_shifts": [
+        [
+          1,
+          "N5"
+        ],
+        [
+          2,
+          "N5"
+        ],
+        [
+          3,
+          "N5"
+        ],
+        [
+          6,
+          "S2_"
+        ],
+        [
+          7,
+          "S2_"
+        ],
+        [
+          8,
+          "S2_"
+        ],
+        [
+          11,
+          "F2_"
+        ],
+        [
+          12,
+          "F2_"
+        ],
+        [
+          13,
+          "F2_"
+        ],
+        [
+          14,
+          "F2_"
+        ],
+        [
+          20,
+          "S2_"
+        ],
+        [
+          21,
+          "N5"
+        ],
+        [
+          22,
+          "N5"
+        ],
+        [
+          23,
+          "N5"
+        ],
+        [
+          24,
+          "N5"
+        ],
+        [
+          29,
+          "N5"
+        ],
+        [
+          30,
+          "N5"
+        ]
+      ],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Liselotte",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        9,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18,
+        21,
+        22,
+        23,
+        24,
+        25,
+        28,
+        29,
+        30
+      ],
+      "key": 839,
+      "name": "S\u00e4uffert",
+      "planned_shifts": [
+        [
+          10,
+          "N5"
+        ],
+        [
+          11,
+          "N5"
+        ],
+        [
+          15,
+          "N5"
+        ],
+        [
+          19,
+          "N5"
+        ],
+        [
+          20,
+          "N5"
+        ],
+        [
+          26,
+          "N5"
+        ],
+        [
+          27,
+          "N5"
+        ]
+      ],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Silvia",
+      "forbidden_days": [
+        23,
+        24,
+        30
+      ],
+      "key": 914,
+      "name": "Harkins",
+      "planned_shifts": [],
+      "vacation_days": [
+        21,
+        22,
+        25,
+        26,
+        27,
+        28,
+        29
+      ]
+    },
+    {
+      "firstname": "Ingbert",
+      "forbidden_days": [],
+      "key": 917,
+      "name": "Catoe",
+      "planned_shifts": [
+        [
+          15,
+          "S2_"
+        ]
+      ],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Jenny",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "key": 921,
+      "name": "Keese",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "B\u00e4rbl",
+      "forbidden_days": [
+        1,
+        2,
+        3
+      ],
+      "key": 924,
+      "name": "Merriweather",
+      "planned_shifts": [],
+      "vacation_days": [
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "firstname": "Lina",
+      "forbidden_days": [],
+      "key": 925,
+      "name": "Farniok",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Margaritt",
+      "forbidden_days": [],
+      "key": 927,
+      "name": "Mittrach",
+      "planned_shifts": [],
+      "vacation_days": [
+        18
+      ]
+    },
+    {
+      "firstname": "Daniele",
+      "forbidden_days": [],
+      "key": 928,
+      "name": "Wunderlich",
+      "planned_shifts": [],
+      "vacation_days": [
+        25,
+        26,
+        27,
+        28,
+        29
+      ]
+    },
+    {
+      "firstname": "Constance",
+      "forbidden_days": [],
+      "key": 1230,
+      "name": "Palacio",
+      "planned_shifts": [],
+      "vacation_days": [
+        11
+      ]
+    },
+    {
+      "firstname": "Kersten",
+      "forbidden_days": [],
+      "key": 2932,
+      "name": "Devers",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Renilde",
+      "forbidden_days": [],
+      "key": 2963,
+      "name": "Hoots",
+      "planned_shifts": [],
+      "vacation_days": [
+        11
+      ]
+    },
+    {
+      "firstname": "Elgine",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "key": 3566,
+      "name": "Seligman",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Eike",
+      "forbidden_days": [],
+      "key": 3868,
+      "name": "Vanfleet",
+      "planned_shifts": [
+        [
+          25,
+          "S2_"
+        ]
+      ],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Hannah",
+      "forbidden_days": [
+        18
+      ],
+      "key": 4566,
+      "name": "Woodcock",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Henni",
+      "forbidden_days": [],
+      "key": 5367,
+      "name": "Donis",
+      "planned_shifts": [],
+      "vacation_days": [
+        7,
+        8
+      ]
+    },
+    {
+      "firstname": "Augustin",
+      "forbidden_days": [],
+      "key": 5920,
+      "name": "Carreras",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Heinz",
+      "forbidden_days": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "key": 6475,
+      "name": "Binford",
+      "planned_shifts": [
+        [
+          1,
+          "N\u20ac"
+        ]
+      ],
+      "vacation_days": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    {
+      "firstname": "Roseliese",
+      "forbidden_days": [],
+      "key": 6507,
+      "name": "Rashid",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Christfri",
+      "forbidden_days": [],
+      "key": 6677,
+      "name": "Fullerton",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Saskia",
+      "forbidden_days": [
+        23,
+        24
+      ],
+      "key": 6681,
+      "name": "Labelle",
+      "planned_shifts": [],
+      "vacation_days": [
+        18,
+        19,
+        20,
+        21,
+        22,
+        25,
+        26
+      ]
+    },
+    {
+      "firstname": "Lioba",
+      "forbidden_days": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "key": 6715,
+      "name": "Burris",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Trude",
+      "forbidden_days": [],
+      "key": 6836,
+      "name": "Valentino",
+      "planned_shifts": [
+        [
+          17,
+          "F2_"
+        ]
+      ],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Annelene",
+      "forbidden_days": [],
+      "key": 6928,
+      "name": "Izzo",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Marcus",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16,
+        21,
+        22,
+        23,
+        24,
+        30
+      ],
+      "key": 7496,
+      "name": "Demarco",
+      "planned_shifts": [
+        [
+          15,
+          "S2_"
+        ],
+        [
+          17,
+          "F2_"
+        ],
+        [
+          18,
+          "F2_"
+        ],
+        [
+          19,
+          "N5"
+        ],
+        [
+          20,
+          "N5"
+        ],
+        [
+          25,
+          "F2_"
+        ],
+        [
+          26,
+          "F2_"
+        ],
+        [
+          27,
+          "F2_"
+        ],
+        [
+          28,
+          "F2_"
+        ],
+        [
+          29,
+          "F2_"
+        ]
+      ],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Ludger",
+      "forbidden_days": [],
+      "key": 7603,
+      "name": "Roberson",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Sieghardt",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        26,
+        29,
+        30
+      ],
+      "key": 7741,
+      "name": "Tharp",
+      "planned_shifts": [
+        [
+          27,
+          "S2_"
+        ],
+        [
+          28,
+          "S2_"
+        ]
+      ],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Kilian",
+      "forbidden_days": [
+        4,
+        8,
+        9,
+        10
+      ],
+      "key": 7752,
+      "name": "Rodriques",
+      "planned_shifts": [
+        [
+          5,
+          "S2_"
+        ],
+        [
+          6,
+          "S2_"
+        ],
+        [
+          7,
+          "S2_"
+        ],
+        [
+          16,
+          "T75_"
+        ],
+        [
+          17,
+          "T75_"
+        ]
+      ],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Julia",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        22,
+        25
+      ],
+      "key": 7770,
+      "name": "Yeh",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Burkhild",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        28,
+        29
+      ],
+      "key": 7796,
+      "name": "Hertzler",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Karena",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        22,
+        25
+      ],
+      "key": 7835,
+      "name": "Driggers",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Gertraute",
+      "forbidden_days": [],
+      "key": 7848,
+      "name": "Winters",
+      "planned_shifts": [
+        [
+          29,
+          "T75_"
+        ]
+      ],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Janett",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "key": 7877,
+      "name": "Staggs",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Irma",
+      "forbidden_days": [
+        1
+      ],
+      "key": 7919,
+      "name": "Weathers",
+      "planned_shifts": [],
+      "vacation_days": []
+    },
+    {
+      "firstname": "Loremarie",
+      "forbidden_days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "key": 7990,
+      "name": "Milburn",
+      "planned_shifts": [],
+      "vacation_days": []
+    }
+  ]
+}

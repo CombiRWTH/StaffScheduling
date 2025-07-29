@@ -3,18 +3,18 @@
     Currently, our application lacks a user-friendly interface for comfortably managing configurations. Instead, these settings are stored in JSON files, which requires manual editing to make any changes.
 # --8<-- [end:only-json-files-note]
 
-This chapter aims to give users a clear understanding of the various configuration options available in our application.
+Welcome to the configuration overview of our project! This document aims to provide users with a clear understanding of the various settings available within our application.
 
-The application has two modes: a fully integrated version that connects to a centralized database and a light version designed for use without database access.
-With the light version, you can adjust all configurations.
-In contrast, many configurations are already defined through the database in the full version.
+Our application features two modes: the full version, which connects to a centralized database, and the light version, designed for use without database access. In the light version without database access you can adjust all configurations, in contrast to the full version
+where many configurations are already defined through the database.
 
-This overview will explain the difference between configurations that can be modified at any time by the user and configurations specific to the light version.
+In this overview, we will differentiate between user-adjustable configurations that can be modified at any time and those specific to the light version.
 
 Let’s explore the available configurations!
 
 
 ## User-Adjustable Configurations
+
 
 - **Forbidden Days and Shifts**: Configure specific days or shifts when certain employees are not allowed to work [here](./forbidden-days).
 

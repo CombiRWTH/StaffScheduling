@@ -3,8 +3,9 @@ database/.env
 *.pyc
 tempCodeRunnerFile.py
 .DS_store
-found_solutions
+found_solutions/*.json
 algorihtm/__pycache__
 .idea
 /.vscode
 site
+.env
