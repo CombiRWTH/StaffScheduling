@@ -96,7 +96,7 @@ The only qualification currently in use is "rounds".
 
 ### Description
 
-This file contains three tables in JSON Format: ["Azubi"](/docs/user-view/list-of-conditions.md#azubis), [”Hilfskraft"](/docs/user-view/list-of-conditions.md#hilfskräfte), ["Fachkräfte"](/docs/user-view/list-of-conditions.md#fachkräfte). Those tables set the required number of employees of a specific type on every weekday for each shifts.
+This file contains three tables in JSON Format: ["Azubi"](../user-view/list-of-conditions.md#azubis), [”Hilfskraft"](../user-view/list-of-conditions.md#hilfskräfte), ["Fachkräfte"](../user-view/list-of-conditions.md#fachkräfte). Those tables set the required number of employees of a specific type on every weekday for each shifts.
 
 ### Structure
 
