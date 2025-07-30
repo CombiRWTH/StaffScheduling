@@ -68,4 +68,13 @@ uv run staff-scheduling plot 3
 ```
 If you have created your own case, you need to change the integer `3` to your new case.
 You can then view the solution by opening the link you see in the terminal, probably [http://127.0.0.1:5020](http://127.0.0.1:5020).
+
+Next to the assigned shift, our visualization offers some more insights.
+
+- colored small dot: employee is forbidden to work that specific shift (hard)
+- red background: employee is forbidden to work that day (hard), e.g. vacation day
+- colored small diamond: employee wishes to have shift corresponding to the color off
+- brown triangle: employee wished to have the whole day off
+- green background: wish for specific shift off was granted
+- yellow background: wish for complete day off was granted
 # --8<-- [end:Viewing]
