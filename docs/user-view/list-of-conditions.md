@@ -65,7 +65,7 @@ The required number of staff can be changed in `cases/{caseID}/minimal_number_of
 # --8<-- [start:target-working-time]
 Each employee has an individual monthly work target.
 This target is considered a hard constraint because it must be met within a certain range.
-A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the [objective](/concepts/objectives/#minimize-overtime-and-undertime) function to ensure minimal overtime/undertime.
+A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the [objective](#minimize-overtime-and-undertime) function to ensure minimal overtime/undertime.
 Therefore, the total working time must fall within the range of all possible shift combinations and the target working time range.
 # --8<-- [end:target-working-time]
 
@@ -123,40 +123,82 @@ objectives = [
 ```
 
 ## Navigation Links
+- [Free days after night shift phase](#free-days-after-night-shift-phase)
 - [Free days near weekend](#free-days-near-weekend)
-- [Minimize number of consecutive night shifts](#Minimize-number-of-consecutive-night-shifts)
+- [Minimize number of consecutive night shifts](#minimize-number-of-consecutive-night-shifts)
 - [Minimize hidden employees](#minimize-hidden-employees)
 - [Minimize overtime and undertime](#minimize-overtime-and-undertime)
 - [Not too many consecutive working days](#not-too-many-consecutive-working-days)
-- [Rotate shifts forwards](#Rotate-shifts-forwards)
+- [Rotate shifts forwards](#rotate-shifts-forwards)
+- [Maximize Wishes](#maximize-wishes)
 
 ## All Objectives
 
-### Free days near weekend [^4]
+
+### Free days after night shift phase
+# --8<-- [start:free-days-after-night-shift-phase]
+!!! note "Likelihood of Confusion"
+
+    Different then the constraint [Free day after Night Shift Phase](#free-day-after-night-shift-phase-4)
+
+There is also a constraint (soft) called Free day after night shift phase, which ensures that there are at least 24h free after a night shift phase.
+This objective promotes anthoher 24h free after night shift phase (in total 48h, meaning two days).
+# --8<-- [end:free-days-after-night-shift-phase]
+
+
+### Free days near weekend
 A schedule is found that increases the number of free days near weekends for employees.
 
-### Minimize number of consecutive night shifts [^4]
+
+### Minimize number of consecutive night shifts
+# --8<-- [start:min-num-of-cons-night-shifts]
 The aim is to minimize the length of night shift phases, defined as consecutive night shifts occurring one after another.
+# --8<-- [end:min-num-of-cons-night-shifts]
+
 
 ### Minimize hidden employees
+# --8<-- [start:minimize-hidden-employees]
 Hidden employees are employees that do not exist. Shifts should only be assigned to
 them if otherwise a valid solution cannot be found. This for example happens, if there
 is a shortage on skilled employees.
 Hidden employees do not have the same rules as real employees, they can work multiple
 shifts per day. They should indicate how many employees / how many shifts are missing
 to get a valid schedule.
+# --8<-- [end:minimize-hidden-employees]
+
 
 ### Minimize overtime and undertime
+# --8<-- [start:min-over-and-undertime]
 The goal is to minimize both overtime and undertime to ensure a fair and equitable distribution of work among employees. Hard limits are established, as outlined in the section on [Target Working Time per Month](#target-working-time-per-month).
+# --8<-- [end:min-over-and-undertime]
 
-### Not too many consecutive working days [^4]
+
+
+### Not too many consecutive working days
+# --8<-- [start:min-working-phases]
 The aim is to minimize consecutive working days that extend to six or more, in order to prevent prolonged periods of work.
+# --8<-- [end:min-working-phases]
 
 
-### Rotate shifts forwards [^4]
+
+### Rotate shifts forwards
+# --8<-- [start:rotate-shifts-forwards]
 The forward shift rotation constraint requires employees to transition from earlier shifts to later shifts, promoting better health and reducing fatigue.
-
 An employee's weekly schedule should progress from early shifts to late shifts and then to night shifts, not the other way around.
+# --8<-- [end:rotate-shifts-forwards]
+
+
+### Maximize Wishes
+# --8<-- [start:maximize-wishes]
+We try to grant as many wishes of the employees as possible. The employee can wish for a free shift or a complete free day.
+In our visualization wishes are also shown:
+
+- colored small diamond: employee wishes to have shift corresponding to the color off
+- brown triangle: employee wished to have the whole day off
+- green background: wish for specific shift off was granted
+- yellow background: wish for complete day off was granted
+# --8<-- [end:maximize-wishes]
+
 
 
 [^1]: [OR Tools Documentation](https://developers.google.com/optimization/reference/python/sat/python/cp_model#cp_model.CpModel)
