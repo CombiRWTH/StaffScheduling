@@ -1,4 +1,3 @@
-# Documentation - User View
 This user view provides all necessary information to understand the problem
 of automatic staff scheduling, to know all conditions that our program tries to meet
 and to use our program (light version) yourself.
