@@ -90,23 +90,6 @@ src/web/
     └── index.html           # Main web interface template
 ```
 
-## Legacy Algorithm (`algorithm/`)
-
-Contains an older implementation and web interface:
-
-```
-algorithm/
-├── StateManager.py          # Legacy state management
-├── WebApp.py               # Legacy web application
-├── building_constraints/    # Legacy constraint implementations
-├── handlers.py             # Legacy request handlers
-├── plotting.py             # Legacy plotting utilities
-├── solving.py              # Legacy solving logic
-└── templates/
-    └── index.html          # Legacy web template
-```
-
-**Note**: This directory contains the previous version of the solver.
 ## Test Cases (`cases/`)
 
 Sample data and test scenarios:
