@@ -8,10 +8,11 @@ Please note that as a user, you can always dive deeper into the technical detail
 
 ## Usage
 If you want to try out the automatic creation of the a staff schedule yourself, follow our
-"Getting Started Guides":
+"Getting Started Guides". There are two different versions of our program, with and without
+database access.
 
-- [User View - Getting Started Guide](./user-view/getting-started-light-version)
-- [Developer View - Getting Started Guide](./developer-view/getting-started-dev)
+- Without database access: [Getting Started Guide (Light)](./user-view/getting-started-light-version)
+- With database access: [Getting Started Guide](./developer-view/getting-started-dev)
 
 ## Getting an Overview
 If you just want to get an overview over the codebase and the problem,
