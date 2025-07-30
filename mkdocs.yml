@@ -25,7 +25,6 @@ nav:
 
   - Developer View:
       - Developer View: developer-view/index.md
-      - Mathematical Problem Formulation: developer-view/mathematical-problem-formulation.md
       - Google's OR Tools and SAT-Solver: developer-view/ortools.md
       - Codebase Overview: developer-view/codebase-overview.md
       - Getting-Started (Dev): developer-view/getting-started-dev.md
