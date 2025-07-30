@@ -58,6 +58,7 @@ nav:
           - How to add a Constraint: developer-view/how-to-add/how-to-add-constraint.md
           - How to add a Objective: developer-view/how-to-add/how-to-add-objective.md
           - How to add a Variable: developer-view/how-to-add/how-to-add-variable.md
+      - TimeOffice: developer-view/timeoffice.md
       - JSON Dataformats: developer-view/json-dataformat.md
 
 

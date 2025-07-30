@@ -11,7 +11,8 @@ The main source code is organized in the `src/` directory:
 src/
 ├── main.py                  # Main entry point
 ├── solve.py                 # Most important class to combine everything for the solver. Command-line solver interface.
-└── plot.py                  # Visualization utilities
+├── plot.py                  # Visualization utilities
+└── run.bat                  # Batch script that can be connected to TimeOffice itself to start automated process
 ```
 
 Additianal there are the following helper classes:
