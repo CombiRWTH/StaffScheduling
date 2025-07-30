@@ -2,9 +2,15 @@
 user-view/getting-started-light-version.md:Prerequisites
 --8<--
 
-### 3. Install `unixodbc` (Mac only)
+### 3. Install `ODBC Driver`
 
 You can install it following the instructions in the official documentation:
+
+#### Install `Microsoft ODBC Driver 18 for SQL Server` (Windows only)
+
+[https://learn.microsoft.com/en-us/sql/connect/odbc/](https://learn.microsoft.com/en-us/sql/connect/odbc/)
+
+#### Install `unixodbc` (Mac only)
 
 [https://pypi.org/project/pyodbc/](https://pypi.org/project/pyodbc/)
 
