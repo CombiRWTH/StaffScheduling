@@ -55,7 +55,7 @@ After installing dependencies, you can start solving staff scheduling problems b
 uv run staff-scheduling solve 3
 ```
 The three corresponds to the `case_id` meaning in the folder `cases/3`. If you want to create your own case
-simply copy the folder 3 and rename it to another integer. Then you can change the number of employees etc., see [configuration](./configuration).
+simply copy the folder 3 and rename it to another integer. Then you can change the number of employees etc., see [configuration](../configuration).
 
 The algorithm needs 5 minutes to find a solution.
 # --8<-- [end:Solving]
