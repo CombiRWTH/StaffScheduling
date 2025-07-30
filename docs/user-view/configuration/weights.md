@@ -4,9 +4,8 @@ user-view/configuration/index.md:only-json-files-note
 
 ### Weights Configuration
 
-<div style="background-color: #ffcc00; padding: 10px; border-radius: 5px;">
-    <strong>Warning:</strong> Please note that the weights assigned to objectives must not be greater than or equal to 1.
-</div>
+!!! warning
+    Please note that the weights assigned to objectives must be greater than or equal to 1.
 
 In our application, users can adjust the importance of various objectives within the general objective function to optimize scheduling and resource allocation. This configuration is managed in the `srs/solve.py` file.
 
