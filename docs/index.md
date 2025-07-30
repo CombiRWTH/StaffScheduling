@@ -19,5 +19,4 @@ If you just want to get an overview over the codebase and the problem,
 you should start with those guides:
 
 - [Problem Defintion](./user-view/problem-definition)
-- [Mathematical Problem Formulation](./developer-view/mathematical-problem-formulation)
 - [Codebase Overview](./developer-view/codebase-overview)
