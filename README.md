@@ -20,4 +20,4 @@ To explore the documentation, you can either view it online or run it locally.
   uv sync --extra docs
   uv run mkdocs serve
   ```
-  Keep in mind to check the [pre-requisites](https://combirwth.github.io/StaffScheduling/getting-started/prerequisites) for the project before running the documentation locally.
+  Keep in mind to check the [pre-requisites](https://combirwth.github.io/StaffScheduling/user-view/getting-started-light-version/#prerequisites) for the project before running the documentation locally.
