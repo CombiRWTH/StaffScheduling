@@ -8,7 +8,6 @@ we mean the automatic creation of a staff schedule which meets all given conditi
 We answered those question and many more here:
 
 - problem statement
-- mathematical problem formulation
 - constraints
 - objectives
 - database
