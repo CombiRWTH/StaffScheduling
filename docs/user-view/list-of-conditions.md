@@ -152,7 +152,9 @@ This objective promotes anthoher 24h free after night shift phase (in total 48h,
 
 
 ### Free days near weekend
-A schedule is found that increases the number of free days near weekends for employees.
+# --8<-- [start:free-days-near-weekend]
+A schedule is found that increases the number of free days near weekends (Fri, Sat, Sun, Mon) for employees.
+# --8<-- [end:free-days-near-weekend]
 
 
 ### Maximize Wishes [^2]
