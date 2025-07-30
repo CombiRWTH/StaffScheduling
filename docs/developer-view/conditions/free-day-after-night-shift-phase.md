@@ -2,6 +2,9 @@
 user-view/list-of-conditions.md:user-free-day-after-night-shift-phase
 --8<--
 
+!!! Bug
+    In the final presentation of our project a bug was found, possibly regarding this implementation. One other constraint could also be the source of this bug. More details can be found in this open [issue](https://github.com/CombiRWTH/StaffScheduling/issues/172).
+
 ### Implemented using Google's OR Tools
 
 ```python title="src/cp/constraints/free_day_after_night_shift_phase.py"

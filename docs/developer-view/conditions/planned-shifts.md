@@ -2,6 +2,10 @@
 user-view/list-of-conditions.md:planned-shift
 --8<--
 
+!!! Bug
+    In the final presentation of our project a bug was found, possibly regarding this implementation. One other constraint could also be the source of this bug. More details can be found in this open [issue](https://github.com/CombiRWTH/StaffScheduling/issues/172).
+
+
 ### Implemented using Google's OR Tools
 
 ```python title="src/cp/constraints/planned_shifts.py"
