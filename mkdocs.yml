@@ -32,24 +32,23 @@ nav:
       - Conditions:
           - Constraints:
               - Free day after night shift phase: developer-view/conditions/free-day-after-night-shift-phase.md
+              - Hierarchy of intermediate shifts: developer-view/conditions/hierarchy-of-intermediate-shifts.md
               - Max one shift per day: developer-view/conditions/max-one-shift-per-day.md
               - Minimum number of staff per shift: developer-view/conditions/minimum-number-of-staff-per-shift.md
-              - Target working time per month: developer-view/conditions/target-working-time-per-month.md
-              - Vacation days and free shifts: developer-view/conditions/vacation-days-and-free-shifts.md
-              - Hierarchy of intermediate shifts: developer-view/conditions/hierarchy-of-intermediate-shifts.md
+              - Minimum rest time: developer-view/conditions/min-rest-time.md
               - Planned shifts: developer-view/conditions/planned-shifts.md
               - Rounds (Visiten): developer-view/conditions/rounds.md
-              - Minimum rest time: developer-view/conditions/min-rest-time.md
+              - Target working time per month: developer-view/conditions/target-working-time-per-month.md
+              - Vacation days and free shifts: developer-view/conditions/vacation-days-and-free-shifts.md
           - Objectives:
-              - Total Objective Function: developer-view/conditions/total-objective-function.md
+              - Free days after night shift phase: developer-view/conditions/free-days-after-night-shift-phase-objective.md
               - Free days near weekend: developer-view/conditions/free-days-near-weekend.md
-              - Minimize number of consecutive night shifts: developer-view/conditions/minimize-number-of-consecutive-night-shifts.md
+              - Maximize Wishes: developer-view/conditions/maximize-wishes.md
               - Minimize hidden employees: developer-view/conditions/minimize-hidden-employees.md
+              - Minimize number of consecutive night shifts: developer-view/conditions/minimize-number-of-consecutive-night-shifts.md
               - Minimize overtime and undertime: developer-view/conditions/minimize-overtime-and-undertime.md
               - Not too many consecutive working days: developer-view/conditions/not-too-many-consecutive-working-days.md
               - Rotate shifts forwards: developer-view/conditions/rotate-shifts-forwards.md
-              - Free days after night shift phase: developer-view/conditions/free-days-after-night-shift-phase-objective.md
-              - Maximize Wishes: developer-view/conditions/maximize-wishes.md
       - Database:
             - Connection and Overview: developer-view/database-overview/database-connection.md
             - Tables: developer-view/database-overview/database-tables.md
