@@ -59,12 +59,7 @@ nav:
           - How to add a Constraint: developer-view/how-to-add/how-to-add-constraint.md
           - How to add a Objective: developer-view/how-to-add/how-to-add-objective.md
           - How to add a Variable: developer-view/how-to-add/how-to-add-variable.md
-      - JSON Dataformat:
-          - Employees: developer-view/dataformat/df-employees.md
-          - Employee Types: developer-view/dataformat/df-employee-types.md
-          - Free Shifts, Vacation Days: developer-view/dataformat/df-vacation-days.md
-          - Minimal Number of Staff: developer-view/dataformat/df-min-staff.md
-          - Target Working Minutes: developer-view/dataformat/df-target-working-minutes.md
+      - JSON Dataformats: developer-view/json-dataformat.md
 
 
 theme:
