@@ -2,7 +2,7 @@
 user-view/list-of-conditions.md:free-days-near-weekend
 --8<--
 
-!!! tip
+!!! tip "Feature Request"
     In the final presentation of our project another implemenation of this was requested. More details can be found in this open [issue](https://github.com/CombiRWTH/StaffScheduling/issues/173).
 
 ### Implemented using Google's OR Tools
