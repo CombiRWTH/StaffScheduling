@@ -3,7 +3,7 @@ The developer view is a extension of the user view. It provides all necessary in
 
 Get right into it:
 
-- Run it yourself: [Getting Started (Dev)]((./getting-started-dev))
+- Run it yourself: [Getting Started (Dev)](./getting-started-dev)
 - Understand the problem: [Mathematical Problem Defintion](./mathematical-problem-definition.md)
 - Deep Dive into TimeOffice database:
     - [connecting](./database-overview/database-connection.md)
