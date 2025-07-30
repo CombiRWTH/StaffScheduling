@@ -1,3 +1,9 @@
+# Super Light Version
+If you are only interest in viewing one example solution, simply download the file `ExampleSolutionView.html` from [Github](https://github.com/CombiRWTH/StaffScheduling/blob/main/ExampleSolutionView.html) and open it with your standard browser. Then you can view a found solution, which is based on the data given in `cases/3`.
+
+
+# Light Version
+
 # --8<-- [start:Prerequisites]
 ## Prerequisites
 
