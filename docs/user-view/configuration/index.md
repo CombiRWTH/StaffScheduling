@@ -1,3 +1,8 @@
+# --8<-- [start:only-json-files-note]
+!!! note
+    Currently, our application lacks a user-friendly interface for comfortably managing configurations. Instead, these settings are stored in JSON files, which requires manual editing to make any changes.
+# --8<-- [end:only-json-files-note]
+
 Welcome to the configuration overview of our project! This document aims to provide users with a clear understanding of the various settings available within our application.
 
 Our application features two modes: the full version, which connects to a centralized database, and the light version, designed for use without database access. In the light version without database access you can adjust all configurations, in contrast to the full version
@@ -10,23 +15,24 @@ Let’s explore the available configurations!
 
 ## User-Adjustable Configurations
 
-- **Forbidden Days and Shifts**: Configure specific days or shifts when certain employees are not allowed to work [here](/user-view/configuration/forbidden-days).
 
-- **Rounds Permission**: Set up which employees need to be available for early weekday rounds (*german: Visiten*) [here](/user-view/configuration/rounds-permission). Our application ensures at least one of these employees is assigned an early shift.
+- **Forbidden Days and Shifts**: Configure specific days or shifts when certain employees are not allowed to work [here](./forbidden-days).
 
-- **Minimum Number of Staff**: Define the minimal number of staff required per type ("Hilfskraft", "Fachkraft" or "Azubi") for each day of the week and shift [here](/user-view/configuration/minimal-staff).
+- **Rounds Permission**: Set up which employees need to be available for early weekday rounds (*german: Visiten*) [here](./rounds-permissions). Our application ensures at least one of these employees is assigned to an early shift.
 
-- **Qualification Mapping**: Assign each qualification label from the database to one of the three types: "Hilfskraft", "Fachkraft" or "Azubi" [here](/user-view/configuration/qualifications).
+- **Minimum Number of Staff**: Define the minimal number of staff required per type ("Hilfskraft", "Fachkraft" or "Azubi") for each day of the week and shift [here](./min-staff).
 
-- **Weights**: Adjust the importance of objectives in the general objective function [here](/user-view/configuration/weights).
+- **Qualification Mapping**: Assign each qualification label from the database to one of the three types: "Hilfskraft", "Fachkraft" or "Azubi" [here](./qualifications).
 
-- **Blocked Shifts and Days:** Adjust availability of employees manually (!= vacation days) [here](/user-view/configuration/blocked-shifts), e.g. block all night shifts, if person is not allowed to work at night or block each thursday if employee does not have to work on thursdays.
+- **Weights**: Adjust the importance of objectives in the general objective function [here](./weights).
+
+- **Blocked Shifts and Days:** Adjust availability of employees manually (!= vacation days) [here](./blocked-shifts), e.g. block all night shifts if the person is not allowed to work at night, or block each Thursday if the employee does not work on Thursdays.
 
 
 ## Light-Version Exclusives
 
-- **Vacation Days**: Manually configure vacation days and free shifts, as they are normally set in TimeOffice and imported automatically [here](/user-view/configuration/vacation-days).
+- **Vacation Days**: Manually configure vacation days and free shifts, as they are normally set in TimeOffice and imported automatically [here](./vacation-days).
 
-- **Employees**: Modify employee information that is typically managed in TimeOffice [here](/user-view/configuration/staff).
+- **Employees**: Modify employee information that is typically managed in TimeOffice [here](./staff).
 
-- **Planned Shifts:** Preplan fixed shifts, e.g. special shifts (Z60). Normally done in TimeOffice, but in light-version it can be changed [here](/user-view/configuration/planned-shifts)
+- **Planned Shifts:** Preplan fixed shifts, e.g. special shifts (Z60). Normally done in TimeOffice, but in light-version it can be changed [here](./planned-shifts)
