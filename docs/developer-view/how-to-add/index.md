@@ -9,21 +9,25 @@ The shift scheduling system has three main extensible components:
 
 ### Constraints
 **Rules and requirements** that must be satisfied in any valid schedule. Constraints define what is allowed or forbidden, such as "An employee cannot work more than 8 hours per day".
+
 ### Objectives
 **Goals to optimize** when multiple valid schedules exist. Objectives define what makes one schedule better than another, such as "Minimize overtime hours".
 
 ## When to Add Each Component
-**[Adding Variables](./how-to-add-variable.md):**
+### **[Adding Variables](./how-to-add-variable.md)**
+
 - You need to track new decision points in your scheduling problem
 - You want to introduce new types of assignments or allocations
 - You need intermediate calculations that other constraints or objectives will reference
 
-**[Adding Constraints](./how-to-add-constraint.md)**
+### **[Adding Constraints](./how-to-add-constraint.md)**
+
 - You have new business rules or requirements that must be enforced
 - You need to ensure certain scheduling patterns are followed or avoided
 - You want to add compliance requirements or safety regulations
 
-**[Adding Objectives](./how-to-add-objective.md)**
+### **[Adding Objectives](./how-to-add-objective.md)**
+
 - You want to optimize for new criteria beyond existing goals
 - You need to balance competing priorities in your scheduling decisions
 - You want to improve specific aspects of schedule quality
