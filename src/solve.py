@@ -74,7 +74,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
         MaximizeEmployeeWishesObjective(3.0, employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
-        EverySecondWeekendFreeObjective(100.0, employees, days, shifts),
+        EverySecondWeekendFreeObjective(1.0, employees, days, shifts),
     ]
 
     model = Model()
