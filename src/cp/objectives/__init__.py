@@ -23,3 +23,7 @@ from .free_days_after_night_shift_phase import (
 from .maximize_wishes import (
     MaximizeEmployeeWishesObjective as MaximizeEmployeeWishesObjective,
 )
+
+from .every_second_weekend_free import (
+    EverySecondWeekendFreeObjective as EverySecondWeekendFreeObjective,
+)
