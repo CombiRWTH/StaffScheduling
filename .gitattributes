@@ -1,0 +1,3 @@
+ExampleSolutionView.html linguist-documentation  # Exclude from stats
+docs/** linguist-documentation
+cases/** linguist-generated
