@@ -1,3 +1,6 @@
+!!! note "Likelihood of Confusion"
+    Different then the constraint [Free day after Night Shift Phase](./free-day-after-night-shift-phase.md).
+
 --8<--
 user-view/list-of-conditions.md:free-days-after-night-shift-phase
 --8<--

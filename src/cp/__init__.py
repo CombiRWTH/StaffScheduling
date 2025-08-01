@@ -21,6 +21,7 @@ from .objectives import (
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
     FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
     MaximizeEmployeeWishesObjective as MaximizeEmployeeWishesObjective,
+    EverySecondWeekendFreeObjective as EverySecondWeekendFreeObjective,
 )
 from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,

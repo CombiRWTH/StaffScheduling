@@ -20,6 +20,7 @@ from cp import (
     PlannedShiftsConstraint,
     FreeDaysAfterNightShiftPhaseObjective,
     MaximizeEmployeeWishesObjective,
+    EverySecondWeekendFreeObjective,
 )
 from datetime import date
 import logging
@@ -65,7 +66,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         PlannedShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
-        FreeDaysNearWeekendObjective(10.0, employees, days),
+        FreeDaysNearWeekendObjective(2.0, employees, days),
         MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
         MinimizeHiddenEmployeesObjective(100.0, employees, days, shifts),
         MinimizeOvertimeObjective(4.0, employees, days, shifts),
@@ -73,6 +74,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
         MaximizeEmployeeWishesObjective(3.0, employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
+        EverySecondWeekendFreeObjective(1.0, employees, days, shifts),
     ]
 
     model = Model()
