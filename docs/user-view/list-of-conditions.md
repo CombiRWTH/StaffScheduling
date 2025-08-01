@@ -19,6 +19,8 @@ We differentiate between two types of conditions:
 ## All Constraints
 
 ### Free day after night shift phase [^4]
+!!! note "Likelihood of Confusion"
+    Different then the constraint [Free days after Night Shift Phase](#free-days-after-night-shift-phase)
 # --8<-- [start:user-free-day-after-night-shift-phase]
 According to recommendations for the healthy organization of night and shift work, workers should have at least 24 hours of free time after a night shift.
 This ensures that workers have sufficient rest after a night shift.
@@ -114,7 +116,7 @@ Vacation days must remain free, and the day before a vacation day no night shift
 # Objectives
 All the objectives are combined (added) to a total objective function
 that the minimum will be approximated from. Each objective has a weight by which one
-could change the importance of a specific objective. Those weights are set in `src/cp/solve.py` and should be always greater or equal to $1.0$:
+could change the importance of a specific objective. Those weights are set in `src/cp/solve.py` and should be always greater or equal to 1.0:
 
 ``` python
 objectives = [
@@ -124,10 +126,12 @@ objectives = [
     MinimizeOvertimeObjective(4.0, employees, days, shifts),
     NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
     RotateShiftsForwardObjective(1.0, employees, days, shifts),
+    EverySecondWeekendFreeObjective(1.0, employees, days, shifts),
 ]
 ```
 
 ## Navigation Links
+- [Every Second Weekend Free Objective](#every-second-weekend-free-objective)
 - [Free days after night shift phase](#free-days-after-night-shift-phase)
 - [Free days near weekend](#free-days-near-weekend)
 - [Maximize Wishes](#maximize-wishes)
@@ -139,13 +143,19 @@ objectives = [
 
 ## All Objectives
 
+### Every second weekend free objective
+# --8<-- [start:every-second-weekend-free]
+Rewards if an employee has every second weekend (Sat, Sun) free.
+# --8<-- [end:every-second-weekend-free]
+
+!!! tip "Feature Request"
+    In the final presentation of our project another implemenation of [Free Days Near Weekend](../developer-view/conditions/free-days-near-weekend.md) was requested. This is our new, complementary objective, but there is room for improvement. More details can be found in this open [issue](https://github.com/CombiRWTH/StaffScheduling/issues/173).
+
 
 ### Free days after night shift phase [^2]
-# --8<-- [start:free-days-after-night-shift-phase]
 !!! note "Likelihood of Confusion"
-
-    Different then the constraint [Free day after Night Shift Phase](#free-day-after-night-shift-phase-4)
-
+    Different then the constraint [Free day after Night Shift Phase](#free-day-after-night-shift-phase)
+# --8<-- [start:free-days-after-night-shift-phase]
 There is also a constraint (soft) called Free day after night shift phase, which ensures that there are at least 24h free after a night shift phase.
 This objective promotes anthoher 24h free after night shift phase (in total 48h, meaning two days).
 # --8<-- [end:free-days-after-night-shift-phase]
