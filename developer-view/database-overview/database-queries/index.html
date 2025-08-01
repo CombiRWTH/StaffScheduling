@@ -1,0 +1,2286 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://combirwth.github.io/StaffScheduling/developer-view/database-overview/database-queries/">
+      
+      
+        <link rel="prev" href="../database-tables/">
+      
+      
+        <link rel="next" href="../../how-to-add/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>Queries - Staff Scheduling</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.342714a4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#database-queries" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Staff Scheduling" class="md-header__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Staff Scheduling
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Queries
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Staff Scheduling" class="md-nav__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Staff Scheduling
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../user-view/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    User View
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            User View
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/problem-definition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Problem Definition
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/list-of-conditions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    List of Conditions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/getting-started-light-version/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started (Light)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../user-view/configuration/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            Configuration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/configuration/staff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Assemble Staff
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/configuration/vacation-days/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Modify Vacation Days
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/configuration/forbidden-days/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Modify Forbidden Days / Shifts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/configuration/weights/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Adapting Weights
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/configuration/rounds-permissions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Modify Round Permissions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/configuration/qualifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Qualification Mapping
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/configuration/min-staff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Minmal Number of Staff
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/configuration/blocked-shifts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Blocking Shifts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-view/configuration/planned-shifts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Preplanning Shifts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Developer View
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developer View
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ortools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Google's OR Tools and SAT-Solver
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../codebase-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Codebase Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started-dev/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting-Started (Dev)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Conditions
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            Conditions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5_1" id="__nav_3_5_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Constraints
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_5_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5_1">
+            <span class="md-nav__icon md-icon"></span>
+            Constraints
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/free-day-after-night-shift-phase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Free day after night shift phase
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/hierarchy-of-intermediate-shifts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hierarchy of intermediate shifts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/max-one-shift-per-day/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Max one shift per day
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/minimum-number-of-staff-per-shift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Minimum number of staff per shift
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/min-rest-time/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Minimum rest time
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/planned-shifts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Planned shifts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/rounds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rounds (Visiten)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/target-working-time-per-month/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Target working time per month
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/vacation-days-and-free-shifts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Vacation days and free shifts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5_2" id="__nav_3_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Objectives
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            Objectives
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/every-second-weekend-free/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Every second weekend free
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/free-days-after-night-shift-phase-objective/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Free days after night shift phase
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/free-days-near-weekend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Free days near weekend
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/maximize-wishes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Maximize Wishes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/minimize-hidden-employees/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Minimize hidden employees
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/minimize-number-of-consecutive-night-shifts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Minimize number of consecutive night shifts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/minimize-overtime-and-undertime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Minimize overtime and undertime
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/not-too-many-consecutive-working-days/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Not too many consecutive working days
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../conditions/rotate-shifts-forwards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rotate shifts forwards
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Database
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            Database
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../database-connection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Connection and Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../database-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tables
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Queries
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Queries
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#database-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Database Queries
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Database Queries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-plan-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Plan Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-shift_informationjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export shift_information.json
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-employeesjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export employees.json
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-target_working_minutesjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export target_working_minutes.json
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-worked_sundaysjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export worked_sundays.json
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-plan-dates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get plan dates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-free_shifts_and_vacation_daysjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export free_shifts_and_vacation_days.json
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Export free_shifts_and_vacation_days.json">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-for-vacation-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query for vacation days
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-forbidden-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query for forbidden days
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-forbidden-shifts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query for forbidden shifts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-accounting-entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query for accounting entries
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../how-to-add/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    How-to-Add Guides
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_7" id="__nav_3_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7">
+            <span class="md-nav__icon md-icon"></span>
+            How-to-Add Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to-add/how-to-add-constraint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    How to add a Constraint
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to-add/how-to-add-objective/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    How to add a Objective
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to-add/how-to-add-variable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    How to add a Variable
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../timeoffice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    TimeOffice
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../json-dataformat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    JSON Dataformats
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#database-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Database Queries
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Database Queries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-plan-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Plan Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-shift_informationjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export shift_information.json
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-employeesjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export employees.json
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-target_working_minutesjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export target_working_minutes.json
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-worked_sundaysjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export worked_sundays.json
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-plan-dates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get plan dates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-free_shifts_and_vacation_daysjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export free_shifts_and_vacation_days.json
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Export free_shifts_and_vacation_days.json">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-for-vacation-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query for vacation days
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-forbidden-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query for forbidden days
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-forbidden-shifts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query for forbidden shifts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-accounting-entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query for accounting entries
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Queries</h1>
+
+<h2 id="database-queries">Database Queries<a class="headerlink" href="#database-queries" title="Permanent link">&para;</a></h2>
+<p>Overview of the queries used to retrieve the needed personal data from the database. All of these queries can be found within the <code>export_data.py</code>-file, each capsulated in a separate function for simplified expansion.</p>
+<h3 id="basic-plan-data">Basic Plan Data<a class="headerlink" href="#basic-plan-data" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">Prim</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;plan_id&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">RefPlanungseinheiten</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;planning_unit&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">VonDat</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;from_date&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">BisDat</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;till_date&#39;</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">TPlan</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">RefPlanungseinheiten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">{</span><span class="n">planning_unit</span><span class="err">}</span>
+<span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="n">VonDat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">CONVERT</span><span class="p">(</span><span class="nb">date</span><span class="p">,</span><span class="s1">&#39;{from_date}&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+<span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="n">BisDat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">CONVERT</span><span class="p">(</span><span class="nb">date</span><span class="p">,</span><span class="s1">&#39;{till_date}&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+</code></pre></div>
+<p>We use the entity <code>TPlan</code> to retrieve the <code>plan identification number</code> of a corresponding schedule. The ID is the numeric primay key <code>Prim</code> of the entity. It is unique by a given planning unit and a period of time.
+<code>RefPlanungseinheiten</code> is the reference to the underlying planning unit and stored in <code>TPlanungseinheiten</code>.
+To get a certain id <code>VonDat</code> needs to be the first day of a month and <code>BisDat</code> the last day of a month.
+The <code>CONVERT</code>-function uses the style code "23" that specifies the date format <code>yyyy-mm-dd</code>.</p>
+<h3 id="export-shift_informationjson">Export shift_information.json<a class="headerlink" href="#export-shift_informationjson" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">RefDienste</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;shift_id&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Kommt</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;start&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Geht</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;end&#39;</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">TDiensteSollzeiten</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">RefDienste</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;{shift_ids[&quot;Frühschicht&quot;][&quot;id&quot;]}&#39;</span>
+<span class="w">    </span><span class="k">OR</span><span class="w"> </span><span class="n">RefDienste</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;{shift_ids[&quot;Spätschicht&quot;][&quot;id&quot;]}&#39;</span>
+<span class="w">    </span><span class="k">OR</span><span class="w"> </span><span class="n">RefDienste</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;{shift_ids[&quot;Nachtschicht&quot;][&quot;id&quot;]}&#39;</span>
+<span class="w">    </span><span class="k">OR</span><span class="w"> </span><span class="n">RefDienste</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;{shift_ids[&quot;Zwischendienst&quot;][&quot;id&quot;]}&#39;</span>
+<span class="w">    </span><span class="k">OR</span><span class="w"> </span><span class="n">RefDienste</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;{shift_ids[&quot;Sonderdienst&quot;][&quot;id&quot;]}&#39;</span>
+</code></pre></div>
+<p>We use the entity <code>TDiensteSollzeiten</code> to retrieve the start and end times for specific work shifts. To collect the time information a defined set of shift types (Frühschicht, Spätschicht, Nachtschicht, Zwischendienst und Sonderdienst) is used.
+The unique identifier for a shift is a reference in <code>TDiensteSollzeiten</code> and stored in <code>RefDienste</code> as an integer.
+The entity contains the start <code>Kommt</code> and the end <code>Geht</code> of a shift, referenced by their shift ID. The date format is <code>yyyy-mm-dd hh-mi-ss</code>.
+These values are further used to compute the shift duration, break duration and the total working minutes of a shift.</p>
+<h3 id="export-employeesjson">Export employees.json<a class="headerlink" href="#export-employeesjson" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">a</span><span class="p">.</span><span class="n">Prim</span><span class="p">,</span>
+<span class="w">    </span><span class="n">a</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">a</span><span class="p">.</span><span class="n">Vorname</span><span class="p">,</span>
+<span class="w">    </span><span class="n">a</span><span class="p">.</span><span class="n">PersNr</span><span class="p">,</span>
+<span class="w">    </span><span class="n">t</span><span class="p">.</span><span class="n">Bezeichnung</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;Beruf&#39;</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">TPlanPersonal</span><span class="w"> </span><span class="n">b</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">TPersonal</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">RefPersonal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">Prim</span>
+<span class="k">LEFT</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">TBerufe</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">RefBerufe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">Prim</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">RefPlan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">{</span><span class="n">plan_id</span><span class="err">}</span>
+</code></pre></div>
+We use this query to retrieve detailed information about the personal staff. The following tables are involved:
+- <code>TPersonal</code> (a): stores detailed employee information
+- <code>TPlanPersonal</code> (b): links plannings entities
+- <code>TBerufe</code> (t): contains short and long descriptions of occupations</p>
+<p>The <code>Inner Join</code> ensures that only staff information with exisiting records are included. The <code>Left Join</code> is used to receive the job description for each employees, if available. Employees without a job reference will still appear, with <code>NULL</code> in the <code>Beruf</code> column.</p>
+<p>For a specific <code>plan_id</code> we obtain the unique numeric primary key <code>Prim</code>, the surname <code>Name</code> and first name <code>Vorname</code>, the personnel number <code>PersNr</code> and the occupation <code>Bezeichnung</code> of all employees within the underlying work schedule.</p>
+<h3 id="export-target_working_minutesjson">Export target_working_minutes.json<a class="headerlink" href="#export-target_working_minutesjson" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">PersNr</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;name&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Vorname</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;firstname&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pkt</span><span class="p">.</span><span class="n">RefKonten</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pkt</span><span class="p">.</span><span class="n">Wert2</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">TPersonalKontenJeMonat</span><span class="w"> </span><span class="n">pkt</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">TPersonal</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">pkt</span><span class="p">.</span><span class="n">RefPersonal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">Prim</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="p">(</span><span class="n">pkt</span><span class="p">.</span><span class="n">RefKonten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">  </span><span class="k">OR</span><span class="w"> </span><span class="n">pkt</span><span class="p">.</span><span class="n">RefKonten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">19</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="n">pkt</span><span class="p">.</span><span class="n">RefKonten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">55</span><span class="p">)</span>
+<span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="n">pkt</span><span class="p">.</span><span class="n">Monat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;202411&#39;</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">Name</span><span class="w"> </span><span class="k">asc</span>
+</code></pre></div>
+<p>We use the entity <code>TPersonalKontenJeMonat</code> to retrieve the working hours of each employee per month.
+We join this entity with <code>TPersonal</code> to obtain the employee's <code>Name</code> and <code>PersNr</code>.
+The <code>RefKonten</code> field in the <code>TPersonalKontenJeMonat</code> entity provides the relevant type of Konto (e.g., SOLL_Monat). All types of Konten can be found in the entity <code>TKonten</code>.</p>
+<p>In our case these are:
+1. "1" := SOLL_Monat (first Column in TimeOffice)
+2. "19" := Arbeitsstunden
+3. "55" := Total</p>
+<p>The tricky thing here is that the different Konten are only created when needed.
+For example, if an employee has not yet been scheduled in the plan, only a "1" Konto is present in the entity <code>TPersonalKontenJeMonat</code>.
+The same applies to the "19" and "55" Konten.
+Some employees only have a "19" Arbeitsstunden Konto, which represents the "Arbeitsstunden / IST Stunden" respectively.
+Other employees have both a "19" and a "55" Konto.
+In that case the "55" Konto represents the correct "IST Stunden" ("19" = "55" or "19" &lt; "55").</p>
+<p>Once we have identified the correct values using the entity <code>RefKonten</code>, we can obtain the hours from <code>Wert2</code>.
+Since we are using working minutes and not hours, we must multiply by 60 to get the correct number of working minutes.</p>
+<h3 id="export-worked_sundaysjson">Export worked_sundays.json<a class="headerlink" href="#export-worked_sundaysjson" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Prim</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Vorname</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">firstname</span><span class="p">,</span>
+<span class="w">    </span><span class="k">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="k">CAST</span><span class="p">(</span><span class="n">pkt</span><span class="p">.</span><span class="n">Datum</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">DATE</span><span class="p">))</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">worked_sundays</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">TPersonalKontenJeTag</span><span class="w"> </span><span class="n">pkt</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">TPersonal</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">pkt</span><span class="p">.</span><span class="n">RefPersonal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">Prim</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">pkt</span><span class="p">.</span><span class="n">RefKonten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">40</span>
+<span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="n">pkt</span><span class="p">.</span><span class="n">Datum</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="err">{</span><span class="n">from_date</span><span class="err">}</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="err">{</span><span class="n">till_date</span><span class="err">}</span>
+<span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="n">DATENAME</span><span class="p">(</span><span class="n">WEEKDAY</span><span class="p">,</span><span class="w"> </span><span class="n">pkt</span><span class="p">.</span><span class="n">Datum</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Sonntag&#39;</span>
+<span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="n">pkt</span><span class="p">.</span><span class="n">Wert</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span>
+<span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Prim</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Vorname</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span>
+<span class="w">    </span><span class="n">worked_sundays</span><span class="w"> </span><span class="k">DESC</span>
+</code></pre></div>
+<p>We use the <code>TPersonalKontenjeTag</code> table to retrieve the number of worked sunday shifts for each employee for the last 12 months. The table stores daily entries and account types per employee. The <code>Inner Join</code> links this table with <code>TPersonal</code> to receive the employees' unique primary key <code>Prim</code>, as well as the surname <code>Name</code> and the first name <code>Vorname</code>. In the following the conditions are described:
+- <code>pkt.RefKonten = 40</code>:  "40" is the account key for a sunday shift
+- <code>pkt.Datum BETWEEN {from_date} AND {till_date}</code>: defines the date range, in our case, of 12 months
+- <code>DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'</code>: filters the weekday, for this query it is <code>sunday</code>
+- <code>pkt.Wert &gt; 0</code>: includes only days with positive values, means actual work days</p>
+<p>Lastly we aggregate the worked days per employee with <code>GROUP</code> and rank them by the number of worked shifts on a sunday with <code>ORDER BY</code>.</p>
+<h3 id="get-plan-dates">Get plan dates<a class="headerlink" href="#get-plan-dates" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="k">CAST</span><span class="p">(</span><span class="n">VonDat</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">DATE</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;START&#39;</span><span class="p">,</span>
+<span class="k">CAST</span><span class="p">(</span><span class="n">BisDat</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">DATE</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;END&#39;</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">TPlan</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">Prim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;{plan_id}&#39;</span>
+</code></pre></div>
+<p>We use the <code>TPlan</code> table to get the start and the end dates of a specific plan defined by the given plan ID <code>plan_id</code>. The date format is <code>yyyy-mm-dd</code>.</p>
+<h3 id="export-free_shifts_and_vacation_daysjson">Export free_shifts_and_vacation_days.json<a class="headerlink" href="#export-free_shifts_and_vacation_daysjson" title="Permanent link">&para;</a></h3>
+<h4 id="query-for-vacation-days">Query for vacation days<a class="headerlink" href="#query-for-vacation-days" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Prim</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Prim</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Vorname</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">firstname</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pkg</span><span class="p">.</span><span class="n">Datum</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">vacation_days</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">TPlanPersonalKommtGeht</span><span class="w"> </span><span class="n">pkg</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">TPersonal</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">pkg</span><span class="p">.</span><span class="n">RefPersonal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">Prim</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">pkg</span><span class="p">.</span><span class="n">Datum</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="k">CONVERT</span><span class="p">(</span><span class="nb">date</span><span class="p">,</span><span class="s1">&#39;{START_DATE}&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+<span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="k">CONVERT</span><span class="p">(</span><span class="nb">date</span><span class="p">,</span><span class="s1">&#39;{END_DATE}&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+<span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="n">pkg</span><span class="p">.</span><span class="n">RefgAbw</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">2434</span><span class="p">,</span><span class="w"> </span><span class="mi">2435</span><span class="p">,</span><span class="w"> </span><span class="mi">2091</span><span class="p">)</span>
+</code></pre></div>
+<p>This SQL query retrieves a list of employees and the dates they took (additional) vacation days within a specified date range. To get these information we use the <code>TPlanPersonalKommtGeht</code> table which stores the attendance and absence records, including absence types, for each employee. To obtain the surname <code>Name</code> and the first name <code>Vorname</code> we use the <code>Inner Join</code> with the <code>TPersonal</code> table. The last column <code>vacation_days</code> stores the days when the vacation will take place.
+In the <code>WHERE</code> section, we first filter the records in the desired date period. The <code>CONVERT</code>-function again uses the style code "23" that specifies the date format <code>yyyy-mm-dd</code>. In addition, we filter the <code>RefgAbw</code> for specific vacation types: "20", "2434", "2435" represent a standard vacation day <code>Urlaub</code>, "2091" represents an additional vacation day <code>Zusatzurlaub</code>. Full-day absence are stored in <code>RefgAbw</code>.</p>
+<h4 id="query-for-forbidden-days">Query for forbidden days<a class="headerlink" href="#query-for-forbidden-days" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Prim</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Prim</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;name&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Vorname</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;firstname&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pkg</span><span class="p">.</span><span class="n">Datum</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;forbidden_days&#39;</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">TPlanPersonalKommtGeht</span><span class="w"> </span><span class="n">pkg</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">TPersonal</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">pkg</span><span class="p">.</span><span class="n">RefPersonal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">Prim</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">pkg</span><span class="p">.</span><span class="n">Datum</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="k">CONVERT</span><span class="p">(</span><span class="nb">date</span><span class="p">,</span><span class="s1">&#39;{START_DATE}&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+<span class="k">AND</span><span class="w"> </span><span class="k">CONVERT</span><span class="p">(</span><span class="nb">date</span><span class="p">,</span><span class="s1">&#39;{END_DATE}&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+<span class="k">AND</span><span class="w"> </span><span class="n">pkg</span><span class="p">.</span><span class="n">RefgAbw</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">2434</span><span class="p">,</span><span class="w"> </span><span class="mi">2435</span><span class="p">,</span><span class="w"> </span><span class="mi">2091</span><span class="p">)</span>
+</code></pre></div>
+<p>This query is very similar to the <code>vacation query</code>. To get the information we again use the <code>TPlanPersonalKommtGeht</code> table and obtain the surname <code>Name</code> and the first name <code>Vorname</code> with the <code>Inner Join</code> with the <code>TPersonal</code> table.
+The difference is that for each employee, we want to retrieve the full-day absences from <code>RefgAbw</code> that are not vacation days. Therefore, the last column <code>forbidden_days</code> stores the days on which an employee is not be selected for a shift for reasons other than vacation. Other reasons could be, for example:
+- parental leave (absence type "1078")
+- pension (absence type "1086")
+- day off (absence type "1089")</p>
+<p>The distinction is necessary here because a vacation day has an impact on an employee's target working hours, while a day off, for example, has no impact.</p>
+<h4 id="query-for-forbidden-shifts">Query for forbidden shifts<a class="headerlink" href="#query-for-forbidden-shifts" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Prim</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Prim</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;name&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">Vorname</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;firstname&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pkg</span><span class="p">.</span><span class="n">Datum</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;planned_shifts&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">d</span><span class="p">.</span><span class="n">KurzBez</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s1">&#39;dienst&#39;</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">TPlanPersonalKommtGeht</span><span class="w"> </span><span class="n">pkg</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">TPersonal</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">pkg</span><span class="p">.</span><span class="n">RefPersonal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">Prim</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">TDienste</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">pkg</span><span class="p">.</span><span class="n">RefDienste</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">Prim</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">pkg</span><span class="p">.</span><span class="n">Datum</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="k">CONVERT</span><span class="p">(</span><span class="nb">date</span><span class="p">,</span><span class="s1">&#39;{START_DATE}&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+<span class="k">AND</span><span class="w"> </span><span class="k">CONVERT</span><span class="p">(</span><span class="nb">date</span><span class="p">,</span><span class="s1">&#39;{END_DATE}&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+<span class="k">AND</span><span class="w"> </span><span class="n">pkg</span><span class="p">.</span><span class="n">RefgAbw</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span>
+</code></pre></div>
+<p>This query retrieves the already planned work shifts for other planning units for employees within a given time period. This means that an employee working in another planning unit is unavailable for our schedule.
+To do this, we again use <code>TPlanPersonalKommtGeht</code> and <code>TPersonal</code> for the same information, as well as <code>TDienste</code> to identify the already planned shift.
+To obtain the desired records, i.e., the actual scheduled shifts, we exclude all absence records, with <code>RefgAbw</code> set to <code>NULL</code>. This means that the employees are already scheduled to work.</p>
+<h4 id="query-for-accounting-entries">Query for accounting entries<a class="headerlink" href="#query-for-accounting-entries" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">RefPersonal</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Prim</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Datum</span>
+<span class="k">FROM</span><span class="w">  </span><span class="n">TPersonalKontenJeTag</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">RefPlanungsEinheiten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">{</span><span class="n">planning_unit</span><span class="err">}</span>
+<span class="k">AND</span><span class="w"> </span><span class="n">Datum</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="k">CONVERT</span><span class="p">(</span><span class="nb">date</span><span class="p">,</span><span class="s1">&#39;{START_DATE}&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+<span class="k">AND</span><span class="w"> </span><span class="k">CONVERT</span><span class="p">(</span><span class="nb">date</span><span class="p">,</span><span class="s1">&#39;{END_DATE}&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+</code></pre></div>
+<p>We use <code>TPersonalKontenJeTag</code> to retrieve the present days of the employees of a desired planning unit. The <code>CONVERT</code>-function again uses the style code "23" that specifies the date format <code>yyyy-mm-dd</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tabs.sticky", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>
