@@ -58,7 +58,7 @@ This will install all required dependencies.
 
 After installing dependencies, you can start solving staff scheduling problems by running
 ```bash
-uv run staff-scheduling solve 3
+uv run staff-scheduling solve 3 01.11.2024 30.11.2024
 ```
 The three corresponds to the `case_id` meaning in the folder `cases/3`. If you want to create your own case
 simply copy the folder 3 and rename it to another integer. Then you can change the number of employees etc., see [configuration](../configuration).
