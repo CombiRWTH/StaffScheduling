@@ -237,6 +237,11 @@ def export_target_working_minutes_to_json(
         )
     )
 
+    # Ensure expected columns exist even if a Konto had no rows this month
+    for col in ("Wert_RefKonten1", "Wert_RefKonten19", "Wert_RefKonten55"):
+        if col not in df_wide.columns:
+            df_wide[col] = 0
+
     # Choosing right Konto (see DatabaseQueries.md)
     df_wide["Wert_RefKonten19_55"] = df_wide[
         ["Wert_RefKonten19", "Wert_RefKonten55"]
