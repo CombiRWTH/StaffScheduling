@@ -50,7 +50,7 @@ There you need to define the database credentials, which you should be told by y
 
 Then you can use the `fetch` command.
 ```bash
-uv run staff-scheduling fetch 77 2024-11-01 2024-11-30
+uv run --env-file .env staff-scheduling fetch 77 2024-11-01 2024-11-30
 ```
 This reads the data from the database from Planungseinheit 77 in November 2024 and creates a folder
 in `cases/`.
