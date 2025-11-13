@@ -1,14 +1,17 @@
-from solution import Solution
-from .variables import Variable
-from .constraints import Constraint
-from .objectives import Objective
+import logging
+import timeit
+
 from ortools.sat.python.cp_model import (
     CpModel,
     CpSolver,
     IntVar,
 )
-import logging
-import timeit
+
+from solution import Solution
+
+from .constraints import Constraint
+from .objectives import Objective
+from .variables import Variable
 
 
 class Model:
@@ -79,10 +82,7 @@ class Model:
         print(f"  - info           : {solver.solution_info()}")
 
         solution = Solution(
-            {
-                variable.name: solver.value(variable)
-                for variable in self._variables.values()
-            },
+            {variable.name: solver.value(variable) for variable in self._variables.values()},
             solver.objective_value,
         )
 
