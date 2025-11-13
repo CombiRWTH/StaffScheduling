@@ -49,4 +49,4 @@ typeCheckingMode = "strict"
 line-length = 120
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "W", "I", "C4", "ISC", "PT"]
+select = ["E", "F", "B", "W", "I", "C4", "ISC", "PT", "Q"]
