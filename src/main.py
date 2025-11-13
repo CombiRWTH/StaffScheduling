@@ -1,9 +1,12 @@
+from datetime import datetime
+
 import click
-from solve import main as solver
-from plot import main as plotter
+
 from db.export_main import main as fetcher
 from db.import_main import main as inserter
 from loader import FSLoader
+from plot import main as plotter
+from solve import main as solver
 
 
 @click.group()
@@ -17,7 +20,7 @@ def cli():
 @click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.option("--timeout", default=300, help="Timeout in seconds for the solver")
-def solve(unit: int, start: click.DateTime, end: click.DateTime, timeout: int):
+def solve(unit: int, start: datetime, end: datetime, timeout: int):
     """
     Solve the scheduling problem for a given case and start date.
 
@@ -28,9 +31,7 @@ def solve(unit: int, start: click.DateTime, end: click.DateTime, timeout: int):
     END is the end date for the planning period in YYYY-MM-DD format.
     """
 
-    click.echo(
-        f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()}."
-    )
+    click.echo(f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()}.")
 
     solver(
         unit=unit,
@@ -58,40 +59,40 @@ def plot(case: int, debug: bool):
 @click.argument("unit", type=click.INT)
 @click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
-def fetch(unit: int, start, end):
+def fetch(unit: int, start: datetime, end: datetime):
     """
     Fetch data from the DB and write Json Files
     """
-    start = start.date()  # convert datetime.datetime to datetime.date
-    end = end.date()
-    fetcher(planning_unit=unit, from_date=start, till_date=end)
+    start_date = start.date()  # convert datetime.datetime to datetime.date
+    end_date = end.date()
+    fetcher(planning_unit=unit, from_date=start_date, till_date=end_date)
 
 
 @cli.command()
 @click.argument("unit", type=click.INT)
 @click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
-def insert(unit: int, start, end):
+def insert(unit: int, start: datetime, end: datetime):
     """
     Insert data from Json Solution Files to DB
     """
-    start = start.date()  # convert datetime.datetime to datetime.date
-    end = end.date()
-    inserter(planning_unit=unit, from_date=start, till_date=end, cli_input="i")
+    start_date = start.date()  # convert datetime.datetime to datetime.date
+    end_date = end.date()
+    inserter(planning_unit=unit, from_date=start_date, till_date=end_date, cli_input="i")
 
 
 @cli.command()
 @click.argument("unit", type=click.INT)
 @click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
-def delete(unit: int, start, end):
+def delete(unit: int, start: datetime, end: datetime):
     """
     Delete data from Json Solution Files to DB, effectivly resetting the changes
     stored in solution.
     """
-    start = start.date()  # convert datetime.datetime to datetime.date
-    end = end.date()
-    inserter(planning_unit=unit, from_date=start, till_date=end, cli_input="d")
+    start_date = start.date()  # convert datetime.datetime to datetime.date
+    end_date = end.date()
+    inserter(planning_unit=unit, from_date=start_date, till_date=end_date, cli_input="d")
 
 
 def main():

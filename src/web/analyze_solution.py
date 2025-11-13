@@ -1,19 +1,17 @@
 import re
-from datetime import datetime, timedelta
 from collections import defaultdict
-from typing import Dict, List
+from datetime import datetime, timedelta
+
 from employee import Employee
 from shift import Shift
 
 
-def calculate_forward_rotation_violations(shifts_assigned: List[int]) -> int:
+def calculate_forward_rotation_violations(shifts_assigned: list[int]) -> int:
     valid_shifts = [s for s in shifts_assigned if s in {0, 2, 3}]
-    return sum(
-        1 for i in range(len(valid_shifts) - 1) if valid_shifts[i + 1] < valid_shifts[i]
-    )
+    return sum(1 for i in range(len(valid_shifts) - 1) if valid_shifts[i + 1] < valid_shifts[i])
 
 
-def calculate_consecutive_working_days(days: List[datetime.date]) -> int:
+def calculate_consecutive_working_days(days: list[datetime.date]) -> int:
     streak = 1
     violations = 0
     for i in range(1, len(days)):
@@ -28,14 +26,14 @@ def calculate_consecutive_working_days(days: List[datetime.date]) -> int:
     return violations
 
 
-def calculate_no_free_weekend(schedule: Dict[datetime.date, int]) -> int:
+def calculate_no_free_weekend(schedule: dict[datetime.date, int]) -> int:
     worked_weekend = [d for d in schedule if d.weekday() in [5, 6]]
     if worked_weekend and all(d in schedule for d in worked_weekend):
         return 1
     return 0
 
 
-def calculate_consecutive_night_shifts(shifts_assigned: List[int]) -> int:
+def calculate_consecutive_night_shifts(shifts_assigned: list[int]) -> int:
     night_streak = 0
     violations = 0
     for s in shifts_assigned:
@@ -50,15 +48,13 @@ def calculate_consecutive_night_shifts(shifts_assigned: List[int]) -> int:
     return violations
 
 
-def calculate_overtime(
-    shifts_assigned: List[int], shift_duration_map: Dict[int, int], soll_minutes: int
-) -> float:
+def calculate_overtime(shifts_assigned: list[int], shift_duration_map: dict[int, int], soll_minutes: int) -> float:
     ist_minutes = sum(shift_duration_map.get(s, 450) for s in shifts_assigned)
     overtime = ist_minutes - soll_minutes
     return max(overtime / 60, 0)
 
 
-def calculate_no_free_days_around_weekend(schedule: Dict[datetime.date, int]) -> int:
+def calculate_no_free_days_around_weekend(schedule: dict[datetime.date, int]) -> int:
     violations = 0
     for d in schedule:
         if d.weekday() == 4 and (d + timedelta(days=1)) in schedule:
@@ -68,7 +64,7 @@ def calculate_no_free_days_around_weekend(schedule: Dict[datetime.date, int]) ->
     return violations
 
 
-def calculate_not_free_after_night_shift(schedule: Dict[datetime.date, int]) -> int:
+def calculate_not_free_after_night_shift(schedule: dict[datetime.date, int]) -> int:
     violations = 0
     for d in schedule:
         if schedule[d] == Shift.NIGHT:
@@ -79,9 +75,7 @@ def calculate_not_free_after_night_shift(schedule: Dict[datetime.date, int]) -> 
     return violations
 
 
-def calculate_total_wish_violations(
-    emp: Employee, schedule: Dict[datetime.date, int], shifts: List[Shift]
-) -> int:
+def calculate_total_wish_violations(emp: Employee, schedule: dict[datetime.date, int], shifts: list[Shift]) -> int:
     violations = 0
 
     # --- SHIFT-OFF WISH VIOLATIONS ---
@@ -106,9 +100,7 @@ def calculate_total_wish_violations(
     return violations
 
 
-def analyze_solution(
-    variables: Dict[str, int], employees: List[Employee], shifts: List[Shift]
-) -> Dict[str, float]:
+def analyze_solution(variables: dict[str, int], employees: list[Employee], shifts: list[Shift]) -> dict[str, float]:
     parsed = defaultdict(dict)  # employee_id → {date: shift_id}
     shift_duration_map = {s.get_id(): s.duration for s in shifts}
     employee_map = {e.get_key(): e for e in employees}
@@ -137,17 +129,11 @@ def analyze_solution(
         days = sorted(schedule)
         shifts_assigned = list(schedule.values())
 
-        forward_rotation_violations += calculate_forward_rotation_violations(
-            shifts_assigned
-        )
+        forward_rotation_violations += calculate_forward_rotation_violations(shifts_assigned)
         consecutive_working_days_gt_5 += calculate_consecutive_working_days(days)
         no_free_weekend += calculate_no_free_weekend(schedule)
-        consecutive_night_shifts_gt_3 += calculate_consecutive_night_shifts(
-            shifts_assigned
-        )
-        total_overtime_hours += calculate_overtime(
-            shifts_assigned, shift_duration_map, emp._target_working_time
-        )
+        consecutive_night_shifts_gt_3 += calculate_consecutive_night_shifts(shifts_assigned)
+        total_overtime_hours += calculate_overtime(shifts_assigned, shift_duration_map, emp._target_working_time)
         no_free_days_around_weekend += calculate_no_free_days_around_weekend(schedule)
         not_free_after_night_shift += calculate_not_free_after_night_shift(schedule)
 

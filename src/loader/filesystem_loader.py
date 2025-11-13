@@ -1,13 +1,14 @@
+import logging
 import os
-from .loader import Loader
+from datetime import date, timedelta
+from json import dump, load
+from os import listdir
+
 from employee import Employee
 from shift import Shift
 from solution import Solution
-from json import load, dump
-import logging
-from os import listdir
-from datetime import date
-from datetime import timedelta
+
+from .loader import Loader
 
 
 class FSLoader(Loader):
@@ -21,15 +22,9 @@ class FSLoader(Loader):
     def get_employees(self) -> list[Employee]:
         fs_employees = self._load_json(self._get_file_path("employees"))["employees"]
         fs_employees_levels = self._load_json(self._get_file_path("employee_types"))
-        fs_employees_levels: dict = {
-            type: level
-            for level, types in fs_employees_levels.items()
-            for type in types
-        }
+        fs_employees_levels: dict = {type: level for level, types in fs_employees_levels.items() for type in types}
 
-        fs_employees_target_working: list = self._load_json(
-            self._get_file_path("target_working_minutes")
-        )["employees"]
+        fs_employees_target_working: list = self._load_json(self._get_file_path("target_working_minutes"))["employees"]
         fs_employees_target: dict = {}
         fs_employees_actual: dict = {}
 
@@ -39,9 +34,7 @@ class FSLoader(Loader):
             if "actual" in fs_employee:
                 fs_employees_actual[fs_employee["key"]] = int(fs_employee["actual"])
 
-        fs_employees_vacation: list = self._load_json(
-            self._get_file_path("free_shifts_and_vacation_days")
-        )["employees"]
+        fs_employees_vacation: list = self._load_json(self._get_file_path("free_shifts_and_vacation_days"))["employees"]
 
         fs_employees_forbidden_days: dict = {}
         fs_employees_forbidden_shifts: dict = {}
@@ -51,13 +44,9 @@ class FSLoader(Loader):
 
         for fs_employee in fs_employees_vacation:
             if "forbidden_days" in fs_employee:
-                fs_employees_forbidden_days[fs_employee["key"]] = fs_employee[
-                    "forbidden_days"
-                ]
+                fs_employees_forbidden_days[fs_employee["key"]] = fs_employee["forbidden_days"]
             if "vacation_days" in fs_employee:
-                fs_employees_vacation_days[fs_employee["key"]] = fs_employee[
-                    "vacation_days"
-                ]
+                fs_employees_vacation_days[fs_employee["key"]] = fs_employee["vacation_days"]
             if "vacation_shifts" in fs_employee:
                 fs_employees_vacation_shifts[fs_employee["key"]] = list(
                     map(lambda x: (x[0], x[1]), fs_employee["vacation_shifts"])
@@ -69,14 +58,10 @@ class FSLoader(Loader):
 
         fs_employees_wish_days: dict = {}
         fs_employees_wish_shifts: dict = {}
-        fs_employees_wishes_and_blocked: list = self._load_json(
-            self._get_file_path("wishes_and_blocked")
-        )["employees"]
+        fs_employees_wishes_and_blocked: list = self._load_json(self._get_file_path("wishes_and_blocked"))["employees"]
         for fs_employee in fs_employees_wishes_and_blocked:
             if "blocked_days" in fs_employee:
-                fs_employees_forbidden_days[fs_employee["key"]].extend(
-                    fs_employee["blocked_days"]
-                )
+                fs_employees_forbidden_days[fs_employee["key"]].extend(fs_employee["blocked_days"])
             if "blocked_shifts" in fs_employee:
                 fs_employees_forbidden_shifts[fs_employee["key"]] = list(
                     map(lambda x: (x[0], x[1]), fs_employee["blocked_shifts"])
@@ -153,15 +138,10 @@ class FSLoader(Loader):
         return base_shifts
 
     def get_days(self, start_date: date, end_date: date) -> list[date]:
-        return [
-            start_date + timedelta(days=i)
-            for i in range(end_date.day - start_date.day + 1)
-        ]
+        return [start_date + timedelta(days=i) for i in range(end_date.day - start_date.day + 1)]
 
     def get_min_staffing(self) -> dict[str, dict[str, dict[str, int]]]:
-        fs_min_staffing = self._load_json(
-            self._get_file_path("minimal_number_of_staff")
-        )
+        fs_min_staffing = self._load_json(self._get_file_path("minimal_number_of_staff"))
         return fs_min_staffing
 
     def get_solution(self, solution_file_name: str) -> Solution:
@@ -188,7 +168,7 @@ class FSLoader(Loader):
         self._write_json(solution_name, data)
 
     def _load_json(self, file_path: str) -> dict:
-        with open(file_path, "r") as file:
+        with open(file_path) as file:
             return load(file)
 
     def _write_json(self, filename: str, data: dict):

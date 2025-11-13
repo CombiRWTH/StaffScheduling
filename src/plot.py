@@ -1,5 +1,5 @@
-from web import App
 from loader import Loader
+from web import App
 
 
 def main(loader: Loader, debug: bool = False):

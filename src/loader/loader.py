@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
+from datetime import date
+
 from employee import Employee
 from shift import Shift
 from solution import Solution
-from datetime import date
 
 
 class Loader(ABC):
+    @abstractmethod
     def __init__(self):
         """
         Initializes the loader.
@@ -19,11 +21,10 @@ class Loader(ABC):
         """
         min_staffing = self.get_min_staffing()
         num_hidden_employees_per_level = {
-            level: max(max(shifts.values()) for shifts in days.values())
-            for level, days in min_staffing.items()
+            level: max(max(shifts.values()) for shifts in days.values()) for level, days in min_staffing.items()
         }
 
-        hidden_employees = []
+        hidden_employees: list[Employee] = []
         last_id = start
         for level, num in num_hidden_employees_per_level.items():
             for new_id in range(last_id, last_id + num):
