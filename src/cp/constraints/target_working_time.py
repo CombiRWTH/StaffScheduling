@@ -65,7 +65,7 @@ class TargetWorkingTimeConstraint(Constraint):
             dfs(0)  # start from zero
             return sorted(reachable)
 
-        shift_durations = list(map(lambda shift: shift.duration, self._shifts))
+        shift_durations = [shift.duration for shift in self._shifts]
         max_duration = max(shift_durations) * len(self._days)
 
         return Domain.FromValues(reachable_sums(shift_durations, max_duration))

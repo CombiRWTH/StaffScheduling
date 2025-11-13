@@ -48,13 +48,11 @@ class FSLoader(Loader):
             if "vacation_days" in fs_employee:
                 fs_employees_vacation_days[fs_employee["key"]] = fs_employee["vacation_days"]
             if "vacation_shifts" in fs_employee:
-                fs_employees_vacation_shifts[fs_employee["key"]] = list(
-                    map(lambda x: (x[0], x[1]), fs_employee["vacation_shifts"])
-                )
+                fs_employees_vacation_shifts[fs_employee["key"]] = [
+                    (x[0], x[1]) for x in fs_employee["vacation_shifts"]
+                ]
             if "planned_shifts" in fs_employee:
-                fs_employees_planned_shifts[fs_employee["key"]] = list(
-                    map(lambda x: (x[0], x[1]), fs_employee["planned_shifts"])
-                )
+                fs_employees_planned_shifts[fs_employee["key"]] = [(x[0], x[1]) for x in fs_employee["planned_shifts"]]
 
         fs_employees_wish_days: dict = {}
         fs_employees_wish_shifts: dict = {}
@@ -63,15 +61,13 @@ class FSLoader(Loader):
             if "blocked_days" in fs_employee:
                 fs_employees_forbidden_days[fs_employee["key"]].extend(fs_employee["blocked_days"])
             if "blocked_shifts" in fs_employee:
-                fs_employees_forbidden_shifts[fs_employee["key"]] = list(
-                    map(lambda x: (x[0], x[1]), fs_employee["blocked_shifts"])
-                )
+                fs_employees_forbidden_shifts[fs_employee["key"]] = [
+                    (x[0], x[1]) for x in fs_employee["blocked_shifts"]
+                ]
             if "wish_days" in fs_employee:
                 fs_employees_wish_days[fs_employee["key"]] = fs_employee["wish_days"]
             if "wish_shifts" in fs_employee:
-                fs_employees_wish_shifts[fs_employee["key"]] = list(
-                    map(lambda x: (x[0], x[1]), fs_employee["wish_shifts"])
-                )
+                fs_employees_wish_shifts[fs_employee["key"]] = [(x[0], x[1]) for x in fs_employee["wish_shifts"]]
 
         fs_general_settings = self._load_json(self._get_file_path("general_settings"))
         fs_qualifications = fs_general_settings.get("qualifications", {})
