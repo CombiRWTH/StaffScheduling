@@ -1,11 +1,11 @@
-import json
 import ast
-import os
-import pandas as pd
+import json
 import logging
+import os
 from datetime import datetime, time, timedelta
-from sqlalchemy import text
 
+import pandas as pd
+from sqlalchemy import text
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,9 +30,7 @@ def load_json_files(start_date, end_date, planning_unit):
 
     # Build full path to the generated solution file for the selected planning unit and date range
     solution_dir = os.path.join("./", sol_folder)
-    solution_file = os.path.join(
-        solution_dir, f"solution_{planning_unit}_{start_date}-{end_date}.json"
-    )
+    solution_file = os.path.join(solution_dir, f"solution_{planning_unit}_{start_date}-{end_date}.json")
 
     employee_file = get_correct_path("employees.json", planning_unit)
 
@@ -68,9 +66,7 @@ def load_person_to_job(engine) -> dict[int, int]:
         return {row.Prim: row.RefBerufe for row in result}
 
 
-def load_shift_segments(
-    engine, shift_id_map: dict[int, int]
-) -> dict[int, list[tuple[time, time, int]]]:
+def load_shift_segments(engine, shift_id_map: dict[int, int]) -> dict[int, list[tuple[time, time, int]]]:
     """Load the correct times for each shift type."""
     sql = text("""
         SELECT Kommt, Geht
@@ -88,9 +84,7 @@ def load_shift_segments(
 
             rows = conn.execute(sql, {"ref": ref_dienst}).fetchall()
             if not rows:
-                raise ValueError(
-                    f"TDiensteSollzeiten does not contain an entry for RefDienste {ref_dienst}"
-                )
+                raise ValueError(f"TDiensteSollzeiten does not contain an entry for RefDienste {ref_dienst}")
 
             base_date = rows[0].Kommt.date()
             segments = []
@@ -151,9 +145,7 @@ def build_dataframe(
         if prim_beruf is None:
             raise ValueError(f"Kein RefBerufe für Personal-Prim {prim_person}")
 
-        for seg_idx, (von_t, bis_t, offset) in enumerate(
-            shift_segments[shift_id], start=1
-        ):
+        for seg_idx, (von_t, bis_t, offset) in enumerate(shift_segments[shift_id], start=1):
             datum = base_date
             vonbis_tag = base_date + timedelta(days=offset)
             von_dt = datetime.combine(vonbis_tag, von_t)

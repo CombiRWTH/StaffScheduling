@@ -1,9 +1,9 @@
-import logging
 import json
+import logging
 from datetime import date
+
+from . import export_data, import_solution
 from .connection_setup import get_db_engine
-from . import import_solution
-from . import export_data
 
 
 def main(
@@ -16,14 +16,10 @@ def main(
     engine = get_db_engine()
 
     # Load base data of generated plan
-    base_data = export_data.export_planning_data(
-        engine, planning_unit, from_date, till_date
-    )
+    base_data = export_data.export_planning_data(engine, planning_unit, from_date, till_date)
 
     # Load solution and employee json
-    data, emp_data = import_solution.load_json_files(
-        from_date, till_date, planning_unit
-    )
+    data, emp_data = import_solution.load_json_files(from_date, till_date, planning_unit)
 
     # Load mapping of employee to their job and their already planned shifts
     prim_to_refberuf = import_solution.load_person_to_job(engine)
@@ -34,7 +30,8 @@ def main(
     STATUS_ID = 20  # Always "Sollplanung" as we only generate such plans
 
     # Corresponding shift IDs to given counts of shifts
-    # 2939: F2_ (Frühschicht), 2906: T75_ (Zwischendienst), 2947: S2_ (Spätschicht), 2953: N2_ (Nachtschicht), 1406: Z60 (Sonderschicht)
+    # 2939: F2_ (Frühschicht), 2906: T75_ (Zwischendienst),
+    # 2947: S2_ (Spätschicht), 2953: N2_ (Nachtschicht), 1406: Z60 (Sonderschicht)
     SHIFT_TO_REFDIENST = {0: 2939, 1: 2906, 2: 2947, 3: 2953, 4: 1406}
 
     # Shift mapping with format: shift_id : [ (von_time, bis_time, day_offset) , … ]
@@ -54,16 +51,11 @@ def main(
 
     if cli_input is None:
         # User input to determine between inserting/deleting/generating test json
-        action = input(
-            "Press i for importing, d for deleting or j to generate a test json:"
-        )
+        action = input("Press i for importing, d for deleting or j to generate a test json:")
     elif cli_input in ["i", "d", "j"]:
         action = cli_input
     else:
-        raise ValueError(
-            f"{cli_input} is not a valid value for 'cli_input'.\n"
-            "Accepted values are 'i', 'd', 'j', None."
-        )
+        raise ValueError(f"{cli_input} is not a valid value for 'cli_input'.\nAccepted values are 'i', 'd', 'j', None.")
 
     match action:
         case "i":
@@ -80,9 +72,7 @@ def main(
             filename = "test_file.json"
 
             # Store JSON-file within given directory
-            json_output = json.dumps(
-                output_json, ensure_ascii=False, indent=2, default=str
-            )
+            json_output = json.dumps(output_json, ensure_ascii=False, indent=2, default=str)
             store_path = import_solution.get_correct_path(filename)
             with open(store_path, "w", encoding="utf-8") as f:
                 f.write(json_output)
