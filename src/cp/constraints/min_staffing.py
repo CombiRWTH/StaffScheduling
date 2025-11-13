@@ -1,19 +1,25 @@
-from . import Constraint
-from employee import Employee
+from typing import cast
+
+from ortools.sat.python.cp_model import CpModel, IntVar
+
 from day import Day
+from employee import Employee
 from shift import Shift
-from ..variables import Variable, EmployeeDayShiftVariable
-from ortools.sat.python.cp_model import CpModel
+
+from ..variables import EmployeeDayShiftVariable, Variable
+from .constraint import Constraint
 
 
 class MinStaffingConstraint(Constraint):
-    KEY = "min-staffing"
+    @property
+    def KEY(self) -> str:
+        return "min-staffing"
 
-    _min_staffing: dict[str, dict[str, dict[dict[str, int]]]]
+    _min_staffing: dict[str, dict[str, dict[str, int]]]
 
     def __init__(
         self,
-        min_staffing: dict[str, dict[str, dict[dict[str, int]]]],
+        min_staffing: dict[str, dict[str, dict[str, int]]],
         employees: list[Employee],
         days: list[Day],
         shifts: list[Shift],
@@ -43,17 +49,13 @@ class MinStaffingConstraint(Constraint):
                 for shift in self._shifts:
                     if shift.is_exclusive:
                         continue
-                    min_staffing = self._min_staffing[required_level][weekday].get(
-                        shift.abbreviation, None
-                    )
+                    min_staffing = self._min_staffing[required_level][weekday].get(shift.abbreviation, None)
 
-                    potential_working_staff = []
+                    potential_working_staff: list[IntVar] = []
                     for eligible_employee in eligible_employees:
-                        variable = variables[
-                            EmployeeDayShiftVariable.get_key(
-                                eligible_employee, day, shift
-                            )
-                        ]
+                        variable = cast(
+                            IntVar, variables[EmployeeDayShiftVariable.get_key(eligible_employee, day, shift)]
+                        )
                         potential_working_staff.append(variable)
 
                     if min_staffing is not None:
@@ -62,6 +64,4 @@ class MinStaffingConstraint(Constraint):
                         model.add(sum(potential_working_staff) >= 0)
 
     def _get_eligible_employees(self, required_level: str) -> list[Employee]:
-        return [
-            employee for employee in self._employees if employee.level == required_level
-        ]
+        return [employee for employee in self._employees if employee.level == required_level]

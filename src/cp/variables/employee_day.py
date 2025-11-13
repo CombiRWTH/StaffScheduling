@@ -1,8 +1,11 @@
-from . import Variable, EmployeeDayShiftVariable
-from employee import Employee
-from day import Day
-from shift import Shift
 from ortools.sat.python.cp_model import CpModel, IntVar
+
+from day import Day
+from employee import Employee
+from shift import Shift
+
+from .employee_day_shift import EmployeeDayShiftVariable
+from .variable import Variable
 
 
 class EmployeeDayVariable(Variable):
@@ -18,22 +21,18 @@ class EmployeeDayVariable(Variable):
         self._shifts = shifts
 
     def create(self, model: CpModel, variables: dict[str, IntVar]) -> list[IntVar]:
-        vars = []
+        vars: list[IntVar] = []
         for employee in self._employees:
             for day in self._days:
-                var = model.new_bool_var(EmployeeDayVariable.get_key(employee, day))
+                var = model.new_bool_var(self.get_key(employee, day))
                 model.add_max_equality(
                     var,
-                    [
-                        variables[
-                            EmployeeDayShiftVariable.get_key(employee, day, shift)
-                        ]
-                        for shift in self._shifts
-                    ],
+                    [variables[EmployeeDayShiftVariable.get_key(employee, day, shift)] for shift in self._shifts],
                 )
                 vars.append(var)
 
         return vars
 
+    @staticmethod
     def get_key(employee: Employee, day: Day) -> str:
         return f"e:{employee.get_key()}_d:{day}"

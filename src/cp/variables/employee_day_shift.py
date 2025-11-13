@@ -1,8 +1,10 @@
-from .variable import Variable
-from employee import Employee
-from day import Day
-from shift import Shift
 from ortools.sat.python.cp_model import CpModel, IntVar
+
+from day import Day
+from employee import Employee
+from shift import Shift
+
+from .variable import Variable
 
 
 class EmployeeDayShiftVariable(Variable):
@@ -17,17 +19,16 @@ class EmployeeDayShiftVariable(Variable):
         self._shifts = shifts
 
     def create(self, model: CpModel, variables: dict[str, IntVar]) -> list[IntVar]:
-        vars = []
+        vars: list[IntVar] = []
         for employee in self._employees:
             for day in self._days:
                 for shift in self._shifts:
-                    var = model.new_bool_var(
-                        EmployeeDayShiftVariable.get_key(employee, day, shift)
-                    )
+                    var = model.new_bool_var(self.get_key(employee, day, shift))
                     vars.append(var)
 
         return vars
 
+    @staticmethod
     def get_key(employee: Employee, day: Day, shift: Shift) -> str:
         # return f"e:{employee.get_id()}_d:{day}_s:{shift.get_id()}"
         return f"({employee.get_key()}, '{day.strftime('%Y-%m-%d')}', {shift.get_id()})"
