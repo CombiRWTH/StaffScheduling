@@ -1,29 +1,67 @@
-from .model import Model as Model
 from .constraints import (
     Constraint as Constraint,
+)
+from .constraints import (
     FreeDayAfterNightShiftPhaseConstraint as FreeDayAfterNightShiftPhaseConstraint,
-    MinRestTimeConstraint as MinRestTimeConstraint,
-    MinStaffingConstraint as MinStaffingConstraint,
-    RoundsInEarlyShiftConstraint as RoundsInEarlyShiftConstraint,
-    MaxOneShiftPerDayConstraint as MaxOneShiftPerDayConstraint,
-    TargetWorkingTimeConstraint as TargetWorkingTimeConstraint,
-    VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
+)
+from .constraints import (
     HierarchyOfIntermediateShiftsConstraint as HierarchyOfIntermediateShiftsConstraint,
+)
+from .constraints import (
+    MaxOneShiftPerDayConstraint as MaxOneShiftPerDayConstraint,
+)
+from .constraints import (
+    MinRestTimeConstraint as MinRestTimeConstraint,
+)
+from .constraints import (
+    MinStaffingConstraint as MinStaffingConstraint,
+)
+from .constraints import (
     PlannedShiftsConstraint as PlannedShiftsConstraint,
+)
+from .constraints import (
+    RoundsInEarlyShiftConstraint as RoundsInEarlyShiftConstraint,
+)
+from .constraints import (
+    TargetWorkingTimeConstraint as TargetWorkingTimeConstraint,
+)
+from .constraints import (
+    VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
+)
+from .model import Model as Model
+from .objectives import (
+    EverySecondWeekendFreeObjective as EverySecondWeekendFreeObjective,
+)
+from .objectives import (
+    FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
+)
+from .objectives import (
+    FreeDaysNearWeekendObjective as FreeDaysNearWeekendObjective,
+)
+from .objectives import (
+    MaximizeEmployeeWishesObjective as MaximizeEmployeeWishesObjective,
+)
+from .objectives import (
+    MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
+)
+from .objectives import (
+    MinimizeHiddenEmployeesObjective as MinimizeHiddenEmployeesObjective,
+)
+from .objectives import (
+    MinimizeOvertimeObjective as MinimizeOvertimeObjective,
+)
+from .objectives import (
+    NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
 )
 from .objectives import (
     Objective as Objective,
-    FreeDaysNearWeekendObjective as FreeDaysNearWeekendObjective,
-    MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
-    MinimizeOvertimeObjective as MinimizeOvertimeObjective,
-    MinimizeHiddenEmployeesObjective as MinimizeHiddenEmployeesObjective,
-    NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
+)
+from .objectives import (
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
-    FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
-    MaximizeEmployeeWishesObjective as MaximizeEmployeeWishesObjective,
-    EverySecondWeekendFreeObjective as EverySecondWeekendFreeObjective,
 )
 from .variables import (
     EmployeeDayShiftVariable as EmployeeDayShiftVariable,
+)
+from .variables import (
     EmployeeDayVariable as EmployeeDayVariable,
 )

@@ -1,6 +1,14 @@
-from .objective import Objective as Objective
+from .every_second_weekend_free import (
+    EverySecondWeekendFreeObjective as EverySecondWeekendFreeObjective,
+)
+from .free_days_after_night_shift_phase import (
+    FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
+)
 from .free_days_near_weekend import (
     FreeDaysNearWeekendObjective as FreeDaysNearWeekendObjective,
+)
+from .maximize_wishes import (
+    MaximizeEmployeeWishesObjective as MaximizeEmployeeWishesObjective,
 )
 from .minimize_consecutive_night_shifts import (
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
@@ -14,16 +22,7 @@ from .minimize_overtime import (
 from .not_too_many_consecutive_days import (
     NotTooManyConsecutiveDaysObjective as NotTooManyConsecutiveDaysObjective,
 )
+from .objective import Objective as Objective
 from .rotate_shifts_forward import (
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
-)
-from .free_days_after_night_shift_phase import (
-    FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
-)
-from .maximize_wishes import (
-    MaximizeEmployeeWishesObjective as MaximizeEmployeeWishesObjective,
-)
-
-from .every_second_weekend_free import (
-    EverySecondWeekendFreeObjective as EverySecondWeekendFreeObjective,
 )
