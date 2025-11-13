@@ -1,4 +1,5 @@
 from typing import cast
+
 from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 
 from ..variables import EmployeeDayShiftVariable, EmployeeDayVariable, Variable

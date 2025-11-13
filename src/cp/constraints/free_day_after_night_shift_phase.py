@@ -1,8 +1,7 @@
 from datetime import timedelta
-
-from ortools.sat.python.cp_model import CpModel, IntVar, BoolVarT
-
 from typing import cast
+
+from ortools.sat.python.cp_model import BoolVarT, CpModel, IntVar
 
 from day import Day
 from employee import Employee

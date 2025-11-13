@@ -1,9 +1,10 @@
+from typing import cast
+
 from ortools.sat.python.cp_model import CpModel, IntVar
 
 from day import Day
 from employee import Employee
 from shift import Shift
-from typing import cast
 
 from ..variables import EmployeeDayShiftVariable, Variable
 from .constraint import Constraint

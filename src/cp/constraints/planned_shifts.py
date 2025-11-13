@@ -1,9 +1,9 @@
 import logging
 from typing import cast
 
-from day import Day
 from ortools.sat.python.cp_model import CpModel, IntVar
 
+from day import Day
 from employee import Employee
 from shift import Shift
 

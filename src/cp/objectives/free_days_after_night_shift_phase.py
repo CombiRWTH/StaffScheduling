@@ -1,5 +1,5 @@
-from typing import cast
 from datetime import timedelta
+from typing import cast
 
 from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 

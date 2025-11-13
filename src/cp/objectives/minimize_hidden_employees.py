@@ -1,5 +1,6 @@
-from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 from typing import cast
+
+from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 
 from day import Day
 from employee import Employee
