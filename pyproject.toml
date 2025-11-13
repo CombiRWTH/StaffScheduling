@@ -16,9 +16,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = [
-    "pre-commit>=4.2.0",
-]
+dev = ["pre-commit>=4.2.0", "pyright>=1.1.407", "ruff>=0.14.4"]
 
 [project.optional-dependencies]
 docs = [
@@ -43,3 +41,12 @@ packages = ["src"]
 
 [project.scripts]
 staff-scheduling = "main:main"
+
+[tool.pyright]
+typeCheckingMode = "strict"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "B"]
