@@ -1,14 +1,20 @@
-from . import Objective
-from ..variables import EmployeeDayShiftVariable
-from employee import Employee
-from day import Day
-from shift import Shift
-from ortools.sat.python.cp_model import CpModel, IntVar
 from datetime import timedelta
+from typing import cast
+
+from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
+
+from day import Day
+from employee import Employee
+from shift import Shift
+
+from ..variables import EmployeeDayShiftVariable, Variable
+from .objective import Objective
 
 
 class MinimizeConsecutiveNightShiftsObjective(Objective):
-    KEY = "minimize-consecutive-night-shifts"
+    @property
+    def KEY(self) -> str:
+        return "minimize-consecutive-night-shifts"
 
     def __init__(
         self,
@@ -22,8 +28,8 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
         """
         super().__init__(weight, employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, IntVar]):
-        penalties = []
+    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
+        penalties: list[LinearExpr] = []
         for phase_length in range(2, 5):
             possible_night_shift_phase_variables: list[IntVar] = []
             for employee in self._employees:
@@ -35,26 +41,23 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
                         f"night_shift_phase_e:{employee.get_key()}_d:{day}_l:{phase_length}"
                     )
                     window = [
-                        variables[
-                            EmployeeDayShiftVariable.get_key(
-                                employee, day + timedelta(i), self._shifts[Shift.NIGHT]
-                            )
-                        ]
+                        cast(
+                            IntVar,
+                            variables[
+                                EmployeeDayShiftVariable.get_key(
+                                    employee, day + timedelta(i), self._shifts[Shift.NIGHT]
+                                )
+                            ],
+                        )
                         for i in range(phase_length)
                     ]
-                    model.add_bool_and(window).only_enforce_if(
-                        night_shift_phase_variable
-                    )
-                    model.add_bool_or(
-                        [night.Not() for night in window]
-                    ).only_enforce_if(night_shift_phase_variable.Not())
-
-                    possible_night_shift_phase_variables.append(
-                        night_shift_phase_variable
+                    model.add_bool_and(window).only_enforce_if(night_shift_phase_variable)
+                    model.add_bool_or([night.Not() for night in window]).only_enforce_if(
+                        night_shift_phase_variable.Not()
                     )
 
-            penalties.append(
-                sum(possible_night_shift_phase_variables) * (self._weight**phase_length)
-            )
+                    possible_night_shift_phase_variables.append(night_shift_phase_variable)
 
-        return sum(penalties)
+            penalties.append(cast(LinearExpr, sum(possible_night_shift_phase_variables)) * (self._weight**phase_length))
+
+        return cast(LinearExpr, sum(penalties))

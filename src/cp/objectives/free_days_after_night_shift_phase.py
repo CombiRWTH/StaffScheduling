@@ -1,14 +1,20 @@
-from . import Objective
-from ..variables import EmployeeDayShiftVariable, EmployeeDayVariable
-from employee import Employee
-from day import Day
-from shift import Shift
-from ortools.sat.python.cp_model import CpModel, IntVar
+from typing import cast
 from datetime import timedelta
+
+from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
+
+from day import Day
+from employee import Employee
+from shift import Shift
+
+from ..variables import EmployeeDayShiftVariable, EmployeeDayVariable, Variable
+from .objective import Objective
 
 
 class FreeDaysAfterNightShiftPhaseObjective(Objective):
-    KEY = "free-day-after-night-shift-phase"
+    @property
+    def KEY(self) -> str:
+        return "free-day-after-night-shift-phase"
 
     def __init__(
         self,
@@ -19,34 +25,26 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
     ):
         super().__init__(weight, employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, IntVar]):
+    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
         penalties: list[IntVar] = []
 
         for employee in self._employees:
             if employee.hidden:
                 continue
             for day in self._days[:-2]:
-                night_var = variables[
-                    EmployeeDayShiftVariable.get_key(
-                        employee, day, self._shifts[Shift.NIGHT]
-                    )
-                ]
-                next_day_var = variables[
-                    EmployeeDayVariable.get_key(employee, day + timedelta(days=1))
-                ]
-                after_next_day_var = variables[
-                    EmployeeDayVariable.get_key(employee, day + timedelta(days=2))
-                ]
-
-                penalty_var = model.new_bool_var(
-                    f"free_days_after_night_{employee.get_key()}_{day}"
+                night_var = cast(
+                    IntVar, variables[EmployeeDayShiftVariable.get_key(employee, day, self._shifts[Shift.NIGHT])]
+                )
+                next_day_var = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, day + timedelta(days=1))])
+                after_next_day_var = cast(
+                    IntVar, variables[EmployeeDayVariable.get_key(employee, day + timedelta(days=2))]
                 )
 
-                model.add(penalty_var == 1).only_enforce_if(
-                    [night_var, next_day_var.Not(), after_next_day_var]
-                )
+                penalty_var = model.new_bool_var(f"free_days_after_night_{employee.get_key()}_{day}")
+
+                model.add(penalty_var == 1).only_enforce_if([night_var, next_day_var.Not(), after_next_day_var])
                 model.add(penalty_var == 0).only_enforce_if(night_var.Not())
 
                 penalties.append(penalty_var)
 
-        return sum(penalties) * self.weight
+        return cast(LinearExpr, sum(penalties) * self.weight)
