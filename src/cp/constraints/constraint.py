@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 
 from ortools.sat.python.cp_model import CpModel, LinearExpr
 
-from day import Day
-from employee import Employee
-from shift import Shift
+from src.day import Day
+from src.employee import Employee
+from src.shift import Shift
 
 from ..variables import Variable
 

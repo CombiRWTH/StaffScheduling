@@ -3,9 +3,9 @@ from typing import cast
 
 from ortools.sat.python.cp_model import BoolVarT, CpModel, IntVar
 
-from day import Day
-from employee import Employee
-from shift import Shift
+from src.day import Day
+from src.employee import Employee
+from src.shift import Shift
 
 from ..variables import EmployeeDayShiftVariable, EmployeeDayVariable, Variable
 from .constraint import Constraint

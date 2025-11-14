@@ -4,8 +4,8 @@ from typing import cast
 
 from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 
-from day import Day
-from employee import Employee
+from src.day import Day
+from src.employee import Employee
 
 from ..variables import EmployeeDayVariable, Variable
 from .objective import Objective

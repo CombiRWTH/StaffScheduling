@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from datetime import date
 
-from employee import Employee
-from shift import Shift
-from solution import Solution
+from src.employee import Employee
+from src.shift import Shift
+from src.solution import Solution
 
 
 class Loader(ABC):
