@@ -1,5 +1,5 @@
-from day import Day
-from shift import Shift
+from src.day import Day
+from src.shift import Shift
 
 
 class Employee:
@@ -123,3 +123,7 @@ class Employee:
     @property
     def get_planned_shifts(self) -> list[tuple[int, str]]:
         return self._planned_shifts
+
+    @property
+    def target_working_time(self) -> int:
+        return self._target_working_time

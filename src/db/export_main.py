@@ -4,7 +4,7 @@ from . import export_data
 from .connection_setup import get_db_engine
 
 
-def main(planning_unit=77, from_date=date(2024, 11, 1), till_date=date(2024, 11, 30)):
+def main(planning_unit: int = 77, from_date: date = date(2024, 11, 1), till_date: date = date(2024, 11, 30)):
     """Sets up a basic connection to the TimeOffice database and exports all needed data for the algorithm."""
     engine = get_db_engine()
     base_data = export_data.export_planning_data(engine, planning_unit, from_date, till_date)

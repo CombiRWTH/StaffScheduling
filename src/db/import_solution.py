@@ -2,19 +2,22 @@ import ast
 import json
 import logging
 import os
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
+from typing import Any
 
 import pandas as pd
-from sqlalchemy import text
+from sqlalchemy import Engine, text
 
 logging.basicConfig(level=logging.INFO)
 
 
-def get_correct_path(filename, planning_unit):
+def get_correct_path(filename: str, planning_unit: int) -> str:
     """Return the correct path to store the given file in."""
 
     # Get the defined folder names out of the .env-file
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
+    if base_folder is None:
+        raise ValueError("BASE_OUTPUT_FOLDER is not defined in the .env file.")
 
     # Create the output path to store the file in
     target_dir = os.path.join("./", base_folder, str(planning_unit))
@@ -23,7 +26,7 @@ def get_correct_path(filename, planning_unit):
     return output_path
 
 
-def load_json_files(start_date, end_date, planning_unit):
+def load_json_files(start_date: date, end_date: date, planning_unit: int):
     """Load the needed Employee file and the corresponding solution file,
     which includes the shifts references to employees."""
     sol_folder = "found_solutions"
@@ -41,7 +44,7 @@ def load_json_files(start_date, end_date, planning_unit):
     return data, emp_data
 
 
-def load_planned_shifts(planning_unit) -> dict[int, set[int]]:
+def load_planned_shifts(planning_unit: int) -> dict[int, set[int]]:
     """
     Returns Dict {Key : {Day1, Day2, …}},
     based on planned_shifts in free_shifts_and_vacation_days.json.
@@ -51,14 +54,14 @@ def load_planned_shifts(planning_unit) -> dict[int, set[int]]:
     with open(file_path, encoding="utf-8") as f:
         data = json.load(f)["employees"]
 
-    prim2days = {}
+    prim2days: dict[int, set[int]] = {}
     for emp in data:
         days = {d for d, _ in emp.get("planned_shifts", [])}
         prim2days[int(emp["key"])] = days
     return prim2days
 
 
-def load_person_to_job(engine) -> dict[int, int]:
+def load_person_to_job(engine: Engine) -> dict[int, int]:
     """Reads TPersonal (Prim, RefBerufe) and returns {Prim: RefBerufe}."""
     sql = text("SELECT Prim, RefBerufe FROM TPersonal")  # SQL query to get the mapping
     with engine.connect() as connection:
@@ -66,7 +69,7 @@ def load_person_to_job(engine) -> dict[int, int]:
         return {row.Prim: row.RefBerufe for row in result}
 
 
-def load_shift_segments(engine, shift_id_map: dict[int, int]) -> dict[int, list[tuple[time, time, int]]]:
+def load_shift_segments(engine: Engine, shift_id_map: dict[int, int]) -> dict[int, list[tuple[time, time, int]]]:
     """Load the correct times for each shift type."""
     sql = text("""
         SELECT Kommt, Geht
@@ -75,7 +78,7 @@ def load_shift_segments(engine, shift_id_map: dict[int, int]) -> dict[int, list[
         ORDER  BY Kommt
     """)
 
-    segments_by_shift = {}
+    segments_by_shift: dict[int, list[tuple[time, time, int]]] = {}
 
     with engine.connect() as conn:
         for shift_id, ref_dienst in shift_id_map.items():
@@ -87,7 +90,7 @@ def load_shift_segments(engine, shift_id_map: dict[int, int]) -> dict[int, list[
                 raise ValueError(f"TDiensteSollzeiten does not contain an entry for RefDienste {ref_dienst}")
 
             base_date = rows[0].Kommt.date()
-            segments = []
+            segments: list[tuple[time, time, int]] = []
 
             for r in rows:
                 offset = (r.Kommt.date() - base_date).days
@@ -99,21 +102,21 @@ def load_shift_segments(engine, shift_id_map: dict[int, int]) -> dict[int, list[
 
 
 def build_dataframe(
-    data,
-    emp_data,
-    prim_to_refberuf,
-    shift_segments,
-    shift_to_refdienst,
-    pe_id,
-    plan_id,
-    status_id,
-    planned_map,
-):
+    data: dict[str, Any],
+    emp_data: list[dict[str, Any]],
+    prim_to_refberuf: dict[int, int],
+    shift_segments: dict[int, list[tuple[time, time, int]]],
+    shift_to_refdienst: dict[int, int],
+    pe_id: int,
+    plan_id: int,
+    status_id: int,
+    planned_map: dict[int, set[int]],
+) -> pd.DataFrame:
     """Build the solution into one DataFrame (one row per segment)."""
 
     prim_whitelist = {int(e["key"]) for e in emp_data}  # Only allow known employees
 
-    records = []
+    records: list[dict[str, Any]] = []
     for key, val in data["variables"].items():
         if val != 1:
             continue
@@ -183,7 +186,7 @@ def build_dataframe(
     return df
 
 
-def insert_dataframe_to_db(df, engine):
+def insert_dataframe_to_db(df: pd.DataFrame, engine: Engine):
     """Insert the correctly formatted solution into the database."""
 
     insert_sql = text("""
@@ -213,7 +216,7 @@ def insert_dataframe_to_db(df, engine):
     logging.info(f"{len(df):,} Lines inserted in TPlanPersonalKommtGeht.")
 
 
-def delete_dataframe_from_db(df, engine):
+def delete_dataframe_from_db(df: pd.DataFrame, engine: Engine):
     """Delete the solution in the dataframe from the database."""
 
     delete_sql = text("""

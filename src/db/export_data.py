@@ -1,18 +1,23 @@
 import json
 import logging
 import os
+from datetime import date
+from typing import Any
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+from sqlalchemy.engine import Engine
 
 logging.basicConfig(level=logging.INFO)
 
 
-def get_correct_path(filename, planning_unit):
+def get_correct_path(filename: str, planning_unit: int):
     """Return the correct path to store the given file in."""
 
     # Get the defined folder names out of the .env-file
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
+    if base_folder is None:
+        raise ValueError("BASE_OUTPUT_FOLDER is not set in the environment variables.")
 
     # Create the output path to store the file in
     target_dir = os.path.join("./", base_folder, str(planning_unit))
@@ -21,7 +26,7 @@ def get_correct_path(filename, planning_unit):
     return output_path
 
 
-def export_planning_data(engine, planning_unit, from_date, till_date):
+def export_planning_data(engine: Engine, planning_unit: int, from_date: date, till_date: date) -> dict[str, Any]:
     """Export relevant basic plan data for retrieving all information for the algorithm.
 
     Args:
@@ -68,7 +73,7 @@ def export_planning_data(engine, planning_unit, from_date, till_date):
     return result
 
 
-def export_shift_data_to_json(engine, planning_unit, filename="shift_information.json"):
+def export_shift_data_to_json(engine: Engine, planning_unit: int, filename: str = "shift_information.json"):
     """Export all shift related information such as times and breaks and create a JSON-file.
 
     Args:
@@ -141,7 +146,7 @@ def export_shift_data_to_json(engine, planning_unit, filename="shift_information
     logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
-def export_personal_data_to_json(engine, planning_unit, plan_id, filename="employees.json"):
+def export_personal_data_to_json(engine: Engine, planning_unit: int, plan_id: int, filename: str = "employees.json"):
     """Export all personal staff information found within TPersonal and create a JSON-file.
     Args:
             engine: SQLAlchemy engine object used to connect to the database.
@@ -187,7 +192,9 @@ def export_personal_data_to_json(engine, planning_unit, plan_id, filename="emplo
     logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
-def export_target_working_minutes_to_json(engine, planning_unit, month, filename="target_working_minutes.json"):
+def export_target_working_minutes_to_json(
+    engine: Engine, planning_unit: int, month: int, filename: str = "target_working_minutes.json"
+):
     """Export all target working minutes found within TPersonalKontenJeMonat and create a JSON-file.
 
     Args:
@@ -224,7 +231,7 @@ def export_target_working_minutes_to_json(engine, planning_unit, month, filename
             fill_value=0,
         )
         .reset_index()
-        .rename(columns=lambda c: f"Wert_RefKonten{c}" if isinstance(c, (int, float)) else c)
+        .rename(columns=lambda c: f"Wert_RefKonten{c}" if isinstance(c, int | float) else c)
     )
 
     # Ensure expected columns exist even if a Konto had no rows this month
@@ -258,7 +265,9 @@ def export_target_working_minutes_to_json(engine, planning_unit, month, filename
     logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
-def export_worked_sundays_to_json(engine, planning_unit, from_date, till_date, filename="worked_sundays.json"):
+def export_worked_sundays_to_json(
+    engine: Engine, planning_unit: int, from_date: date, till_date: date, filename: str = "worked_sundays.json"
+):
     """Export the number of worked sundays found within TPersonalKontenJeTag and create a JSON-file.
 
     Args:
@@ -305,12 +314,12 @@ def export_worked_sundays_to_json(engine, planning_unit, from_date, till_date, f
 
 
 # Helper function for export_free_shift_and_vacation_days_json()
-def collapse(df, col_name):
+def collapse(df: pd.DataFrame, col_name: str):
     out = df.groupby("Prim")["day"].apply(lambda s: sorted(s.unique().tolist())).to_dict()
     return {k: {col_name: v} for k, v in out.items()}
 
 
-def get_plan_dates(engine, plan_id):
+def get_plan_dates(engine: Engine, plan_id: int) -> pd.DataFrame:
     """Retrieve the start and end dates of a plan from the database.
 
     Args:
@@ -331,7 +340,7 @@ def get_plan_dates(engine, plan_id):
 
 
 def export_free_shift_and_vacation_days_json(
-    engine, planning_unit, plan_id, filename="free_shifts_and_vacation_days.json"
+    engine: Engine, planning_unit: int, plan_id: int, filename: str = "free_shifts_and_vacation_days.json"
 ):
     """Export the free shifts and vacation daysfound within TPersonalKommtGeht and create a JSON-file.
 

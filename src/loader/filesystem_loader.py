@@ -3,10 +3,11 @@ import os
 from datetime import date, timedelta
 from json import dump, load
 from os import listdir
+from typing import Any
 
-from employee import Employee
-from shift import Shift
-from solution import Solution
+from src.employee import Employee
+from src.shift import Shift
+from src.solution import Solution
 
 from .loader import Loader
 
@@ -19,29 +20,33 @@ class FSLoader(Loader):
 
         self._case_id = case_id
 
-    def get_employees(self) -> list[Employee]:
+    def get_employees(self, start: int = 0) -> list[Employee]:
         fs_employees = self._load_json(self._get_file_path("employees"))["employees"]
         fs_employees_levels = self._load_json(self._get_file_path("employee_types"))
-        fs_employees_levels: dict = {type: level for level, types in fs_employees_levels.items() for type in types}
+        fs_employees_levels: dict[str, str] = {
+            type: level for level, types in fs_employees_levels.items() for type in types
+        }
 
-        fs_employees_target_working: list = self._load_json(self._get_file_path("target_working_minutes"))["employees"]
-        fs_employees_target: dict = {}
-        fs_employees_actual: dict = {}
-
+        fs_employees_target_working: list[dict[str, Any]] = self._load_json(
+            self._get_file_path("target_working_minutes")
+        )["employees"]
+        fs_employees_target: dict[str, int] = {}
+        fs_employees_actual: dict[str, int] = {}
         for fs_employee in fs_employees_target_working:
             if "target" in fs_employee:
                 fs_employees_target[fs_employee["key"]] = int(fs_employee["target"])
             if "actual" in fs_employee:
                 fs_employees_actual[fs_employee["key"]] = int(fs_employee["actual"])
 
-        fs_employees_vacation: list = self._load_json(self._get_file_path("free_shifts_and_vacation_days"))["employees"]
+        fs_employees_vacation: list[dict[str, Any]] = self._load_json(
+            self._get_file_path("free_shifts_and_vacation_days")
+        )["employees"]
 
-        fs_employees_forbidden_days: dict = {}
-        fs_employees_forbidden_shifts: dict = {}
-        fs_employees_vacation_days: dict = {}
-        fs_employees_vacation_shifts: dict = {}
-        fs_employees_planned_shifts: dict = {}
-
+        fs_employees_forbidden_days: dict[str, list[int]] = {}
+        fs_employees_forbidden_shifts: dict[str, list[tuple[int, str]]] = {}
+        fs_employees_vacation_days: dict[str, list[int]] = {}
+        fs_employees_vacation_shifts: dict[str, list[tuple[int, str]]] = {}
+        fs_employees_planned_shifts: dict[str, list[tuple[int, str]]] = {}
         for fs_employee in fs_employees_vacation:
             if "forbidden_days" in fs_employee:
                 fs_employees_forbidden_days[fs_employee["key"]] = fs_employee["forbidden_days"]
@@ -54,9 +59,11 @@ class FSLoader(Loader):
             if "planned_shifts" in fs_employee:
                 fs_employees_planned_shifts[fs_employee["key"]] = [(x[0], x[1]) for x in fs_employee["planned_shifts"]]
 
-        fs_employees_wish_days: dict = {}
-        fs_employees_wish_shifts: dict = {}
-        fs_employees_wishes_and_blocked: list = self._load_json(self._get_file_path("wishes_and_blocked"))["employees"]
+        fs_employees_wish_days: dict[str, list[int]] = {}
+        fs_employees_wish_shifts: dict[str, list[tuple[int, str]]] = {}
+        fs_employees_wishes_and_blocked: list[dict[str, Any]] = self._load_json(
+            self._get_file_path("wishes_and_blocked")
+        )["employees"]
         for fs_employee in fs_employees_wishes_and_blocked:
             if "blocked_days" in fs_employee:
                 fs_employees_forbidden_days[fs_employee["key"]].extend(fs_employee["blocked_days"])
@@ -149,7 +156,7 @@ class FSLoader(Loader):
 
     def load_solution_file_names(self) -> list[str]:
         files = listdir("./found_solutions")
-        solutions = []
+        solutions: list[str] = []
         for file in files:
             if file.startswith("solution_") and file.endswith(".json"):
                 solutions.append(file[:-5])
@@ -163,11 +170,11 @@ class FSLoader(Loader):
         }
         self._write_json(solution_name, data)
 
-    def _load_json(self, file_path: str) -> dict:
+    def _load_json(self, file_path: str) -> dict[str, Any]:
         with open(file_path) as file:
             return load(file)
 
-    def _write_json(self, filename: str, data: dict):
+    def _write_json(self, filename: str, data: dict[str, Any]):
         file_path = self._get_solutions_path(filename)
         if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path))

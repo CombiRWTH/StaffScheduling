@@ -2,11 +2,11 @@ from datetime import datetime
 
 import click
 
-from db.export_main import main as fetcher
-from db.import_main import main as inserter
-from loader import FSLoader
-from plot import main as plotter
-from solve import main as solver
+from src.db.export_main import main as fetcher
+from src.db.import_main import main as inserter
+from src.loader import FSLoader
+from src.solve import main as solver
+from src.web import App
 
 
 @click.group()
@@ -52,7 +52,8 @@ def plot(case: int, debug: bool):
     """
 
     loader = FSLoader(case)
-    plotter(loader=loader, debug=debug)
+    app = App(loader=loader)
+    app.run(debug=debug)
 
 
 @cli.command()

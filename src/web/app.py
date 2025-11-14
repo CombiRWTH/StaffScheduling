@@ -4,10 +4,9 @@ from re import match
 
 from flask import Flask, render_template, request
 
-from employee import Employee
-from loader import Loader
-from shift import Shift
-
+from ..employee import Employee
+from ..loader import Loader
+from ..shift import Shift
 from .analyze_solution import analyze_solution
 
 

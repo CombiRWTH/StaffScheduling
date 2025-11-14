@@ -1,7 +1,7 @@
 import logging
 from datetime import date
 
-from cp import (
+from src.cp import (
     EmployeeDayShiftVariable,
     EmployeeDayVariable,
     EverySecondWeekendFreeObjective,
@@ -24,7 +24,7 @@ from cp import (
     TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint,
 )
-from loader import FSLoader
+from src.loader import FSLoader
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -88,7 +88,3 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
 
     solution_name = f"solution_{unit}_{start_date}-{end_date}"
     loader.write_solution(solution, solution_name)
-
-
-if __name__ == "__main__":
-    main()

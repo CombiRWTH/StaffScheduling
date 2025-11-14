@@ -1,5 +1,5 @@
 class Solution:
-    def __init__(self, variables: dict[str, int], objective: int):
+    def __init__(self, variables: dict[str, int], objective: float):
         """
         Initializes a Solution instance.
         """
@@ -11,7 +11,7 @@ class Solution:
         return self._variables
 
     @property
-    def objective(self) -> int:
+    def objective(self) -> float:
         return self._objective
 
     def __json__(self):
