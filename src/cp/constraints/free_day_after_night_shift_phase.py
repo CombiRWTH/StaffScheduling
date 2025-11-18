@@ -41,6 +41,7 @@ class FreeDayAfterNightShiftPhaseConstraint(Constraint):
                     IntVar, variables[EmployeeDayVariable.get_key(employee, day + timedelta(1))]
                 )
 
+                # where are day_tomorrow_variables enforced? this may be the cause of the bug menitioned in the docs
                 model.add(day_tomorrow_variable == 0).only_enforce_if(
                     night_shift_today_variable, night_shift_tomorrow_variable.Not()
                 )

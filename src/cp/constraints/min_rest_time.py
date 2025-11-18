@@ -22,6 +22,7 @@ class MinRestTimeConstraint(Constraint):
         """
         super().__init__(employees, days, shifts)
 
+    # what about early and night shift on the same day, does that fulfill the reqiurement?
     def create(self, model: CpModel, variables: dict[str, Variable]):
         for employee in self._employees:
             if employee.hidden:

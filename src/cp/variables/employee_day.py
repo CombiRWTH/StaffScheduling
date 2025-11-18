@@ -25,6 +25,7 @@ class EmployeeDayVariable(Variable):
         for employee in self._employees:
             for day in self._days:
                 var = model.new_bool_var(self.get_key(employee, day))
+                # could use an or instead of a max to be more efficient?
                 model.add_max_equality(
                     var,
                     [variables[EmployeeDayShiftVariable.get_key(employee, day, shift)] for shift in self._shifts],

@@ -32,6 +32,7 @@ class VacationDaysAndShiftsConstraint(Constraint):
                     day_variable = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, day)])
                     model.add(day_variable == 0)
 
+                    # what about holidays starting at the beginning of a month?
                     if day.day > 1:
                         night_shift_key = EmployeeDayShiftVariable.get_key(
                             employee, day - timedelta(1), self._shifts[Shift.NIGHT]

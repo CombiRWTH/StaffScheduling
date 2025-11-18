@@ -47,6 +47,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
 
     min_staffing = loader.get_min_staffing()
 
+    # bad formatting
     variables = [
         EmployeeDayShiftVariable(employees, days, shifts),
         EmployeeDayVariable(employees, days, shifts),  # Based on EmployeeDayShiftVariable

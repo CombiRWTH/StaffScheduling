@@ -22,8 +22,8 @@ We differentiate between two types of conditions:
 !!! note "Likelihood of Confusion"
     Different then the constraint [Free days after Night Shift Phase](#free-days-after-night-shift-phase)
 # --8<-- [start:user-free-day-after-night-shift-phase]
-According to recommendations for the healthy organization of night and shift work, workers should have at least 24 hours of free time after a night shift.
-This ensures that workers have sufficient rest after a night shift.
+According to recommendations for the healthy organization of night and shift work, workers should have at least 24 hours of free time after a night shift phase.
+This ensures that workers have sufficient rest after a night shift phase.
 Therefore, if an employee works the night shift today and does not work the night shift tomorrow, they must take the day off.
 # --8<-- [end:user-free-day-after-night-shift-phase]
 

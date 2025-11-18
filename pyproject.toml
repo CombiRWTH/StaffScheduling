@@ -13,6 +13,7 @@ dependencies = [
     "pandas>=2.2.3",
     "pyodbc>=5.2.0",
     "SQLAlchemy>=2.0.41",
+    "pytest>=9.0.1",
 ]
 
 [dependency-groups]

@@ -35,6 +35,7 @@ class FreeDaysNearWeekendObjective(Objective):
             if employee.hidden:
                 continue
 
+            # here we do not ensure that we stay within the month, but we do in the "free_day_after_night_shift_phase.py" file
             for day in self._days:
                 if day.isoweekday() in [5, 6, 7]:
                     free_day_variable = model.new_bool_var(f"free_first_day_e:{employee.get_key()}_d:{day}")
@@ -52,6 +53,7 @@ class FreeDaysNearWeekendObjective(Objective):
                             IntVar, variables[EmployeeDayVariable.get_key(employee, day + timedelta(1))]
                         )
                         model.add(day_tomorrow_variable == 0).only_enforce_if(free_next_day_variable)
+                        # if day_tomorrow_variable isnt a boolean, than this constraint may be ambiguous
                         model.add(day_tomorrow_variable != 0).only_enforce_if(free_next_day_variable.Not())
 
                         possible_free_second_day_variables.append(free_next_day_variable)
