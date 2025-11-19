@@ -1,17 +1,23 @@
-import pandas as pd
 import json
-import os
 import logging
+import os
+from datetime import date
+from typing import Any
+
+import pandas as pd
 from dateutil.relativedelta import relativedelta
+from sqlalchemy.engine import Engine
 
 logging.basicConfig(level=logging.INFO)
 
 
-def get_correct_path(filename, planning_unit):
+def get_correct_path(filename: str, planning_unit: int):
     """Return the correct path to store the given file in."""
 
     # Get the defined folder names out of the .env-file
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
+    if base_folder is None:
+        raise ValueError("BASE_OUTPUT_FOLDER is not set in the environment variables.")
 
     # Create the output path to store the file in
     target_dir = os.path.join("./", base_folder, str(planning_unit))
@@ -20,7 +26,7 @@ def get_correct_path(filename, planning_unit):
     return output_path
 
 
-def export_planning_data(engine, planning_unit, from_date, till_date):
+def export_planning_data(engine: Engine, planning_unit: int, from_date: date, till_date: date) -> dict[str, Any]:
     """Export relevant basic plan data for retrieving all information for the algorithm.
 
     Args:
@@ -54,9 +60,7 @@ def export_planning_data(engine, planning_unit, from_date, till_date):
 
     # Calculate the date one year before till_date and store it in 'YYYY-DD-MM' format
     one_year_back = pd.Timestamp(till_date) - relativedelta(years=1)
-    result["minus_a_year"] = (
-        f"{one_year_back.year}-{one_year_back.day:02d}-{one_year_back.month:02d}"
-    )
+    result["minus_a_year"] = f"{one_year_back.year}-{one_year_back.day:02d}-{one_year_back.month:02d}"
 
     # Reformat from_date and till_date into 'YYYY-DD-MM' format for consistency
     result["from_date"] = (
@@ -69,7 +73,7 @@ def export_planning_data(engine, planning_unit, from_date, till_date):
     return result
 
 
-def export_shift_data_to_json(engine, planning_unit, filename="shift_information.json"):
+def export_shift_data_to_json(engine: Engine, planning_unit: int, filename: str = "shift_information.json"):
     """Export all shift related information such as times and breaks and create a JSON-file.
 
     Args:
@@ -127,18 +131,14 @@ def export_shift_data_to_json(engine, planning_unit, filename="shift_information
     )
 
     # Compute total duration from first start to last end (not subtracting breaks)
-    agg["shift_duration"] = (
-        agg["end_time"] - agg["start_time"]
-    ).dt.total_seconds() / 60
+    agg["shift_duration"] = (agg["end_time"] - agg["start_time"]).dt.total_seconds() / 60
     agg["shift_id"] = agg["shift_id"].astype(str)
     agg["shift_name"] = agg["shift_id"].map(shift_id_to_name).fillna("unknown")
     agg["start_time"] = agg["start_time"].dt.strftime("%Y-%m-%dT%H:%M:%S")
     agg["end_time"] = agg["end_time"].dt.strftime("%Y-%m-%dT%H:%M:%S")
 
     # Store JSON-file within given directory
-    json_output = json.dumps(
-        agg.to_dict(orient="records"), ensure_ascii=False, indent=2
-    )
+    json_output = json.dumps(agg.to_dict(orient="records"), ensure_ascii=False, indent=2)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
@@ -146,9 +146,7 @@ def export_shift_data_to_json(engine, planning_unit, filename="shift_information
     logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
-def export_personal_data_to_json(
-    engine, planning_unit, plan_id, filename="employees.json"
-):
+def export_personal_data_to_json(engine: Engine, planning_unit: int, plan_id: int, filename: str = "employees.json"):
     """Export all personal staff information found within TPersonal and create a JSON-file.
     Args:
             engine: SQLAlchemy engine object used to connect to the database.
@@ -195,7 +193,7 @@ def export_personal_data_to_json(
 
 
 def export_target_working_minutes_to_json(
-    engine, planning_unit, month, filename="target_working_minutes.json"
+    engine: Engine, planning_unit: int, month: int, filename: str = "target_working_minutes.json"
 ):
     """Export all target working minutes found within TPersonalKontenJeMonat and create a JSON-file.
 
@@ -215,7 +213,8 @@ def export_target_working_minutes_to_json(
                     pkt.Wert2
                 FROM TPersonalKontenJeMonat pkt
                 JOIN TPersonal p ON pkt.RefPersonal = p.Prim
-                WHERE (pkt.RefKonten = 1  OR pkt.RefKonten = 19 OR pkt.RefKonten = 55) AND pkt.Monat = {month} ORDER BY p.Name asc"""
+                WHERE (pkt.RefKonten = 1  OR pkt.RefKonten = 19 OR pkt.RefKonten = 55) AND pkt.Monat = {month}
+                ORDER BY p.Name asc"""
 
     df = pd.read_sql(query, engine)
 
@@ -232,9 +231,7 @@ def export_target_working_minutes_to_json(
             fill_value=0,
         )
         .reset_index()
-        .rename(
-            columns=lambda c: f"Wert_RefKonten{c}" if isinstance(c, (int, float)) else c
-        )
+        .rename(columns=lambda c: f"Wert_RefKonten{c}" if isinstance(c, int | float) else c)
     )
 
     # Ensure expected columns exist even if a Konto had no rows this month
@@ -243,11 +240,8 @@ def export_target_working_minutes_to_json(
             df_wide[col] = 0
 
     # Choosing right Konto (see DatabaseQueries.md)
-    df_wide["Wert_RefKonten19_55"] = df_wide[
-        ["Wert_RefKonten19", "Wert_RefKonten55"]
-    ].max(axis=1)
+    df_wide["Wert_RefKonten19_55"] = df_wide[["Wert_RefKonten19", "Wert_RefKonten55"]].max(axis=1)
 
-    #
     df_wide = df_wide.drop(columns=["Wert_RefKonten19", "Wert_RefKonten55"])
 
     # Renaming Columns
@@ -272,7 +266,7 @@ def export_target_working_minutes_to_json(
 
 
 def export_worked_sundays_to_json(
-    engine, planning_unit, from_date, till_date, filename="worked_sundays.json"
+    engine: Engine, planning_unit: int, from_date: date, till_date: date, filename: str = "worked_sundays.json"
 ):
     """Export the number of worked sundays found within TPersonalKontenJeTag and create a JSON-file.
 
@@ -320,14 +314,12 @@ def export_worked_sundays_to_json(
 
 
 # Helper function for export_free_shift_and_vacation_days_json()
-def collapse(df, col_name):
-    out = (
-        df.groupby("Prim")["day"].apply(lambda s: sorted(s.unique().tolist())).to_dict()
-    )
+def collapse(df: pd.DataFrame, col_name: str):
+    out = df.groupby("Prim")["day"].apply(lambda s: sorted(s.unique().tolist())).to_dict()
     return {k: {col_name: v} for k, v in out.items()}
 
 
-def get_plan_dates(engine, plan_id):
+def get_plan_dates(engine: Engine, plan_id: int) -> pd.DataFrame:
     """Retrieve the start and end dates of a plan from the database.
 
     Args:
@@ -348,7 +340,7 @@ def get_plan_dates(engine, plan_id):
 
 
 def export_free_shift_and_vacation_days_json(
-    engine, planning_unit, plan_id, filename="free_shifts_and_vacation_days.json"
+    engine: Engine, planning_unit: int, plan_id: int, filename: str = "free_shifts_and_vacation_days.json"
 ):
     """Export the free shifts and vacation daysfound within TPersonalKommtGeht and create a JSON-file.
 
@@ -369,10 +361,7 @@ def export_free_shift_and_vacation_days_json(
     with open(EMP_FILE, encoding="utf-8") as f:
         emp_data = json.load(f)["employees"]
 
-    prim2meta = {
-        int(e["key"]): {"name": e["name"], "firstname": e["firstname"]}
-        for e in emp_data
-    }
+    prim2meta = {int(e["key"]): {"name": e["name"], "firstname": e["firstname"]} for e in emp_data}
 
     whitelist = set(prim2meta)
 
@@ -458,12 +447,10 @@ def export_free_shift_and_vacation_days_json(
     # planned_shifts:  List[ [day, KurzBez] ] – remove duplicates
     shift_map = (
         shift_df.groupby("Prim")
-        .apply(lambda g: sorted({(d, kb) for d, kb in zip(g["day"], g["dienst"])}))
+        .apply(lambda g: sorted({(d, kb) for d, kb in zip(g["day"], g["dienst"], strict=True)}))
         .to_dict()
     )
-    shift_map = {
-        k: {"planned_shifts": [[d, kb] for d, kb in v]} for k, v in shift_map.items()
-    }
+    shift_map = {k: {"planned_shifts": [[d, kb] for d, kb in v]} for k, v in shift_map.items()}
 
     # Mapping  Prim -> Set (present days in Konto)
     konto_map = acc_df.groupby("Prim")["day"].apply(set).to_dict()

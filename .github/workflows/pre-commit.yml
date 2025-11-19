@@ -1,4 +1,4 @@
-name: 🧹 Pre-commit Checks
+name: Pre-commit Checks
 
 on:
   pull_request:
@@ -7,26 +7,27 @@ on:
 
 jobs:
   pre-commit:
-    name: 🧹 Pre-commit Checks
+    name: Pre-commit Checks
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 📦 Install uv
+      - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
           activate-environment: true
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: ".python-version"
-
-      - name: 📦 Install dev dependencies
+      - name: Install dev dependencies
         run: uv sync --dev
 
-      - name: ✅ Run pre-commit hooks
-        run: uv run pre-commit run --all-files
+      - name: Run ruff check
+        run: uv run ruff check .
+
+      - name: Check ruff format
+        run: uv run ruff format --check .
+
+      - name: Run pyright type checking
+        run: uv run pyright

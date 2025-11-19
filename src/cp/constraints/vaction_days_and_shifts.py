@@ -1,14 +1,20 @@
-from . import Constraint
-from employee import Employee
-from day import Day
-from shift import Shift
-from ..variables import Variable, EmployeeDayVariable, EmployeeDayShiftVariable
-from ortools.sat.python.cp_model import CpModel
 from datetime import timedelta
+from typing import cast
+
+from ortools.sat.python.cp_model import CpModel, IntVar
+
+from src.day import Day
+from src.employee import Employee
+from src.shift import Shift
+
+from ..variables import EmployeeDayShiftVariable, EmployeeDayVariable, Variable
+from .constraint import Constraint
 
 
 class VacationDaysAndShiftsConstraint(Constraint):
-    KEY = "vacation-days-and-shifts"
+    @property
+    def KEY(self) -> str:
+        return "vacation-days-and-shifts"
 
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
         """
@@ -23,20 +29,17 @@ class VacationDaysAndShiftsConstraint(Constraint):
 
             for day in self._days:
                 if employee.unavailable(day):
-                    day_variable = variables[EmployeeDayVariable.get_key(employee, day)]
+                    day_variable = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, day)])
                     model.add(day_variable == 0)
 
                     if day.day > 1:
-                        night_shift_variable = variables[
-                            EmployeeDayShiftVariable.get_key(
-                                employee, day - timedelta(1), self._shifts[Shift.NIGHT]
-                            )
-                        ]
+                        night_shift_key = EmployeeDayShiftVariable.get_key(
+                            employee, day - timedelta(1), self._shifts[Shift.NIGHT]
+                        )
+                        night_shift_variable = cast(IntVar, variables[night_shift_key])
                         model.add(night_shift_variable == 0)
 
                 for shift in self._shifts:
                     if employee.unavailable(day, shift):
-                        shift_variable = variables[
-                            EmployeeDayShiftVariable.get_key(employee, day, shift)
-                        ]
+                        shift_variable = cast(IntVar, variables[EmployeeDayShiftVariable.get_key(employee, day, shift)])
                         model.add(shift_variable == 0)

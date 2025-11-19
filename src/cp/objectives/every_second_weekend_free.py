@@ -1,21 +1,26 @@
-from . import Objective
-from ..variables import EmployeeDayVariable
-from employee import Employee
-from day import Day
-from ortools.sat.python.cp_model import CpModel, IntVar
-from datetime import timedelta
 import logging
+from datetime import timedelta
+from typing import cast
+
+from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
+
+from src.day import Day
+from src.employee import Employee
+
+from ..variables import EmployeeDayVariable, Variable
+from .objective import Objective
 
 
 class EverySecondWeekendFreeObjective(Objective):
-    KEY = "every-second-weekend-free"
+    @property
+    def KEY(self) -> str:
+        return "every-second-weekend-free"
 
     def __init__(
         self,
         weight: float,
         employees: list[Employee],
         days: list[Day],
-        shifts: list = [],
     ):
         """
         Initializes the objective that encourages alternating free weekends.
@@ -23,11 +28,11 @@ class EverySecondWeekendFreeObjective(Objective):
         """
         super().__init__(weight, employees, days, [])
 
-    def create(self, model: CpModel, variables: dict[str, IntVar]):
+    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
         penalties: list[IntVar] = []
 
         # Collect all complete weekends (Saturday-Sunday pairs) in the planning period
-        weekends = []
+        weekends: list[tuple[Day, Day]] = []
 
         for day in self._days:
             # Check if this day is a Saturday (isoweekday: Monday=1, ..., Saturday=6, Sunday=7)
@@ -57,18 +62,10 @@ class EverySecondWeekendFreeObjective(Objective):
                 # Get two consecutive weekends
                 weekend1_sat, weekend1_sun = weekends[i]
                 weekend2_sat, weekend2_sun = weekends[i + 1]
-                w1_sat_var = variables[
-                    EmployeeDayVariable.get_key(employee, weekend1_sat)
-                ]
-                w1_sun_var = variables[
-                    EmployeeDayVariable.get_key(employee, weekend1_sun)
-                ]
-                w2_sat_var = variables[
-                    EmployeeDayVariable.get_key(employee, weekend2_sat)
-                ]
-                w2_sun_var = variables[
-                    EmployeeDayVariable.get_key(employee, weekend2_sun)
-                ]
+                w1_sat_var = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, weekend1_sat)])
+                w1_sun_var = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, weekend1_sun)])
+                w2_sat_var = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, weekend2_sat)])
+                w2_sun_var = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, weekend2_sun)])
 
                 # Check if weekends are free (both days must be free)
                 w1_free = model.new_bool_var(f"w1_free_e:{employee.get_key()}_i:{i}")
@@ -80,22 +77,14 @@ class EverySecondWeekendFreeObjective(Objective):
 
                 model.add(w2_sat_var + w2_sun_var == 0).only_enforce_if(w2_free)
                 model.add(w2_sat_var + w2_sun_var >= 1).only_enforce_if(w2_free.Not())
-                same_status_penalty = model.new_bool_var(
-                    f"same_status_penalty_e:{employee.get_key()}_i:{i}"
-                )
+                same_status_penalty = model.new_bool_var(f"same_status_penalty_e:{employee.get_key()}_i:{i}")
 
                 # Penalty = 1 if (w1_free AND w2_free) OR (NOT w1_free AND NOT w2_free)
                 model.add(same_status_penalty == 1).only_enforce_if([w1_free, w2_free])
-                model.add(same_status_penalty == 1).only_enforce_if(
-                    [w1_free.Not(), w2_free.Not()]
-                )
-                model.add(same_status_penalty == 0).only_enforce_if(
-                    [w1_free, w2_free.Not()]
-                )
-                model.add(same_status_penalty == 0).only_enforce_if(
-                    [w1_free.Not(), w2_free]
-                )
+                model.add(same_status_penalty == 1).only_enforce_if([w1_free.Not(), w2_free.Not()])
+                model.add(same_status_penalty == 0).only_enforce_if([w1_free, w2_free.Not()])
+                model.add(same_status_penalty == 0).only_enforce_if([w1_free.Not(), w2_free])
 
                 penalties.append(same_status_penalty)
 
-        return sum(penalties) * self.weight
+        return cast(LinearExpr, sum(penalties) * self.weight)

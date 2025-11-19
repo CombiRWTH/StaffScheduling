@@ -1,11 +1,13 @@
-from flask import Flask, render_template, request
-from loader import Loader
-from employee import Employee
-from shift import Shift
-from .analyze_solution import analyze_solution
-from re import match
-from datetime import datetime
 from collections import defaultdict
+from datetime import date, datetime
+from re import match
+
+from flask import Flask, render_template, request
+
+from ..employee import Employee
+from ..loader import Loader
+from ..shift import Shift
+from .analyze_solution import analyze_solution
 
 
 class App:
@@ -24,17 +26,13 @@ class App:
 
     def index(self):
         solution_file_names = self._loader.load_solution_file_names()
-        selected_solution_file_name = request.args.get(
-            "solution_file_name", solution_file_names[-1]
-        )
+        selected_solution_file_name = request.args.get("solution_file_name", solution_file_names[-1])
 
         solution = self._loader.get_solution(selected_solution_file_name)
         stats = analyze_solution(solution.variables, self._employees, self._shifts)
 
         days = [
-            datetime.strptime(
-                match(r"\(\d+, '([\d-]+)', \d+\)", key).group(1), "%Y-%m-%d"
-            ).date()
+            datetime.strptime(match(r"\(\d+, '([\d-]+)', \d+\)", key).group(1), "%Y-%m-%d").date()
             for key in solution.variables.keys()
             if match(r"\(\d+, '([\d-]+)', \d+\)", key)
         ]
@@ -43,10 +41,10 @@ class App:
         days = self._loader.get_days(start_date, end_date)
 
         # fulfilled wishes
-        fulfilled_shift_wish_cells = set()
-        fulfilled_day_off_cells = set()
-        all_shift_wish_colors = defaultdict(list)
-        all_day_off_wish_cells = set()
+        fulfilled_shift_wish_cells: set[tuple[int, date]] = set()
+        fulfilled_day_off_cells: set[tuple[int, date]] = set()
+        all_shift_wish_colors: defaultdict[tuple[int, date], list[str]] = defaultdict(list)
+        all_day_off_wish_cells: set[tuple[int, date]] = set()
 
         for employee in self._employees:
             e_key = employee.get_key()
@@ -61,10 +59,7 @@ class App:
 
                     # Now: check if ANY shift is assigned on that day
                     shift_assigned = any(
-                        solution.variables.get(
-                            f"({e_key}, '{day_key}', {shift.get_id()})"
-                        )
-                        == 1
+                        solution.variables.get(f"({e_key}, '{day_key}', {shift.get_id()})") == 1
                         for shift in self._shifts
                         if not shift.is_exclusive
                     )

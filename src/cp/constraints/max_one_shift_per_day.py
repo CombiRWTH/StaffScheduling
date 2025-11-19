@@ -1,13 +1,19 @@
-from . import Constraint
-from employee import Employee
-from day import Day
-from shift import Shift
-from ..variables import Variable, EmployeeDayShiftVariable
-from ortools.sat.python.cp_model import CpModel
+from typing import cast
+
+from ortools.sat.python.cp_model import CpModel, IntVar
+
+from src.day import Day
+from src.employee import Employee
+from src.shift import Shift
+
+from ..variables import EmployeeDayShiftVariable, Variable
+from .constraint import Constraint
 
 
 class MaxOneShiftPerDayConstraint(Constraint):
-    KEY = "one-shift-per-day"
+    @property
+    def KEY(self) -> str:
+        return "one-shift-per-day"
 
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
         """
@@ -22,6 +28,6 @@ class MaxOneShiftPerDayConstraint(Constraint):
 
             for day in self._days:
                 model.add_at_most_one(
-                    variables[EmployeeDayShiftVariable.get_key(employee, day, shift)]
+                    cast(IntVar, variables[EmployeeDayShiftVariable.get_key(employee, day, shift)])
                     for shift in self._shifts
                 )

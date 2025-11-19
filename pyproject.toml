@@ -16,9 +16,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = [
-    "pre-commit>=4.2.0",
-]
+dev = ["pre-commit>=4.2.0", "pyright>=1.1.407", "ruff>=0.14.4"]
 
 [project.optional-dependencies]
 docs = [
@@ -35,11 +33,17 @@ docs = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.build]
-sources = ["src"]
-
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
 
 [project.scripts]
-staff-scheduling = "main:main"
+staff-scheduling = "src.main:main"
+
+[tool.pyright]
+typeCheckingMode = "strict"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "W", "I", "C4", "ISC", "PT", "Q", "UP"] # Plan to add 'N' and 'ANN' later

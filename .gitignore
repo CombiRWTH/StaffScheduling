@@ -6,6 +6,5 @@ tempCodeRunnerFile.py
 found_solutions/*.json
 algorihtm/__pycache__
 .idea
-/.vscode
 site
 .env

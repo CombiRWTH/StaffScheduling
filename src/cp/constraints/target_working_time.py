@@ -1,16 +1,22 @@
-from . import Constraint
-from employee import Employee
-from day import Day
-from shift import Shift
-from ..variables import Variable, EmployeeDayShiftVariable
-from ortools.sat.python.cp_model import CpModel, Domain
+from typing import cast
+
+from ortools.sat.python.cp_model import CpModel, Domain, IntVar, LinearExpr
+
+from src.day import Day
+from src.employee import Employee
+from src.shift import Shift
+
+from ..variables import EmployeeDayShiftVariable, Variable
+from .constraint import Constraint
 
 TOLERANCE_LESS = 460
 TOLERANCE_MORE = TOLERANCE_LESS
 
 
 class TargetWorkingTimeConstraint(Constraint):
-    KEY = "target-working-time"
+    @property
+    def KEY(self) -> str:
+        return "target-working-time"
 
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
         """
@@ -22,15 +28,13 @@ class TargetWorkingTimeConstraint(Constraint):
         working_time_domain = self._get_working_time_domain()
 
         for employee in self._employees:
-            possible_working_time = []
+            possible_working_time: list[LinearExpr] = []
             for day in self._days:
                 for shift in self._shifts:
                     if shift.is_exclusive:
                         continue
 
-                    variable = variables[
-                        EmployeeDayShiftVariable.get_key(employee, day, shift)
-                    ]
+                    variable = cast(IntVar, variables[EmployeeDayShiftVariable.get_key(employee, day, shift)])
                     possible_working_time.append(variable * shift.duration)
 
             working_time_variable = model.new_int_var_from_domain(
@@ -46,10 +50,10 @@ class TargetWorkingTimeConstraint(Constraint):
             model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
 
     def _get_working_time_domain(self):
-        def reachable_sums(others, max_value):
-            reachable = set()
+        def reachable_sums(others: list[int], max_value: int) -> list[int]:
+            reachable: set[int] = set()
 
-            def dfs(current_sum):
+            def dfs(current_sum: int):
                 if current_sum > max_value:
                     return
                 if current_sum in reachable:
@@ -61,7 +65,7 @@ class TargetWorkingTimeConstraint(Constraint):
             dfs(0)  # start from zero
             return sorted(reachable)
 
-        shift_durations = list(map(lambda shift: shift.duration, self._shifts))
+        shift_durations = [shift.duration for shift in self._shifts]
         max_duration = max(shift_durations) * len(self._days)
 
         return Domain.FromValues(reachable_sums(shift_durations, max_duration))

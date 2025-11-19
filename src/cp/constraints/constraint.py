@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
-from employee import Employee
-from day import Day
-from shift import Shift
+
+from ortools.sat.python.cp_model import CpModel, LinearExpr
+
+from src.day import Day
+from src.employee import Employee
+from src.shift import Shift
+
 from ..variables import Variable
-from ortools.sat.python.cp_model import CpModel
 
 
 class Constraint(ABC):
@@ -21,9 +24,13 @@ class Constraint(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def create(self, model: CpModel, variables: dict[str, Variable]):
+    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr | None:
         """
-        Creates the constraint in the given CP model using the provided variables.
+        Creates the constraint or objective in the given CP model using the provided variables.
+
+        For hard constraints, this method should return None after adding constraints to the model.
+        For objectives (soft constraints), this method should return a LinearExpr representing
+        the penalty term to be minimized.
         """
         pass
 

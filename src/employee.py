@@ -1,5 +1,5 @@
-from shift import Shift
-from day import Day
+from src.day import Day
+from src.shift import Shift
 
 
 class Employee:
@@ -28,18 +28,34 @@ class Employee:
         type: str,
         target_working_time: int = 0,
         actual_working_time: int = 0,
-        forbidden_days: list[int] = [],
-        forbidden_shifts: list[tuple[int, str]] = [],
-        vacation_days: list[int] = [],
-        vacation_shifts: list[int] = [],
-        wish_days: list[int] = [],
-        wish_shifts: list[tuple[int, str]] = [],
-        planned_shifts: list[tuple[int, str]] = [],
-        qualifications: list[str] = [],
+        forbidden_days: list[int] | None = None,
+        forbidden_shifts: list[tuple[int, str]] | None = None,
+        vacation_days: list[int] | None = None,
+        vacation_shifts: list[tuple[int, str]] | None = None,
+        wish_days: list[int] | None = None,
+        wish_shifts: list[tuple[int, str]] | None = None,
+        planned_shifts: list[tuple[int, str]] | None = None,
+        qualifications: list[str] | None = None,
     ):
         """
         Initializes an Employee instance.
         """
+        if qualifications is None:
+            qualifications = []
+        if planned_shifts is None:
+            planned_shifts = []
+        if wish_shifts is None:
+            wish_shifts = []
+        if wish_days is None:
+            wish_days = []
+        if vacation_shifts is None:
+            vacation_shifts = []
+        if vacation_days is None:
+            vacation_days = []
+        if forbidden_shifts is None:
+            forbidden_shifts = []
+        if forbidden_days is None:
+            forbidden_days = []
         self._key = key
         self._surname = surname
         self._name = name
@@ -83,7 +99,7 @@ class Employee:
         """
         return max(self._target_working_time - self._actual_working_time, 0)
 
-    def unavailable(self, day: Day, shift: Shift = None) -> bool:
+    def unavailable(self, day: Day, shift: Shift | None = None) -> bool:
         """
         Checks if the employee has vacation or is not available on a specific day and optionally a specific shift.
         If `shift` is None, it checks if the employee has vacation on that day regardless of the shift.
@@ -103,3 +119,11 @@ class Employee:
     @property
     def get_wish_shifts(self) -> list[tuple[int, str]]:
         return self._wish_shifts
+
+    @property
+    def get_planned_shifts(self) -> list[tuple[int, str]]:
+        return self._planned_shifts
+
+    @property
+    def target_working_time(self) -> int:
+        return self._target_working_time

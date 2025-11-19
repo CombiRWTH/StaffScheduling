@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
+
 from ortools.sat.python.cp_model import CpModel, IntVar
 
 
 class Variable(ABC):
+    @abstractmethod
     def __init__(self):
         """
         Initializes the variable.

@@ -1,21 +1,26 @@
-from solution import Solution
-from .variables import Variable
-from .constraints import Constraint
-from .objectives import Objective
+import logging
+import timeit
+from typing import cast
+
 from ortools.sat.python.cp_model import (
     CpModel,
     CpSolver,
     IntVar,
+    LinearExpr,
 )
-import logging
-import timeit
+
+from src.solution import Solution
+
+from .constraints import Constraint
+from .objectives import Objective
+from .variables import Variable
 
 
 class Model:
     _model: CpModel
-    _variables: dict[str, IntVar]
+    _variables: dict[str, Variable]
     _objectives: list[Objective]
-    _penalties: list
+    _penalties: list[LinearExpr]
     _constraints: list[Constraint]
 
     def __init__(self):
@@ -31,13 +36,14 @@ class Model:
 
     def add_objective(self, objective: Objective):
         penalty = objective.create(self._model, self._variables)
-        self._penalties.append(penalty)
+        if penalty is not None:
+            self._penalties.append(penalty)
         self._objectives.append(objective)
 
-    def add_variable(self, variable: Variable) -> str:
-        vars = variable.create(self._model, self._variables)
+    def add_variable(self, variable: Variable):
+        vars = variable.create(self._model, cast(dict[str, IntVar], self._variables))
         for var in vars:
-            self._variables[var.name] = var
+            self._variables[var.name] = cast(Variable, var)
 
     def solve(self, timeout: int | None) -> Solution:
         logging.info("Solving model...")
@@ -80,7 +86,7 @@ class Model:
 
         solution = Solution(
             {
-                variable.name: solver.value(variable)
+                cast(IntVar, variable).name: solver.value(cast(IntVar, variable))
                 for variable in self._variables.values()
             },
             solver.objective_value,

@@ -1,6 +1,7 @@
 import os
-from sqlalchemy import create_engine
 import urllib.parse
+
+from sqlalchemy import create_engine
 
 
 def get_db_engine():

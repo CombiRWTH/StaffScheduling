@@ -1,13 +1,19 @@
-from . import Objective
-from ..variables import EmployeeDayShiftVariable
-from employee import Employee
-from day import Day
-from shift import Shift
-from ortools.sat.python.cp_model import CpModel, IntVar
+from typing import cast
+
+from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
+
+from src.day import Day
+from src.employee import Employee
+from src.shift import Shift
+
+from ..variables import EmployeeDayShiftVariable, Variable
+from .objective import Objective
 
 
 class MinimizeHiddenEmployeesObjective(Objective):
-    KEY = "minimize-hidden-employees"
+    @property
+    def KEY(self) -> str:
+        return "minimize-hidden-employees"
 
     def __init__(
         self,
@@ -22,7 +28,7 @@ class MinimizeHiddenEmployeesObjective(Objective):
         """
         super().__init__(weight, employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, IntVar]):
+    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
         possible_hidden_employee_variables: list[IntVar] = []
 
         max_duration = 31 * 24 * 60
@@ -31,19 +37,15 @@ class MinimizeHiddenEmployeesObjective(Objective):
             if not employee.hidden:
                 continue
 
-            possible_working_time = []
+            possible_working_time: list[LinearExpr] = []
             for day in self._days:
                 for shift in self._shifts:
-                    variable = variables[
-                        EmployeeDayShiftVariable.get_key(employee, day, shift)
-                    ]
+                    variable = cast(IntVar, variables[EmployeeDayShiftVariable.get_key(employee, day, shift)])
                     possible_working_time.append(variable * shift.duration)
 
-            possible_hidden_employee_variable = model.new_int_var(
-                0, max_duration, f"hidden_e:{employee.get_key()}"
-            )
+            possible_hidden_employee_variable = model.new_int_var(0, max_duration, f"hidden_e:{employee.get_key()}")
 
             model.add(possible_hidden_employee_variable == sum(possible_working_time))
             possible_hidden_employee_variables.append(possible_hidden_employee_variable)
 
-        return sum(possible_hidden_employee_variables) * self._weight
+        return cast(LinearExpr, sum(possible_hidden_employee_variables)) * self._weight

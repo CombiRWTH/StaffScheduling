@@ -1,33 +1,32 @@
-from loader import FSLoader
-from cp import (
-    Model,
-    FreeDayAfterNightShiftPhaseConstraint,
-    MinRestTimeConstraint,
-    MinStaffingConstraint,
-    RoundsInEarlyShiftConstraint,
-    MaxOneShiftPerDayConstraint,
-    TargetWorkingTimeConstraint,
-    VacationDaysAndShiftsConstraint,
+import logging
+from datetime import date
+
+from src.cp import (
     EmployeeDayShiftVariable,
     EmployeeDayVariable,
-    FreeDaysNearWeekendObjective,
-    MinimizeConsecutiveNightShiftsObjective,
-    MinimizeOvertimeObjective,
-    MinimizeHiddenEmployeesObjective,
-    NotTooManyConsecutiveDaysObjective,
-    RotateShiftsForwardObjective,
-    HierarchyOfIntermediateShiftsConstraint,
-    PlannedShiftsConstraint,
-    FreeDaysAfterNightShiftPhaseObjective,
-    MaximizeEmployeeWishesObjective,
     EverySecondWeekendFreeObjective,
+    FreeDayAfterNightShiftPhaseConstraint,
+    FreeDaysAfterNightShiftPhaseObjective,
+    FreeDaysNearWeekendObjective,
+    HierarchyOfIntermediateShiftsConstraint,
+    MaximizeEmployeeWishesObjective,
+    MaxOneShiftPerDayConstraint,
+    MinimizeConsecutiveNightShiftsObjective,
+    MinimizeHiddenEmployeesObjective,
+    MinimizeOvertimeObjective,
+    MinRestTimeConstraint,
+    MinStaffingConstraint,
+    Model,
+    NotTooManyConsecutiveDaysObjective,
+    PlannedShiftsConstraint,
+    RotateShiftsForwardObjective,
+    RoundsInEarlyShiftConstraint,
+    TargetWorkingTimeConstraint,
+    VacationDaysAndShiftsConstraint,
 )
-from datetime import date
-import logging
+from src.loader import FSLoader
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 MAX_CONSECUTIVE_DAYS = 5
 
@@ -50,9 +49,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
 
     variables = [
         EmployeeDayShiftVariable(employees, days, shifts),
-        EmployeeDayVariable(
-            employees, days, shifts
-        ),  # Based on EmployeeDayShiftVariable
+        EmployeeDayVariable(employees, days, shifts),  # Based on EmployeeDayShiftVariable
     ]
     constraints = [
         FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts),
@@ -74,7 +71,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         RotateShiftsForwardObjective(1.0, employees, days, shifts),
         MaximizeEmployeeWishesObjective(3.0, employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
-        EverySecondWeekendFreeObjective(1.0, employees, days, shifts),
+        EverySecondWeekendFreeObjective(1.0, employees, days),
     ]
 
     model = Model()
@@ -91,7 +88,3 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
 
     solution_name = f"solution_{unit}_{start_date}-{end_date}"
     loader.write_solution(solution, solution_name)
-
-
-if __name__ == "__main__":
-    main()
