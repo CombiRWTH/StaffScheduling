@@ -6,12 +6,6 @@ from src.shift import Shift
 
 from .variable import Variable
 
-from src.day import Day
-from src.employee import Employee
-from src.shift import Shift
-
-from .variable import Variable
-
 
 # why is thi class called DayShiftVariable and not just ShiftVariable
 class EmployeeDayShiftVariable(Variable):

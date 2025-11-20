@@ -35,7 +35,8 @@ class FreeDaysNearWeekendObjective(Objective):
             if employee.hidden:
                 continue
 
-            # here we do not ensure that we stay within the month, but we do in the "free_day_after_night_shift_phase.py" file
+            # here we do not ensure that we stay within the month, but we do in the
+            # "free_day_after_night_shift_phase.py" file
             for day in self._days:
                 if day.isoweekday() in [5, 6, 7]:
                     free_day_variable = model.new_bool_var(f"free_first_day_e:{employee.get_key()}_d:{day}")
