@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pprint import pprint
 from typing import cast
 
@@ -10,76 +10,10 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-alice: Employee = Employee(
-    key=1,
-    surname="A",
-    name="Alice",
-    level="Fachkraft",
-    type="Pflegefachkraft (Krankenpflege) (81302-018)",
-)
-bob: Employee = Employee(
-    key=21,
-    surname="B",
-    name="Bob",
-    level="Fachkraft",
-    type="Pflegefachkraft (Krankenpflege) (81302-018)",
-)
-carlos: Employee = Employee(
-    key=3,
-    surname="C",
-    name="Carlos",
-    level="Fachkraft",
-    type="Pflegefachkraft (Krankenpflege) (81302-018)",
-)
-employees: list[Employee] = [alice, bob, carlos]
 
-start_date: Day = datetime(2025, 11, 1)
-end_date: Day = datetime(2025, 11, 30)
-days: list[Day] = [start_date + timedelta(days=i) for i in range(end_date.day - start_date.day + 1)]
-
-# the base_shifts that are also returned by FSLoader.get_shifts()
-shifts: list[Shift] = [
-    Shift(Shift.EARLY, "Früh", 360, 820),
-    Shift(Shift.INTERMEDIATE, "Zwischen", 480, 940),
-    Shift(Shift.LATE, "Spät", 805, 1265),
-    Shift(Shift.NIGHT, "Nacht", 1250, 375),
-    Shift(Shift.MANAGEMENT, "Z60", 480, 840),
-    Shift(5, "F2_", 360, 820),
-    Shift(6, "S2_", 805, 1265),
-    Shift(7, "N5", 1250, 375),
-]
-
-model: CpModel = CpModel()
-
-variables_list: list[Variable]
-variables_dict: dict[str, IntVar]
-
-
-def setup():
-    global model
-    global variables_list
-    global variables_dict
-
-    model = CpModel()
-
-    # here the order of the variables in the list is very important
-    variables_list = [
-        EmployeeDayShiftVariable(employees, days, shifts),
-        EmployeeDayVariable(employees, days, shifts),
-    ]
-    variables_dict = {}
-    for vars in variables_list:
-        vars = vars.create(model, variables_dict)
-        for var in vars:
-            variables_dict[var.name] = var
-
-
-def find_free_day_after_night_shift_phase_violations(solver: CpSolver) -> list[dict[str, int]]:
-    global variables_dict
-    global employees
-    global days
-    global shifts
-
+def find_free_day_after_night_shift_phase_violations(
+    solver: CpSolver, variables_dict: dict[str, IntVar], employees: list[Employee], days: list[Day], shifts: list[Shift]
+) -> list[dict[str, int]]:
     var_solution_dict: dict[str, int] = {variable.name: solver.value(variable) for variable in variables_dict.values()}
     violations: list[dict[str, int]] = []
 
@@ -104,10 +38,16 @@ def find_free_day_after_night_shift_phase_violations(solver: CpSolver) -> list[d
     return violations
 
 
-def test_free_day_after_night_shift_phase_1():
-    global variables_dict
+def test_free_day_after_night_shift_phase_1(
+    setup: tuple[CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift]],
+):
+    model: CpModel
+    variables_dict: dict[str, IntVar] = {}
+    employees: list[Employee] = []
+    days: list[Day] = []
+    shifts: list[Shift] = []
+    model, variables_dict, employees, days, shifts = setup
 
-    setup()
     constrain: FreeDayAfterNightShiftPhaseConstraint = FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts)
     constrain.create(model, cast(dict[str, Variable], variables_dict))
 
@@ -117,5 +57,5 @@ def test_free_day_after_night_shift_phase_1():
     solver.parameters.linearization_level = 0
     solver.solve(model)
 
-    violations = find_free_day_after_night_shift_phase_violations(solver)
+    violations = find_free_day_after_night_shift_phase_violations(solver, variables_dict, employees, days, shifts)
     assert len(violations) == 0, pprint(violations, width=1)
