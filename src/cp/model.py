@@ -11,6 +11,45 @@ import logging
 import timeit
 
 
+
+from ortools.sat.python import cp_model
+
+class MultiSolutionCollector(cp_model.CpSolverSolutionCallback):
+    def __init__(self, model, max_solutions=1,max_objective=None):
+        super().__init__()
+        self.model = model
+        self.max_solutions = max_solutions
+        self.solutions = []
+        self.max_objective = max_objective
+        self.count = 0
+
+    def on_solution_callback(self):
+        obj = self.ObjectiveValue()
+        print("Found Solution with obj value " + str(obj))
+        if self.max_objective is not None:
+            if obj > self.max_objective:
+                return  # ignore low-quality solutions
+
+
+        if self.count >= self.max_solutions:
+            self.StopSearch()
+            return
+
+        assignment = {
+            name: self.Value(var)
+            for name, var in self.model._variables.items()
+        }
+
+        self.solutions.append(
+            Solution(
+                assignment,
+                self.ObjectiveValue(),
+            )
+        )
+        self.count += 1
+
+
+
 class Model:
     _model: CpModel
     _variables: dict[str, IntVar]
@@ -18,12 +57,14 @@ class Model:
     _penalties: list
     _constraints: list[Constraint]
 
-    def __init__(self):
+    def __init__(self, max_solutions=2, max_objective=None):
         self._model = CpModel()
         self._variables = {}
         self._objectives = []
         self._penalties = []
         self._constraints = []
+        self._max_solutions = max_solutions
+        self._max_objective = max_objective
 
     def add_constraint(self, constraint: Constraint):
         constraint.create(self._model, self._variables)
@@ -60,30 +101,24 @@ class Model:
         if timeout is not None:
             logging.info(f"Timeout set to {timeout} seconds")
             solver.parameters.max_time_in_seconds = timeout
-        solver.parameters.linearization_level = 0
+
+        # --- New: Multi-solution callback ---
+        collector = MultiSolutionCollector(self, max_solutions=self._max_solutions, max_objective=self._max_objective)
+
+        logging.info("Searching (optimization, with solution callback)…")
 
         start_time = timeit.default_timer()
-
-        solver.solve(self._model)
+        solver.SolveWithSolutionCallback(self._model, collector)
         elapsed_time = timeit.default_timer() - start_time
-
         logging.info(f"Solving completed in {elapsed_time:.2f} seconds")
+        logging.info(f"Solutions found: {collector.count}")
 
         print("\nStatistics")
         print(f"  - conflicts      : {solver.num_conflicts}")
         print(f"  - branches       : {solver.num_branches}")
         print(f"  - wall time      : {solver.wall_time} s")
-        print(f"  - objective value: {solver.objective_value}")
+        print(f"  - best objective value: {solver.objective_value}")
         print(f"  - status         : {solver.status_name()}")
-        print(f"  - objective value: {solver.objective_value}")
         print(f"  - info           : {solver.solution_info()}")
 
-        solution = Solution(
-            {
-                variable.name: solver.value(variable)
-                for variable in self._variables.values()
-            },
-            solver.objective_value,
-        )
-
-        return solution
+        return collector.solutions
