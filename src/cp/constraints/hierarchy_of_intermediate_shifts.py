@@ -67,7 +67,11 @@ class HierarchyOfIntermediateShiftsConstraint(Constraint):
                 len(self._employees),
                 f"num_of_weekend_intermediate_shifts_variable_w:{week}",
             )
+            # We have to check if this variant is truely more efficient than avoiding the extra variable or not
             model.add(num_of_weekend_intermediate_shifts_variable == sum(possible_weekend_intermediate_shifts))
 
+            # For this to properly work it has to be applied to each day and not to each week. The way it is now
+            # there could be 5 intermediate shifts on monday, none on tuesday, wendsday, thursday, friday and 4 on
+            # saturday...
             model.add(num_of_weekday_intermediate_shifts_variable >= num_of_weekend_intermediate_shifts_variable)
             model.add(num_of_weekday_intermediate_shifts_variable - num_of_weekend_intermediate_shifts_variable <= 1)
