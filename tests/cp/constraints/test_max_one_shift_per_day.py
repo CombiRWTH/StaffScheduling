@@ -10,7 +10,7 @@ from src.employee import Employee
 from src.shift import Shift
 
 
-def find_hierarchy_of_intermediate_shifts_violations(
+def find_max_one_shift_per_day_violations(
     solver: CpSolver, variables_dict: dict[str, IntVar], employees: list[Employee], days: list[Day], shifts: list[Shift]
 ) -> list[dict[str, int]]:
     var_solution_dict: dict[str, int] = {variable.name: solver.value(variable) for variable in variables_dict.values()}
@@ -30,7 +30,7 @@ def find_hierarchy_of_intermediate_shifts_violations(
     return violations
 
 
-def test_hierarchy_of_intermediate_shifts_1(
+def test_max_one_shift_per_day_1(
     setup: tuple[CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift]],
 ):
     model: CpModel
@@ -49,6 +49,6 @@ def test_hierarchy_of_intermediate_shifts_1(
     solver.parameters.linearization_level = 0
     solver.solve(model)
 
-    violations = find_hierarchy_of_intermediate_shifts_violations(solver, variables_dict, employees, days, shifts)
+    violations = find_max_one_shift_per_day_violations(solver, variables_dict, employees, days, shifts)
     # print(f"\nViolations: {violations}")
     assert len(violations) == 0, pprint(violations, width=1)

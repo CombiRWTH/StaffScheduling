@@ -37,14 +37,14 @@ days: list[Day] = [start_date + timedelta(days=i) for i in range(end_date.day - 
 
 # the base_shifts that are also returned by FSLoader.get_shifts()
 shifts: list[Shift] = [
-    Shift(Shift.EARLY, "Früh", 360, 820),
-    Shift(Shift.INTERMEDIATE, "Zwischen", 480, 940),
-    Shift(Shift.LATE, "Spät", 805, 1265),
-    Shift(Shift.NIGHT, "Nacht", 1250, 375),
-    Shift(Shift.MANAGEMENT, "Z60", 480, 840),
-    Shift(5, "F2_", 360, 820),
-    Shift(6, "S2_", 805, 1265),
-    Shift(7, "N5", 1250, 375),
+    Shift(Shift.EARLY, "Früh", 360, 820),  # 06:00 – 13:40
+    Shift(Shift.INTERMEDIATE, "Zwischen", 480, 940),  # 08:00 – 15:40
+    Shift(Shift.LATE, "Spät", 805, 1265),  # 13:25 – 21:05
+    Shift(Shift.NIGHT, "Nacht", 1250, 375),  # 20:50 – 06:15 (next day)
+    Shift(Shift.MANAGEMENT, "Z60", 480, 840),  # 08:00 – 14:00
+    Shift(5, "F2_", 360, 820),  # 06:00 – 13:40
+    Shift(6, "S2_", 805, 1265),  # 13:25 – 21:05
+    Shift(7, "N5", 1250, 375),  # 20:50 – 06:15 (next day)
 ]
 
 
