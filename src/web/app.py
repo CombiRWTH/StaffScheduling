@@ -32,9 +32,9 @@ class App:
         stats = analyze_solution(solution.variables, self._employees, self._shifts)
 
         days = [
-            datetime.strptime(match(r"\(\d+, '([\d-]+)', \d+\)", key).group(1), "%Y-%m-%d").date()
+            datetime.strptime(m.group(1), "%Y-%m-%d").date()
             for key in solution.variables.keys()
-            if match(r"\(\d+, '([\d-]+)', \d+\)", key)
+            if (m := match(r"\(\d+, '([\d-]+)', \d+\)", key)) is not None
         ]
         start_date = min(days)
         end_date = max(days)
