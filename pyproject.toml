@@ -42,6 +42,7 @@ staff-scheduling = "src.main:main"
 
 [tool.pyright]
 typeCheckingMode = "strict"
+reportUnusedVariable = "warning"
 
 [tool.ruff]
 line-length = 120
