@@ -2,6 +2,8 @@ from solution import Solution
 from .variables import Variable
 from .constraints import Constraint
 from .objectives import Objective
+from cp.distances.hamming import print_hamming_table
+from cp.distances.hungarian import print_hungarian_table
 from ortools.sat.python.cp_model import (
     CpModel,
     CpSolver,
@@ -11,11 +13,11 @@ import logging
 import timeit
 
 
-
 from ortools.sat.python import cp_model
 
+
 class MultiSolutionCollector(cp_model.CpSolverSolutionCallback):
-    def __init__(self, model, max_solutions=1,max_objective=None):
+    def __init__(self, model, max_solutions=1, max_objective=None):
         super().__init__()
         self.model = model
         self.max_solutions = max_solutions
@@ -30,14 +32,12 @@ class MultiSolutionCollector(cp_model.CpSolverSolutionCallback):
             if obj > self.max_objective:
                 return  # ignore low-quality solutions
 
-
         if self.count >= self.max_solutions:
             self.StopSearch()
             return
 
         assignment = {
-            name: self.Value(var)
-            for name, var in self.model._variables.items()
+            name: self.Value(var) for name, var in self.model._variables.items()
         }
 
         self.solutions.append(
@@ -47,7 +47,6 @@ class MultiSolutionCollector(cp_model.CpSolverSolutionCallback):
             )
         )
         self.count += 1
-
 
 
 class Model:
@@ -103,7 +102,9 @@ class Model:
             solver.parameters.max_time_in_seconds = timeout
 
         # --- New: Multi-solution callback ---
-        collector = MultiSolutionCollector(self, max_solutions=self._max_solutions, max_objective=self._max_objective)
+        collector = MultiSolutionCollector(
+            self, max_solutions=self._max_solutions, max_objective=self._max_objective
+        )
 
         logging.info("Searching (optimization, with solution callback)…")
 
@@ -120,5 +121,10 @@ class Model:
         print(f"  - best objective value: {solver.objective_value}")
         print(f"  - status         : {solver.status_name()}")
         print(f"  - info           : {solver.solution_info()}")
+
+        print("Hamming Distance:")
+        print_hamming_table(collector.solutions)
+        print("Hungarian Distance:")
+        print_hungarian_table(collector.solutions)
 
         return collector.solutions
