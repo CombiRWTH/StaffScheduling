@@ -14,6 +14,7 @@ alice: Employee = Employee(
     name="Alice",
     level="Azubi",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
+    planned_shifts=[(1, "N")],
 )
 bob: Employee = Employee(
     key=2,
@@ -21,6 +22,7 @@ bob: Employee = Employee(
     name="Bob",
     level="Fachkraft",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
+    planned_shifts=[(1, "N5")],
 )
 carlos: Employee = Employee(
     key=3,
@@ -28,6 +30,7 @@ carlos: Employee = Employee(
     name="Carlos",
     level="Fachkraft",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
+    planned_shifts=[(1, "F")],
 )
 employees: list[Employee] = [alice, bob, carlos]
 

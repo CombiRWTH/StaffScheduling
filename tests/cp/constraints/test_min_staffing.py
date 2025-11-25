@@ -22,9 +22,6 @@ def find_min_staffing_violations(
     violations: list[dict[str, int]] = []
 
     weekday_map: dict[str, int] = {"Mo": 0, "Di": 1, "Mi": 2, "Do": 3, "Fr": 4, "Sa": 5, "So": 6}
-    # since I do not want to look up the encoding of all viable shift abbreviations, I will
-    # stick with the basic ones
-    shift_map: dict[str, int] = {"F": Shift.EARLY, "N": Shift.NIGHT, "S": Shift.LATE}
 
     for employee_level in min_staffing.keys():
         for weekday_str in min_staffing[employee_level].keys():
@@ -33,15 +30,15 @@ def find_min_staffing_violations(
                 # for every matching day inside our period
                 for day in [day for day in days if day.weekday() == weekday_map[weekday_str]]:
                     relevant_var_keys = [
-                        EmployeeDayShiftVariable.get_key(employee, day, shifts[shift_map[shift_str]])
+                        EmployeeDayShiftVariable.get_key(employee, day, shifts[Shift.SHIFT_MAPPING[shift_str]])
                         for employee in employees
                         if employee.level == employee_level
                     ]
                     total_shifts_worked = sum([var_solution_dict[var] for var in relevant_var_keys])
                     if required > total_shifts_worked:
                         d: dict[str, int] = {}
-                        for var in relevant_var_keys:
-                            d[var] = var_solution_dict[var]
+                        for var_keys in relevant_var_keys:
+                            d[var_keys] = var_solution_dict[var_keys]
                         violations.append(d)
     return violations
 
