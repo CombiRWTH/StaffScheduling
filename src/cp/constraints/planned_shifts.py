@@ -64,6 +64,9 @@ class PlannedShiftsConstraint(Constraint):
             if not exclusive_shift:
                 continue
 
+            # We forbid exclusive shifts for any employee who has no assigned exclusive shift?
+            # This seems like a wrong way to classify our employee. There may also be someone who
+            # can work exclusive shifts but is simply not forcefully assigned to one this month.
             authorized_employees = employees_with_exclusive_shifts.get(exclusive_shift_code, set())
 
             # Forbidden exclusive shifts for employees not having the shift assigned

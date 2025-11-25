@@ -75,6 +75,10 @@ class Shift:
         return self._end_time
 
     @property
+    def id(self) -> int:
+        return self._id
+
+    @property
     def duration(self) -> int:
         """
         Calculates the duration of the shift in minutes.

@@ -26,6 +26,21 @@ class FSLoader(Loader):
         fs_employees_levels: dict[str, str] = {
             type: level for level, types in fs_employees_levels.items() for type in types
         }
+        # example how fs_employees_levels would look like based on case77
+        # {
+        #   'A-Pflegefachkraft (Krankenpflege) (A-81302-018)': 'Azubi',
+        #   'A-Pflegeassistent/in (A-81302-014)': 'Azubi',
+        #   'Pflegefachkraft (Krankenpflege) (81302-018)': 'Fachkraft',
+        #   'Gesundheits- und Krankenpfleger/in (81302-005)': 'Fachkraft',
+        #   'Krankenschwester/-pfleger (81302-008)': 'Fachkraft',
+        #   'Altenpfleger/in (82102-002)': 'Fachkraft',
+        #   'Krankenpflegehelfer/in (1 jährige A.) (81301-006)': 'Hilfskraft',
+        #   'Pflegeassistent/in (81302-014)': 'Hilfskraft',
+        #   'Helfer/in - stationäre Krankenpflege (81301-002)': 'Hilfskraft',
+        #   'Stationshilfe (81301-018)': 'Hilfskraft',
+        #   'Bundesfreiwilligendienst (BFD)': 'Hilfskraft',
+        #   'Medizinische/r Fachangestellte/r (81102-004)': 'Hilfskraft'
+        # }
 
         fs_employees_target_working: list[dict[str, Any]] = self._load_json(
             self._get_file_path("target_working_minutes")
@@ -127,6 +142,7 @@ class FSLoader(Loader):
 
         return employees
 
+    # shouldnt this be a static function?
     def get_shifts(self) -> list[Shift]:
         base_shifts = [
             Shift(Shift.EARLY, "Früh", 360, 820),

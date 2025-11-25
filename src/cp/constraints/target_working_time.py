@@ -40,11 +40,15 @@ class TargetWorkingTimeConstraint(Constraint):
             working_time_variable = model.new_int_var_from_domain(
                 working_time_domain, f"working_time_e:{employee.get_key()}"
             )
+            # is this pattern of variable decleration via conditions realy better for the or tool?
             model.add(sum(possible_working_time) == working_time_variable)
 
+            # who is Milburn Loremarie?
             if employee.hidden or employee.name == "Milburn Loremarie":
                 continue
 
+            # maybe it effects the tool that working_time_domain is probably MUCH larger than
+            # target_working_time - TOLERANCE_LESS <= working_time_variable <= target_working_time + TOLERANCE_MORE
             target_working_time = employee.get_available_working_time()
             model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
             model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)

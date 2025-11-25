@@ -82,6 +82,8 @@ class EverySecondWeekendFreeObjective(Objective):
                 # Penalty = 1 if (w1_free AND w2_free) OR (NOT w1_free AND NOT w2_free)
                 model.add(same_status_penalty == 1).only_enforce_if([w1_free, w2_free])
                 model.add(same_status_penalty == 1).only_enforce_if([w1_free.Not(), w2_free.Not()])
+
+                # these two penalties seem useless
                 model.add(same_status_penalty == 0).only_enforce_if([w1_free, w2_free.Not()])
                 model.add(same_status_penalty == 0).only_enforce_if([w1_free.Not(), w2_free])
 

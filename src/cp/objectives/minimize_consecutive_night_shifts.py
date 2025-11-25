@@ -30,6 +30,7 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
 
     def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
         penalties: list[LinearExpr] = []
+        # why not cover longer nightn shift phases in this for loop?
         for phase_length in range(2, 5):
             possible_night_shift_phase_variables: list[IntVar] = []
             for employee in self._employees:

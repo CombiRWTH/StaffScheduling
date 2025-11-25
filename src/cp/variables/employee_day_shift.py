@@ -7,6 +7,7 @@ from src.shift import Shift
 from .variable import Variable
 
 
+# why is thi class called DayShiftVariable and not just ShiftVariable
 class EmployeeDayShiftVariable(Variable):
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
         """
@@ -20,6 +21,8 @@ class EmployeeDayShiftVariable(Variable):
 
     def create(self, model: CpModel, variables: dict[str, IntVar]) -> list[IntVar]:
         vars: list[IntVar] = []
+        # not every employee can take every shift, e.g. Azubis can not take Management Shifts
+        # this seems like many unnecessary variables that could be avoided
         for employee in self._employees:
             for day in self._days:
                 for shift in self._shifts:

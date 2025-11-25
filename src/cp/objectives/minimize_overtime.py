@@ -31,6 +31,8 @@ class MinimizeOvertimeObjective(Objective):
     def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
         possible_overtime_absolute_variables: list[IntVar] = []
 
+        # we should have a more accurate estimation from the constraints in target_working_time.py
+        # with TOLERANCE_MORE and TOLERANCE_LESS. Or is this on purpose because of the hidden employees?
         max_duration = 31 * 24 * 60
 
         for employee in self._employees:
