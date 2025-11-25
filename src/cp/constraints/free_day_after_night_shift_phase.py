@@ -23,6 +23,8 @@ class FreeDayAfterNightShiftPhaseConstraint(Constraint):
         super().__init__(employees, days, shifts)
 
     def create(self, model: CpModel, variables: dict[str, Variable]):
+        # This function falsely ignores special night shifts
+
         for employee in self._employees:
             if employee.hidden:
                 continue

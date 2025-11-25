@@ -14,7 +14,7 @@ alice: Employee = Employee(
     name="Alice",
     level="Azubi",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
-    planned_shifts=[(1, "N")],
+    planned_shifts=[(1, "N"), (2, "S")],
 )
 bob: Employee = Employee(
     key=2,
