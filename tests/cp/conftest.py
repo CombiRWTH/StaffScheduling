@@ -31,6 +31,7 @@ carlos: Employee = Employee(
     level="Fachkraft",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
     planned_shifts=[(1, "F")],
+    qualifications=["rounds"],
 )
 employees: list[Employee] = [alice, bob, carlos]
 
