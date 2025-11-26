@@ -1,12 +1,10 @@
-from typing import cast
-
-from ortools.sat.python.cp_model import CpModel, Domain, IntVar, LinearExpr
+from ortools.sat.python.cp_model import CpModel, Domain, LinearExpr
 
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-from ..variables import EmployeeDayShiftVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .constraint import Constraint
 
 TOLERANCE_LESS = 460
@@ -24,7 +22,12 @@ class TargetWorkingTimeConstraint(Constraint):
         """
         super().__init__(employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, Variable]):
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ):
         working_time_domain = self._get_working_time_domain()
 
         for employee in self._employees:
@@ -34,7 +37,7 @@ class TargetWorkingTimeConstraint(Constraint):
                     if shift.is_exclusive:
                         continue
 
-                    variable = cast(IntVar, variables[EmployeeDayShiftVariable.get_key(employee, day, shift)])
+                    variable = shift_assignment_variables[employee][day][shift]
                     possible_working_time.append(variable * shift.duration)
 
             working_time_variable = model.new_int_var_from_domain(

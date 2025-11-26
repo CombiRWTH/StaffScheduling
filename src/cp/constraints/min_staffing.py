@@ -1,12 +1,10 @@
-from typing import cast
-
-from ortools.sat.python.cp_model import CpModel, IntVar
+from ortools.sat.python.cp_model import CpModel
 
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-from ..variables import EmployeeDayShiftVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables, Variable
 from .constraint import Constraint
 
 
@@ -30,7 +28,12 @@ class MinStaffingConstraint(Constraint):
         super().__init__(employees, days, shifts)
         self._min_staffing = min_staffing
 
-    def create(self, model: CpModel, variables: dict[str, Variable]):
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ):
         weekday_abbreviations = {
             1: "Mo",
             2: "Di",
@@ -51,11 +54,9 @@ class MinStaffingConstraint(Constraint):
                         continue
                     min_staffing = self._min_staffing[required_level][weekday].get(shift.abbreviation, None)
 
-                    potential_working_staff: list[IntVar] = []
+                    potential_working_staff: list[Variable] = []
                     for eligible_employee in eligible_employees:
-                        variable = cast(
-                            IntVar, variables[EmployeeDayShiftVariable.get_key(eligible_employee, day, shift)]
-                        )
+                        variable = shift_assignment_variables[eligible_employee][day][shift]
                         potential_working_staff.append(variable)
 
                     if min_staffing is not None:

@@ -7,7 +7,7 @@ from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 from src.day import Day
 from src.employee import Employee
 
-from ..variables import EmployeeDayVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
 
 
@@ -28,7 +28,12 @@ class EverySecondWeekendFreeObjective(Objective):
         """
         super().__init__(weight, employees, days, [])
 
-    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr:
         penalties: list[IntVar] = []
 
         # Collect all complete weekends (Saturday-Sunday pairs) in the planning period
@@ -62,10 +67,10 @@ class EverySecondWeekendFreeObjective(Objective):
                 # Get two consecutive weekends
                 weekend1_sat, weekend1_sun = weekends[i]
                 weekend2_sat, weekend2_sun = weekends[i + 1]
-                w1_sat_var = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, weekend1_sat)])
-                w1_sun_var = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, weekend1_sun)])
-                w2_sat_var = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, weekend2_sat)])
-                w2_sun_var = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, weekend2_sun)])
+                w1_sat_var = employee_works_on_day_variables[employee][weekend1_sat]
+                w1_sun_var = employee_works_on_day_variables[employee][weekend1_sun]
+                w2_sat_var = employee_works_on_day_variables[employee][weekend2_sat]
+                w2_sun_var = employee_works_on_day_variables[employee][weekend2_sun]
 
                 # Check if weekends are free (both days must be free)
                 w1_free = model.new_bool_var(f"w1_free_e:{employee.get_key()}_i:{i}")
