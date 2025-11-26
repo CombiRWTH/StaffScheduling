@@ -59,9 +59,3 @@ from .objectives import (
 from .objectives import (
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
 )
-from .variables import (
-    EmployeeDayShiftVariable as EmployeeDayShiftVariable,
-)
-from .variables import (
-    EmployeeDayVariable as EmployeeDayVariable,
-)

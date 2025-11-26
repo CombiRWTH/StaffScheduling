@@ -7,7 +7,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-from ..variables import EmployeeDayShiftVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
 
 
@@ -28,7 +28,12 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
         """
         super().__init__(weight, employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr:
         penalties: list[LinearExpr] = []
         # why not cover longer nightn shift phases in this for loop?
         for phase_length in range(2, 5):
@@ -42,14 +47,7 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
                         f"night_shift_phase_e:{employee.get_key()}_d:{day}_l:{phase_length}"
                     )
                     window = [
-                        cast(
-                            IntVar,
-                            variables[
-                                EmployeeDayShiftVariable.get_key(
-                                    employee, day + timedelta(i), self._shifts[Shift.NIGHT]
-                                )
-                            ],
-                        )
+                        shift_assignment_variables[employee][day + timedelta(i)][self._shifts[Shift.NIGHT]]
                         for i in range(phase_length)
                     ]
                     model.add_bool_and(window).only_enforce_if(night_shift_phase_variable)

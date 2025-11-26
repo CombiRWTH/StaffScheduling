@@ -7,7 +7,7 @@ from src.employee import Employee
 from src.shift import Shift
 
 from ..constraints import Constraint
-from ..variables import Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 
 
 class Objective(Constraint):
@@ -31,7 +31,12 @@ class Objective(Constraint):
         return self._weight
 
     @abstractmethod
-    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr | None:
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr | None:
         """
         Creates the objective penalty terms in the given CP model.
 

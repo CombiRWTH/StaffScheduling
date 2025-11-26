@@ -6,7 +6,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-from ..variables import EmployeeDayShiftVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
 
 
@@ -28,7 +28,12 @@ class MinimizeOvertimeObjective(Objective):
         """
         super().__init__(weight, employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr:
         possible_overtime_absolute_variables: list[IntVar] = []
 
         # we should have a more accurate estimation from the constraints in target_working_time.py
@@ -41,7 +46,7 @@ class MinimizeOvertimeObjective(Objective):
 
             for day in self._days:
                 for shift in self._shifts:
-                    variable = cast(IntVar, variables[EmployeeDayShiftVariable.get_key(employee, day, shift)])
+                    variable = shift_assignment_variables[employee][day][shift]
                     possible_working_time.append(variable * shift.duration)
 
             possible_overtime_variable = model.new_int_var(
