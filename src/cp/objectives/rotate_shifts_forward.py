@@ -7,7 +7,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-from ..variables import EmployeeDayShiftVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
 
 
@@ -28,7 +28,12 @@ class RotateShiftsForwardObjective(Objective):
         """
         super().__init__(weight, employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr:
         possible_rotation_variables: list[IntVar] = []
         for employee in self._employees:
             if employee.hidden:
@@ -39,19 +44,10 @@ class RotateShiftsForwardObjective(Objective):
                     rotation_variable = model.new_bool_var(
                         f"rotation_e:{employee.get_key()}_d:{day}_s:{shift.get_id()}"
                     )
-                    current_shift_variable = cast(
-                        IntVar, variables[EmployeeDayShiftVariable.get_key(employee, day, shift)]
-                    )
-                    next_desired_shift_variable = cast(
-                        IntVar,
-                        variables[
-                            EmployeeDayShiftVariable.get_key(
-                                employee,
-                                day + timedelta(days=1),
-                                self._shifts[(shift.get_id() + 1) % len(self._shifts)],
-                            )
-                        ],
-                    )
+                    current_shift_variable = shift_assignment_variables[employee][day][shift]
+                    next_desired_shift_variable = shift_assignment_variables[employee][day + timedelta(days=1)][
+                        self._shifts[(shift.get_id() + 1) % len(self._shifts)]
+                    ]
 
                     model.add_bool_and([current_shift_variable, next_desired_shift_variable]).only_enforce_if(
                         rotation_variable

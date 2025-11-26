@@ -6,7 +6,7 @@ from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 from src.day import Day
 from src.employee import Employee
 
-from ..variables import EmployeeDayVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
 
 
@@ -29,7 +29,12 @@ class NotTooManyConsecutiveDaysObjective(Objective):
 
         self.max_consecutive_shifts = max_consecutive_shifts
 
-    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr:
         possible_overwork_variables: list[IntVar] = []
         for employee in self._employees:
             if employee.hidden:
@@ -38,10 +43,7 @@ class NotTooManyConsecutiveDaysObjective(Objective):
             for day in self._days[: -self.max_consecutive_shifts]:
                 day_phase_variable = model.new_bool_var(f"day_phase_e:{employee.get_key()}_d:{day}")
                 window = [
-                    cast(
-                        IntVar,
-                        variables[EmployeeDayVariable.get_key(employee, day + timedelta(i))],
-                    )
+                    employee_works_on_day_variables[employee][day + timedelta(i)]
                     for i in range(self.max_consecutive_shifts + 1)
                 ]
                 model.add(sum(window) == self.max_consecutive_shifts + 1).only_enforce_if(day_phase_variable)

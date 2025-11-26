@@ -6,7 +6,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-from ..variables import EmployeeDayShiftVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
 
 
@@ -28,7 +28,12 @@ class MinimizeHiddenEmployeesObjective(Objective):
         """
         super().__init__(weight, employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr:
         possible_hidden_employee_variables: list[IntVar] = []
 
         max_duration = 31 * 24 * 60
@@ -40,7 +45,7 @@ class MinimizeHiddenEmployeesObjective(Objective):
             possible_working_time: list[LinearExpr] = []
             for day in self._days:
                 for shift in self._shifts:
-                    variable = cast(IntVar, variables[EmployeeDayShiftVariable.get_key(employee, day, shift)])
+                    variable = shift_assignment_variables[employee][day][shift]
                     possible_working_time.append(variable * shift.duration)
 
             possible_hidden_employee_variable = model.new_int_var(0, max_duration, f"hidden_e:{employee.get_key()}")
