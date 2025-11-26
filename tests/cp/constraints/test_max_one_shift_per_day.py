@@ -1,4 +1,4 @@
-from pprint import pprint
+from pprint import pformat
 from typing import cast
 
 from ortools.sat.python.cp_model import CpModel, CpSolver, IntVar
@@ -50,5 +50,7 @@ def test_max_one_shift_per_day_1(
     solver.solve(model)
 
     violations = find_max_one_shift_per_day_violations(solver, variables_dict, employees, days, shifts)
-    # print(f"\nViolations: {violations}")
-    assert len(violations) == 0, pprint(violations, width=1)
+    if CpSolver.StatusName(solver) == "INFEASIBLE":
+        raise Exception("There is no feasible solution and thus this test is pointless")
+    else:
+        assert len(violations) == 0, "\n\n There were violations: \n" + pformat(violations, width=1) + "\n"

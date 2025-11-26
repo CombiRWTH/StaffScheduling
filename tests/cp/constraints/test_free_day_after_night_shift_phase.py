@@ -1,5 +1,5 @@
 from datetime import timedelta
-from pprint import pformat, pprint
+from pprint import pformat
 from typing import cast
 
 from ortools.sat.python.cp_model import CpModel, CpSolver, IntVar
@@ -15,8 +15,6 @@ def find_free_day_after_night_shift_phase_violations(
     solver: CpSolver, variables_dict: dict[str, IntVar], employees: list[Employee], days: list[Day], shifts: list[Shift]
 ) -> list[dict[str, int]]:
     var_solution_dict: dict[str, int] = {variable.name: solver.value(variable) for variable in variables_dict.values()}
-    print("\n")
-    pprint(var_solution_dict)
     violations: list[dict[str, int]] = []
 
     for employee in employees:
@@ -74,6 +72,6 @@ def test_free_day_after_night_shift_phase_1(
 
     violations = find_free_day_after_night_shift_phase_violations(solver, variables_dict, employees, days, shifts)
     if CpSolver.StatusName(solver) == "INFEASIBLE":
-        raise Exception("\nThere is no feasible solution and thus this test is pointless\n")
+        raise Exception("There is no feasible solution and thus this test is pointless")
     else:
         assert len(violations) == 0, "\n\n There were violations: \n" + pformat(violations, width=1) + "\n"

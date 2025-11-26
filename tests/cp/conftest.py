@@ -23,8 +23,9 @@ bob: Employee = Employee(
     name="Bob",
     level="Fachkraft",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
-    planned_shifts=[(1, "N5")],
+    planned_shifts=[(1, "F")],
     target_working_time=1440,
+    vacation_shifts=[(1, "F")],
 )
 carlos: Employee = Employee(
     key=3,
@@ -32,9 +33,10 @@ carlos: Employee = Employee(
     name="Carlos",
     level="Fachkraft",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
-    planned_shifts=[(1, "F")],
+    planned_shifts=[],
     qualifications=["rounds"],
     target_working_time=1440,
+    vacation_days=[1],
 )
 employees: list[Employee] = [alice, bob, carlos]
 

@@ -47,4 +47,7 @@ def test_planned_shifts_1(
     solver.solve(model)
 
     violations = find_planned_shifts_violations(solver, variables_dict, employees, days, shifts)
-    assert len(violations) == 0, "\n\n There were violations: \n" + pformat(violations, width=1) + "\n"
+    if CpSolver.StatusName(solver) == "INFEASIBLE":
+        raise Exception("There is no feasible solution and thus this test is pointless")
+    else:
+        assert len(violations) == 0, "\n\n There were violations: \n" + pformat(violations, width=1) + "\n"
