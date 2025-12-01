@@ -15,9 +15,11 @@ def hamming_distance_matrix(solutions):
             for shift in all_shifts:
                 empA = shift_solutions[i].get(shift, set())
                 empB = shift_solutions[j].get(shift, set())
-                if empA != empB:
-                    diff += 1
+
+                diff += len(empA.symmetric_difference(empB))
+
             matrix[i][j] = diff
+
     return pd.DataFrame(
         matrix,
         columns=[f"Sol {i}" for i in range(n)],
