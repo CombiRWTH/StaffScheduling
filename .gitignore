@@ -8,3 +8,4 @@ algorihtm/__pycache__
 .idea
 site
 .env
+tests/cp/constraints/output_test_all_constraints.txt

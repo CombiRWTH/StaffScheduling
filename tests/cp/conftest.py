@@ -6,6 +6,7 @@ from ortools.sat.python.cp_model import CpModel, IntVar
 from src.cp.variables import EmployeeDayShiftVariable, EmployeeDayVariable, Variable
 from src.day import Day
 from src.employee import Employee
+from src.loader import FSLoader
 from src.shift import Shift
 
 alice: Employee = Employee(
@@ -110,3 +111,35 @@ def setup_with_minstaffing(
 ) -> tuple[CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift], dict[str, dict[str, dict[str, int]]]]:
     global min_staffing
     return *setup, min_staffing
+
+
+@pytest.fixture
+def setup_case_77() -> tuple[
+    CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift], dict[str, dict[str, dict[str, int]]]
+]:
+    loader = FSLoader(case_id=77)
+
+    days = loader.get_days(datetime(2025, 11, 1), datetime(2025, 11, 30))
+    employees = loader.get_employees()
+    shifts = loader.get_shifts()
+    print(f"shifts = {shifts}")
+    min_staffing = loader.get_min_staffing()
+
+    model: CpModel = CpModel()
+    variables_list: list[Variable] = []
+    variables_dict: dict[str, IntVar] = {}
+
+    model = CpModel()
+
+    # here the order of the variables in the list is very important
+    variables_list = [
+        EmployeeDayShiftVariable(employees, days, shifts),
+        EmployeeDayVariable(employees, days, shifts),
+    ]
+    variables_dict = {}
+    for vars in variables_list:
+        vars = vars.create(model, variables_dict)
+        for var in vars:
+            variables_dict[var.name] = var
+
+    return model, variables_dict, employees, days, shifts, min_staffing

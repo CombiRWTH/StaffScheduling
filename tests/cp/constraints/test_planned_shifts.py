@@ -20,6 +20,8 @@ def find_planned_shifts_violations(
     for employee in employees:
         for day_index, shift_str in employee.get_planned_shifts:
             day = days[0] + timedelta(day_index - 1)
+            if shift_str not in Shift.SHIFT_MAPPING:
+                continue
             shift = shifts[Shift.SHIFT_MAPPING[shift_str]]
             var_key = EmployeeDayShiftVariable.get_key(employee, day, shift)
             if var_solution_dict[var_key] != 1:
