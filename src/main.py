@@ -8,12 +8,26 @@ from src.loader import FSLoader
 from src.solve import main as solver
 from src.web import App
 
+from src.web.process_solution import process_solution
+
 
 @click.group()
 def cli():
     """Staff Scheduling CLI"""
     pass
 
+
+@cli.command("export-json")
+@click.argument("case", type=click.INT)
+@click.option("--debug", is_flag=True, help="Enable debug output")
+def export_json(case: int, debug: bool):
+    """
+    Process a solution for a given CASE and export it as JSON.
+    """
+
+    loader = FSLoader(case)
+
+    process_solution(loader=loader)
 
 @cli.command()
 @click.argument("unit", type=click.INT)
