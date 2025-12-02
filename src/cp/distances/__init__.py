@@ -1,3 +1,4 @@
 from .utils import convert_solution_to_shiftsets as convert_solution_to_shiftsets
 from .hamming import print_hamming_table as print_hamming_table
 from .hungarian import print_hungarian_table as print_hungarian_table
+from .graph_isomorph import print_iso_matrix as print_iso_matrix
