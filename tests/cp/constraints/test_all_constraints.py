@@ -29,15 +29,6 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-# class SolutionPrinter(CpSolverSolutionCallback):
-#     def __init__(self):
-#         super().__init__()
-#         self.solution_count = 0
-
-#     def on_solution_callback(self):
-#         self.solution_count += 1
-#         print(f"Solution {self.solution_count} at t={self.WallTime():.3f}s \n")
-
 
 def test_free_day_after_night_shift_phase_1(
     setup_case_77: tuple[
@@ -51,13 +42,6 @@ def test_free_day_after_night_shift_phase_1(
     shifts: list[Shift] = []
     model, variables_dict, employees, days, shifts, min_staffing = setup_case_77
     none_hidden_employees = [e for e in employees if "Hidden" not in e.name]
-
-    for e in employees:
-        if e.get_key() == 44:
-            print("Violations should be found soon")
-    for e in none_hidden_employees:
-        if e.get_key() == 44:
-            print("Violations should be found soon")
 
     FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts).create(
         model, cast(dict[str, Variable], variables_dict)
@@ -79,8 +63,7 @@ def test_free_day_after_night_shift_phase_1(
     solver.parameters.num_workers = 0
     solver.parameters.max_time_in_seconds = 30
     solver.parameters.linearization_level = 0
-    # cb = SolutionPrinter()
-    solver.solve(model)  # ,cb)
+    solver.solve(model)
 
     if CpSolver.StatusName(solver) == "INFEASIBLE":
         raise Exception("There is no feasible solution and thus this test is pointless")
@@ -123,31 +106,21 @@ def test_free_day_after_night_shift_phase_1(
         "vaction_days_and_shifts_violations": vaction_days_and_shifts_violations,
     }
 
-    def detailed_error_display(violations: dict[str, list[dict[str, int]]]) -> str:
+    def detailed_error_display(
+        violations: dict[str, list[dict[str, int]] | list[tuple[dict[str, int], int, int]]],
+    ) -> str:
         result = "\n\n\n#######################################\n"
 
-        # pattern = re.compile(r"\('([\d-]+)',\s*(\d+)\s*-\s*([^,]+),\s*(\d+)\s*-")
         for violation_name, violation in violations.items():
             result = result + "\n--------- |" + violation_name + "| = " + str(len(violation)) + " -----------\n"
 
             for dict in violation:
                 result = result + "\n" + pformat(dict) + "\n"
-
-                # ugly reverse search to make the result human readable
-                # if violation_name == "target_working_time_violations":
-                #     ps = pattern.search(list(dict.items())[0][0])
-                #     employee_key = ""
-                #     if ps:
-                #         _, employee_key, _,_ =  ps.groups()
-                #     employee = [e for e in employees if e.get_key() == employee_key][0]
-                #     for k, v in dict.items():
-                #         ps = pattern.search(k)
-                #         shift: str = "-1"
-                #         if ps:
-                #             _, _, shift, _ =  ps.groups()
-                #         shift_key: int = int(shift)
-
-                #    result = result + "total" + str(sum(dict.values()))
+                if violation_name == "target_working_time_violations" and isinstance(dict, tuple):
+                    result += "Total Hours: " + str(dict[1])
+                    result += "\nTarget Hours: " + str(dict[2])
+                    result += "\nTarget Hours - Total Hours = " + str(dict[2] - dict[1])
+                    result += "\nThis should be at most 7.67 hours = 460 min\n\n"
 
             result = result + "\n----------------------------------------------------\n"
 

@@ -12,9 +12,9 @@ from src.shift import Shift
 
 def find_target_working_time_violations(
     solver: CpSolver, variables_dict: dict[str, IntVar], employees: list[Employee], days: list[Day], shifts: list[Shift]
-) -> list[dict[str, int]]:
+) -> list[tuple[dict[str, int], int, int]]:
     var_solution_dict: dict[str, int] = {variable.name: solver.value(variable) for variable in variables_dict.values()}
-    violations: list[dict[str, int]] = []
+    violations: list[tuple[dict[str, int], int, int]] = []
 
     for employee in employees:
         var_keys: list[str] = []
@@ -24,7 +24,9 @@ def find_target_working_time_violations(
                 var_keys.append(EmployeeDayShiftVariable.get_key(employee, day, shift))
                 total_hours = total_hours + var_solution_dict[var_keys[-1]] * shift.duration
         if abs(total_hours - employee.target_working_time) > 460:
-            violations.append({key: var_solution_dict[key] for key in var_keys})
+            violations.append(
+                ({key: var_solution_dict[key] for key in var_keys}, total_hours, employee.target_working_time)
+            )
     return violations
 
 
