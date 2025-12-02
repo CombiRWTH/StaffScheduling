@@ -1,3 +1,4 @@
+from datetime import datetime
 from pprint import pformat
 from typing import cast
 
@@ -17,7 +18,13 @@ def find_max_one_shift_per_day_violations(
     violations: list[dict[str, int]] = []
 
     for employee in employees:
+        if employee.get_key() == 44:
+            print("Violations should be found soon")
         for day in days:
+            dd = datetime(2025, 11, 8)
+            if employee.get_key() == 44 and day == dd:
+                print("Violations should be found here")
+
             shift_variable_values = [
                 var_solution_dict[EmployeeDayShiftVariable.get_key(employee, day, shift)] for shift in shifts
             ]
@@ -26,7 +33,7 @@ def find_max_one_shift_per_day_violations(
                 for shift in shifts:
                     key = EmployeeDayShiftVariable.get_key(employee, day, shift)
                     d[key] = var_solution_dict[key]
-                    violations.append(d)
+                violations.append(d)
     return violations
 
 

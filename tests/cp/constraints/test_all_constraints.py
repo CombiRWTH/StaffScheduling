@@ -50,6 +50,14 @@ def test_free_day_after_night_shift_phase_1(
     days: list[Day] = []
     shifts: list[Shift] = []
     model, variables_dict, employees, days, shifts, min_staffing = setup_case_77
+    none_hidden_employees = [e for e in employees if "Hidden" not in e.name]
+
+    for e in employees:
+        if e.get_key() == 44:
+            print("Violations should be found soon")
+    for e in none_hidden_employees:
+        if e.get_key() == 44:
+            print("Violations should be found soon")
 
     FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts).create(
         model, cast(dict[str, Variable], variables_dict)
@@ -78,27 +86,29 @@ def test_free_day_after_night_shift_phase_1(
         raise Exception("There is no feasible solution and thus this test is pointless")
 
     free_day_after_night_shift_phase_violations = find_free_day_after_night_shift_phase_violations(
-        solver, variables_dict, employees, days, shifts
+        solver, variables_dict, none_hidden_employees, days, shifts
     )
     hierarchy_of_intermediate_shifts_violations = find_hierarchy_of_intermediate_shifts_violations(
-        solver, variables_dict, employees, days, shifts
+        solver, variables_dict, none_hidden_employees, days, shifts
     )
     max_one_shift_per_day_violations = find_max_one_shift_per_day_violations(
-        solver, variables_dict, employees, days, shifts
+        solver, variables_dict, none_hidden_employees, days, shifts
     )
-    min_rest_time_violations = find_min_rest_time_violations(solver, variables_dict, employees, days, shifts)
+    min_rest_time_violations = find_min_rest_time_violations(
+        solver, variables_dict, none_hidden_employees, days, shifts
+    )
     min_staffing_violations = find_min_staffing_violations(
         solver, variables_dict, employees, days, shifts, min_staffing
     )
     planned_shifts_violations = find_planned_shifts_violations(solver, variables_dict, employees, days, shifts)
     rounds_in_early_shifts_violations = find_rounds_in_early_shifts_violations(
-        solver, variables_dict, employees, days, shifts
+        solver, variables_dict, none_hidden_employees, days, shifts
     )
     target_working_time_violations = find_target_working_time_violations(
-        solver, variables_dict, employees, days, shifts
+        solver, variables_dict, none_hidden_employees, days, shifts
     )
     vaction_days_and_shifts_violations = find_vaction_days_and_shifts_violations(
-        solver, variables_dict, employees, days, shifts
+        solver, variables_dict, none_hidden_employees, days, shifts
     )
 
     violations = {
@@ -116,11 +126,28 @@ def test_free_day_after_night_shift_phase_1(
     def detailed_error_display(violations: dict[str, list[dict[str, int]]]) -> str:
         result = "\n\n\n#######################################\n"
 
+        # pattern = re.compile(r"\('([\d-]+)',\s*(\d+)\s*-\s*([^,]+),\s*(\d+)\s*-")
         for violation_name, violation in violations.items():
             result = result + "\n--------- |" + violation_name + "| = " + str(len(violation)) + " -----------\n"
 
             for dict in violation:
                 result = result + "\n" + pformat(dict) + "\n"
+
+                # ugly reverse search to make the result human readable
+                # if violation_name == "target_working_time_violations":
+                #     ps = pattern.search(list(dict.items())[0][0])
+                #     employee_key = ""
+                #     if ps:
+                #         _, employee_key, _,_ =  ps.groups()
+                #     employee = [e for e in employees if e.get_key() == employee_key][0]
+                #     for k, v in dict.items():
+                #         ps = pattern.search(k)
+                #         shift: str = "-1"
+                #         if ps:
+                #             _, _, shift, _ =  ps.groups()
+                #         shift_key: int = int(shift)
+
+                #    result = result + "total" + str(sum(dict.values()))
 
             result = result + "\n----------------------------------------------------\n"
 
@@ -129,7 +156,7 @@ def test_free_day_after_night_shift_phase_1(
         end = ""
         for violation_name, violation in violations.items():
             end = end + "\n|" + violation_name + "| = " + str(len(violation))
-        result = result + end
+        result = end + result + end
 
         # save file in the same directory
         __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))

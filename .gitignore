@@ -9,3 +9,4 @@ algorihtm/__pycache__
 site
 .env
 tests/cp/constraints/output_test_all_constraints.txt
+tests/cp/constraints/output_test_all_constraints_with_hidden.txt

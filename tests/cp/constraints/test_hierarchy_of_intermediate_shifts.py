@@ -52,12 +52,13 @@ def find_hierarchy_of_intermediate_shifts_violations(
                     d: dict[str, int] = {}
                     for employee in employees:
                         key_weekday = EmployeeDayShiftVariable.get_key(employee, weekday, shifts[Shift.INTERMEDIATE])
+                        d[key_weekday] = var_solution_dict[key_weekday]
+                    for employee in employees:
                         key_weekendday = EmployeeDayShiftVariable.get_key(
                             employee, weekendday, shifts[Shift.INTERMEDIATE]
                         )
-                        d[key_weekday] = var_solution_dict[key_weekday]
                         d[key_weekendday] = var_solution_dict[key_weekendday]
-                        violations.append(d)
+                    violations.append(d)
 
     return violations
 

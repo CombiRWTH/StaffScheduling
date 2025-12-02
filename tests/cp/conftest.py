@@ -122,7 +122,6 @@ def setup_case_77() -> tuple[
     days = loader.get_days(datetime(2025, 11, 1), datetime(2025, 11, 30))
     employees = loader.get_employees()
     shifts = loader.get_shifts()
-    print(f"shifts = {shifts}")
     min_staffing = loader.get_min_staffing()
 
     model: CpModel = CpModel()

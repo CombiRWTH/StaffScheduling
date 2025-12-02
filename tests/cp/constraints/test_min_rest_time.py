@@ -33,7 +33,11 @@ def find_min_rest_time_violations(
         for day in days[:-1]:
             for i1, first_shift in total_shifts:
                 for i2, second_shift in total_shifts:
-                    if second_shift.start_time - first_shift.end_time >= 9 * 60 or first_shift == second_shift:
+                    if first_shift.start_time > second_shift.start_time:
+                        continue
+                    if second_shift.start_time - first_shift.end_time >= 9 * 60:
+                        continue
+                    if first_shift == second_shift:
                         continue
                     key_first_shift_var = EmployeeDayShiftVariable.get_key(
                         employee, day + timedelta(i1 - 1), shifts[first_shift.id]
