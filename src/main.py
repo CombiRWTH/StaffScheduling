@@ -17,17 +17,19 @@ def cli():
     pass
 
 
-@cli.command("export-json")
+@cli.command("process-solution")
 @click.argument("case", type=click.INT)
+@click.option("--filename", default=None, type=click.STRING)
+@click.option("--output", default="processed_solution.json", type=click.STRING)
 @click.option("--debug", is_flag=True, help="Enable debug output")
-def export_json(case: int, debug: bool):
+def export_json(case: int, debug: bool, filename: str = None, output: str = "processed_solution.json"):
     """
     Process a solution for a given CASE and export it as JSON.
     """
 
     loader = FSLoader(case)
 
-    process_solution(loader=loader)
+    process_solution(loader=loader,output_filename=output, solution_file_name=filename)
 
 @cli.command()
 @click.argument("unit", type=click.INT)
