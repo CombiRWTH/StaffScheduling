@@ -16,6 +16,32 @@ from .objectives import Objective
 from .variables import Variable
 
 
+from ortools.sat.python import cp_model
+
+class MultiSolutionCollector(cp_model.CpSolverSolutionCallback):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+        self.solutions = []
+
+    def on_solution_callback(self):
+        obj = self.ObjectiveValue()
+        print("Found solution with objective:", obj)
+
+        assignment = {
+            name: self.Value(var)
+            for name, var in self.model._variables.items()
+        }
+
+        self.solutions.append(
+            Solution(
+                assignment,
+                self.ObjectiveValue(),
+            )
+        )
+
+
+
 class Model:
     _model: CpModel
     _variables: dict[str, Variable]
@@ -23,12 +49,13 @@ class Model:
     _penalties: list[LinearExpr]
     _constraints: list[Constraint]
 
-    def __init__(self):
+    def __init__(self, max_solutions=1):
         self._model = CpModel()
         self._variables = {}
         self._objectives = []
         self._penalties = []
         self._constraints = []
+        self._max_solutions = max_solutions
 
     def add_constraint(self, constraint: Constraint):
         constraint.create(self._model, self._variables)
@@ -66,14 +93,18 @@ class Model:
         if timeout is not None:
             logging.info(f"Timeout set to {timeout} seconds")
             solver.parameters.max_time_in_seconds = timeout
+
         solver.parameters.linearization_level = 0
 
+        collector = MultiSolutionCollector(self)
+
+        logging.info("Searching (optimization, with solution callback)…")
+
         start_time = timeit.default_timer()
-
-        solver.solve(self._model)
+        solver.SolveWithSolutionCallback(self._model, collector)
         elapsed_time = timeit.default_timer() - start_time
-
         logging.info(f"Solving completed in {elapsed_time:.2f} seconds")
+
 
         print("\nStatistics")
         print(f"  - conflicts      : {solver.num_conflicts}")
@@ -84,12 +115,22 @@ class Model:
         print(f"  - objective value: {solver.objective_value}")
         print(f"  - info           : {solver.solution_info()}")
 
-        solution = Solution(
-            {
-                cast(IntVar, variable).name: solver.value(cast(IntVar, variable))
-                for variable in self._variables.values()
-            },
-            solver.objective_value,
-        )
 
-        return solution
+        bestn = sorted(
+            collector.solutions, 
+            key=lambda s: s.objective, 
+            reverse=True  # or False depending on maximize/minimize
+        )[:self._max_solutions]
+
+
+        return bestn
+
+        # solution = Solution(
+        #     {
+        #         cast(IntVar, variable).name: solver.value(cast(IntVar, variable))
+        #         for variable in self._variables.values()
+        #     },
+        #     solver.objective_value,
+        # )
+
+        # return solution

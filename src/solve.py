@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 MAX_CONSECUTIVE_DAYS = 5
 
 
-def main(unit: int, start_date: date, end_date: date, timeout: int):
+def main(unit: int, start_date: date, end_date: date, timeout: int, max_solutions=1):
     loader = FSLoader(unit)
     employees = loader.get_employees()
     days = loader.get_days(start_date, end_date)
@@ -75,7 +75,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         EverySecondWeekendFreeObjective(1.0, employees, days),
     ]
 
-    model = Model()
+    model = Model(max_solutions=max_solutions)
     for variable in variables:
         model.add_variable(variable)
 
@@ -85,7 +85,10 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
     for constraint in constraints:
         model.add_constraint(constraint)
 
-    solution = model.solve(timeout)
+    solutions = model.solve(timeout)
 
-    solution_name = f"solution_{unit}_{start_date}-{end_date}"
-    loader.write_solution(solution, solution_name)
+    for idx, s in enumerate(solutions):
+        loader.write_solution(s, f"solution_{unit}_{start_date}-{end_date}_{idx}")
+
+    # solution_name = f"solution_{unit}_{start_date}-{end_date}"
+    # loader.write_solution(solution, solution_name)

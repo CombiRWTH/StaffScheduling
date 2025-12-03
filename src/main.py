@@ -29,6 +29,36 @@ def export_json(case: int, debug: bool):
 
     process_solution(loader=loader)
 
+
+
+@cli.command("solve-multiple")
+@click.argument("unit", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("max_solutions", type=click.INT)
+@click.option("--timeout", default=300, help="Timeout in seconds for the solver")
+def solve_multiple(unit: int, start: datetime, end: datetime, max_solutions: int, timeout: int):
+    """
+    Solve the scheduling problem for a given case and start date.
+
+    UNIT is the case number to solve.
+
+    START is the start date for the planning period in YYYY-MM-DD format.
+
+    END is the end date for the planning period in YYYY-MM-DD format.
+    """
+
+    click.echo(f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()}.")
+
+    solver(
+        unit=unit,
+        start_date=start.date(),
+        end_date=end.date(),
+        timeout=timeout,
+        max_solutions=max_solutions
+    )
+
+
 @cli.command()
 @click.argument("unit", type=click.INT)
 @click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
