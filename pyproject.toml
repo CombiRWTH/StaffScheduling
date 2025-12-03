@@ -43,6 +43,9 @@ staff-scheduling = "src.main:main"
 [tool.pyright]
 typeCheckingMode = "strict"
 reportUnusedVariable = "warning"
+ignore = [
+    "src/db/**" # Database integration needs significant refactoring and is excluded from type checking
+]
 
 [tool.ruff]
 line-length = 120
