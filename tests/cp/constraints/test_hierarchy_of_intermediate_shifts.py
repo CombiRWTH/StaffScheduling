@@ -1,5 +1,5 @@
 from datetime import timedelta
-from pprint import pprint
+from pprint import pformat
 from typing import cast
 
 from ortools.sat.python.cp_model import CpModel, CpSolver, IntVar
@@ -52,12 +52,13 @@ def find_hierarchy_of_intermediate_shifts_violations(
                     d: dict[str, int] = {}
                     for employee in employees:
                         key_weekday = EmployeeDayShiftVariable.get_key(employee, weekday, shifts[Shift.INTERMEDIATE])
+                        d[key_weekday] = var_solution_dict[key_weekday]
+                    for employee in employees:
                         key_weekendday = EmployeeDayShiftVariable.get_key(
                             employee, weekendday, shifts[Shift.INTERMEDIATE]
                         )
-                        d[key_weekday] = var_solution_dict[key_weekday]
                         d[key_weekendday] = var_solution_dict[key_weekendday]
-                        violations.append(d)
+                    violations.append(d)
 
     return violations
 
@@ -84,5 +85,7 @@ def test_hierarchy_of_intermediate_shifts_1(
     solver.solve(model)
 
     violations = find_hierarchy_of_intermediate_shifts_violations(solver, variables_dict, employees, days, shifts)
-    # print(violations)
-    assert len(violations) == 0, pprint(violations, width=1)
+    if CpSolver.StatusName(solver) == "INFEASIBLE":
+        raise Exception("There is no feasible solution and thus this test is pointless")
+    else:
+        assert len(violations) == 0, "\n\n There were violations: \n" + pformat(violations, width=1) + "\n"

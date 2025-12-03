@@ -1,5 +1,5 @@
 from datetime import timedelta
-from pprint import pprint
+from pprint import pformat
 from typing import cast
 
 from ortools.sat.python.cp_model import CpModel, CpSolver, IntVar
@@ -33,7 +33,11 @@ def find_min_rest_time_violations(
         for day in days[:-1]:
             for i1, first_shift in total_shifts:
                 for i2, second_shift in total_shifts:
-                    if second_shift.start_time - first_shift.end_time >= 9 * 60 or first_shift == second_shift:
+                    if first_shift.start_time > second_shift.start_time:
+                        continue
+                    if second_shift.start_time - first_shift.end_time >= 9 * 60:
+                        continue
+                    if first_shift == second_shift:
                         continue
                     key_first_shift_var = EmployeeDayShiftVariable.get_key(
                         employee, day + timedelta(i1 - 1), shifts[first_shift.id]
@@ -69,5 +73,7 @@ def test_min_rest_time_1(
     solver.solve(model)
 
     violations = find_min_rest_time_violations(solver, variables_dict, employees, days, shifts)
-    # print(f"\nViolations: {violations}")
-    assert len(violations) == 0, pprint(violations, width=1)
+    if CpSolver.StatusName(solver) == "INFEASIBLE":
+        raise Exception("There is no feasible solution and thus this test is pointless")
+    else:
+        assert len(violations) == 0, "\n\n There were violations: \n" + pformat(violations, width=1) + "\n"

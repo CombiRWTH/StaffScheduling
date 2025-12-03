@@ -127,3 +127,11 @@ class Employee:
     @property
     def target_working_time(self) -> int:
         return self._target_working_time
+
+    @property
+    def vacation_days(self) -> list[int]:
+        return self._vacation_days
+
+    @property
+    def vacation_shifts(self) -> list[tuple[int, str]]:
+        return self._vacation_shifts

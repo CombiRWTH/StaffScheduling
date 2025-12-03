@@ -1,4 +1,4 @@
-from pprint import pprint
+from pprint import pformat
 from typing import cast
 
 from ortools.sat.python.cp_model import CpModel, CpSolver, IntVar
@@ -68,4 +68,4 @@ def test_min_staffing_1(
     if CpSolver.StatusName(solver) == "INFEASIBLE":
         raise Exception("There is no feasible solution and thus this test is pointless")
     else:
-        assert len(violations) == 0, pprint(violations, width=1)
+        assert len(violations) == 0, "\n\n There were violations: \n" + pformat(violations, width=1) + "\n"

@@ -6,6 +6,7 @@ from ortools.sat.python.cp_model import CpModel, IntVar
 from src.cp.variables import EmployeeDayShiftVariable, EmployeeDayVariable, Variable
 from src.day import Day
 from src.employee import Employee
+from src.loader import FSLoader
 from src.shift import Shift
 
 alice: Employee = Employee(
@@ -15,6 +16,7 @@ alice: Employee = Employee(
     level="Azubi",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
     planned_shifts=[(1, "N"), (2, "S")],
+    target_working_time=960,
 )
 bob: Employee = Employee(
     key=2,
@@ -22,7 +24,9 @@ bob: Employee = Employee(
     name="Bob",
     level="Fachkraft",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
-    planned_shifts=[(1, "N5")],
+    planned_shifts=[(1, "F")],
+    target_working_time=1440,
+    vacation_shifts=[(1, "F")],
 )
 carlos: Employee = Employee(
     key=3,
@@ -30,7 +34,10 @@ carlos: Employee = Employee(
     name="Carlos",
     level="Fachkraft",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
-    planned_shifts=[(1, "F")],
+    planned_shifts=[],
+    qualifications=["rounds"],
+    target_working_time=1440,
+    vacation_days=[1],
 )
 employees: list[Employee] = [alice, bob, carlos]
 
@@ -104,3 +111,34 @@ def setup_with_minstaffing(
 ) -> tuple[CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift], dict[str, dict[str, dict[str, int]]]]:
     global min_staffing
     return *setup, min_staffing
+
+
+@pytest.fixture
+def setup_case_77() -> tuple[
+    CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift], dict[str, dict[str, dict[str, int]]]
+]:
+    loader = FSLoader(case_id=77)
+
+    days = loader.get_days(datetime(2025, 11, 1), datetime(2025, 11, 30))
+    employees = loader.get_employees()
+    shifts = loader.get_shifts()
+    min_staffing = loader.get_min_staffing()
+
+    model: CpModel = CpModel()
+    variables_list: list[Variable] = []
+    variables_dict: dict[str, IntVar] = {}
+
+    model = CpModel()
+
+    # here the order of the variables in the list is very important
+    variables_list = [
+        EmployeeDayShiftVariable(employees, days, shifts),
+        EmployeeDayVariable(employees, days, shifts),
+    ]
+    variables_dict = {}
+    for vars in variables_list:
+        vars = vars.create(model, variables_dict)
+        for var in vars:
+            variables_dict[var.name] = var
+
+    return model, variables_dict, employees, days, shifts, min_staffing

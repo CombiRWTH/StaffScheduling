@@ -1,35 +1,36 @@
-from datetime import timedelta
 from pprint import pformat
 from typing import cast
 
 from ortools.sat.python.cp_model import CpModel, CpSolver, IntVar
 
-from src.cp.constraints import PlannedShiftsConstraint
+from src.cp.constraints import TargetWorkingTimeConstraint
 from src.cp.variables import EmployeeDayShiftVariable, Variable
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
 
-def find_planned_shifts_violations(
+def find_target_working_time_violations(
     solver: CpSolver, variables_dict: dict[str, IntVar], employees: list[Employee], days: list[Day], shifts: list[Shift]
-) -> list[dict[str, int]]:
+) -> list[tuple[dict[str, int], int, int]]:
     var_solution_dict: dict[str, int] = {variable.name: solver.value(variable) for variable in variables_dict.values()}
-    violations: list[dict[str, int]] = []
+    violations: list[tuple[dict[str, int], int, int]] = []
 
     for employee in employees:
-        for day_index, shift_str in employee.get_planned_shifts:
-            day = days[0] + timedelta(day_index - 1)
-            if shift_str not in Shift.SHIFT_MAPPING:
-                continue
-            shift = shifts[Shift.SHIFT_MAPPING[shift_str]]
-            var_key = EmployeeDayShiftVariable.get_key(employee, day, shift)
-            if var_solution_dict[var_key] != 1:
-                violations.append({var_key: var_solution_dict[var_key]})
+        var_keys: list[str] = []
+        total_hours: int = 0
+        for day in days:
+            for shift in shifts:
+                var_keys.append(EmployeeDayShiftVariable.get_key(employee, day, shift))
+                total_hours = total_hours + var_solution_dict[var_keys[-1]] * shift.duration
+        if abs(total_hours - employee.target_working_time) > 460:
+            violations.append(
+                ({key: var_solution_dict[key] for key in var_keys}, total_hours, employee.target_working_time)
+            )
     return violations
 
 
-def test_planned_shifts_1(
+def test_target_working_time_1(
     setup: tuple[CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift]],
 ):
     model: CpModel
@@ -39,7 +40,7 @@ def test_planned_shifts_1(
     shifts: list[Shift] = []
     model, variables_dict, employees, days, shifts = setup
 
-    constrain = PlannedShiftsConstraint(employees, days, shifts)
+    constrain = TargetWorkingTimeConstraint(employees, days, shifts)
     constrain.create(model, cast(dict[str, Variable], variables_dict))
 
     solver: CpSolver = CpSolver()
@@ -48,7 +49,7 @@ def test_planned_shifts_1(
     solver.parameters.linearization_level = 0
     solver.solve(model)
 
-    violations = find_planned_shifts_violations(solver, variables_dict, employees, days, shifts)
+    violations = find_target_working_time_violations(solver, variables_dict, employees, days, shifts)
     if CpSolver.StatusName(solver) == "INFEASIBLE":
         raise Exception("There is no feasible solution and thus this test is pointless")
     else:
