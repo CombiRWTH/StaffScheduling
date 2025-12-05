@@ -85,6 +85,35 @@ class Model:
 
         return variables
 
+    @property
+    def shift_assignment_variables(self) -> ShiftAssignmentVariables:
+        return self._shiftAssignmentVariables
+
+    @property
+    def employee_works_on_day_variables(self) -> EmployeeWorksOnDayVariables:
+        return self._employeeWorksOnDayVariables
+
+    @property
+    def cpModel(self) -> CpModel:
+        return self._model
+
+    @property
+    def employees(self) -> list[Employee]:
+        return self._employees
+
+    # Warning: Only use this setter in tests to limit the employees to a subset for violation checks
+    @employees.setter
+    def employees(self, value: list[Employee]):
+        self._employees = value
+
+    @property
+    def days(self) -> list[Day]:
+        return self._days
+
+    @property
+    def shifts(self) -> list[Shift]:
+        return self._shifts
+
     def add_constraint(self, constraint: Constraint):
         constraint.create(self._model, self._shiftAssignmentVariables, self._employeeWorksOnDayVariables)
         self._constraints.append(constraint)

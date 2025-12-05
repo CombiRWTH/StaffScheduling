@@ -1,24 +1,21 @@
 from pprint import pformat
 from typing import cast
 
-from ortools.sat.python.cp_model import CpModel, CpSolver, IntVar
+from ortools.sat.python.cp_model import CpSolver, IntVar
 
 from src.cp.constraints import MinStaffingConstraint
-from src.cp.variables import EmployeeDayShiftVariable, Variable
-from src.day import Day
-from src.employee import Employee
+from src.cp.model import Model
 from src.shift import Shift
 
 
 def find_min_staffing_violations(
-    solver: CpSolver,
-    variables_dict: dict[str, IntVar],
-    employees: list[Employee],
-    days: list[Day],
-    shifts: list[Shift],
-    min_staffing: dict[str, dict[str, dict[str, int]]],
+    solver: CpSolver, model: Model, min_staffing: dict[str, dict[str, dict[str, int]]]
 ) -> list[dict[str, int]]:
-    var_solution_dict: dict[str, int] = {variable.name: solver.value(variable) for variable in variables_dict.values()}
+    shift_assignment_variables = model.shift_assignment_variables
+    employees = model.employees
+    days = model.days
+    shifts = model.shifts
+
     violations: list[dict[str, int]] = []
 
     weekday_map: dict[str, int] = {"Mo": 0, "Di": 1, "Mi": 2, "Do": 3, "Fr": 4, "Sa": 5, "So": 6}
@@ -29,42 +26,33 @@ def find_min_staffing_violations(
                 required: int = min_staffing[employee_level][weekday_str][shift_str]
                 # for every matching day inside our period
                 for day in [day for day in days if day.weekday() == weekday_map[weekday_str]]:
-                    relevant_var_keys = [
-                        EmployeeDayShiftVariable.get_key(employee, day, shifts[Shift.SHIFT_MAPPING[shift_str]])
+                    relevant_var = [
+                        shift_assignment_variables[employee][day][shifts[Shift.SHIFT_MAPPING[shift_str]]]
                         for employee in employees
                         if employee.level == employee_level
                     ]
-                    total_shifts_worked = sum([var_solution_dict[var] for var in relevant_var_keys])
+                    total_shifts_worked = sum([solver.value(var) for var in relevant_var])
                     if required > total_shifts_worked:
                         d: dict[str, int] = {}
-                        for var_keys in relevant_var_keys:
-                            d[var_keys] = var_solution_dict[var_keys]
+                        for var in relevant_var:
+                            d[cast(IntVar, var).name] = solver.value(var)
                         violations.append(d)
     return violations
 
 
-def test_min_staffing_1(
-    setup_with_minstaffing: tuple[
-        CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift], dict[str, dict[str, dict[str, int]]]
-    ],
-):
-    model: CpModel
-    variables_dict: dict[str, IntVar] = {}
-    employees: list[Employee] = []
-    days: list[Day] = []
-    shifts: list[Shift] = []
-    model, variables_dict, employees, days, shifts, min_staffing = setup_with_minstaffing
+def test_min_staffing_1(setup_with_minstaffing: tuple[Model, dict[str, dict[str, dict[str, int]]]]):
+    model, min_staffing = setup_with_minstaffing
 
-    constrain = MinStaffingConstraint(min_staffing, employees, days, shifts)
-    constrain.create(model, cast(dict[str, Variable], variables_dict))
+    constrain = MinStaffingConstraint(min_staffing, model.employees, model.days, model.shifts)
+    model.add_constraint(constrain)
 
     solver: CpSolver = CpSolver()
     solver.parameters.num_workers = 1
     solver.parameters.max_time_in_seconds = 10
     solver.parameters.linearization_level = 0
-    solver.solve(model)
+    solver.solve(model.cpModel)
 
-    violations = find_min_staffing_violations(solver, variables_dict, employees, days, shifts, min_staffing)
+    violations = find_min_staffing_violations(solver, model, min_staffing)
     if CpSolver.StatusName(solver) == "INFEASIBLE":
         raise Exception("There is no feasible solution and thus this test is pointless")
     else:
