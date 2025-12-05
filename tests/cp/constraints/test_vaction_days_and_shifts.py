@@ -6,10 +6,11 @@ from ortools.sat.python.cp_model import CpSolver, IntVar
 
 from src.cp.constraints import VacationDaysAndShiftsConstraint
 from src.cp.model import Model
+from src.cp.variables import Variable
 from src.shift import Shift
 
 
-def find_vaction_days_and_shifts_violations(solver: CpSolver, model: Model) -> list[dict[str, int]]:
+def find_vaction_days_and_shifts_violations(assignment: dict[Variable, int], model: Model) -> list[dict[str, int]]:
     shift_assignment_variables = model.shift_assignment_variables
     employees = model.employees
     days = model.days
@@ -22,21 +23,21 @@ def find_vaction_days_and_shifts_violations(solver: CpSolver, model: Model) -> l
             d: dict[str, int] = {}
 
             var_keys = [shift_assignment_variables[employee][days[0] + timedelta(day - 1)][shift] for shift in shifts]
-            if 1 in [solver.value(var) for var in var_keys]:
+            if 1 in [assignment[var] for var in var_keys]:
                 if day != 1:
                     k = shift_assignment_variables[employee][days[0] + timedelta(day - 2)][shifts[Shift.NIGHT]]
-                    d = d | {cast(IntVar, k).name: solver.value(k)}
-                d = d | {cast(IntVar, var).name: solver.value(var) for var in var_keys}
+                    d = d | {cast(IntVar, k).name: assignment[k]}
+                d = d | {cast(IntVar, var).name: assignment[var] for var in var_keys}
                 violations.append(d)
                 continue
 
             if day != 1:
                 k = shift_assignment_variables[employee][days[0] + timedelta(day - 2)][shifts[Shift.NIGHT]]
-                if solver.value(k) == 1:
+                if assignment[k] == 1:
                     d = (
                         d
-                        | {cast(IntVar, k).name: solver.value(k)}
-                        | {cast(IntVar, var).name: solver.value(var) for var in var_keys}
+                        | {cast(IntVar, k).name: assignment[k]}
+                        | {cast(IntVar, var).name: assignment[var] for var in var_keys}
                     )
                     violations.append(d)
                     continue
@@ -44,8 +45,8 @@ def find_vaction_days_and_shifts_violations(solver: CpSolver, model: Model) -> l
     for employee in employees:
         for day, shift in employee.vacation_shifts:
             var = shift_assignment_variables[employee][days[0] + timedelta(day - 1)][shifts[Shift.SHIFT_MAPPING[shift]]]
-            if solver.value(var) == 1:
-                violations.append({cast(IntVar, var).name: solver.value(var)})
+            if assignment[var] == 1:
+                violations.append({cast(IntVar, var).name: assignment[var]})
 
     return violations
 
@@ -63,7 +64,9 @@ def test_vaction_days_and_shifts_1(
     solver.parameters.linearization_level = 0
     solver.solve(model.cpModel)
 
-    violations = find_vaction_days_and_shifts_violations(solver, model)
+    assignment = {var: solver.Value(var) for var in model.variables}
+
+    violations = find_vaction_days_and_shifts_violations(assignment, model)
     if CpSolver.StatusName(solver) == "INFEASIBLE":
         raise Exception("There is no feasible solution and thus this test is pointless")
     else:
