@@ -1,8 +1,7 @@
 import json
+from collections import defaultdict
 from datetime import datetime
 from re import match
-from collections import defaultdict
-from pathlib import Path
 
 # Adjust import paths because this script is now one folder above the Flask app
 from ..employee import Employee
@@ -20,7 +19,11 @@ def employee_to_dict(emp: Employee):
         "wishes": {
             "shift_wishes": [[day, shift] for (day, shift) in emp._wish_shifts],
             "day_off_wishes": list(emp._wish_days),
-        }
+        },
+        "forbidden_days": emp._forbidden_days,
+        "forbidden_shifts": emp._forbidden_shifts,
+        "vacation_days": emp._vacation_days,
+        "vacation_shifts": emp._vacation_shifts,
     }
 
 
@@ -65,7 +68,8 @@ def collect_day_information(solution, employees, shifts, loader):
 
                 shift_assigned = any(
                     solution.variables.get(f"({e_key}, '{day_key}', {shift.get_id()})") == 1
-                    for shift in shifts if not shift.is_exclusive
+                    for shift in shifts
+                    if not shift.is_exclusive
                 )
 
                 if not shift_assigned:
@@ -73,11 +77,7 @@ def collect_day_information(solution, employees, shifts, loader):
 
             # --- SHIFT WISHES ---
             shift_wishes = [
-                s
-                for wd, abbr in employee.get_wish_shifts
-                if wd == day.day
-                for s in shifts
-                if s.abbreviation == abbr
+                s for wd, abbr in employee.get_wish_shifts if wd == day.day for s in shifts if s.abbreviation == abbr
             ]
 
             if shift_wishes:
@@ -102,10 +102,9 @@ def collect_day_information(solution, employees, shifts, loader):
     }
 
 
-def process_solution(loader: Loader, output_filename: str = "processed_solution.json",
-                         solution_file_name: str | None = None):
-
-    
+def process_solution(
+    loader: Loader, output_filename: str = "processed_solution.json", solution_file_name: str | None = None
+):
     employees = loader.get_employees()
     shifts = loader.get_shifts()
 
@@ -139,4 +138,3 @@ def process_solution(loader: Loader, output_filename: str = "processed_solution.
         json.dump(data, f, indent=4, default=str)
 
     print(f"Exported solution data to {output_filename}")
-

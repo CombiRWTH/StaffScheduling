@@ -1,6 +1,7 @@
 import re
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
+
 
 def calculate_forward_rotation_violations(shifts_assigned: list[int]) -> int:
     valid_shifts = [s for s in shifts_assigned if s in {0, 2, 3}]
@@ -75,18 +76,18 @@ def calculate_not_free_after_night_shift(schedule: dict) -> int:
 def calculate_total_wish_violations(emp_wishes: dict, schedule: dict, shifts: list[dict]) -> int:
     violations = 0
     shift_wish_map = defaultdict(list)
-    
-    for wish_day, wish_abbr in emp_wishes.get('shift_wishes', []):
+
+    for wish_day, wish_abbr in emp_wishes.get("shift_wishes", []):
         shift_wish_map[wish_day].append(wish_abbr)
 
     for day, assigned_shift_id in schedule.items():
-        assigned_abbr = shifts[assigned_shift_id]['abbreviation']
+        assigned_abbr = shifts[assigned_shift_id]["abbreviation"]
         wished_abbrs = shift_wish_map.get(day.day, [])
 
         if assigned_abbr in wished_abbrs:
             violations += 1
 
-    for wish_day in emp_wishes.get('day_off_wishes', []):
+    for wish_day in emp_wishes.get("day_off_wishes", []):
         worked_that_day = any(d.day == wish_day for d in schedule.keys())
         if worked_that_day:
             violations += 1
@@ -96,8 +97,8 @@ def calculate_total_wish_violations(emp_wishes: dict, schedule: dict, shifts: li
 
 def analyze_solution(variables: dict[str, int], employees: list[dict], shifts: list[dict]) -> dict[str, float]:
     parsed = defaultdict(dict)
-    shift_duration_map = {s['id']: s['duration'] for s in shifts}
-    employee_map = {e['id']: e for e in employees}
+    shift_duration_map = {s["id"]: s["duration"] for s in shifts}
+    employee_map = {e["id"]: e for e in employees}
 
     forward_rotation_violations = 0
     consecutive_working_days_gt_5 = 0
@@ -127,10 +128,12 @@ def analyze_solution(variables: dict[str, int], employees: list[dict], shifts: l
         consecutive_working_days_gt_5 += calculate_consecutive_working_days(days)
         no_free_weekend += calculate_no_free_weekend(schedule)
         consecutive_night_shifts_gt_3 += calculate_consecutive_night_shifts(shifts_assigned)
-        total_overtime_hours += calculate_overtime(shifts_assigned, shift_duration_map, emp.get('target_working_time', 9600))
+        total_overtime_hours += calculate_overtime(
+            shifts_assigned, shift_duration_map, emp.get("target_working_time", 9600)
+        )
         no_free_days_around_weekend += calculate_no_free_days_around_weekend(schedule)
         not_free_after_night_shift += calculate_not_free_after_night_shift(schedule)
-        total_wish_violations += calculate_total_wish_violations(emp.get('wishes', {}), schedule, shifts)
+        total_wish_violations += calculate_total_wish_violations(emp.get("wishes", {}), schedule, shifts)
 
     return {
         "forward_rotation_violations": forward_rotation_violations,
@@ -142,5 +145,6 @@ def analyze_solution(variables: dict[str, int], employees: list[dict], shifts: l
         "not_free_after_night_shift": not_free_after_night_shift,
         "violated_wish_total": total_wish_violations,
     }
+
 
 print("Analysis script loaded successfully")

@@ -2,6 +2,7 @@ import logging
 import timeit
 from typing import cast
 
+from ortools.sat.python import cp_model
 from ortools.sat.python.cp_model import (
     CpModel,
     CpSolver,
@@ -16,8 +17,6 @@ from .objectives import Objective
 from .variables import Variable
 
 
-from ortools.sat.python import cp_model
-
 class MultiSolutionCollector(cp_model.CpSolverSolutionCallback):
     def __init__(self, model):
         super().__init__()
@@ -28,10 +27,7 @@ class MultiSolutionCollector(cp_model.CpSolverSolutionCallback):
         obj = self.ObjectiveValue()
         print("Found solution with objective:", obj)
 
-        assignment = {
-            name: self.Value(var)
-            for name, var in self.model._variables.items()
-        }
+        assignment = {name: self.Value(var) for name, var in self.model._variables.items()}
 
         self.solutions.append(
             Solution(
@@ -39,7 +35,6 @@ class MultiSolutionCollector(cp_model.CpSolverSolutionCallback):
                 self.ObjectiveValue(),
             )
         )
-
 
 
 class Model:
@@ -105,7 +100,6 @@ class Model:
         elapsed_time = timeit.default_timer() - start_time
         logging.info(f"Solving completed in {elapsed_time:.2f} seconds")
 
-
         print("\nStatistics")
         print(f"  - conflicts      : {solver.num_conflicts}")
         print(f"  - branches       : {solver.num_branches}")
@@ -115,13 +109,11 @@ class Model:
         print(f"  - objective value: {solver.objective_value}")
         print(f"  - info           : {solver.solution_info()}")
 
-
         bestn = sorted(
-            collector.solutions, 
-            key=lambda s: s.objective, 
-            reverse=True  # or False depending on maximize/minimize
-        )[:self._max_solutions]
-
+            collector.solutions,
+            key=lambda s: s.objective,
+            reverse=True,  # or False depending on maximize/minimize
+        )[: self._max_solutions]
 
         return bestn
 

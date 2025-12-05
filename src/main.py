@@ -7,7 +7,6 @@ from src.db.import_main import main as inserter
 from src.loader import FSLoader
 from src.solve import main as solver
 from src.web import App
-
 from src.web.process_solution import process_solution
 
 
@@ -29,8 +28,7 @@ def export_json(case: int, debug: bool, filename: str = None, output: str = "pro
 
     loader = FSLoader(case)
 
-    process_solution(loader=loader,output_filename=output, solution_file_name=filename)
-
+    process_solution(loader=loader, output_filename=output, solution_file_name=filename)
 
 
 @cli.command("solve-multiple")
@@ -52,13 +50,7 @@ def solve_multiple(unit: int, start: datetime, end: datetime, max_solutions: int
 
     click.echo(f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()}.")
 
-    solver(
-        unit=unit,
-        start_date=start.date(),
-        end_date=end.date(),
-        timeout=timeout,
-        max_solutions=max_solutions
-    )
+    solver(unit=unit, start_date=start.date(), end_date=end.date(), timeout=timeout, max_solutions=max_solutions)
 
 
 @cli.command()

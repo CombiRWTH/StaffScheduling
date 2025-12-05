@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -10,12 +10,14 @@ import { CalendarDays, Maximize2, Upload } from "lucide-react"
 import { ScheduleTable } from "@/components/schedule-table"
 import { StatsGrid } from "@/components/stats-grid"
 import { parseSolutionFile, type SolutionData } from "@/lib/solution-parser"
+import { cn } from "@/lib/utils"
 
 export default function ScheduleDashboard() {
   const [solutionData, setSolutionData] = useState<SolutionData | null>(null)
   const [fileName, setFileName] = useState<string>("")
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [error, setError] = useState<string>("")
+  const tableRef = useRef<HTMLDivElement>(null)
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -39,8 +41,8 @@ export default function ScheduleDashboard() {
   }
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
+    if (!document.fullscreenElement && tableRef.current) {
+      tableRef.current.requestFullscreen()
       setIsFullscreen(true)
     } else {
       document.exitFullscreen()
@@ -87,7 +89,7 @@ export default function ScheduleDashboard() {
             </div>
             <Button onClick={toggleFullscreen} variant="outline" className="gap-2 bg-transparent">
               <Maximize2 className="h-4 w-4" />
-              {isFullscreen ? "Exit" : "Enter"} Fullscreen
+              Fullscreen
             </Button>
           </div>
         </header>
@@ -98,7 +100,13 @@ export default function ScheduleDashboard() {
             <StatsGrid stats={solutionData.stats} />
 
             {/* Schedule Table */}
-            <Card className="overflow-hidden border-border/50 shadow-lg">
+            <Card
+              ref={tableRef}
+              className={cn(
+                "overflow-hidden border-border/50 shadow-lg",
+                isFullscreen && "h-screen w-screen bg-background flex flex-col p-4 rounded-none border-0"
+              )}
+            >
               <ScheduleTable
                 employees={solutionData.employees}
                 days={solutionData.days}
@@ -108,8 +116,10 @@ export default function ScheduleDashboard() {
                 fulfilledShiftWishCells={solutionData.fulfilledShiftWishCells}
                 allDayOffWishCells={solutionData.allDayOffWishCells}
                 allShiftWishColors={solutionData.allShiftWishColors}
+                className={isFullscreen ? "h-full max-h-none" : undefined}
               />
             </Card>
+
 
             {/* Legend */}
             <Card className="border-border/50 p-6">
