@@ -48,6 +48,16 @@ class FreeDayAfterNightShiftPhaseConstraint(Constraint):
                 day_tomorrow_variable = employee_works_on_day_variables[employee][day + timedelta(1)]
                 # where are day_tomorrow_variables enforced? this may be the cause of the bug menitioned in the docs
                 model.add(day_tomorrow_variable == 0).only_enforce_if(
-                    (night_shift_today_variable or night_shift_today_variable_special)
-                    and (night_shift_tomorrow_variable.Not() and night_shift_tomorrow_variable_special.Not())
+                    [
+                        night_shift_today_variable,
+                        night_shift_tomorrow_variable.Not(),
+                        night_shift_tomorrow_variable_special.Not(),
+                    ]
+                )
+                model.add(day_tomorrow_variable == 0).only_enforce_if(
+                    [
+                        night_shift_today_variable_special,
+                        night_shift_tomorrow_variable.Not(),
+                        night_shift_tomorrow_variable_special.Not(),
+                    ]
                 )
