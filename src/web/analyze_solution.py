@@ -8,6 +8,8 @@ from src.shift import Shift
 
 def calculate_forward_rotation_violations(shifts_assigned: list[int]) -> int:
     valid_shifts = [s for s in shifts_assigned if s in {0, 2, 3}]
+    # e.g. if you work a late shift on day N you should not work an early shift on day N+1
+    # shouldnt this be an "=" instead of a "<"?
     return sum(1 for i in range(len(valid_shifts) - 1) if valid_shifts[i + 1] < valid_shifts[i])
 
 
@@ -65,6 +67,7 @@ def calculate_no_free_days_around_weekend(schedule: dict[date, int]) -> int:
 
 
 def calculate_not_free_after_night_shift(schedule: dict[date, int]) -> int:
+    # this gives you 2 free days after a night shift phase?
     violations = 0
     for d in schedule:
         if schedule[d] == Shift.NIGHT:

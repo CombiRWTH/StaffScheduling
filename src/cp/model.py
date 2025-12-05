@@ -66,6 +66,10 @@ class Model:
         )
 
     @property
+    def variables(self) -> list[Variable]:
+        return self._variables
+
+    @property
     def _variables(self) -> list[Variable]:
         """Creates a dictionary mapping variable names to Variable objects."""
         variables: list[Variable] = []
@@ -113,6 +117,10 @@ class Model:
     @property
     def shifts(self) -> list[Shift]:
         return self._shifts
+
+    @property
+    def penalties(self) -> list[LinearExpr]:
+        return self._penalties
 
     def add_constraint(self, constraint: Constraint):
         constraint.create(self._model, self._shiftAssignmentVariables, self._employeeWorksOnDayVariables)

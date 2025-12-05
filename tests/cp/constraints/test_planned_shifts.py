@@ -6,10 +6,11 @@ from ortools.sat.python.cp_model import CpSolver, IntVar
 
 from src.cp.constraints import PlannedShiftsConstraint
 from src.cp.model import Model
+from src.cp.variables import Variable
 from src.shift import Shift
 
 
-def find_planned_shifts_violations(solver: CpSolver, model: Model) -> list[dict[str, int]]:
+def find_planned_shifts_violations(assignment: dict[Variable, int], model: Model) -> list[dict[str, int]]:
     shift_assignment_variables = model.shift_assignment_variables
     employees = model.employees
     days = model.days
@@ -24,8 +25,8 @@ def find_planned_shifts_violations(solver: CpSolver, model: Model) -> list[dict[
                 continue
             shift = shifts[Shift.SHIFT_MAPPING[shift_str]]
             var = shift_assignment_variables[employee][day][shift]
-            if solver.value(var) != 1:
-                violations.append({cast(IntVar, var).name: solver.value(var)})
+            if assignment[var] != 1:
+                violations.append({cast(IntVar, var).name: assignment[var]})
     return violations
 
 
@@ -41,7 +42,9 @@ def test_planned_shifts_1(setup: Model):
     solver.parameters.linearization_level = 0
     solver.solve(model.cpModel)
 
-    violations = find_planned_shifts_violations(solver, model)
+    assignment = {var: solver.Value(var) for var in model.variables}
+
+    violations = find_planned_shifts_violations(assignment, model)
     if CpSolver.StatusName(solver) == "INFEASIBLE":
         raise Exception("There is no feasible solution and thus this test is pointless")
     else:
