@@ -6,7 +6,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-from ..variables import Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 
 
 class Constraint(ABC):
@@ -24,7 +24,12 @@ class Constraint(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr | None:
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr | None:
         """
         Creates the constraint or objective in the given CP model using the provided variables.
 

@@ -1,12 +1,10 @@
-from typing import cast
-
-from ortools.sat.python.cp_model import CpModel, IntVar
+from ortools.sat.python.cp_model import CpModel
 
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-from ..variables import EmployeeDayShiftVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .constraint import Constraint
 
 
@@ -21,13 +19,15 @@ class MaxOneShiftPerDayConstraint(Constraint):
         """
         super().__init__(employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, Variable]):
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ):
         for employee in self._employees:
             if employee.hidden:
                 continue
 
             for day in self._days:
-                model.add_at_most_one(
-                    cast(IntVar, variables[EmployeeDayShiftVariable.get_key(employee, day, shift)])
-                    for shift in self._shifts
-                )
+                model.add_at_most_one(shift_assignment_variables[employee][day][shift] for shift in self._shifts)

@@ -9,45 +9,126 @@ from ortools.sat.python.cp_model import (
     LinearExpr,
 )
 
+from src.day import Day
+from src.employee import Employee
+from src.shift import Shift
 from src.solution import Solution
 
 from .constraints import Constraint
 from .objectives import Objective
-from .variables import Variable
+from .variables import (
+    EmployeeWorksOnDayVariables,
+    ShiftAssignmentVariables,
+    Variable,
+    create_employee_works_on_day_variables,
+    create_shift_assignment_variables,
+    setup_employee_works_on_day_variables,
+)
 
 
 class Model:
     _model: CpModel
-    _variables: dict[str, Variable]
+    _shiftAssignmentVariables: ShiftAssignmentVariables
+    _employeeWorksOnDayVariables: EmployeeWorksOnDayVariables
+    _employees: list[Employee]
+    _days: list[Day]
+    _shifts: list[Shift]
     _objectives: list[Objective]
     _penalties: list[LinearExpr]
     _constraints: list[Constraint]
 
-    def __init__(self):
+    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
         self._model = CpModel()
-        self._variables = {}
+        self._employees = employees
+        self._days = days
+        self._shifts = shifts
         self._objectives = []
         self._penalties = []
         self._constraints = []
+        self._shiftAssignmentVariables = create_shift_assignment_variables(
+            self._employees,
+            self._days,
+            self._shifts,
+            self._model,
+        )
+        self._employeeWorksOnDayVariables = create_employee_works_on_day_variables(
+            self._employees,
+            self._days,
+            self._model,
+        )
+        setup_employee_works_on_day_variables(
+            self._shiftAssignmentVariables,
+            self._employeeWorksOnDayVariables,
+            self._employees,
+            self._days,
+            self._shifts,
+            self._model,
+        )
+
+    @property
+    def _variables(self) -> list[Variable]:
+        """Creates a dictionary mapping variable names to Variable objects."""
+        variables: list[Variable] = []
+
+        # Add shift assignment variables
+        for employee in self._employees:
+            for day in self._days:
+                for shift in self._shifts:
+                    var = self._shiftAssignmentVariables[employee][day][shift]
+                    variables.append(var)
+
+        # Add employee works on day variables
+        for employee in self._employees:
+            for day in self._days:
+                var = self._employeeWorksOnDayVariables[employee][day]
+                variables.append(var)
+
+        return variables
+
+    @property
+    def shift_assignment_variables(self) -> ShiftAssignmentVariables:
+        return self._shiftAssignmentVariables
+
+    @property
+    def employee_works_on_day_variables(self) -> EmployeeWorksOnDayVariables:
+        return self._employeeWorksOnDayVariables
+
+    @property
+    def cpModel(self) -> CpModel:
+        return self._model
+
+    @property
+    def employees(self) -> list[Employee]:
+        return self._employees
+
+    # Warning: Only use this setter in tests to limit the employees to a subset for violation checks
+    @employees.setter
+    def employees(self, value: list[Employee]):
+        self._employees = value
+
+    @property
+    def days(self) -> list[Day]:
+        return self._days
+
+    @property
+    def shifts(self) -> list[Shift]:
+        return self._shifts
 
     def add_constraint(self, constraint: Constraint):
-        constraint.create(self._model, self._variables)
+        constraint.create(self._model, self._shiftAssignmentVariables, self._employeeWorksOnDayVariables)
         self._constraints.append(constraint)
 
     def add_objective(self, objective: Objective):
-        penalty = objective.create(self._model, self._variables)
+        penalty = objective.create(self._model, self._shiftAssignmentVariables, self._employeeWorksOnDayVariables)
         if penalty is not None:
             self._penalties.append(penalty)
         self._objectives.append(objective)
 
-    def add_variable(self, variable: Variable):
-        vars = variable.create(self._model, cast(dict[str, IntVar], self._variables))
-        for var in vars:
-            self._variables[var.name] = cast(Variable, var)
-
     def solve(self, timeout: int | None) -> Solution:
         logging.info("Solving model...")
-        logging.info(f"  - number of variables: {len(self._variables)}")
+        logging.info(
+            f"  - number of variables: {len(self._shiftAssignmentVariables) + len(self._employeeWorksOnDayVariables)}"
+        )
         logging.info(f"  - number of objectives: {len(self._objectives)}")
         logging.info(f"  - number of constraints: {len(self._constraints)}")
 
@@ -85,10 +166,7 @@ class Model:
         print(f"  - info           : {solver.solution_info()}")
 
         solution = Solution(
-            {
-                cast(IntVar, variable).name: solver.value(cast(IntVar, variable))
-                for variable in self._variables.values()
-            },
+            {cast(IntVar, variable).name: solver.value(variable) for variable in self._variables},
             solver.objective_value,
         )
 

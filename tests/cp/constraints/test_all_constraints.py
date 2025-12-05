@@ -1,8 +1,7 @@
 import os
 from pprint import pformat
-from typing import cast
 
-from ortools.sat.python.cp_model import CpModel, CpSolver, IntVar
+from ortools.sat.python.cp_model import CpSolver
 from test_free_day_after_night_shift_phase import find_free_day_after_night_shift_phase_violations
 from test_hierarchy_of_intermediate_shifts import find_hierarchy_of_intermediate_shifts_violations
 from test_max_one_shift_per_day import find_max_one_shift_per_day_violations
@@ -24,75 +23,50 @@ from src.cp.constraints import (
     TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint,
 )
-from src.cp.variables import Variable
-from src.day import Day
-from src.employee import Employee
-from src.shift import Shift
+from src.cp.model import Model
 
 
 def test_free_day_after_night_shift_phase_1(
-    setup_case_77: tuple[
-        CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift], dict[str, dict[str, dict[str, int]]]
-    ],
+    setup_case_77: tuple[Model, dict[str, dict[str, dict[str, int]]]],
 ):
-    model: CpModel
-    variables_dict: dict[str, IntVar] = {}
-    employees: list[Employee] = []
-    days: list[Day] = []
-    shifts: list[Shift] = []
-    model, variables_dict, employees, days, shifts, min_staffing = setup_case_77
-    none_hidden_employees = [e for e in employees if "Hidden" not in e.name]
+    model, min_staffing = setup_case_77
+    none_hidden_employees = [e for e in model.employees if not e.hidden]
 
-    FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts).create(
-        model, cast(dict[str, Variable], variables_dict)
-    )
-    HierarchyOfIntermediateShiftsConstraint(employees, days, shifts).create(
-        model, cast(dict[str, Variable], variables_dict)
-    )
-    MaxOneShiftPerDayConstraint(employees, days, shifts).create(model, cast(dict[str, Variable], variables_dict))
-    MinRestTimeConstraint(employees, days, shifts).create(model, cast(dict[str, Variable], variables_dict))
-    MinStaffingConstraint(min_staffing, employees, days, shifts).create(
-        model, cast(dict[str, Variable], variables_dict)
-    )
-    PlannedShiftsConstraint(employees, days, shifts).create(model, cast(dict[str, Variable], variables_dict))
-    RoundsInEarlyShiftConstraint(employees, days, shifts).create(model, cast(dict[str, Variable], variables_dict))
-    TargetWorkingTimeConstraint(employees, days, shifts).create(model, cast(dict[str, Variable], variables_dict))
-    VacationDaysAndShiftsConstraint(employees, days, shifts).create(model, cast(dict[str, Variable], variables_dict))
+    employees = model.employees
+    days = model.days
+    shifts = model.shifts
+
+    model.add_constraint(FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts))
+    model.add_constraint(HierarchyOfIntermediateShiftsConstraint(employees, days, shifts))
+    model.add_constraint(MaxOneShiftPerDayConstraint(employees, days, shifts))
+    model.add_constraint(MinRestTimeConstraint(employees, days, shifts))
+    model.add_constraint(MinStaffingConstraint(min_staffing, employees, days, shifts))
+    model.add_constraint(PlannedShiftsConstraint(employees, days, shifts))
+    model.add_constraint(RoundsInEarlyShiftConstraint(employees, days, shifts))
+    model.add_constraint(TargetWorkingTimeConstraint(employees, days, shifts))
+    model.add_constraint(VacationDaysAndShiftsConstraint(employees, days, shifts))
 
     solver: CpSolver = CpSolver()
     solver.parameters.num_workers = 0
     solver.parameters.max_time_in_seconds = 30
     solver.parameters.linearization_level = 0
-    solver.solve(model)
+    solver.solve(model.cpModel)
 
     if CpSolver.StatusName(solver) == "INFEASIBLE":
         raise Exception("There is no feasible solution and thus this test is pointless")
 
-    free_day_after_night_shift_phase_violations = find_free_day_after_night_shift_phase_violations(
-        solver, variables_dict, none_hidden_employees, days, shifts
-    )
-    hierarchy_of_intermediate_shifts_violations = find_hierarchy_of_intermediate_shifts_violations(
-        solver, variables_dict, none_hidden_employees, days, shifts
-    )
-    max_one_shift_per_day_violations = find_max_one_shift_per_day_violations(
-        solver, variables_dict, none_hidden_employees, days, shifts
-    )
-    min_rest_time_violations = find_min_rest_time_violations(
-        solver, variables_dict, none_hidden_employees, days, shifts
-    )
-    min_staffing_violations = find_min_staffing_violations(
-        solver, variables_dict, employees, days, shifts, min_staffing
-    )
-    planned_shifts_violations = find_planned_shifts_violations(solver, variables_dict, employees, days, shifts)
-    rounds_in_early_shifts_violations = find_rounds_in_early_shifts_violations(
-        solver, variables_dict, none_hidden_employees, days, shifts
-    )
-    target_working_time_violations = find_target_working_time_violations(
-        solver, variables_dict, none_hidden_employees, days, shifts
-    )
-    vaction_days_and_shifts_violations = find_vaction_days_and_shifts_violations(
-        solver, variables_dict, none_hidden_employees, days, shifts
-    )
+    min_staffing_violations = find_min_staffing_violations(solver, model, min_staffing)
+
+    # Override the employees list in the model to only check violations for non-hidden employees
+    model.employees = none_hidden_employees
+    free_day_after_night_shift_phase_violations = find_free_day_after_night_shift_phase_violations(solver, model)
+    hierarchy_of_intermediate_shifts_violations = find_hierarchy_of_intermediate_shifts_violations(solver, model)
+    max_one_shift_per_day_violations = find_max_one_shift_per_day_violations(solver, model)
+    min_rest_time_violations = find_min_rest_time_violations(solver, model)
+    planned_shifts_violations = find_planned_shifts_violations(solver, model)
+    rounds_in_early_shifts_violations = find_rounds_in_early_shifts_violations(solver, model)
+    target_working_time_violations = find_target_working_time_violations(solver, model)
+    vaction_days_and_shifts_violations = find_vaction_days_and_shifts_violations(solver, model)
 
     violations = {
         "free_day_after_night_shift_phase_violations": free_day_after_night_shift_phase_violations,

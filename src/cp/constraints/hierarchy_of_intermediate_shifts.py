@@ -1,12 +1,10 @@
-from typing import cast
-
-from ortools.sat.python.cp_model import CpModel, IntVar
+from ortools.sat.python.cp_model import CpModel
 
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-from ..variables import EmployeeDayShiftVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables, Variable
 from .constraint import Constraint
 
 
@@ -29,25 +27,25 @@ class HierarchyOfIntermediateShiftsConstraint(Constraint):
         """
         super().__init__(employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, Variable]):
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> None:
         for week in range(self._days[0].isocalendar().week, self._days[-1].isocalendar().week + 1):
-            possible_weekday_intermediate_shifts: list[IntVar] = []
-            possible_weekend_intermediate_shifts: list[IntVar] = []
+            possible_weekday_intermediate_shifts: list[Variable] = []
+            possible_weekend_intermediate_shifts: list[Variable] = []
 
             for day in self._days:
                 if day.isocalendar().week != week:
                     continue
 
-                intermediate_shift_variables: list[IntVar] = []
+                intermediate_shift_variables: list[Variable] = []
 
                 for employee in self._employees:
                     intermediate_shift_variables.append(
-                        cast(
-                            IntVar,
-                            variables[
-                                EmployeeDayShiftVariable.get_key(employee, day, self._shifts[Shift.INTERMEDIATE])
-                            ],
-                        )
+                        shift_assignment_variables[employee][day][self._shifts[Shift.INTERMEDIATE]]
                     )
 
                 if day.isoweekday() in [6, 7]:

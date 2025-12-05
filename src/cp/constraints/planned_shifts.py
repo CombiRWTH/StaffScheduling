@@ -1,13 +1,12 @@
 import logging
-from typing import cast
 
-from ortools.sat.python.cp_model import CpModel, IntVar
+from ortools.sat.python.cp_model import CpModel
 
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
-from ..variables import EmployeeDayShiftVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .constraint import Constraint
 
 
@@ -19,7 +18,12 @@ class PlannedShiftsConstraint(Constraint):
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
         super().__init__(employees, days, shifts)
 
-    def create(self, model: CpModel, variables: dict[str, Variable]):
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ):
         # Collect employees with exclusive shifts
         employees_with_exclusive_shifts: dict[str, set[int]] = {}
         for employee in self._employees:
@@ -51,12 +55,8 @@ class PlannedShiftsConstraint(Constraint):
                     logging.warning(f"Shift with ID {shift_id} (code: {shift_code}) not found")
                     continue
                 # Set the planned shift
-                variable_key = EmployeeDayShiftVariable.get_key(employee, day, shift)
-                if variable_key in variables:
-                    model.add(cast(IntVar, variables[variable_key]) == 1)
-                else:
-                    raise Exception(f"Variable not found: {variable_key}")
-
+                variable = shift_assignment_variables[employee][day][shift]
+                model.add(variable == 1)
         # Forbidden exclusive shifts for unauthorized employees
         for exclusive_shift_code in Shift.EXCLUSIVE_SHIFTS:
             shift_id = Shift.SHIFT_MAPPING.get(exclusive_shift_code)
@@ -76,9 +76,8 @@ class PlannedShiftsConstraint(Constraint):
             for employee in self._employees:
                 if employee.get_key() not in authorized_employees:
                     for day in self._days:
-                        variable_key = EmployeeDayShiftVariable.get_key(employee, day, exclusive_shift)
-                        if variable_key in variables:
-                            model.add(cast(IntVar, variables[variable_key]) == 0)
+                        variable = shift_assignment_variables[employee][day][exclusive_shift]
+                        model.add(variable == 0)
 
     def _find_shift_by_id(self, shift_id: int) -> Shift | None:
         for shift in self._shifts:

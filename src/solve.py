@@ -2,8 +2,6 @@ import logging
 from datetime import date
 
 from src.cp import (
-    EmployeeDayShiftVariable,
-    EmployeeDayVariable,
     EverySecondWeekendFreeObjective,
     FreeDayAfterNightShiftPhaseConstraint,
     FreeDaysAfterNightShiftPhaseObjective,
@@ -47,11 +45,6 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
 
     min_staffing = loader.get_min_staffing()
 
-    # bad formatting
-    variables = [
-        EmployeeDayShiftVariable(employees, days, shifts),
-        EmployeeDayVariable(employees, days, shifts),  # Based on EmployeeDayShiftVariable
-    ]
     constraints = [
         FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts),
         MinRestTimeConstraint(employees, days, shifts),
@@ -75,9 +68,7 @@ def main(unit: int, start_date: date, end_date: date, timeout: int):
         EverySecondWeekendFreeObjective(1.0, employees, days),
     ]
 
-    model = Model()
-    for variable in variables:
-        model.add_variable(variable)
+    model = Model(employees, days, shifts)
 
     for objective in objectives:
         model.add_objective(objective)

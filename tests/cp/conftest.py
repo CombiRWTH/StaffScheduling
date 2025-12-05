@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 
 import pytest
-from ortools.sat.python.cp_model import CpModel, IntVar
 
-from src.cp.variables import EmployeeDayShiftVariable, EmployeeDayVariable, Variable
+from src.cp import Model
 from src.day import Day
 from src.employee import Employee
 from src.loader import FSLoader
@@ -80,43 +79,26 @@ min_staffing: dict[str, dict[str, dict[str, int]]] = {
 
 
 @pytest.fixture
-def setup() -> tuple[CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift]]:
+def setup() -> Model:
     global employees
     global days
     global shifts
 
-    model: CpModel = CpModel()
-    variables_list: list[Variable] = []
-    variables_dict: dict[str, IntVar] = {}
+    model: Model = Model(employees, days, shifts)
 
-    model = CpModel()
-
-    # here the order of the variables in the list is very important
-    variables_list = [
-        EmployeeDayShiftVariable(employees, days, shifts),
-        EmployeeDayVariable(employees, days, shifts),
-    ]
-    variables_dict = {}
-    for vars in variables_list:
-        vars = vars.create(model, variables_dict)
-        for var in vars:
-            variables_dict[var.name] = var
-
-    return model, variables_dict, employees, days, shifts
+    return model
 
 
 @pytest.fixture
 def setup_with_minstaffing(
-    setup: tuple[CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift]],
-) -> tuple[CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift], dict[str, dict[str, dict[str, int]]]]:
+    setup: Model,
+) -> tuple[Model, dict[str, dict[str, dict[str, int]]]]:
     global min_staffing
-    return *setup, min_staffing
+    return setup, min_staffing
 
 
 @pytest.fixture
-def setup_case_77() -> tuple[
-    CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift], dict[str, dict[str, dict[str, int]]]
-]:
+def setup_case_77() -> tuple[Model, dict[str, dict[str, dict[str, int]]]]:
     loader = FSLoader(case_id=77)
 
     days = loader.get_days(datetime(2025, 11, 1), datetime(2025, 11, 30))
@@ -124,21 +106,6 @@ def setup_case_77() -> tuple[
     shifts = loader.get_shifts()
     min_staffing = loader.get_min_staffing()
 
-    model: CpModel = CpModel()
-    variables_list: list[Variable] = []
-    variables_dict: dict[str, IntVar] = {}
+    model: Model = Model(employees, days, shifts)
 
-    model = CpModel()
-
-    # here the order of the variables in the list is very important
-    variables_list = [
-        EmployeeDayShiftVariable(employees, days, shifts),
-        EmployeeDayVariable(employees, days, shifts),
-    ]
-    variables_dict = {}
-    for vars in variables_list:
-        vars = vars.create(model, variables_dict)
-        for var in vars:
-            variables_dict[var.name] = var
-
-    return model, variables_dict, employees, days, shifts, min_staffing
+    return model, min_staffing

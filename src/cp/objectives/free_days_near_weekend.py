@@ -6,7 +6,7 @@ from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 from src.day import Day
 from src.employee import Employee
 
-from ..variables import EmployeeDayVariable, Variable
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
 
 
@@ -26,7 +26,12 @@ class FreeDaysNearWeekendObjective(Objective):
         """
         super().__init__(weight, employees, days, [])
 
-    def create(self, model: CpModel, variables: dict[str, Variable]) -> LinearExpr:
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr:
         possible_free_first_day_variable: list[IntVar] = []
         possible_free_second_day_variables: list[IntVar] = []
         possible_free_both_days_variables: list[IntVar] = []
@@ -40,7 +45,7 @@ class FreeDaysNearWeekendObjective(Objective):
             for day in self._days:
                 if day.isoweekday() in [5, 6, 7]:
                     free_day_variable = model.new_bool_var(f"free_first_day_e:{employee.get_key()}_d:{day}")
-                    day_today_variable = cast(IntVar, variables[EmployeeDayVariable.get_key(employee, day)])
+                    day_today_variable = employee_works_on_day_variables[employee][day]
                     model.add(day_today_variable == 0).only_enforce_if(free_day_variable)
                     model.add(day_today_variable == 1).only_enforce_if(free_day_variable.Not())
 
@@ -50,9 +55,7 @@ class FreeDaysNearWeekendObjective(Objective):
                         free_next_day_variable = model.new_bool_var(
                             f"free_second_day_e:{employee.get_key()}_d:{day + timedelta(1)}"
                         )
-                        day_tomorrow_variable = cast(
-                            IntVar, variables[EmployeeDayVariable.get_key(employee, day + timedelta(1))]
-                        )
+                        day_tomorrow_variable = employee_works_on_day_variables[employee][day + timedelta(1)]
                         model.add(day_tomorrow_variable == 0).only_enforce_if(free_next_day_variable)
                         # if day_tomorrow_variable isnt a boolean, than this constraint may be ambiguous
                         model.add(day_tomorrow_variable != 0).only_enforce_if(free_next_day_variable.Not())

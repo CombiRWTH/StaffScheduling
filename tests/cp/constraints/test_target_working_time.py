@@ -1,55 +1,53 @@
 from pprint import pformat
 from typing import cast
 
-from ortools.sat.python.cp_model import CpModel, CpSolver, IntVar
+from ortools.sat.python.cp_model import CpSolver, IntVar
 
 from src.cp.constraints import TargetWorkingTimeConstraint
-from src.cp.variables import EmployeeDayShiftVariable, Variable
-from src.day import Day
-from src.employee import Employee
-from src.shift import Shift
+from src.cp.model import Model
+from src.cp.variables import Variable
 
 
-def find_target_working_time_violations(
-    solver: CpSolver, variables_dict: dict[str, IntVar], employees: list[Employee], days: list[Day], shifts: list[Shift]
-) -> list[tuple[dict[str, int], int, int]]:
-    var_solution_dict: dict[str, int] = {variable.name: solver.value(variable) for variable in variables_dict.values()}
+def find_target_working_time_violations(solver: CpSolver, model: Model) -> list[tuple[dict[str, int], int, int]]:
+    shift_assignment_variables = model.shift_assignment_variables
+    employees = model.employees
+    days = model.days
+    shifts = model.shifts
+
     violations: list[tuple[dict[str, int], int, int]] = []
 
     for employee in employees:
-        var_keys: list[str] = []
+        var_keys: list[Variable] = []
         total_hours: int = 0
         for day in days:
             for shift in shifts:
-                var_keys.append(EmployeeDayShiftVariable.get_key(employee, day, shift))
-                total_hours = total_hours + var_solution_dict[var_keys[-1]] * shift.duration
+                var = shift_assignment_variables[employee][day][shift]
+                var_keys.append(var)
+                total_hours = total_hours + solver.value(var) * shift.duration
         if abs(total_hours - employee.target_working_time) > 460:
             violations.append(
-                ({key: var_solution_dict[key] for key in var_keys}, total_hours, employee.target_working_time)
+                (
+                    {cast(IntVar, var).name: solver.value(var) for var in var_keys},
+                    total_hours,
+                    employee.target_working_time,
+                )
             )
     return violations
 
 
-def test_target_working_time_1(
-    setup: tuple[CpModel, dict[str, IntVar], list[Employee], list[Day], list[Shift]],
-):
-    model: CpModel
-    variables_dict: dict[str, IntVar] = {}
-    employees: list[Employee] = []
-    days: list[Day] = []
-    shifts: list[Shift] = []
-    model, variables_dict, employees, days, shifts = setup
+def test_target_working_time_1(setup: Model):
+    model = setup
 
-    constrain = TargetWorkingTimeConstraint(employees, days, shifts)
-    constrain.create(model, cast(dict[str, Variable], variables_dict))
+    constrain = TargetWorkingTimeConstraint(model.employees, model.days, model.shifts)
+    model.add_constraint(constrain)
 
     solver: CpSolver = CpSolver()
     solver.parameters.num_workers = 1
     solver.parameters.max_time_in_seconds = 10
     solver.parameters.linearization_level = 0
-    solver.solve(model)
+    solver.solve(model.cpModel)
 
-    violations = find_target_working_time_violations(solver, variables_dict, employees, days, shifts)
+    violations = find_target_working_time_violations(solver, model)
     if CpSolver.StatusName(solver) == "INFEASIBLE":
         raise Exception("There is no feasible solution and thus this test is pointless")
     else:
