@@ -111,6 +111,7 @@
 
                                     <td class="text-center text-light" style="position: relative; height: 1px; {{ bg_style }}">
                                         <div class="d-flex flex-column w-100 h-100" style="row-gap: .5rem;">
+                                            <!-- Colored Circles for blocked shifts-->
                                             <div class="d-flex">
                                                 {% for shift in shifts %}
                                                     {% if employee.unavailable(day, shift) %}
@@ -118,11 +119,14 @@
                                                     {% endif %}
                                                 {% endfor %}
                                             </div>
+                                            <!-- Colored Diamonds for shift wishes -->
                                             <div class="d-flex">
                                                 {% for color in all_shift_wish_colors.get((employee.get_key(), day), []) %}
                                                     <div style="width: .5rem; height: .5rem; background-color: {{ color }}; transform: rotate(45deg);"></div>
                                                 {% endfor %}
                                             </div>
+
+
 
                                             {% if is_day_off_wished %}
                                             <div class="d-flex">

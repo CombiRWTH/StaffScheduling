@@ -15,7 +15,7 @@ def employee_to_dict(emp: Employee):
         "id": emp._key,
         "name": emp._name + " " + emp._surname,
         "level": emp._level,
-        "target_working_time": emp._target_working_time,
+        "target_working_time": emp.get_available_working_time(),
         "wishes": {
             "shift_wishes": [[day, shift] for (day, shift) in emp._wish_shifts],
             "day_off_wishes": list(emp._wish_days),
@@ -93,7 +93,7 @@ def collect_day_information(solution, employees, shifts, loader):
         "days": days,
         "fulfilled_shift_wish_cells": list(fulfilled_shift_wish_cells),
         "fulfilled_day_off_cells": list(fulfilled_day_off_cells),
-        "all_shift_wish_colors": {str(k): v for k, v in all_shift_wish_colors.items()},
+        "all_shift_wish_colors": {f"{k[0]}-{k[1].isoformat()}": v for k, v in all_shift_wish_colors.items()},
         "all_day_off_wish_cells": list(all_day_off_wish_cells),
     }
 

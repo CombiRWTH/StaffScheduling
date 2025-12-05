@@ -170,58 +170,75 @@ export function ScheduleTable({
                   )
                   const shiftWishColors = allShiftWishColors[cellKey] || []
 
-                  const isUnavailable = unavailable(employee, dayIdx, shift);
+                  const isUnavailable = unavailable(employee, dayIdx);
 
                   return (
                     <td
-                      key={dayIdx}
-                      className={cn(
-                        "border-b border-border p-2 text-center relative",
-                        isWeekend(day) && "bg-muted/30",
-                        isDayOffFulfilled && "bg-amber-400/10",
-                        isShiftWishFulfilled && "bg-emerald-400/10",
-                        isUnavailable && "bg-rose-400/10",
-                        !shift && !isDayOffFulfilled && hasDayOffWish && "bg-rose-400/5",
-                      )}
-                    >
-                      <div className="flex flex-col items-center gap-1">
-                        {(hasDayOffWish || shiftWishColors.length > 0) && (
-                          <div className="flex items-center gap-1 mb-1">
-                            {hasDayOffWish && (
-                              <div
-                                className="w-0 h-0 border-l-[4px] border-r-[4px] border-b-[6px]"
-                                style={{
-                                  borderLeftColor: "transparent",
-                                  borderRightColor: "transparent",
-                                  borderBottomColor: "#b77c02",
-                                }}
-                              />
-                            )}
-                            {shiftWishColors.map((color, idx) => (
-                              <div
-                                key={idx}
-                                className="w-2 h-2"
-                                style={{
-                                  backgroundColor: color,
-                                  transform: "rotate(45deg)",
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
+  key={dayIdx}
+  className={cn(
+    "border-b border-border p-2 text-center relative",
+    isWeekend(day) && "bg-muted/30",
+    isDayOffFulfilled && "bg-amber-400/10",
+    isShiftWishFulfilled && "bg-emerald-400/10",
+    isUnavailable && "bg-rose-400/10",
+    !shift && !isDayOffFulfilled && hasDayOffWish && "bg-rose-400/5",
+  )}
+>
+  <div className="flex flex-col items-center gap-1">
 
-                        {shift ? (
-                          <div
-                            className="rounded-md px-2 py-1.5 font-medium text-white w-full"
-                            style={{ backgroundColor: shift.color }}
-                          >
-                            {shift.abbreviation}
-                          </div>
-                        ) : (
-                          <div className="py-1.5" />
-                        )}
-                      </div>
-                    </td>
+    {/* --- UNAVAILABLE SHIFT CIRCLES (NEW) --- */}
+    <div className="flex items-center gap-1 mb-1">
+      {shifts.map((s) =>
+        unavailable(employee, dayIdx, s) ? (
+          <div
+            key={s.id}
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: s.color }}
+          />
+        ) : null
+      )}
+    </div>
+
+    {/* --- DAY-OFF WISH TRIANGLE + SHIFT-WISH DIAMONDS --- */}
+
+      <div className="flex items-center gap-1 mb-1">
+        {hasDayOffWish && (
+          <div
+            className="w-0 h-0 border-l-[4px] border-r-[4px] border-b-[6px]"
+            style={{
+              borderLeftColor: "transparent",
+              borderRightColor: "transparent",
+              borderBottomColor: "#b77c02",
+            }}
+          />
+        )}
+        {shiftWishColors.map((color, idx) => (
+          <div
+            key={idx}
+            className="w-2 h-2"
+            style={{
+              backgroundColor: color,
+              transform: "rotate(45deg)",
+            }}
+          />
+        ))}
+      </div>
+
+
+    {/* --- SHIFT ASSIGNMENT --- */}
+    {shift ? (
+      <div
+        className="rounded-md px-2 py-1.5 font-medium text-white w-full"
+        style={{ backgroundColor: shift.color }}
+      >
+        {shift.abbreviation}
+      </div>
+    ) : (
+      <div className="py-1.5" />
+    )}
+  </div>
+</td>
+
                   )
                 })}
               </tr>
