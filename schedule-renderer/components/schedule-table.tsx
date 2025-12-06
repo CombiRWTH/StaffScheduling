@@ -48,15 +48,19 @@ export function ScheduleTable({
 }: ScheduleTableProps) {
   const [hoveredCell, setHoveredCell] = useState<string | null>(null)
 
-  const getShiftForCell = (empId: number, day: Date): Shift | null => {
+  // ⬇️ UPDATED: returns all shifts (array) instead of only one shift
+  const getShiftsForCell = (empId: number, day: Date): Shift[] => {
     const dateStr = day.toISOString().split("T")[0]
+    const result: Shift[] = []
+
     for (const shift of shifts) {
       const key = `(${empId}, '${dateStr}', ${shift.id})`
       if (variables[key] === 1) {
-        return shift
+        result.push(shift)
       }
     }
-    return null
+
+    return result
   }
 
   const isWeekend = (day: Date) => {
@@ -86,11 +90,11 @@ export function ScheduleTable({
     let totalShifts = 0
 
     days.forEach((day) => {
-      const shift = getShiftForCell(employee.id, day)
-      if (shift) {
+      const shiftsForDay = getShiftsForCell(employee.id, day)
+      shiftsForDay.forEach((shift) => {
         totalMinutes += shift.duration
         totalShifts++
-      }
+      })
     })
 
     const actualHours = totalMinutes / 60
@@ -102,10 +106,10 @@ export function ScheduleTable({
 
   return (
     <div className={cn("relative overflow-auto max-h-[800px]", className)}>
-      <table className="w-full border-collapse text-sm">
+      <table className="w-full border-collapse text-sm ">
         <thead className="sticky top-0 z-20 bg-card">
           <tr>
-            <th className="sticky left-0 z-30 min-w-[160px] border-b border-r border-border bg-card p-3 text-left font-semibold text-foreground">
+            <th className="sticky left-0 z-30 min-w-[160px] border-b border-r border-border bg-card p-3 text-left font-semibold text-foreground ">
               Employee
             </th>
             {days.map((day, idx) => (
@@ -134,11 +138,11 @@ export function ScheduleTable({
             return (
               <tr key={employee.id}>
                 <td
-                  className="sticky left-0 z-10 border-b border-r border-border bg-card p-0"
+                  className={cn("sticky left-0 z-10 border-b border-r border-border bg-card p-0", stats.hasOvertime && "bg-card")}
+                  style={stats.hasOvertime ? { backgroundColor: "#ffb1be" } : {}}
                 >
                   <div className={cn(
-                    "p-3 h-full w-full",
-                    stats.hasOvertime && "bg-destructive/5"
+                    "p-3 h-full w-full"
                   )}>
                     <div className="space-y-1">
                       <div className="font-medium text-foreground">{employee.name}</div>
@@ -155,7 +159,7 @@ export function ScheduleTable({
                   </div>
                 </td>
                 {days.map((day, dayIdx) => {
-                  const shift = getShiftForCell(employee.id, day)
+                  const shiftsForCell = getShiftsForCell(employee.id, day)
                   const dateStr = day.toISOString().split("T")[0]
                   const cellKey = `${employee.id}-${dateStr}`
 
@@ -170,75 +174,77 @@ export function ScheduleTable({
                   )
                   const shiftWishColors = allShiftWishColors[cellKey] || []
 
-                  const isUnavailable = unavailable(employee, dayIdx);
+                  const isUnavailable = unavailable(employee, dayIdx + 1)
 
                   return (
                     <td
-  key={dayIdx}
-  className={cn(
-    "border-b border-border p-2 text-center relative",
-    isWeekend(day) && "bg-muted/30",
-    isDayOffFulfilled && "bg-amber-400/10",
-    isShiftWishFulfilled && "bg-emerald-400/10",
-    isUnavailable && "bg-rose-400/10",
-    !shift && !isDayOffFulfilled && hasDayOffWish && "bg-rose-400/5",
-  )}
->
-  <div className="flex flex-col items-center gap-1">
+                      key={dayIdx}
+                      className={cn(
+                        "border-b border-border p-2 text-center relative",
+                        isWeekend(day) && "bg-muted/30",
+                        isDayOffFulfilled && "bg-amber-400/10",
+                        isShiftWishFulfilled && "bg-emerald-400/10",
+                        isUnavailable && "bg-rose-400/10",
+                        !shiftsForCell.length && !isDayOffFulfilled && hasDayOffWish && "bg-rose-400/5",
+                      )}
+                    >
+                      <div className="flex flex-col items-center gap-1">
 
-    {/* --- UNAVAILABLE SHIFT CIRCLES (NEW) --- */}
-    <div className="flex items-center gap-1 mb-1">
-      {shifts.map((s) =>
-        unavailable(employee, dayIdx, s) ? (
-          <div
-            key={s.id}
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: s.color }}
-          />
-        ) : null
-      )}
-    </div>
+                        {/* unavailable shift circles */}
+                        <div className="flex items-center gap-1 mb-1">
+                          {shifts.map((s) =>
+                            unavailable(employee, dayIdx + 1, s) ? (
+                              <div
+                                key={s.id}
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: s.color }}
+                              />
+                            ) : null
+                          )}
+                        </div>
 
-    {/* --- DAY-OFF WISH TRIANGLE + SHIFT-WISH DIAMONDS --- */}
+                        {/* day-off wish + shift wish icons */}
+                        <div className="flex items-center gap-1 mb-1">
+                          {hasDayOffWish && (
+                            <div
+                              className="w-0 h-0 border-l-[4px] border-r-[4px] border-b-[6px]"
+                              style={{
+                                borderLeftColor: "transparent",
+                                borderRightColor: "transparent",
+                                borderBottomColor: "#b77c02",
+                              }}
+                            />
+                          )}
+                          {shiftWishColors.map((color, idx) => (
+                            <div
+                              key={idx}
+                              className="w-2 h-2"
+                              style={{
+                                backgroundColor: color,
+                                transform: "rotate(45deg)",
+                              }}
+                            />
+                          ))}
+                        </div>
 
-      <div className="flex items-center gap-1 mb-1">
-        {hasDayOffWish && (
-          <div
-            className="w-0 h-0 border-l-[4px] border-r-[4px] border-b-[6px]"
-            style={{
-              borderLeftColor: "transparent",
-              borderRightColor: "transparent",
-              borderBottomColor: "#b77c02",
-            }}
-          />
-        )}
-        {shiftWishColors.map((color, idx) => (
-          <div
-            key={idx}
-            className="w-2 h-2"
-            style={{
-              backgroundColor: color,
-              transform: "rotate(45deg)",
-            }}
-          />
-        ))}
-      </div>
-
-
-    {/* --- SHIFT ASSIGNMENT --- */}
-    {shift ? (
-      <div
-        className="rounded-md px-2 py-1.5 font-medium text-white w-full"
-        style={{ backgroundColor: shift.color }}
-      >
-        {shift.abbreviation}
-      </div>
-    ) : (
-      <div className="py-1.5" />
-    )}
-  </div>
-</td>
-
+                        {/* ⬇️ RENDER ALL SHIFTS FOR THIS CELL */}
+                        {shiftsForCell.length > 0 ? (
+                          <div className="flex flex-col w-full gap-1">
+                            {shiftsForCell.map((shift) => (
+                              <div
+                                key={shift.id}
+                                className="rounded-md px-2 py-1.5 font-medium text-white w-full"
+                                style={{ backgroundColor: shift.color }}
+                              >
+                                {shift.name}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="py-1.5" />
+                        )}
+                      </div>
+                    </td>
                   )
                 })}
               </tr>
