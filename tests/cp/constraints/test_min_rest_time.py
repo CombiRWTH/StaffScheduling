@@ -6,10 +6,11 @@ from ortools.sat.python.cp_model import CpSolver, IntVar
 
 from src.cp.constraints import MinRestTimeConstraint
 from src.cp.model import Model
+from src.cp.variables import Variable
 from src.shift import Shift
 
 
-def find_min_rest_time_violations(solver: CpSolver, model: Model) -> list[dict[str, int]]:
+def find_min_rest_time_violations(assignment: dict[Variable, int], model: Model) -> list[dict[str, int]]:
     shift_assignment_variables = model.shift_assignment_variables
     employees = model.employees
     days = model.days
@@ -45,10 +46,10 @@ def find_min_rest_time_violations(solver: CpSolver, model: Model) -> list[dict[s
                     var_second_shift = shift_assignment_variables[employee][day + timedelta(i2 - 1)][
                         shifts[second_shift.id]
                     ]
-                    if solver.value(var_first_shift) and solver.value(var_second_shift):
+                    if assignment[var_first_shift] and assignment[var_second_shift]:
                         d: dict[str, int] = {}
-                        d[cast(IntVar, var_first_shift).name] = solver.value(var_first_shift)
-                        d[cast(IntVar, var_second_shift).name] = solver.value(var_second_shift)
+                        d[cast(IntVar, var_first_shift).name] = assignment[var_first_shift]
+                        d[cast(IntVar, var_second_shift).name] = assignment[var_second_shift]
                         violations.append(d)
     return violations
 
@@ -65,7 +66,9 @@ def test_min_rest_time_1(setup: Model):
     solver.parameters.linearization_level = 0
     solver.solve(model.cpModel)
 
-    violations = find_min_rest_time_violations(solver, model)
+    assignment = {var: solver.Value(var) for var in model.variables}
+
+    violations = find_min_rest_time_violations(assignment, model)
     if CpSolver.StatusName(solver) == "INFEASIBLE":
         raise Exception("There is no feasible solution and thus this test is pointless")
     else:
