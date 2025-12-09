@@ -31,11 +31,32 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 MAX_CONSECUTIVE_DAYS = 5
 
 
-def main(unit: int, start_date: date, end_date: date, timeout: int, max_solutions=1):
+def main(
+    unit: int,
+    start_date: date,
+    end_date: date,
+    timeout: int,
+    max_solutions=1,
+    weights: dict | None = None,
+    weight_id=None,
+):
     loader = FSLoader(unit)
     employees = loader.get_employees()
     days = loader.get_days(start_date, end_date)
     shifts = loader.get_shifts()
+
+    if weights is None:
+        weights = {
+            "free_weekend": 2.0,
+            "consecutive_nights": 2.0,
+            "hidden": 100.0,
+            "overtime": 4.0,
+            "consecutive_days": 1.0,
+            "rotate": 1.0,
+            "wishes": 3.0,
+            "after_night": 3.0,
+            "second_weekend": 1.0,
+        }
 
     logging.info("General information:")
     logging.info(f"  - planning unit: {unit}")
@@ -64,15 +85,15 @@ def main(unit: int, start_date: date, end_date: date, timeout: int, max_solution
         PlannedShiftsConstraint(employees, days, shifts),
     ]
     objectives = [
-        FreeDaysNearWeekendObjective(2.0, employees, days),
-        MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
-        MinimizeHiddenEmployeesObjective(100.0, employees, days, shifts),
-        MinimizeOvertimeObjective(4.0, employees, days, shifts),
-        NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
-        RotateShiftsForwardObjective(1.0, employees, days, shifts),
-        MaximizeEmployeeWishesObjective(3.0, employees, days, shifts),
-        FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
-        EverySecondWeekendFreeObjective(1.0, employees, days),
+        FreeDaysNearWeekendObjective(weights["free_weekend"], employees, days),
+        MinimizeConsecutiveNightShiftsObjective(weights["consecutive_nights"], employees, days, shifts),
+        MinimizeHiddenEmployeesObjective(weights["hidden"], employees, days, shifts),
+        MinimizeOvertimeObjective(weights["overtime"], employees, days, shifts),
+        NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, weights["consecutive_days"], employees, days),
+        RotateShiftsForwardObjective(weights["rotate"], employees, days, shifts),
+        MaximizeEmployeeWishesObjective(weights["wishes"], employees, days, shifts),
+        FreeDaysAfterNightShiftPhaseObjective(weights["after_night"], employees, days, shifts),
+        EverySecondWeekendFreeObjective(weights["second_weekend"], employees, days),
     ]
 
     model = Model(max_solutions=max_solutions)
@@ -87,8 +108,13 @@ def main(unit: int, start_date: date, end_date: date, timeout: int, max_solution
 
     solutions = model.solve(timeout)
 
-    for idx, s in enumerate(solutions):
-        loader.write_solution(s, f"solution_{unit}_{start_date}-{end_date}_{idx}")
+    wid = weight_id if weight_id is not None else "default"
+
+    if solutions:
+        for idx, s in enumerate(solutions):
+            loader.write_solution(s, f"solution_{unit}_{start_date}-{end_date}_w{wid}_{idx}")
+    else:
+        logging.info(f"No solution found for weight set {weight_id}, nothing saved.")
 
     # solution_name = f"solution_{unit}_{start_date}-{end_date}"
     # loader.write_solution(solution, solution_name)

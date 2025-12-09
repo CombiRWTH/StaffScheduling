@@ -47,10 +47,58 @@ def solve_multiple(unit: int, start: datetime, end: datetime, max_solutions: int
 
     END is the end date for the planning period in YYYY-MM-DD format.
     """
+    weight_sets = [
+        {
+            "free_weekend": 2,
+            "consecutive_nights": 2,
+            "hidden": 100,
+            "overtime": 4,
+            "consecutive_days": 1,
+            "rotate": 1,
+            "wishes": 3,
+            "after_night": 3,
+            "second_weekend": 1,
+        },
+        {
+            "free_weekend": 5,
+            "consecutive_nights": 1,
+            "hidden": 50,
+            "overtime": 10,
+            "consecutive_days": 1,
+            "rotate": 2,
+            "wishes": 3,
+            "after_night": 1,
+            "second_weekend": 1,
+        },
+        {
+            "free_weekend": 0.1,
+            "consecutive_nights": 5,
+            "hidden": 80,
+            "overtime": 1,
+            "consecutive_days": 2,
+            "rotate": 0,
+            "wishes": 5,
+            "after_night": 3,
+            "second_weekend": 2,
+        },
+    ]
 
-    click.echo(f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()}.")
+    for weight_id, weights in enumerate(weight_sets):
+        click.echo(
+            "Creating staff schedule for planning unit "
+            f"{unit} from {start.date()} to {end.date()} "
+            f"with weight set {weight_id}"
+        )
 
-    solver(unit=unit, start_date=start.date(), end_date=end.date(), timeout=timeout, max_solutions=max_solutions)
+        solver(
+            unit=unit,
+            start_date=start.date(),
+            end_date=end.date(),
+            timeout=timeout,
+            max_solutions=max_solutions,
+            weights=weights,
+            weight_id=weight_id,
+        )
 
 
 @cli.command()
