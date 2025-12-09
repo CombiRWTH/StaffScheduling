@@ -15,7 +15,7 @@ alice: Employee = Employee(
     name="Alice",
     level="Azubi",
     type="Pflegefachkraft (Krankenpflege) (81302-018)",
-    planned_shifts=[(1, "N"), (2, "S")],
+    planned_shifts=[],
     target_working_time=960,
 )
 bob: Employee = Employee(
@@ -59,13 +59,13 @@ shifts: list[Shift] = [
 
 min_staffing: dict[str, dict[str, dict[str, int]]] = {
     "Azubi": {
-        "Mo": {"F": 1, "N": 0, "S": 1},
-        "Di": {"F": 1, "N": 0, "S": 1},
-        "Do": {"F": 1, "N": 0, "S": 1},
-        "Fr": {"F": 1, "N": 0, "S": 1},
-        "Mi": {"F": 1, "N": 0, "S": 1},
-        "Sa": {"F": 1, "N": 0, "S": 1},
-        "So": {"F": 1, "N": 0, "S": 1},
+        "Mo": {"F": 1, "N": 0, "S": 0},
+        "Di": {"F": 1, "N": 0, "S": 0},
+        "Do": {"F": 1, "N": 0, "S": 0},
+        "Fr": {"F": 1, "N": 0, "S": 0},
+        "Mi": {"F": 1, "N": 0, "S": 0},
+        "Sa": {"F": 1, "N": 0, "S": 0},
+        "So": {"F": 1, "N": 0, "S": 0},
     },
     "Fachkraft": {
         "Di": {"F": 2, "N": 0, "S": 0},
