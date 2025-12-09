@@ -4,6 +4,9 @@ from plot import main as plotter
 from db.export_main import main as fetcher
 from db.import_main import main as inserter
 from loader import FSLoader
+from cp.distances.hamming import print_hamming_table
+from cp.distances.hungarian import print_hungarian_table
+from cp.distances.graph_isomorph import print_iso_matrix
 
 
 @click.group()
@@ -38,6 +41,13 @@ def solve(unit: int, start: click.DateTime, end: click.DateTime, timeout: int):
         end_date=end.date(),
         timeout=timeout,
     )
+
+    print("Hamming Distance:")
+    print_hamming_table()
+    print("Hungarian Distance:")
+    print_hungarian_table()
+    print("Isomorph Graph Matrix")
+    print_iso_matrix()
 
 
 @cli.command()

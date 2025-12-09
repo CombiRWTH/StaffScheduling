@@ -1,11 +1,13 @@
 import pandas as pd
 from .utils import convert_solution_to_shiftsets
+from pathlib import Path
 
 
-def hamming_distance_matrix(solutions):
-    shift_solutions = [
-        convert_solution_to_shiftsets(sol.variables) for sol in solutions
-    ]
+def hamming_distance_matrix():
+    base_path = Path(__file__).resolve().parents[3] / "found_solutions"
+    json_files = sorted(base_path.glob("*.json"))
+
+    shift_solutions = [convert_solution_to_shiftsets(file) for file in json_files]
     n = len(shift_solutions)
     matrix = [[0] * n for _ in range(n)]
     for i in range(n):
@@ -27,6 +29,6 @@ def hamming_distance_matrix(solutions):
     )
 
 
-def print_hamming_table(solutions):
-    df = hamming_distance_matrix(solutions)
+def print_hamming_table():
+    df = hamming_distance_matrix()
     print(df)

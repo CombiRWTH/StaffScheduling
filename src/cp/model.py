@@ -2,9 +2,6 @@ from solution import Solution
 from .variables import Variable
 from .constraints import Constraint
 from .objectives import Objective
-from cp.distances.hamming import print_hamming_table
-from cp.distances.hungarian import print_hungarian_table
-from cp.distances.graph_isomorph import print_iso_matrix
 from ortools.sat.python.cp_model import (
     CpModel,
     CpSolver,
@@ -122,12 +119,5 @@ class Model:
         print(f"  - best objective value: {solver.objective_value}")
         print(f"  - status         : {solver.status_name()}")
         print(f"  - info           : {solver.solution_info()}")
-
-        print("Hamming Distance:")
-        print_hamming_table(collector.solutions)
-        print("Hungarian Distance:")
-        print_hungarian_table(collector.solutions)
-        print("Isomorph Graph Matrix")
-        print_iso_matrix(collector.solutions)
 
         return collector.solutions
