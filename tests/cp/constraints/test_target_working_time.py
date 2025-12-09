@@ -26,12 +26,12 @@ def find_target_working_time_violations(
                 var = shift_assignment_variables[employee][day][shift]
                 var_keys.append(var)
                 total_hours = total_hours + assignment[var] * shift.duration
-        if abs(total_hours - employee.target_working_time) > 460:
+        if abs(total_hours - employee.get_available_working_time()) > 460:
             violations.append(
                 (
                     {cast(IntVar, var).name: assignment[var] for var in var_keys},
                     total_hours,
-                    employee.target_working_time,
+                    employee.get_available_working_time(),
                 )
             )
     return violations

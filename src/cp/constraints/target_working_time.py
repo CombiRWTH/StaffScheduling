@@ -34,6 +34,7 @@ class TargetWorkingTimeConstraint(Constraint):
             possible_working_time: list[LinearExpr] = []
             for day in self._days:
                 for shift in self._shifts:
+                    # why are mothly shifts not supposed to count towards the monthly hours?
                     if shift.is_exclusive:
                         continue
 

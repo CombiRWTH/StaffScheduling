@@ -51,10 +51,10 @@ def detailed_error_display(
         for dict in violation:
             result = result + "\n" + pformat(dict) + "\n"
             if violation_name == "target_working_time_violations" and isinstance(dict, tuple):
-                result += "Total Hours: " + str(dict[1])
-                result += "\nTarget Hours: " + str(dict[2])
-                result += "\nTarget Hours - Total Hours = " + str(dict[2] - dict[1])
-                result += "\nThis should be at most 7.67 hours = 460 min\n\n"
+                result += "Total Hours: " + f"{dict[1] / 60:.2f}"
+                result += "\nTarget Hours: " + f"{dict[2] / 60:.2f}"
+                result += "\nTarget Hours - Total Hours = " + f"{(dict[2] - dict[1]) / 60:.2f}"
+                result += "\nThis should be at most  460 min = 7.67 hours\n\n"
 
         result = result + "\n----------------------------------------------------\n"
 
@@ -180,7 +180,8 @@ def test_all_constraints_mass_case(
         }
         violations_list.append(violations)
 
-        detailed_error_display(violations, os.path.join(subfolder_name, f"{i:03d}.txt"))
+        if len(violations) != 0:
+            detailed_error_display(violations, os.path.join(subfolder_name, f"{i:03d}.txt"))
 
     result = ""
     for i, violations in enumerate(violations_list):
