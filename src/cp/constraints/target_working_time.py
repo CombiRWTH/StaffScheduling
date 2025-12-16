@@ -34,6 +34,7 @@ class TargetWorkingTimeConstraint(Constraint):
             possible_working_time: list[LinearExpr] = []
             for day in self._days:
                 for shift in self._shifts:
+                    # why are mothly shifts not supposed to count towards the monthly hours?
                     if shift.is_exclusive:
                         continue
 
@@ -52,7 +53,9 @@ class TargetWorkingTimeConstraint(Constraint):
 
             # maybe it effects the tool that working_time_domain is probably MUCH larger than
             # target_working_time - TOLERANCE_LESS <= working_time_variable <= target_working_time + TOLERANCE_MORE
-            target_working_time = employee.get_available_working_time()
+            target_working_time = round(
+                employee.get_available_working_time() * (1 - len(employee.vacation_days) / len(self._days))
+            )
             model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
             model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
 

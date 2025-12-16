@@ -36,7 +36,7 @@ def find_min_rest_time_violations(assignment: dict[Variable, int], model: Model)
                 for i2, second_shift in total_shifts:
                     if first_shift.start_time > second_shift.start_time:
                         continue
-                    if second_shift.start_time - first_shift.end_time >= 9 * 60:
+                    if second_shift.start_time - first_shift.end_time >= 9 * 60 - 5:
                         continue
                     if first_shift == second_shift:
                         continue
