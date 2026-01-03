@@ -129,6 +129,10 @@ class Employee:
         return self._target_working_time
 
     @property
+    def actual_working_time(self) -> int:
+        return self._actual_working_time
+
+    @property
     def vacation_days(self) -> list[int]:
         return self._vacation_days
 
