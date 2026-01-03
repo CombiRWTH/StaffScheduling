@@ -97,6 +97,9 @@ class Employee:
         """
         Calculates the target working time for the employee.
         """
+        if self.hidden:
+            return round(40 * 4.35 * 60)  # 40 hours per week for hidden employees
+
         return max(self._target_working_time - self._actual_working_time, 0)
 
     def unavailable(self, day: Day, shift: Shift | None = None) -> bool:
