@@ -26,8 +26,5 @@ class MaxOneShiftPerDayConstraint(Constraint):
         employee_works_on_day_variables: EmployeeWorksOnDayVariables,
     ):
         for employee in self._employees:
-            if employee.hidden:
-                continue
-
             for day in self._days:
                 model.add_at_most_one(shift_assignment_variables[employee][day][shift] for shift in self._shifts)

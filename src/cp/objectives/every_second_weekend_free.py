@@ -59,9 +59,6 @@ class EverySecondWeekendFreeObjective(Objective):
         logging.info(f"Found {len(weekends)} complete weekends in the planning period")
 
         for employee in self._employees:
-            if employee.hidden:
-                continue
-
             # For each pair of consecutive weekends, penalize if both are free or both have work
             for i in range(len(weekends) - 1):
                 # Get two consecutive weekends

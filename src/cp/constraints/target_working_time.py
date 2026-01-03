@@ -48,7 +48,7 @@ class TargetWorkingTimeConstraint(Constraint):
             model.add(sum(possible_working_time) == working_time_variable)
 
             # who is Milburn Loremarie?
-            if employee.hidden or employee.name == "Milburn Loremarie":
+            if employee.name == "Milburn Loremarie":
                 continue
 
             # maybe it effects the tool that working_time_domain is probably MUCH larger than
@@ -60,8 +60,14 @@ class TargetWorkingTimeConstraint(Constraint):
                     0,
                 )
             )
-            model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
-            model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
+
+            if employee.hidden:
+                # Hidden employees only have an upper limit on working time
+                model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
+            else:
+                # Regular employees have both upper and lower limits
+                model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
+                model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
 
     def _get_working_time_domain(self):
         def reachable_sums(others: list[int], max_value: int) -> list[int]:
