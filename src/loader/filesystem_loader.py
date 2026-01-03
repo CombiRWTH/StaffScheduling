@@ -62,6 +62,8 @@ class FSLoader(Loader):
         fs_employees_vacation_days: dict[str, list[int]] = {}
         fs_employees_vacation_shifts: dict[str, list[tuple[int, str]]] = {}
         fs_employees_planned_shifts: dict[str, list[tuple[int, str]]] = {}
+        fs_employees_hidden_actual: dict[str, int] = {}
+        shift_map = {shift.name: shift for shift in self.get_shifts()}
         for fs_employee in fs_employees_vacation:
             if "forbidden_days" in fs_employee:
                 fs_employees_forbidden_days[fs_employee["key"]] = fs_employee["forbidden_days"]
@@ -73,6 +75,9 @@ class FSLoader(Loader):
                 ]
             if "planned_shifts" in fs_employee:
                 fs_employees_planned_shifts[fs_employee["key"]] = [(x[0], x[1]) for x in fs_employee["planned_shifts"]]
+                fs_employees_hidden_actual[fs_employee["key"]] = fs_employees_actual.get(fs_employee["key"], 0) - sum(
+                    [shift_map[x[1]].duration for x in fs_employee["planned_shifts"] if x[1] in shift_map.keys()]
+                )
 
         fs_employees_wish_days: dict[str, list[int]] = {}
         fs_employees_wish_shifts: dict[str, list[tuple[int, str]]] = {}
@@ -110,6 +115,7 @@ class FSLoader(Loader):
                 logging.debug(f"Target working minutes not found for employee {id}!")
 
             actual = fs_employees_actual.get(id, 0)
+            hidden_actual = fs_employees_hidden_actual.get(id, 0)
 
             forbidden_days = fs_employees_forbidden_days.get(id, [])
             forbidden_shifts = fs_employees_forbidden_shifts.get(id, [])
@@ -127,6 +133,7 @@ class FSLoader(Loader):
                     type=type,
                     target_working_time=target,
                     actual_working_time=actual,
+                    hidden_actual_working_time=hidden_actual,
                     forbidden_days=forbidden_days,
                     forbidden_shifts=forbidden_shifts,
                     vacation_days=vacation_days,

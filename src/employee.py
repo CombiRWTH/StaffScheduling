@@ -28,6 +28,7 @@ class Employee:
         type: str,
         target_working_time: int = 0,
         actual_working_time: int = 0,
+        hidden_actual_working_time: int = 0,
         forbidden_days: list[int] | None = None,
         forbidden_shifts: list[tuple[int, str]] | None = None,
         vacation_days: list[int] | None = None,
@@ -63,6 +64,7 @@ class Employee:
         self._type = type
         self._target_working_time = target_working_time
         self._actual_working_time = actual_working_time
+        self._hidden_actual_working_time = hidden_actual_working_time
         self._forbidden_days = forbidden_days
         self._forbidden_shifts = forbidden_shifts
         self._vacation_days = vacation_days
@@ -134,6 +136,10 @@ class Employee:
     @property
     def actual_working_time(self) -> int:
         return self._actual_working_time
+
+    @property
+    def hidden_actual_working_time(self) -> int:
+        return self._hidden_actual_working_time
 
     @property
     def vacation_days(self) -> list[int]:

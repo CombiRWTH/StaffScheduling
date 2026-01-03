@@ -51,15 +51,18 @@ class TargetWorkingTimeConstraint(Constraint):
             if employee.name == "Milburn Loremarie":
                 continue
 
-            # maybe it effects the tool that working_time_domain is probably MUCH larger than
-            # target_working_time - TOLERANCE_LESS <= working_time_variable <= target_working_time + TOLERANCE_MORE
-            target_working_time = round(
-                max(
-                    employee.target_working_time * (1 - len(employee.vacation_days) / len(self._days))
-                    - employee.actual_working_time,
-                    0,
+            if employee.hidden:
+                target_working_time = round(40 * 60 * 4.35)
+            else:
+                # maybe it effects the tool that working_time_domain is probably MUCH larger than
+                # target_working_time - TOLERANCE_LESS <= working_time_variable <= target_working_time + TOLERANCE_MORE
+                target_working_time = round(
+                    max(
+                        employee.target_working_time * (1 - len(employee.vacation_days) / len(self._days))
+                        - employee.actual_working_time,
+                        0,
+                    )
                 )
-            )
 
             if employee.hidden:
                 # Hidden employees only have an upper limit on working time

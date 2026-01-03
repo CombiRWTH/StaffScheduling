@@ -29,15 +29,16 @@ def find_target_working_time_violations(
         if (
             abs(
                 total_hours
-                - round(employee.get_available_working_time() * (1 - len(employee.vacation_days) / len(days)))
+                + employee.hidden_actual_working_time
+                - round(employee.target_working_time * (1 - len(employee.vacation_days) / len(days)))
             )
             > 460
         ):
             violations.append(
                 (
                     {cast(IntVar, var).name: assignment[var] for var in var_keys},
-                    total_hours,
-                    round(employee.get_available_working_time() * (1 - len(employee.vacation_days) / len(days))),
+                    total_hours + employee.hidden_actual_working_time,
+                    round(employee.target_working_time * (1 - len(employee.vacation_days) / len(days))),
                 )
             )
     return violations
