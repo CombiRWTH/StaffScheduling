@@ -28,10 +28,11 @@ interface ScheduleTableProps {
   days: Date[]
   shifts: Shift[]
   variables: Record<string, number>
-  fulfilledDayOffCells: Set<string>
-  fulfilledShiftWishCells: Set<string>
-  allDayOffWishCells: Set<string>
+  fulfilledDayOffCells: [][]
+  fulfilledShiftWishCells: [][]
+  allDayOffWishCells: [][]
   allShiftWishColors: Record<string, string[]>
+  className?: string
 }
 
 export function ScheduleTable({
@@ -43,6 +44,7 @@ export function ScheduleTable({
   fulfilledShiftWishCells,
   allDayOffWishCells,
   allShiftWishColors,
+  className,
 }: ScheduleTableProps) {
   const [hoveredCell, setHoveredCell] = useState<string | null>(null)
 
@@ -61,6 +63,23 @@ export function ScheduleTable({
     const dayOfWeek = day.getDay()
     return dayOfWeek === 0 || dayOfWeek === 6
   }
+
+  const unavailable = (employee: any, day: any, shift?: any) => {
+    if (!shift) {
+      return (
+        employee.vacation_days.includes(day) ||
+        employee.forbidden_days.includes(day)
+      );
+    }
+    return (
+      employee.vacation_shifts.some(
+        ([d, s]: [number, string]) => d === day && s === shift.abbreviation
+      ) ||
+      employee.forbidden_shifts.some(
+        ([d, s]: [number, string]) => d === day && s === shift.abbreviation
+      )
+    );
+  };
 
   const getEmployeeStats = (employee: Employee) => {
     let totalMinutes = 0
@@ -82,7 +101,7 @@ export function ScheduleTable({
   }
 
   return (
-    <div className="relative overflow-auto max-h-[800px]">
+    <div className={cn("relative overflow-auto max-h-[800px]", className)}>
       <table className="w-full border-collapse text-sm">
         <thead className="sticky top-0 z-20 bg-card">
           <tr>
@@ -113,22 +132,24 @@ export function ScheduleTable({
           {employees.map((employee) => {
             const stats = getEmployeeStats(employee)
             return (
-              <tr key={employee.id} className="group hover:bg-muted/5 transition-colors">
+              <tr key={employee.id}>
                 <td
-                  className={cn(
-                    "sticky left-0 z-10 border-b border-r border-border bg-card p-3 group-hover:bg-muted/5",
-                    stats.hasOvertime && "bg-destructive/5",
-                  )}
+                  className="sticky left-0 z-10 border-b border-r border-border bg-card p-0"
                 >
-                  <div className="space-y-1">
-                    <div className="font-medium text-foreground">{employee.name}</div>
-                    <div className="text-xs text-muted-foreground">{employee.level}</div>
-                    <div className="mt-2 text-xs">
-                      <div className="text-muted-foreground">{stats.totalShifts} shifts</div>
-                      <div
-                        className={cn("font-medium", stats.hasOvertime ? "text-destructive" : "text-muted-foreground")}
-                      >
-                        {stats.actualHours.toFixed(1)}h / {stats.targetHours.toFixed(1)}h
+                  <div className={cn(
+                    "p-3 h-full w-full",
+                    stats.hasOvertime && "bg-destructive/5"
+                  )}>
+                    <div className="space-y-1">
+                      <div className="font-medium text-foreground">{employee.name}</div>
+                      <div className="text-xs text-muted-foreground">{employee.level}</div>
+                      <div className="mt-2 text-xs">
+                        <div className="text-muted-foreground">{stats.totalShifts} shifts</div>
+                        <div
+                          className={cn("font-medium", stats.hasOvertime ? "text-destructive" : "text-muted-foreground")}
+                        >
+                          {stats.actualHours.toFixed(1)}h / {stats.targetHours.toFixed(1)}h
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -138,10 +159,18 @@ export function ScheduleTable({
                   const dateStr = day.toISOString().split("T")[0]
                   const cellKey = `${employee.id}-${dateStr}`
 
-                  const isDayOffFulfilled = fulfilledDayOffCells.has(cellKey)
-                  const isShiftWishFulfilled = fulfilledShiftWishCells.has(cellKey)
-                  const hasDayOffWish = allDayOffWishCells.has(cellKey)
+                  const isDayOffFulfilled = fulfilledDayOffCells.some(
+                    ([id, date]) => id === employee.id && date === dateStr
+                  )
+                  const isShiftWishFulfilled = fulfilledShiftWishCells.some(
+                    ([id, date]) => id === employee.id && date === dateStr
+                  )
+                  const hasDayOffWish = allDayOffWishCells.some(
+                    ([id, date]) => id === employee.id && date === dateStr
+                  )
                   const shiftWishColors = allShiftWishColors[cellKey] || []
+
+                  const isUnavailable = unavailable(employee, dayIdx, shift);
 
                   return (
                     <td
@@ -151,10 +180,9 @@ export function ScheduleTable({
                         isWeekend(day) && "bg-muted/30",
                         isDayOffFulfilled && "bg-amber-400/10",
                         isShiftWishFulfilled && "bg-emerald-400/10",
+                        isUnavailable && "bg-rose-400/10",
                         !shift && !isDayOffFulfilled && hasDayOffWish && "bg-rose-400/5",
                       )}
-                      onMouseEnter={() => setHoveredCell(cellKey)}
-                      onMouseLeave={() => setHoveredCell(null)}
                     >
                       <div className="flex flex-col items-center gap-1">
                         {(hasDayOffWish || shiftWishColors.length > 0) && (
@@ -184,7 +212,7 @@ export function ScheduleTable({
 
                         {shift ? (
                           <div
-                            className="rounded-md px-2 py-1.5 font-medium text-white transition-transform hover:scale-105 w-full"
+                            className="rounded-md px-2 py-1.5 font-medium text-white w-full"
                             style={{ backgroundColor: shift.color }}
                           >
                             {shift.abbreviation}
