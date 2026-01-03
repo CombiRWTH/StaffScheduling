@@ -54,7 +54,11 @@ class TargetWorkingTimeConstraint(Constraint):
             # maybe it effects the tool that working_time_domain is probably MUCH larger than
             # target_working_time - TOLERANCE_LESS <= working_time_variable <= target_working_time + TOLERANCE_MORE
             target_working_time = round(
-                employee.get_available_working_time() * (1 - len(employee.vacation_days) / len(self._days))
+                max(
+                    employee.target_working_time * (1 - len(employee.vacation_days) / len(self._days))
+                    - employee.actual_working_time,
+                    0,
+                )
             )
             model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
             model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
