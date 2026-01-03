@@ -37,9 +37,6 @@ class NotTooManyConsecutiveDaysObjective(Objective):
     ) -> LinearExpr:
         possible_overwork_variables: list[IntVar] = []
         for employee in self._employees:
-            if employee.hidden:
-                continue
-
             for day in self._days[: -self.max_consecutive_shifts]:
                 day_phase_variable = model.new_bool_var(f"day_phase_e:{employee.get_key()}_d:{day}")
                 window = [

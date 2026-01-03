@@ -29,9 +29,6 @@ class MinRestTimeConstraint(Constraint):
         employee_works_on_day_variables: EmployeeWorksOnDayVariables,
     ):
         for employee in self._employees:
-            if employee.hidden:
-                continue
-
             for day in self._days[:-1]:
                 late_today = shift_assignment_variables[employee][day][self._shifts[Shift.LATE]]
                 early_tomorrow = shift_assignment_variables[employee][day + timedelta(1)][self._shifts[Shift.EARLY]]

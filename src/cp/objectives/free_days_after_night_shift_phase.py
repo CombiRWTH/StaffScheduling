@@ -34,8 +34,6 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
         penalties: list[IntVar] = []
 
         for employee in self._employees:
-            if employee.hidden:
-                continue
             for day in self._days[:-2]:
                 night_var = shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]]
                 next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=1)]

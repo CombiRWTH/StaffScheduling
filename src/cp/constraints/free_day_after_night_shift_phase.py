@@ -30,9 +30,6 @@ class FreeDayAfterNightShiftPhaseConstraint(Constraint):
         # This function falsely ignores special night shifts
 
         for employee in self._employees:
-            if employee.hidden:
-                continue
-
             for day in self._days[:-1]:
                 night_shift_today_variable = shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]]
                 night_shift_tomorrow_variable = shift_assignment_variables[employee][day + timedelta(1)][

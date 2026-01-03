@@ -36,9 +36,6 @@ class RotateShiftsForwardObjective(Objective):
     ) -> LinearExpr:
         possible_rotation_variables: list[IntVar] = []
         for employee in self._employees:
-            if employee.hidden:
-                continue
-
             for day in self._days[:-1]:
                 for shift in self._shifts:
                     rotation_variable = model.new_bool_var(

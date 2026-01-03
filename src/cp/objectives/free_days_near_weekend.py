@@ -37,9 +37,6 @@ class FreeDaysNearWeekendObjective(Objective):
         possible_free_both_days_variables: list[IntVar] = []
 
         for employee in self._employees:
-            if employee.hidden:
-                continue
-
             # here we do not ensure that we stay within the month, but we do in the
             # "free_day_after_night_shift_phase.py" file
             for day in self._days:
