@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Mapping
 from datetime import date
 
 from src.cp import (
@@ -29,7 +30,14 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 MAX_CONSECUTIVE_DAYS = 5
 
 
-def main(unit: int, start_date: date, end_date: date, timeout: int, weights: dict | None = None, weight_id=None):
+def main(
+    unit: int,
+    start_date: date,
+    end_date: date,
+    timeout: int,
+    weights: Mapping[str, int | float] | None = None,
+    weight_id: int | None = None,
+):
     loader = FSLoader(unit)
     employees = loader.get_employees()
     days = loader.get_days(start_date, end_date)

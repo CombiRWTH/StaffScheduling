@@ -1,29 +1,30 @@
 import json
 import os
 from collections import defaultdict
-from datetime import datetime
+from datetime import date, datetime
 from re import match
 
 from ..employee import Employee
 from ..loader import Loader
 from ..shift import Shift
+from ..solution import Solution
 from .analyze_solution import analyze_solution
 
 
 def employee_to_dict(emp: Employee):
     return {
-        "id": emp._key,
-        "name": emp._name + " " + emp._surname,
-        "level": emp._level,
+        "id": emp.get_key(),
+        "name": emp.name,
+        "level": emp.level,
         "target_working_time": emp.get_available_working_time(),
         "wishes": {
-            "shift_wishes": [[day, shift] for (day, shift) in emp._wish_shifts],
-            "day_off_wishes": list(emp._wish_days),
+            "shift_wishes": [[day, shift] for (day, shift) in emp.get_wish_shifts],
+            "day_off_wishes": list(emp.get_wish_days),
         },
-        "forbidden_days": emp._forbidden_days,
-        "forbidden_shifts": emp._forbidden_shifts,
-        "vacation_days": emp._vacation_days,
-        "vacation_shifts": emp._vacation_shifts,
+        "forbidden_days": emp._forbidden_days,  # type: ignore
+        "forbidden_shifts": emp._forbidden_shifts,  # type: ignore
+        "vacation_days": emp.vacation_days,
+        "vacation_shifts": emp.vacation_shifts,
     }
 
 
@@ -38,7 +39,7 @@ def shift_to_dict(shift: Shift):
     }
 
 
-def collect_day_information(solution, employees, shifts, loader):
+def collect_day_information(solution: Solution, employees: list[Employee], shifts: list[Shift], loader: Loader):
     # Extract dates from variable keys
     days_raw = [
         datetime.strptime(m.group(1), "%Y-%m-%d").date()
@@ -50,10 +51,10 @@ def collect_day_information(solution, employees, shifts, loader):
     end_date = max(days_raw)
     days = loader.get_days(start_date, end_date)
 
-    fulfilled_shift_wish_cells = set()
-    fulfilled_day_off_cells = set()
-    all_shift_wish_colors = defaultdict(list)
-    all_day_off_wish_cells = set()
+    fulfilled_shift_wish_cells: set[tuple[int, date]] = set()
+    fulfilled_day_off_cells: set[tuple[int, date]] = set()
+    all_shift_wish_colors: defaultdict[tuple[int, date], list[str]] = defaultdict(list)
+    all_day_off_wish_cells: set[tuple[int, date]] = set()
 
     for employee in employees:
         e_key = employee.get_key()
