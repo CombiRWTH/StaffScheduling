@@ -43,7 +43,7 @@ def solve(unit: int, start: datetime, end: datetime, timeout: int):
 
     loader = FSLoader(unit)
 
-    solution_name = f"solution_{unit}_{start.date()}-{end.date()}"
+    solution_name = f"solution_{unit}_{start.date()}-{end.date()}_wdefault"
 
     process_solution(loader=loader, output_filename=solution_name + "_processed.json", solution_file_name=solution_name)
 
