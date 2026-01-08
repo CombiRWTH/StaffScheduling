@@ -43,12 +43,20 @@ def setup_case_folder(planning_unit: int):
 
     # Create target directory if it doesn't exist
     os.makedirs(target_dir, exist_ok=True)
-
-    # Delete the web folder if it exists
-    web_folder = os.path.join(target_dir, "web")
-    if os.path.exists(web_folder):
-        shutil.rmtree(web_folder)
-        logging.info(f"deleted web-folder: {web_folder}")
+    web_folder_path = os.path.join(target_dir, "web")
+    # Delete all contents of the web folder if it exists, but keep the jobs.json file
+    if os.path.exists(web_folder_path):
+        for filename in os.listdir(web_folder_path):
+            file_path = os.path.join(web_folder_path, filename)
+            try:
+                logging.info("Deleting file or folder: " + file_path)
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    if filename != "jobs.json":
+                        os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                logging.error(f"Failed to delete {file_path}. Reason: {e}")
 
     # Copy all static JSON files from cases_static_jsons to the target directory
     static_jsons_dir = os.path.abspath("./cases_static_jsons")
