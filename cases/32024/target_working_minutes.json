@@ -1,0 +1,375 @@
+{
+  "employees": [
+    {
+      "actual": 9200.0,
+      "firstname": "Sandra",
+      "key": 459,
+      "name": "Shoemake",
+      "target": 9240.0
+    },
+    {
+      "actual": 5730.0,
+      "firstname": "Waldfried",
+      "key": 637,
+      "name": "Heaney",
+      "target": 5544.0
+    },
+    {
+      "actual": 9360.0,
+      "firstname": "Adriane",
+      "key": 790,
+      "name": "Mccomas",
+      "target": 9360.0
+    },
+    {
+      "actual": 6552.0,
+      "firstname": "Janett",
+      "key": 791,
+      "name": "Branz",
+      "target": 6930.0
+    },
+    {
+      "actual": 3120.0,
+      "firstname": "Josefa",
+      "key": 835,
+      "name": "Ciaccio",
+      "target": 2880.0
+    },
+    {
+      "actual": 4440.0,
+      "firstname": "Liselotte",
+      "key": 839,
+      "name": "S\u00e4uffert",
+      "target": 4620.0
+    },
+    {
+      "actual": 3612.0,
+      "firstname": "Mirjam",
+      "key": 843,
+      "name": "Flanagan",
+      "target": 4620.0
+    },
+    {
+      "actual": 8167.0,
+      "firstname": "Silvia",
+      "key": 914,
+      "name": "Harkins",
+      "target": 8316.0
+    },
+    {
+      "actual": 7820.0,
+      "firstname": "Ingbert",
+      "key": 917,
+      "name": "Catoe",
+      "target": 7680.0
+    },
+    {
+      "actual": 6150.0,
+      "firstname": "Waltraud",
+      "key": 918,
+      "name": "Ambriz",
+      "target": 6000.0
+    },
+    {
+      "actual": 6468.0,
+      "firstname": "Alheidis",
+      "key": 920,
+      "name": "Emanuel",
+      "target": 6468.0
+    },
+    {
+      "actual": 4620.0,
+      "firstname": "Jenny",
+      "key": 921,
+      "name": "Keese",
+      "target": 4620.0
+    },
+    {
+      "actual": 4960.0,
+      "firstname": "B\u00e4rbl",
+      "key": 924,
+      "name": "Merriweather",
+      "target": 4561.0
+    },
+    {
+      "actual": 5629.0,
+      "firstname": "Lina",
+      "key": 925,
+      "name": "Farniok",
+      "target": 5544.0
+    },
+    {
+      "actual": 9312.0,
+      "firstname": "Margaritt",
+      "key": 927,
+      "name": "Mittrach",
+      "target": 9360.0
+    },
+    {
+      "actual": 5650.0,
+      "firstname": "Daniele",
+      "key": 928,
+      "name": "Wunderlich",
+      "target": 5544.0
+    },
+    {
+      "actual": 8470.0,
+      "firstname": "Annelene",
+      "key": 987,
+      "name": "Costanzo",
+      "target": 9240.0
+    },
+    {
+      "actual": 9360.0,
+      "firstname": "Ortraud",
+      "key": 1017,
+      "name": "Scheunstuhl",
+      "target": 9360.0
+    },
+    {
+      "actual": 9359.0,
+      "firstname": "Kersten",
+      "key": 2932,
+      "name": "Devers",
+      "target": 9240.0
+    },
+    {
+      "actual": 9202.0,
+      "firstname": "Renilde",
+      "key": 2963,
+      "name": "Hoots",
+      "target": 9240.0
+    },
+    {
+      "actual": 7425.0,
+      "firstname": "Eleonore",
+      "key": 3004,
+      "name": "Lockett",
+      "target": 7854.0
+    },
+    {
+      "actual": 9240.0,
+      "firstname": "Elgine",
+      "key": 3566,
+      "name": "Seligman",
+      "target": 9240.0
+    },
+    {
+      "actual": 9212.0,
+      "firstname": "Dietlind",
+      "key": 4061,
+      "name": "Stivers",
+      "target": 9240.0
+    },
+    {
+      "actual": 9240.0,
+      "firstname": "Babsi",
+      "key": 4078,
+      "name": "Mitchel",
+      "target": 9240.0
+    },
+    {
+      "actual": 9232.0,
+      "firstname": "Lilli",
+      "key": 4079,
+      "name": "Corchado",
+      "target": 9240.0
+    },
+    {
+      "actual": 9200.0,
+      "firstname": "Dahlia",
+      "key": 4082,
+      "name": "Dufour",
+      "target": 9240.0
+    },
+    {
+      "actual": 9345.0,
+      "firstname": "Marena",
+      "key": 4297,
+      "name": "Lipson",
+      "target": 9240.0
+    },
+    {
+      "actual": 9208.0,
+      "firstname": "Henni",
+      "key": 5367,
+      "name": "Donis",
+      "target": 9240.0
+    },
+    {
+      "actual": 9204.0,
+      "firstname": "Maren",
+      "key": 5658,
+      "name": "Aberle",
+      "target": 9240.0
+    },
+    {
+      "actual": 9212.0,
+      "firstname": "Adelina",
+      "key": 5737,
+      "name": "Grove",
+      "target": 9240.0
+    },
+    {
+      "actual": 9750.0,
+      "firstname": "Natalie",
+      "key": 6266,
+      "name": "Clemmer",
+      "target": 8371.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Auguste",
+      "key": 6303,
+      "name": "Hayek",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Liesgret",
+      "key": 6304,
+      "name": "Wendel",
+      "target": 2.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Svetlana",
+      "key": 6316,
+      "name": "Montejano",
+      "target": 2.0
+    },
+    {
+      "actual": 9432.0,
+      "firstname": "Uschi",
+      "key": 6318,
+      "name": "Gamblin",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Dorle",
+      "key": 6330,
+      "name": "Grotian",
+      "target": 2093.0
+    },
+    {
+      "actual": 1100.0,
+      "firstname": "Roseliese",
+      "key": 6507,
+      "name": "Rashid",
+      "target": 1200.0
+    },
+    {
+      "actual": 7607.0,
+      "firstname": "Saskia",
+      "key": 6681,
+      "name": "Labelle",
+      "target": 7392.0
+    },
+    {
+      "actual": 5585.0,
+      "firstname": "Fred",
+      "key": 6727,
+      "name": "Lenhart",
+      "target": 5520.0
+    },
+    {
+      "actual": 9224.0,
+      "firstname": "Trude",
+      "key": 6836,
+      "name": "Valentino",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Kirstin",
+      "key": 6864,
+      "name": "Heise",
+      "target": 4620.0
+    },
+    {
+      "actual": 9160.0,
+      "firstname": "Margreth",
+      "key": 6933,
+      "name": "Sardison",
+      "target": 8371.0
+    },
+    {
+      "actual": 9212.0,
+      "firstname": "Constanze",
+      "key": 6955,
+      "name": "Sweatt",
+      "target": 9240.0
+    },
+    {
+      "actual": 9015.0,
+      "firstname": "Berna",
+      "key": 6995,
+      "name": "Brooker",
+      "target": 9240.0
+    },
+    {
+      "actual": 9545.0,
+      "firstname": "Sigrid",
+      "key": 7006,
+      "name": "Cormier",
+      "target": 9240.0
+    },
+    {
+      "actual": 9200.0,
+      "firstname": "Xaver",
+      "key": 7124,
+      "name": "Pirkle",
+      "target": 8371.0
+    },
+    {
+      "actual": 9055.0,
+      "firstname": "Elrike",
+      "key": 7131,
+      "name": "Mccarley",
+      "target": 9240.0
+    },
+    {
+      "actual": 4600.0,
+      "firstname": "Reinburga",
+      "key": 7132,
+      "name": "Maderdonner",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Marina",
+      "key": 7193,
+      "name": "Sproles",
+      "target": 8371.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Gangolf",
+      "key": 7375,
+      "name": "Fridam",
+      "target": 8316.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Helmtraut",
+      "key": 7376,
+      "name": "Saddler",
+      "target": 6468.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Ina",
+      "key": 7378,
+      "name": "Boulware",
+      "target": 7854.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Henriette",
+      "key": 7441,
+      "name": "Froehlich",
+      "target": 462.0
+    }
+  ]
+}
