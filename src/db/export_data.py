@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import shutil
 from datetime import date
 from typing import Any
 
@@ -24,6 +25,42 @@ def get_correct_path(filename: str, planning_unit: int):
     target_dir = os.path.abspath(target_dir)
     output_path = os.path.join(target_dir, filename)
     return output_path
+
+
+def setup_case_folder(planning_unit: int):
+    """Prepare the case folder by deleting the web folder and copying static JSON files.
+
+    Args:
+        planning_unit: ID of the planning unit to set up the folder for.
+    """
+    base_folder = os.getenv("BASE_OUTPUT_FOLDER")
+    if base_folder is None:
+        raise ValueError("BASE_OUTPUT_FOLDER is not set in the environment variables.")
+
+    # Get the target directory for this planning unit
+    target_dir = os.path.join("./", base_folder, str(planning_unit))
+    target_dir = os.path.abspath(target_dir)
+
+    # Create target directory if it doesn't exist
+    os.makedirs(target_dir, exist_ok=True)
+
+    # Delete the web folder if it exists
+    web_folder = os.path.join(target_dir, "web")
+    if os.path.exists(web_folder):
+        shutil.rmtree(web_folder)
+        logging.info(f"deleted web-folder: {web_folder}")
+
+    # Copy all static JSON files from cases_static_jsons to the target directory
+    static_jsons_dir = os.path.abspath("./cases_static_jsons")
+    if os.path.exists(static_jsons_dir):
+        for filename in os.listdir(static_jsons_dir):
+            if filename.endswith(".json"):
+                src_file = os.path.join(static_jsons_dir, filename)
+                dst_file = os.path.join(target_dir, filename)
+                shutil.copy2(src_file, dst_file)
+                logging.info(f"copied static JSON file: {filename}")
+    else:
+        logging.warning(f"cases_static_jsons directory not found: {static_jsons_dir}")
 
 
 def export_planning_data(engine: Engine, planning_unit: int, from_date: date, till_date: date) -> dict[str, Any]:
