@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import shutil
 from datetime import date
 from typing import Any
 
@@ -24,6 +25,50 @@ def get_correct_path(filename: str, planning_unit: int):
     target_dir = os.path.abspath(target_dir)
     output_path = os.path.join(target_dir, filename)
     return output_path
+
+
+def setup_case_folder(planning_unit: int):
+    """Prepare the case folder by deleting the web folder and copying static JSON files.
+
+    Args:
+        planning_unit: ID of the planning unit to set up the folder for.
+    """
+    base_folder = os.getenv("BASE_OUTPUT_FOLDER")
+    if base_folder is None:
+        raise ValueError("BASE_OUTPUT_FOLDER is not set in the environment variables.")
+
+    # Get the target directory for this planning unit
+    target_dir = os.path.join("./", base_folder, str(planning_unit))
+    target_dir = os.path.abspath(target_dir)
+
+    # Create target directory if it doesn't exist
+    os.makedirs(target_dir, exist_ok=True)
+    web_folder_path = os.path.join(target_dir, "web")
+    # Delete all contents of the web folder if it exists, but keep the jobs.json file
+    if os.path.exists(web_folder_path):
+        for filename in os.listdir(web_folder_path):
+            file_path = os.path.join(web_folder_path, filename)
+            try:
+                logging.info("Deleting file or folder: " + file_path)
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    if filename != "jobs.json":
+                        os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                logging.error(f"Failed to delete {file_path}. Reason: {e}")
+
+    # Copy all static JSON files from cases_static_jsons to the target directory
+    static_jsons_dir = os.path.abspath("./cases_static_jsons")
+    if os.path.exists(static_jsons_dir):
+        for filename in os.listdir(static_jsons_dir):
+            if filename.endswith(".json"):
+                src_file = os.path.join(static_jsons_dir, filename)
+                dst_file = os.path.join(target_dir, filename)
+                shutil.copy2(src_file, dst_file)
+                logging.info(f"copied static JSON file: {filename}")
+    else:
+        logging.warning(f"cases_static_jsons directory not found: {static_jsons_dir}")
 
 
 def export_planning_data(engine: Engine, planning_unit: int, from_date: date, till_date: date) -> dict[str, Any]:
@@ -138,7 +183,7 @@ def export_shift_data_to_json(engine: Engine, planning_unit: int, filename: str 
     agg["end_time"] = agg["end_time"].dt.strftime("%Y-%m-%dT%H:%M:%S")
 
     # Store JSON-file within given directory
-    json_output = json.dumps(agg.to_dict(orient="records"), ensure_ascii=False, indent=2)
+    json_output = json.dumps(agg.to_dict(orient="records"), ensure_ascii=True, indent=2)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
@@ -184,7 +229,7 @@ def export_personal_data_to_json(engine: Engine, planning_unit: int, plan_id: in
     output_json = {"employees": employees_list}
 
     # Store JSON-file within given directory
-    json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
+    json_output = json.dumps(output_json, ensure_ascii=True, indent=2)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
@@ -257,7 +302,7 @@ def export_target_working_minutes_to_json(
     output_json = {"employees": target_working_minutes_list}
 
     # Store JSON-file within given directory
-    json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
+    json_output = json.dumps(output_json, ensure_ascii=True, indent=2)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
@@ -305,7 +350,7 @@ def export_worked_sundays_to_json(
     output_json = {"worked_sundays": worked_sundays}
 
     # Store JSON-file within given directory
-    json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
+    json_output = json.dumps(output_json, ensure_ascii=True, indent=2)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
@@ -490,7 +535,7 @@ def export_free_shift_and_vacation_days_json(
     output_json = {"employees": free_shifts_and_vacation_days}
 
     # Store JSON-file within given directory
-    json_output = json.dumps(output_json, ensure_ascii=False, indent=2, default=str)
+    json_output = json.dumps(output_json, ensure_ascii=True, indent=2, default=str)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
