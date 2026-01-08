@@ -175,7 +175,7 @@ def export_shift_data_to_json(engine: Engine, planning_unit: int, filename: str 
     agg["end_time"] = agg["end_time"].dt.strftime("%Y-%m-%dT%H:%M:%S")
 
     # Store JSON-file within given directory
-    json_output = json.dumps(agg.to_dict(orient="records"), ensure_ascii=False, indent=2)
+    json_output = json.dumps(agg.to_dict(orient="records"), ensure_ascii=True, indent=2)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
@@ -221,7 +221,7 @@ def export_personal_data_to_json(engine: Engine, planning_unit: int, plan_id: in
     output_json = {"employees": employees_list}
 
     # Store JSON-file within given directory
-    json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
+    json_output = json.dumps(output_json, ensure_ascii=True, indent=2)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
@@ -294,7 +294,7 @@ def export_target_working_minutes_to_json(
     output_json = {"employees": target_working_minutes_list}
 
     # Store JSON-file within given directory
-    json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
+    json_output = json.dumps(output_json, ensure_ascii=True, indent=2)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
@@ -342,7 +342,7 @@ def export_worked_sundays_to_json(
     output_json = {"worked_sundays": worked_sundays}
 
     # Store JSON-file within given directory
-    json_output = json.dumps(output_json, ensure_ascii=False, indent=2)
+    json_output = json.dumps(output_json, ensure_ascii=True, indent=2)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
@@ -527,7 +527,7 @@ def export_free_shift_and_vacation_days_json(
     output_json = {"employees": free_shifts_and_vacation_days}
 
     # Store JSON-file within given directory
-    json_output = json.dumps(output_json, ensure_ascii=False, indent=2, default=str)
+    json_output = json.dumps(output_json, ensure_ascii=True, indent=2, default=str)
     store_path = get_correct_path(filename, planning_unit)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
