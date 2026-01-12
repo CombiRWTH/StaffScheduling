@@ -2,6 +2,9 @@ from .constraints import (
     Constraint as Constraint,
 )
 from .constraints import (
+    EverySecondWeekendFreeConstraint as EverySecondWeekendFreeConstraint,
+)
+from .constraints import (
     FreeDayAfterNightShiftPhaseConstraint as FreeDayAfterNightShiftPhaseConstraint,
 )
 from .constraints import (
@@ -29,9 +32,6 @@ from .constraints import (
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
 )
 from .model import Model as Model
-from .objectives import (
-    EverySecondWeekendFreeObjective as EverySecondWeekendFreeObjective,
-)
 from .objectives import (
     FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
 )
