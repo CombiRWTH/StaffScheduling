@@ -26,7 +26,6 @@ from src.cp.constraints import (
 )
 from src.cp.model import Model
 from src.cp.objectives import (
-    EverySecondWeekendFreeObjective,
     FreeDaysAfterNightShiftPhaseObjective,
     FreeDaysNearWeekendObjective,
     MaximizeEmployeeWishesObjective,
@@ -115,7 +114,6 @@ def test_all_constraints_mass_case(
     model.add_objective(RotateShiftsForwardObjective(1.0, employees, days, shifts))
     model.add_objective(MaximizeEmployeeWishesObjective(3.0, employees, days, shifts))
     model.add_objective(FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts))
-    model.add_objective(EverySecondWeekendFreeObjective(1.0, employees, days))
 
     model.add_constraint(FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts))
     model.add_constraint(HierarchyOfIntermediateShiftsConstraint(employees, days, shifts))
