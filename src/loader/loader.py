@@ -20,8 +20,9 @@ class Loader(ABC):
         Retrieves a list of employees.
         """
         min_staffing = self.get_min_staffing()
+
         num_hidden_employees_per_level = {
-            level: max(max(shifts.values()) for shifts in days.values()) for level, days in min_staffing.items()
+            level: max(sum(shifts.values()) for shifts in days.values()) for level, days in min_staffing.items()
         }
 
         hidden_employees: list[Employee] = []
