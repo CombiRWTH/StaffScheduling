@@ -25,7 +25,7 @@ def employee_to_dict(emp: Employee):
         "forbidden_shifts": emp._forbidden_shifts,  # type: ignore
         "vacation_days": emp.vacation_days,
         "vacation_shifts": emp.vacation_shifts,
-        "hidden_actual_working_time": emp._hidden_actual_working_time 
+        "hidden_actual_working_time": emp._hidden_actual_working_time
     }
 
 
