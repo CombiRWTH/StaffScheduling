@@ -1,9 +1,11 @@
+import sys
 from datetime import datetime
 
 import click
 
 from src.db.export_main import main as fetcher
 from src.db.import_main import main as inserter
+from src.diagnosis import InfeasibilityDiagnoser, format_diagnosis_result
 from src.loader import FSLoader
 from src.solve import main as solver
 from src.web import App
@@ -147,6 +149,40 @@ def fetch(unit: int, start: datetime, end: datetime):
     start_date = start.date()  # convert datetime.datetime to datetime.date
     end_date = end.date()
     fetcher(planning_unit=unit, from_date=start_date, till_date=end_date)
+
+
+@cli.command()
+@click.argument("unit", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
+def diagnose(unit: int, start: datetime, end: datetime):
+    """
+    Diagnose potential infeasibility issues in case data.
+
+    UNIT is the case number to diagnose.
+
+    START is the start date for the planning period in DD.MM.YYYY format.
+
+    END is the end date for the planning period in DD.MM.YYYY format.
+
+    This command checks JSON files for errors, inconsistencies, and constraint violations
+    that could lead to an infeasible schedule. Use this before solving to identify and
+    fix data issues.
+    """
+    start_date = start.date()
+    end_date = end.date()
+
+    click.echo(f"Diagnosing case {unit} for period {start_date} to {end_date}...")
+
+    diagnoser = InfeasibilityDiagnoser(unit, start_date, end_date)
+    result = diagnoser.diagnose()
+
+    # Print diagnosis report
+    print(format_diagnosis_result(result))
+
+    # Exit with error code if errors found
+    if result.has_errors():
+        sys.exit(1)
 
 
 @cli.command()
