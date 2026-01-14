@@ -1,8 +1,8 @@
 from typing import cast
 
-from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
+from ortools.sat.python.cp_model import CpModel, LinearExpr
 
-from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables, Variable
 from .objective import Objective
 
 
@@ -17,7 +17,7 @@ class MaximizeEmployeeWishesObjective(Objective):
         shift_assignment_variables: ShiftAssignmentVariables,
         employee_works_on_day_variables: EmployeeWorksOnDayVariables,
     ) -> LinearExpr:
-        penalties: list[IntVar] = []
+        penalties: list[Variable] = []
 
         for employee in self._employees:
             # Wish to have specific days off
@@ -25,10 +25,7 @@ class MaximizeEmployeeWishesObjective(Objective):
                 for day in self._days:
                     if day.day == wish_day:
                         var = employee_works_on_day_variables[employee][day]
-                        penalty = model.NewBoolVar(f"penalty_on_assigned_wish_day_off_{employee.get_key()}_{day}")
-                        model.Add(penalty == 1).OnlyEnforceIf(var)
-                        model.Add(penalty == 0).OnlyEnforceIf(var.Not())
-                        penalties.append(penalty)
+                        penalties.append(var)
 
             # Wish to have specific shifts off
             for _, abbr in employee.get_wish_shifts:
@@ -38,9 +35,6 @@ class MaximizeEmployeeWishesObjective(Objective):
                         continue
 
                     var = shift_assignment_variables[employee][day][shift]
-                    penalty = model.NewBoolVar(f"penalty_on_assigned_wish_shift_off_{employee.get_key()}_{day}_{abbr}")
-                    model.Add(penalty == 1).OnlyEnforceIf(var)
-                    model.Add(penalty == 0).OnlyEnforceIf(var.Not())
-                    penalties.append(penalty)
+                    penalties.append(var)
 
         return cast(LinearExpr, sum(penalties)) * self.weight
