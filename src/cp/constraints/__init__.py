@@ -1,7 +1,4 @@
 from .constraint import Constraint as Constraint
-from .every_second_weekend_free import (
-    EverySecondWeekendFreeConstraint as EverySecondWeekendFreeConstraint,
-)
 from .free_day_after_night_shift_phase import (
     FreeDayAfterNightShiftPhaseConstraint as FreeDayAfterNightShiftPhaseConstraint,
 )

@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from datetime import date
 
 from src.cp import (
-    EverySecondWeekendFreeConstraint,
+    EverySecondWeekendFreeObjective,
     FreeDayAfterNightShiftPhaseConstraint,
     FreeDaysAfterNightShiftPhaseObjective,
     FreeDaysNearWeekendObjective,
@@ -53,6 +53,7 @@ def main(
             "rotate": 1,
             "wishes": 3,
             "after_night": 3,
+            "second_weekend": 1,
         }
 
     logging.info("General information:")
@@ -75,7 +76,6 @@ def main(
         VacationDaysAndShiftsConstraint(employees, days, shifts),
         HierarchyOfIntermediateShiftsConstraint(employees, days, shifts),
         PlannedShiftsConstraint(employees, days, shifts),
-        EverySecondWeekendFreeConstraint(employees, days, shifts),
     ]
     objectives = [
         FreeDaysNearWeekendObjective(weights["free_weekend"], employees, days),
@@ -86,6 +86,7 @@ def main(
         RotateShiftsForwardObjective(weights["rotate"], employees, days, shifts),
         MaximizeEmployeeWishesObjective(weights["wishes"], employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(weights["after_night"], employees, days, shifts),
+        EverySecondWeekendFreeObjective(weights["second_weekend"], employees, days),
     ]
 
     model = Model(employees, days, shifts)
