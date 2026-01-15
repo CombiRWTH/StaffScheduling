@@ -1,3 +1,6 @@
+from .every_second_weekend_free import (
+    EverySecondWeekendFreeObjective as EverySecondWeekendFreeObjective,
+)
 from .free_days_after_night_shift_phase import (
     FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
 )
