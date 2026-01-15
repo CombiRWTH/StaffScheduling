@@ -54,12 +54,16 @@ class TargetWorkingTimeConstraint(Constraint):
             if employee.hidden:
                 target_working_time = round(40 * 60 * 4.35)
             else:
+                available_days = set(range(1, len(self._days) + 1)) - (
+                    set(employee.vacation_days) | set(employee._forbidden_days)  # pyright: ignore[reportPrivateUsage]
+                )
+
                 # maybe it effects the tool that working_time_domain is probably MUCH larger than
                 # target_working_time - TOLERANCE_LESS <= working_time_variable <= target_working_time + TOLERANCE_MORE
                 target_working_time = round(
                     max(
-                        employee.target_working_time * (1 - len(employee.vacation_days) / len(self._days))
-                        - employee.actual_working_time,
+                        employee.target_working_time * len(available_days) / len(self._days),
+                        -employee.actual_working_time,
                         0,
                     )
                 )
