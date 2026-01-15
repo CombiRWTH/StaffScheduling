@@ -16,7 +16,7 @@ def employee_to_dict(emp: Employee):
         "id": emp.get_key(),
         "name": emp.name,
         "level": emp.level,
-        "target_working_time": emp.get_available_working_time(),
+        "target_working_time": emp.target_working_time,
         "wishes": {
             "shift_wishes": [[day, shift] for (day, shift) in emp.get_wish_shifts],
             "day_off_wishes": list(emp.get_wish_days),
@@ -25,6 +25,7 @@ def employee_to_dict(emp: Employee):
         "forbidden_shifts": emp._forbidden_shifts,  # type: ignore
         "vacation_days": emp.vacation_days,
         "vacation_shifts": emp.vacation_shifts,
+        "hidden_actual_working_time": emp._hidden_actual_working_time,  # type: ignore
     }
 
 
