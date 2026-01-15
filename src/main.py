@@ -155,7 +155,8 @@ def fetch(unit: int, start: datetime, end: datetime):
 @click.argument("unit", type=click.INT)
 @click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
-def diagnose(unit: int, start: datetime, end: datetime):
+@click.option("--fix", is_flag=True, help="Automatically fix target unachievable errors")
+def diagnose(unit: int, start: datetime, end: datetime, fix: bool):
     """
     Diagnose potential infeasibility issues in case data.
 
@@ -168,13 +169,18 @@ def diagnose(unit: int, start: datetime, end: datetime):
     This command checks JSON files for errors, inconsistencies, and constraint violations
     that could lead to an infeasible schedule. Use this before solving to identify and
     fix data issues.
+
+    Use --fix flag to automatically adjust target and actual working minutes to make
+    unachievable targets feasible.
     """
     start_date = start.date()
     end_date = end.date()
 
     click.echo(f"Diagnosing case {unit} for period {start_date} to {end_date}...")
+    if fix:
+        click.echo("Auto-fix mode enabled ✓")
 
-    diagnoser = InfeasibilityDiagnoser(unit, start_date, end_date)
+    diagnoser = InfeasibilityDiagnoser(unit, start_date, end_date, apply_fixes=fix)
     result = diagnoser.diagnose()
 
     # Print diagnosis report

@@ -7,12 +7,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from src.diagnosis_config import (
-    VALID_EMPLOYEE_LEVELS,
-    CheckType,
-    DiagnosisConfig,
-    Severity,
-)
+from src.diagnosis_config import VALID_EMPLOYEE_LEVELS, CheckType, Severity
 from src.employee import Employee
 from src.loader.filesystem_loader import FSLoader
 
@@ -26,9 +21,6 @@ class DataIssue:
     file: str
     message: str
     employee_key: int | None = None
-    day: int | None = None
-    shift: str | None = None
-    field: str | None = None
     value: Any = None
     fix_suggestion: str | None = None
 
@@ -37,7 +29,7 @@ class DataIssue:
 class DiagnosisResult:
     """Result of infeasibility diagnosis."""
 
-    issues: list[DataIssue] = field(default_factory=list)
+    issues: list[DataIssue] = field(default_factory=lambda: [])
     error_count: int = 0
     warning_count: int = 0
     info_count: int = 0
@@ -64,18 +56,19 @@ class DiagnosisResult:
 class InfeasibilityDiagnoser:
     """Diagnoses potential infeasibility causes in scheduling cases."""
 
-    def __init__(self, case_id: int, start_date: date, end_date: date, config: DiagnosisConfig | None = None):
+    def __init__(self, case_id: int, start_date: date, end_date: date, apply_fixes: bool = False):
         """Initialize the diagnoser."""
         self.case_id = case_id
         self.start_date = start_date
         self.end_date = end_date
-        self.config = config if config else DiagnosisConfig()
+        self.apply_fixes = apply_fixes
         self.case_path = Path(f"cases/{case_id}")
         self.result = DiagnosisResult()
 
         # Data containers
         self.employees: list[Employee] = []
         self.json_data: dict[str, Any] = {}
+        self.fixes_applied: list[str] = []
 
     def diagnose(self) -> DiagnosisResult:
         """Run full diagnosis and return results."""
@@ -101,6 +94,10 @@ class InfeasibilityDiagnoser:
 
         # Step 3: Check target/actual working time feasibility (MAIN CHECK)
         self._check_working_time_feasibility()
+
+        # Step 4: Apply fixes if requested
+        if self.apply_fixes:
+            self._save_fixes()
 
         return self.result
 
@@ -237,12 +234,13 @@ class InfeasibilityDiagnoser:
             if emp.hidden:
                 continue  # Hidden employees don't have target constraints
 
-            # Count vacation days and forbidden days
+            # Get unique unavailable days (union of vacation and forbidden days to avoid double-counting)
+            unavailable_days = set(emp.vacation_days) | set(emp.forbidden_days)
             vacation_days = len(emp.vacation_days)
-            forbidden_days = len(emp._forbidden_days)
+            forbidden_days = len(emp.forbidden_days)
 
-            # Calculate available working days (excluding both vacation and forbidden days)
-            available_days = total_days - vacation_days - forbidden_days
+            # Calculate available working days (excluding all unavailable days)
+            available_days = total_days - len(unavailable_days)
 
             # Check if actual + planned minutes can meet target
             emp_target_data = target_emp_data.get(emp.get_key())
@@ -260,13 +258,23 @@ class InfeasibilityDiagnoser:
                 # Check if the original target can be achieved at all
                 if max_achievable_total + TOLERANCE < target:
                     shortage = target - max_achievable_total - TOLERANCE
+
+                    # Apply fix if requested
+                    if self.apply_fixes:
+                        if self._fix_target_unachievable(
+                            emp.get_key(), target, actual, max_achievable_total, TOLERANCE
+                        ):
+                            print(f"✓ Fixed employee {emp.get_key()} ({emp.name})")
+                            continue  # Skip adding issue if fix was applied
+
                     self._add_issue(
                         Severity.ERROR,
                         CheckType.TARGET_MINUTES_UNACHIEVABLE,
                         "target_working_minutes.json",
-                        f"Employee {emp.get_key()} ({emp.name}): target unachievable (target: {target:.0f} min"
-                        + ", actual: {actual:.0f} min, max possible"
-                        "in period: {max_possible_in_period:.0f} min, max achievable: {max_achievable_total:.0f} min, available days: {available_days}/{total_days})",
+                        f"Employee {emp.get_key()} ({emp.name}): target unachievable (target: {target:.0f} min, "
+                        f"actual: {actual:.0f} min, max possible "
+                        f"in period: {max_possible_in_period:.0f} min, max achievable: {max_achievable_total:.0f} min, "
+                        f"available days: {available_days}/{total_days})",
                         employee_key=emp.get_key(),
                         value={
                             "actual": actual,
@@ -277,13 +285,12 @@ class InfeasibilityDiagnoser:
                             "vacation_days": vacation_days,
                             "forbidden_days": forbidden_days,
                         },
-                        fix_suggestion=f"Reduce target by {int(shortage)} minutes, reduce actual by {int(shortage)} minutes, or reduce"
-                        + "vacation/forbidden days by {int(shortage / 565) + 1}",
+                        fix_suggestion=f"Reduce target by {int(shortage)} minutes, reduce actual by {int(shortage)} "
+                        f"minutes, or reduce vacation/forbidden days by {int(shortage / 565) + 1}",
                     )
 
                 # Additionally check the adjusted target (for the planning period)
                 adjusted_target = target * available_days / total_days
-                remaining_needed = adjusted_target - actual
 
                 # Check if actual already exceeds adjusted target for this period
                 if actual > adjusted_target + TOLERANCE:
@@ -292,8 +299,9 @@ class InfeasibilityDiagnoser:
                         Severity.WARNING,
                         CheckType.TARGET_MINUTES_UNACHIEVABLE,
                         "target_working_minutes.json",
-                        f"Employee {emp.get_key()} ({emp.name}): actual minutes already exceed adjusted target for period"
-                        + " (actual: {actual:.0f} min, adjusted target: {adjusted_target:.0f} min, excess: {excess:.0f} min)",
+                        f"Employee {emp.get_key()} ({emp.name}): actual minutes already exceed adjusted target for "
+                        f"period (actual: {actual:.0f} min, "
+                        f"adjusted target: {adjusted_target:.0f} min, excess: {excess:.0f} min)",
                         employee_key=emp.get_key(),
                         value={
                             "actual": actual,
@@ -304,6 +312,41 @@ class InfeasibilityDiagnoser:
                         fix_suggestion=f"Increase target by {int(excess)} minutes or reduce actual minutes",
                     )
 
+    def _fix_target_unachievable(
+        self, employee_key: int, target: float, actual: float, max_achievable: float, tolerance: float
+    ) -> bool:
+        """Apply fix for target unachievable error by adjusting target only."""
+        # New target should be: max_achievable + tolerance (achievable with some buffer)
+        new_target = max_achievable + tolerance
+
+        # Update the JSON data
+        target_data = self.json_data.get("target_working_minutes.json", {})
+        employees = target_data.get("employees", [])
+
+        for emp_data in employees:
+            if emp_data.get("key") == employee_key:
+                old_target = emp_data.get("target", 0)
+                emp_data["target"] = int(new_target)
+
+                self.fixes_applied.append(f"Employee {employee_key}: target {old_target}→{int(new_target)} min")
+                return True
+
+        return False
+
+    def _save_fixes(self) -> None:
+        """Save the fixed JSON data back to files."""
+        if not self.fixes_applied:
+            return
+
+        target_file = self.case_path / "target_working_minutes.json"
+        if "target_working_minutes.json" in self.json_data:
+            with open(target_file, "w", encoding="utf-8") as f:
+                json.dump(self.json_data["target_working_minutes.json"], f, indent=2, ensure_ascii=True)
+            print(f"\n✅ Saved fixes to {target_file}")
+            print("\nFixes applied:")
+            for fix in self.fixes_applied:
+                print(f"  • {fix}")
+
     def _add_issue(
         self,
         severity: Severity,
@@ -311,9 +354,6 @@ class InfeasibilityDiagnoser:
         file: str,
         message: str,
         employee_key: int | None = None,
-        day: int | None = None,
-        shift: str | None = None,
-        field: str | None = None,
         value: Any = None,
         fix_suggestion: str | None = None,
     ) -> None:
@@ -324,9 +364,6 @@ class InfeasibilityDiagnoser:
             file=file,
             message=message,
             employee_key=employee_key,
-            day=day,
-            shift=shift,
-            field=field,
             value=value,
             fix_suggestion=fix_suggestion,
         )
@@ -343,7 +380,7 @@ def format_diagnosis_result(result: DiagnosisResult) -> str:
     BOLD = "\033[1m"
     RESET = "\033[0m"
 
-    lines = []
+    lines: list[str] = []
     lines.append(f"\n{BOLD}{'=' * 80}{RESET}")
     lines.append(f"{BOLD}INFEASIBILITY DIAGNOSIS REPORT{RESET}")
     lines.append(f"{BOLD}{'=' * 80}{RESET}\n")
@@ -368,9 +405,9 @@ def format_diagnosis_result(result: DiagnosisResult) -> str:
         return "\n".join(lines)
 
     # Group issues by severity and file
-    errors_by_file = defaultdict(list)
-    warnings_by_file = defaultdict(list)
-    infos_by_file = defaultdict(list)
+    errors_by_file: dict[str, list[DataIssue]] = defaultdict(list)
+    warnings_by_file: dict[str, list[DataIssue]] = defaultdict(list)
+    infos_by_file: dict[str, list[DataIssue]] = defaultdict(list)
 
     for issue in result.issues:
         if issue.severity == Severity.ERROR:
