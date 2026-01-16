@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from datetime import date, timedelta
 from json import dump, load
 from os import listdir
@@ -14,11 +15,23 @@ from .loader import Loader
 
 class FSLoader(Loader):
     _case_id: int
+    _start_date: date | None
+    _end_date: date | None
+    _month_folder: str | None
 
-    def __init__(self, case_id: int):
+    def __init__(self, case_id: int, start_date: date | None = None, end_date: date | None = None):
         super().__init__()
 
         self._case_id = case_id
+        self._start_date = start_date
+        self._end_date = end_date
+
+        # Create month folder string from start_date if provided
+        if start_date:
+            self._month_folder = f"{start_date.month:02d}_{start_date.year}"
+        else:
+            # Try to find the latest month folder if no date is provided
+            self._month_folder = self._find_latest_month_folder()
 
     def get_employees(self, start: int = 0) -> list[Employee]:
         fs_employees = self._load_json(self._get_file_path("employees"))["employees"]
@@ -207,7 +220,39 @@ class FSLoader(Loader):
             dump(data, file, indent=4)
 
     def _get_file_path(self, filename: str) -> str:
-        return f"./cases/{self._case_id}/{filename}.json"
+        if self._month_folder:
+            return f"./cases/{self._case_id}/{self._month_folder}/{filename}.json"
+        else:
+            return f"./cases/{self._case_id}/{filename}.json"
 
     def _get_solutions_path(self, filename: str) -> str:
         return f"./found_solutions/{filename}.json"
+
+    def _find_latest_month_folder(self) -> str | None:
+        """Find the latest month folder in the case directory.
+
+        Returns the folder name (e.g., '11_2024') or None if no month folders exist.
+        """
+        case_path = f"./cases/{self._case_id}"
+        if not os.path.exists(case_path):
+            logging.warning(f"Case directory not found: {case_path}")
+            return None
+
+        # Look for folders matching the pattern MM_YYYY
+        month_folders = []
+        for item in os.listdir(case_path):
+            item_path = os.path.join(case_path, item)
+            if os.path.isdir(item_path) and re.match(r"^\d{2}_\d{4}$", item):
+                # Parse the folder name to extract month and year
+                month, year = item.split("_")
+                month_folders.append((int(year), int(month), item))
+
+        if not month_folders:
+            logging.warning(f"No month folders found in {case_path}. Using fallback to root directory.")
+            return None
+
+        # Sort by year and month, return the latest
+        month_folders.sort(reverse=True)
+        latest_folder = month_folders[0][2]
+        logging.info(f"Using latest month folder: {latest_folder}")
+        return latest_folder

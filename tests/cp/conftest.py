@@ -99,9 +99,11 @@ def setup_with_minstaffing(
 
 @pytest.fixture
 def setup_case_77() -> tuple[Model, dict[str, dict[str, dict[str, int]]]]:
-    loader = FSLoader(case_id=77)
+    start_date = datetime(2025, 11, 1).date()
+    end_date = datetime(2025, 11, 30).date()
+    loader = FSLoader(case_id=77, start_date=start_date, end_date=end_date)
 
-    days = loader.get_days(datetime(2025, 11, 1), datetime(2025, 11, 30))
+    days = loader.get_days(start_date, end_date)
     employees = loader.get_employees()
     shifts = loader.get_shifts()
     min_staffing = loader.get_min_staffing()

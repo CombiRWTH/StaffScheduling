@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 logging.basicConfig(level=logging.INFO)
 
 
-def get_correct_path(filename: str, planning_unit: int):
+def get_correct_path(filename: str, planning_unit: int, from_date: date | None = None):
     """Return the correct path to store the given file in."""
 
     # Get the defined folder names out of the .env-file
@@ -22,16 +22,23 @@ def get_correct_path(filename: str, planning_unit: int):
 
     # Create the output path to store the file in
     target_dir = os.path.join("./", base_folder, str(planning_unit))
+
+    # Add month folder if date is provided
+    if from_date:
+        month_folder = f"{from_date.month:02d}_{from_date.year}"
+        target_dir = os.path.join(target_dir, month_folder)
+
     target_dir = os.path.abspath(target_dir)
     output_path = os.path.join(target_dir, filename)
     return output_path
 
 
-def setup_case_folder(planning_unit: int):
+def setup_case_folder(planning_unit: int, from_date: date | None = None):
     """Prepare the case folder by deleting the web folder and copying static JSON files.
 
     Args:
         planning_unit: ID of the planning unit to set up the folder for.
+        from_date: Start date to determine the month folder.
     """
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
     if base_folder is None:
@@ -39,6 +46,12 @@ def setup_case_folder(planning_unit: int):
 
     # Get the target directory for this planning unit
     target_dir = os.path.join("./", base_folder, str(planning_unit))
+
+    # Add month folder if date is provided
+    if from_date:
+        month_folder = f"{from_date.month:02d}_{from_date.year}"
+        target_dir = os.path.join(target_dir, month_folder)
+
     target_dir = os.path.abspath(target_dir)
 
     # Create target directory if it doesn't exist
@@ -84,7 +97,7 @@ def export_planning_data(engine: Engine, planning_unit: int, from_date: date, ti
             dict: Dictionary containing plan data
 
     """
-
+    print(f"Exporting planning data for planning unit {planning_unit} from {from_date} to {till_date}.")
     # Construct and execute a SQL query to retrieve planning data within the given date range
     query = f"""SELECT
                     Prim AS 'plan_id',
@@ -118,11 +131,15 @@ def export_planning_data(engine: Engine, planning_unit: int, from_date: date, ti
     return result
 
 
-def export_shift_data_to_json(engine: Engine, planning_unit: int, filename: str = "shift_information.json"):
+def export_shift_data_to_json(
+    engine: Engine, planning_unit: int, from_date: date | None = None, filename: str = "shift_information.json"
+):
     """Export all shift related information such as times and breaks and create a JSON-file.
 
     Args:
             engine: SQLAlchemy engine used for executing the database query.
+            planning_unit: ID of the planning unit.
+            from_date: Start date to determine the month folder.
             filename (str): Name of the output JSON file (default: 'shift_information.json').
 
     """
@@ -184,18 +201,21 @@ def export_shift_data_to_json(engine: Engine, planning_unit: int, filename: str 
 
     # Store JSON-file within given directory
     json_output = json.dumps(agg.to_dict(orient="records"), ensure_ascii=True, indent=2)
-    store_path = get_correct_path(filename, planning_unit)
+    store_path = get_correct_path(filename, planning_unit, from_date)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Log a message of completed export
     logging.info(f"✅ Export abgeschlossen – {filename} erstellt")
 
 
-def export_personal_data_to_json(engine: Engine, planning_unit: int, plan_id: int, filename: str = "employees.json"):
+def export_personal_data_to_json(
+    engine: Engine, planning_unit: int, plan_id: int, from_date: date | None = None, filename: str = "employees.json"
+):
     """Export all personal staff information found within TPersonal and create a JSON-file.
     Args:
             engine: SQLAlchemy engine object used to connect to the database.
             plan_id (int): ID of the plan for which staff data should be exported.
+            from_date: Start date to determine the month folder.
             filename (str): Name of the JSON file to be created (default: 'employees.json').
 
     """
@@ -230,7 +250,7 @@ def export_personal_data_to_json(engine: Engine, planning_unit: int, plan_id: in
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=True, indent=2)
-    store_path = get_correct_path(filename, planning_unit)
+    store_path = get_correct_path(filename, planning_unit, from_date)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Log a message of completed export
@@ -238,13 +258,18 @@ def export_personal_data_to_json(engine: Engine, planning_unit: int, plan_id: in
 
 
 def export_target_working_minutes_to_json(
-    engine: Engine, planning_unit: int, month: int, filename: str = "target_working_minutes.json"
+    engine: Engine,
+    planning_unit: int,
+    month: int,
+    from_date: date | None = None,
+    filename: str = "target_working_minutes.json",
 ):
     """Export all target working minutes found within TPersonalKontenJeMonat and create a JSON-file.
 
     Args:
             engine: SQLAlchemy engine object used to connect to the database.
             month (int): Numeric representation of the target month (e.g., 202411 for November 2024).
+            from_date: Start date to determine the month folder.
             filename (str): Name of the JSON file to be created (default: 'target_working_minutes.json').
 
     """
@@ -303,7 +328,7 @@ def export_target_working_minutes_to_json(
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=True, indent=2)
-    store_path = get_correct_path(filename, planning_unit)
+    store_path = get_correct_path(filename, planning_unit, from_date)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Log a message of completed export
@@ -311,7 +336,12 @@ def export_target_working_minutes_to_json(
 
 
 def export_worked_sundays_to_json(
-    engine: Engine, planning_unit: int, from_date: date, till_date: date, filename: str = "worked_sundays.json"
+    engine: Engine,
+    planning_unit: int,
+    from_date: date,
+    till_date: date,
+    start_date: date | None = None,
+    filename: str = "worked_sundays.json",
 ):
     """Export the number of worked sundays found within TPersonalKontenJeTag and create a JSON-file.
 
@@ -319,6 +349,7 @@ def export_worked_sundays_to_json(
             engine: SQLAlchemy engine object to connect to the database.
             from_date (str): Start date (inclusive) of the period to query, format 'YYYY/DD/MM'.
             till_date (str): End date (inclusive) of the period to query, format 'YYYY/DD/MM'.
+            start_date: Start date to determine the month folder (different from from_date for the query).
             filename (str): Name of the JSON output file (default: 'worked_sundays.json').
 
     """
@@ -351,7 +382,7 @@ def export_worked_sundays_to_json(
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=True, indent=2)
-    store_path = get_correct_path(filename, planning_unit)
+    store_path = get_correct_path(filename, planning_unit, start_date)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Log a message of completed export
@@ -385,7 +416,11 @@ def get_plan_dates(engine: Engine, plan_id: int) -> pd.DataFrame:
 
 
 def export_free_shift_and_vacation_days_json(
-    engine: Engine, planning_unit: int, plan_id: int, filename: str = "free_shifts_and_vacation_days.json"
+    engine: Engine,
+    planning_unit: int,
+    plan_id: int,
+    from_date: date | None = None,
+    filename: str = "free_shifts_and_vacation_days.json",
 ):
     """Export the free shifts and vacation daysfound within TPersonalKommtGeht and create a JSON-file.
 
@@ -393,6 +428,7 @@ def export_free_shift_and_vacation_days_json(
             engine: SQLAlchemy engine object to connect to the database.
             plan_id (int or str): The unique identifier for the plan.
             planning_unit (int or str): Identifier for the planning unit to filter employees.
+            from_date: Start date to determine the month folder.
             filename (str, optional): Output JSON file name. Defaults to 'free_shifts_and_vacation_days.json'.
     """
 
@@ -402,7 +438,7 @@ def export_free_shift_and_vacation_days_json(
     START_DATE = dates.loc[0, "START"]
     END_DATE = dates.loc[0, "END"]
 
-    EMP_FILE = get_correct_path("employees.json", planning_unit)
+    EMP_FILE = get_correct_path("employees.json", planning_unit, from_date)
     with open(EMP_FILE, encoding="utf-8") as f:
         emp_data = json.load(f)["employees"]
 
@@ -536,7 +572,7 @@ def export_free_shift_and_vacation_days_json(
 
     # Store JSON-file within given directory
     json_output = json.dumps(output_json, ensure_ascii=True, indent=2, default=str)
-    store_path = get_correct_path(filename, planning_unit)
+    store_path = get_correct_path(filename, planning_unit, from_date)
     with open(store_path, "w", encoding="utf-8") as f:
         f.write(json_output)
     # Log a message of completed export
