@@ -239,7 +239,7 @@ class FSLoader(Loader):
             return None
 
         # Look for folders matching the pattern MM_YYYY
-        month_folders = []
+        month_folders: list[tuple[int, int, str]] = []
         for item in os.listdir(case_path):
             item_path = os.path.join(case_path, item)
             if os.path.isdir(item_path) and re.match(r"^\d{2}_\d{4}$", item):
@@ -253,6 +253,6 @@ class FSLoader(Loader):
 
         # Sort by year and month, return the latest
         month_folders.sort(reverse=True)
-        latest_folder = month_folders[0][2]
+        latest_folder: str = month_folders[0][2]
         logging.info(f"Using latest month folder: {latest_folder}")
         return latest_folder
