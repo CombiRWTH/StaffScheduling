@@ -38,7 +38,7 @@ def main(
     weights: Mapping[str, int | float] | None = None,
     weight_id: int | None = None,
 ):
-    loader = FSLoader(unit)
+    loader = FSLoader(unit, start_date=start_date, end_date=end_date)
     employees = loader.get_employees()
     days = loader.get_days(start_date, end_date)
     shifts = loader.get_shifts()

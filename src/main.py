@@ -41,7 +41,7 @@ def solve(unit: int, start: datetime, end: datetime, timeout: int):
         timeout=timeout,
     )
 
-    loader = FSLoader(unit)
+    loader = FSLoader(unit, start_date=start.date(), end_date=end.date())
 
     solution_name = f"solution_{unit}_{start.date()}-{end.date()}_wdefault"
 
@@ -114,7 +114,7 @@ def solve_multiple(unit: int, start: datetime, end: datetime, timeout: int):
             weights=weights,
             weight_id=weight_id,
         )
-        loader = FSLoader(unit)
+        loader = FSLoader(unit, start_date=start.date(), end_date=end.date())
 
         in_name = f"solution_{unit}_{start.date()}-{end.date()}_w{weight_id}"
 
