@@ -146,5 +146,13 @@ class Employee:
         return self._vacation_days
 
     @property
+    def forbidden_days(self) -> list[int]:
+        return self._forbidden_days
+
+    @property
     def vacation_shifts(self) -> list[tuple[int, str]]:
         return self._vacation_shifts
+
+    @property
+    def forbidden_shifts(self) -> list[tuple[int, str]]:
+        return self._forbidden_shifts
