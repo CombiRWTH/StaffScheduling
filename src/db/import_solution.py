@@ -11,8 +11,12 @@ from sqlalchemy import Engine, text
 logging.basicConfig(level=logging.INFO)
 
 
-def get_correct_path(filename: str, planning_unit: int) -> str:
-    """Return the correct path to store the given file in."""
+def get_correct_path(filename: str, planning_unit: int, from_date: date | None = None) -> str:
+    """Return the correct path to store the given file in.
+
+    If `from_date` is provided the file will be placed inside the month folder
+    with format `MM_YYYY` (e.g. `11_2024`).
+    """
 
     # Get the defined folder names out of the .env-file
     base_folder = os.getenv("BASE_OUTPUT_FOLDER")
@@ -21,6 +25,12 @@ def get_correct_path(filename: str, planning_unit: int) -> str:
 
     # Create the output path to store the file in
     target_dir = os.path.join("./", base_folder, str(planning_unit))
+
+    # Add month folder if date is provided
+    if from_date:
+        month_folder = f"{from_date.month:02d}_{from_date.year}"
+        target_dir = os.path.join(target_dir, month_folder)
+
     target_dir = os.path.abspath(target_dir)
     output_path = os.path.join(target_dir, filename)
     return output_path
@@ -35,7 +45,8 @@ def load_json_files(start_date: date, end_date: date, planning_unit: int):
     solution_dir = os.path.join("./", sol_folder)
     solution_file = os.path.join(solution_dir, f"solution_{planning_unit}_{start_date}-{end_date}.json")
 
-    employee_file = get_correct_path("employees.json", planning_unit)
+    # employees.json is stored in the planning unit folder and in the month subfolder
+    employee_file = get_correct_path("employees.json", planning_unit, start_date)
 
     with open(solution_file, encoding="utf-8") as f:
         data = json.load(f)
@@ -44,13 +55,15 @@ def load_json_files(start_date: date, end_date: date, planning_unit: int):
     return data, emp_data
 
 
-def load_planned_shifts(planning_unit: int) -> dict[int, set[int]]:
+def load_planned_shifts(planning_unit: int, start_date: date | None = None) -> dict[int, set[int]]:
     """
     Returns Dict {Key : {Day1, Day2, …}},
     based on planned_shifts in free_shifts_and_vacation_days.json.
+
+    If `start_date` is provided the file will be searched in the month folder for that date.
     """
 
-    file_path = get_correct_path("free_shifts_and_vacation_days.json", planning_unit)
+    file_path = get_correct_path("free_shifts_and_vacation_days.json", planning_unit, start_date)
     with open(file_path, encoding="utf-8") as f:
         data = json.load(f)["employees"]
 

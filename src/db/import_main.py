@@ -23,7 +23,7 @@ def main(
 
     # Load mapping of employee to their job and their already planned shifts
     prim_to_refberuf = import_solution.load_person_to_job(engine)
-    planned_map = import_solution.load_planned_shifts(planning_unit)
+    planned_map = import_solution.load_planned_shifts(planning_unit, from_date)
 
     PE_ID = planning_unit
     PLAN_ID = base_data["plan_id"]
@@ -71,9 +71,9 @@ def main(
 
             filename = "test_file.json"
 
-            # Store JSON-file within given directory
+            # Store JSON-file within given directory (in the month folder)
             json_output = json.dumps(output_json, ensure_ascii=False, indent=2, default=str)
-            store_path = import_solution.get_correct_path(filename)
+            store_path = import_solution.get_correct_path(filename, planning_unit, from_date)
             with open(store_path, "w", encoding="utf-8") as f:
                 f.write(json_output)
             # Print a message of completed export
