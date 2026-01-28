@@ -48,6 +48,7 @@ def main(
             "free_weekend": 2,
             "consecutive_nights": 2,
             "hidden": 100,
+            "hidden_count": 100000,
             "overtime": 4,
             "consecutive_days": 1,
             "rotate": 1,
@@ -87,6 +88,7 @@ def main(
         MaximizeEmployeeWishesObjective(weights["wishes"], employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(weights["after_night"], employees, days, shifts),
         EverySecondWeekendFreeObjective(weights["second_weekend"], employees, days),
+        # MinimizeHiddenEmployeeCountObjective(weights["hidden_count"], employees, days, shifts)
     ]
 
     model = Model(employees, days, shifts)

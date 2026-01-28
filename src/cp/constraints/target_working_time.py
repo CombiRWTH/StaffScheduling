@@ -62,8 +62,8 @@ class TargetWorkingTimeConstraint(Constraint):
                 # target_working_time - TOLERANCE_LESS <= working_time_variable <= target_working_time + TOLERANCE_MORE
                 target_working_time = round(
                     max(
-                        employee.target_working_time * len(available_days) / len(self._days),
-                        -employee.actual_working_time,
+                        employee.target_working_time * len(available_days) / len(self._days)
+                        - employee.actual_working_time,
                         0,
                     )
                 )
