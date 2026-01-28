@@ -1,6 +1,6 @@
 from typing import cast
 
-from ortools.sat.python.cp_model import BoolVarT, CpModel, IntVar, LinearExpr
+from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 
 from src.day import Day
 from src.employee import Employee
@@ -47,5 +47,3 @@ class MinimizeHiddenEmployeeCountObjective(Objective):
             hidden_employee_work_vars.append(hidden_employee_is_used)
 
         return cast(LinearExpr, sum(hidden_employee_work_vars)) * self._weight
-
-

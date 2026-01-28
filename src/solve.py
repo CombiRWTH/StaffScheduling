@@ -11,6 +11,7 @@ from src.cp import (
     MaximizeEmployeeWishesObjective,
     MaxOneShiftPerDayConstraint,
     MinimizeConsecutiveNightShiftsObjective,
+    MinimizeHiddenEmployeeCountObjective,
     MinimizeHiddenEmployeesObjective,
     MinimizeOvertimeObjective,
     MinRestTimeConstraint,
@@ -22,7 +23,6 @@ from src.cp import (
     RoundsInEarlyShiftConstraint,
     TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint,
-    MinimizeHiddenEmployeeCountObjective
 )
 from src.loader import FSLoader
 
@@ -89,7 +89,7 @@ def main(
         MaximizeEmployeeWishesObjective(weights["wishes"], employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(weights["after_night"], employees, days, shifts),
         EverySecondWeekendFreeObjective(weights["second_weekend"], employees, days),
-        MinimizeHiddenEmployeeCountObjective(weights["hidden_count"], employees, days, shifts)
+        MinimizeHiddenEmployeeCountObjective(weights["hidden_count"], employees, days, shifts),
     ]
 
     model = Model(employees, days, shifts)
