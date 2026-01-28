@@ -34,21 +34,18 @@ class MinimizeHiddenEmployeeCountObjective(Objective):
         shift_assignment_variables: ShiftAssignmentVariables,
         employee_works_on_day_variables: EmployeeWorksOnDayVariables,
     ) -> LinearExpr:
-        hidden_vars: list[IntVar] = []
+        hidden_employee_work_vars: list[IntVar] = []
 
         for employee in self._employees:
             if not employee.hidden:
                 continue
 
-            vars: list[BoolVarT] = []
+            hidden_employee_is_used = model.new_bool_var(f"hidden_employee_is_used_{employee.get_key()}")
             for day in self._days:
-                for shift in self._shifts:
-                    var = shift_assignment_variables[employee][day][shift]
-                    vars += [var]
+                model.Add(employee_works_on_day_variables[employee][day] <= hidden_employee_is_used)
 
-            true_if_not_working = model.new_bool_var(f"hidden_e_is_working:{employee.get_key()}")
-            model.AddBoolOr(vars + [true_if_not_working])
+            hidden_employee_work_vars.append(hidden_employee_is_used)
 
-            hidden_vars.append(true_if_not_working)
+        return cast(LinearExpr, sum(hidden_employee_work_vars)) * self._weight
 
-        return cast(LinearExpr, sum(hidden_vars)) * (-1) * self._weight
+
