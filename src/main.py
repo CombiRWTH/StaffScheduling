@@ -1,4 +1,6 @@
+import json
 from datetime import datetime
+from pathlib import Path
 
 import click
 
@@ -16,12 +18,37 @@ def cli():
     pass
 
 
+DEFAULT_WEIGHTS = {
+    "free_weekend": 2,
+    "consecutive_nights": 2,
+    "hidden": 100,
+    "overtime": 4,
+    "consecutive_days": 1,
+    "rotate": 1,
+    "wishes": 3,
+    "after_night": 3,
+    "second_weekend": 1,
+}
+
+
+def load_weights(unit: int, start: datetime) -> dict:
+    month_year = f"{start.month:02d}_{start.year}"
+    weights_path = Path("cases") / str(unit) / month_year / "weights.json"
+
+    if not weights_path.exists():
+        raise FileNotFoundError(f"Weights file not found: {weights_path}")
+
+    with weights_path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 @cli.command()
 @click.argument("unit", type=click.INT)
 @click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.option("--weight", multiple=True, help="Override weights")
 @click.option("--timeout", default=300, help="Timeout in seconds for the solver")
-def solve(unit: int, start: datetime, end: datetime, timeout: int):
+def solve(unit: int, start: datetime, end: datetime, weight, timeout: int):
     """
     Solve the scheduling problem for a given case and start date.
 
@@ -32,13 +59,40 @@ def solve(unit: int, start: datetime, end: datetime, timeout: int):
     END is the end date for the planning period in YYYY-MM-DD format.
     """
 
-    click.echo(f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()}.")
+    try:
+        weights = load_weights(unit, start)
+        click.echo("Loaded weights from JSON.")
+    except FileNotFoundError:
+        weights = DEFAULT_WEIGHTS.copy()
+        click.echo(
+            "Weights file not found – using default weights instead.",
+            err=True,
+        )
+
+    for w in weight:
+        try:
+            key, value = w.split("=")
+            value = int(value)
+        except ValueError:
+            raise click.ClickException(f"Invalid --weight format: '{w}'. Use key=value.") from None
+
+        if key not in weights:
+            raise click.ClickException(
+                f"Unknown weight key '{key}'. Valid keys are: {', '.join(sorted(weights.keys()))}"
+            )
+
+    weights[key] = value
+
+    click.echo(
+        f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()} with weights {weights}."
+    )
 
     solver(
         unit=unit,
         start_date=start.date(),
         end_date=end.date(),
         timeout=timeout,
+        weights=weights,
     )
 
     loader = FSLoader(unit, start_date=start.date(), end_date=end.date())
