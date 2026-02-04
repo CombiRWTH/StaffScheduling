@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -31,7 +32,7 @@ DEFAULT_WEIGHTS = {
 }
 
 
-def load_weights(unit: int, start: datetime) -> dict:
+def load_weights(unit: int, start: datetime) -> dict[str, Any]:
     month_year = f"{start.month:02d}_{start.year}"
     weights_path = Path("cases") / str(unit) / month_year / "weights.json"
 
@@ -48,7 +49,7 @@ def load_weights(unit: int, start: datetime) -> dict:
 @click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.option("--weight", multiple=True, help="Override weights")
 @click.option("--timeout", default=300, help="Timeout in seconds for the solver")
-def solve(unit: int, start: datetime, end: datetime, weight, timeout: int):
+def solve(unit: int, start: datetime, end: datetime, weight: tuple[str, ...], timeout: int):
     """
     Solve the scheduling problem for a given case and start date.
 
@@ -59,6 +60,7 @@ def solve(unit: int, start: datetime, end: datetime, weight, timeout: int):
     END is the end date for the planning period in YYYY-MM-DD format.
     """
 
+    weights: dict[str, Any]
     try:
         weights = load_weights(unit, start)
         click.echo("Loaded weights from JSON.")
@@ -81,7 +83,7 @@ def solve(unit: int, start: datetime, end: datetime, weight, timeout: int):
                 f"Unknown weight key '{key}'. Valid keys are: {', '.join(sorted(weights.keys()))}"
             )
 
-    weights[key] = value
+        weights[key] = value
 
     click.echo(
         f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()} with weights {weights}."
