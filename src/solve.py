@@ -76,48 +76,50 @@ def main(
     timeout: int,
     weights: Mapping[str, int | float] | None = None,
     weight_id: int | None = None,
+    employees: list[Employee] | None = None,
 ):
     loader = FSLoader(unit, start_date=start_date, end_date=end_date)
-    employees = loader.get_employees()
     days = loader.get_days(start_date, end_date)
     shifts = loader.get_shifts()
     min_staffing = loader.get_min_staffing()
 
-    # minimize hidden employees "manually"
+    if employees is None:
+        employees = loader.get_employees()
+        # minimize hidden employees "manually"
 
-    # phase 1 - find an upper bound
-    # increase the hidden employee count raptitly for all classes simultaniously
-    logging.info("Minimizing Hidden Employee Count Phase 1")
-    status = "INFEASIBLE"
-    increase = 5
-    num_hidden_employees_per_level = {"Azubi": -increase, "Fachkraft": -increase, "Hilfskraft": -increase}
-    while (status == "INFEASIBLE" or status == "UNKNOWN") and sum(num_hidden_employees_per_level.values()) <= 50:
-        num_hidden_employees_per_level = {x: y + increase for (x, y) in num_hidden_employees_per_level.items()}
-        logging.info(f"Trying to solve with {num_hidden_employees_per_level}")
-        status = solve_with_constraints_only(
-            employees + FSLoader.get_hidden_employees(num_hidden_employees_per_level), days, shifts, min_staffing
-        )
-        logging.info(f'Solver returned status = "{status}"')
-    logging.info(f"Hidden Employee Upper Bound: {num_hidden_employees_per_level}\n")
-
-    # phase 2 - find tight bounds
-    # for each employee level lower the count unti it is tight
-    logging.info("Minimizing Hidden Employee Count Phase 2")
-    for level, value in num_hidden_employees_per_level.items():
-        tmp = num_hidden_employees_per_level
-        for i in range(value - 1, -1, -1):
-            tmp[level] = i
-            logging.info(f"Trying to solve with {tmp}")
+        # phase 1 - find an upper bound
+        # increase the hidden employee count raptitly for all classes simultaniously
+        logging.info("Minimizing Hidden Employee Count Phase 1")
+        status = "INFEASIBLE"
+        increase = 5
+        num_hidden_employees_per_level = {"Azubi": -increase, "Fachkraft": -increase, "Hilfskraft": -increase}
+        while (status == "INFEASIBLE" or status == "UNKNOWN") and sum(num_hidden_employees_per_level.values()) <= 50:
+            num_hidden_employees_per_level = {x: y + increase for (x, y) in num_hidden_employees_per_level.items()}
+            logging.info(f"Trying to solve with {num_hidden_employees_per_level}")
             status = solve_with_constraints_only(
-                employees + FSLoader.get_hidden_employees(tmp), days, shifts, min_staffing
+                employees + FSLoader.get_hidden_employees(num_hidden_employees_per_level), days, shifts, min_staffing
             )
             logging.info(f'Solver returned status = "{status}"')
-            if status == "INFEASIBLE" or status == "UNKNOWN":
-                num_hidden_employees_per_level[level] = i + 1
-                break
-    logging.info(f"Hidden Employee Tight Bound: {num_hidden_employees_per_level}\n")
+        logging.info(f"Hidden Employee Upper Bound: {num_hidden_employees_per_level}\n")
 
-    employees += FSLoader.get_hidden_employees(num_hidden_employees_per_level)
+        # phase 2 - find tight bounds
+        # for each employee level lower the count unti it is tight
+        logging.info("Minimizing Hidden Employee Count Phase 2")
+        for level, value in num_hidden_employees_per_level.items():
+            tmp = num_hidden_employees_per_level
+            for i in range(value - 1, -1, -1):
+                tmp[level] = i
+                logging.info(f"Trying to solve with {tmp}")
+                status = solve_with_constraints_only(
+                    employees + FSLoader.get_hidden_employees(tmp), days, shifts, min_staffing
+                )
+                logging.info(f'Solver returned status = "{status}"')
+                if status == "INFEASIBLE" or status == "UNKNOWN":
+                    num_hidden_employees_per_level[level] = i + 1
+                    break
+        logging.info(f"Hidden Employee Tight Bound: {num_hidden_employees_per_level}\n")
+
+        employees += FSLoader.get_hidden_employees(num_hidden_employees_per_level)
 
     if weights is None:
         weights = {

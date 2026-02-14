@@ -104,6 +104,7 @@ def solve_multiple(unit: int, start: datetime, end: datetime, timeout: int):
         },
     ]
 
+    employees = None
     for weight_id, weights in enumerate(weight_sets):
         click.echo(
             "Creating staff schedule for planning unit "
@@ -118,6 +119,7 @@ def solve_multiple(unit: int, start: datetime, end: datetime, timeout: int):
             timeout=timeout,
             weights=weights,
             weight_id=weight_id,
+            employees=employees,
         )
         loader = FSLoader(unit, start_date=start.date(), end_date=end.date())
 
