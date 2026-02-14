@@ -104,7 +104,7 @@ def setup_case_77() -> tuple[Model, dict[str, dict[str, dict[str, int]]]]:
     loader = FSLoader(case_id=77, start_date=start_date, end_date=end_date)
 
     days = loader.get_days(start_date, end_date)
-    employees = loader.get_employees()
+    employees = loader.get_employees() + FSLoader.get_hidden_employees({"Azubi": 3, "Fachkraft": 3, "Hilfskraft": 3})
     shifts = loader.get_shifts()
     min_staffing = loader.get_min_staffing()
 
