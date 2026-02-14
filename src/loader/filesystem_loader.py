@@ -158,9 +158,30 @@ class FSLoader(Loader):
                 )
             )
 
-        employees += super().get_employees(len(employees))
+        # employees += super().get_employees(len(employees))
+
+        # employees += self.get_hidden_employees({"Azubi":3,"Fachkraft":3,"Hilfskraft":3})
 
         return employees
+
+    @staticmethod
+    def get_hidden_employees(num_hidden_employees_per_level: dict[str, int], start: int = 0):
+        hidden_employees: list[Employee] = []
+        last_id = start
+        for level, num in num_hidden_employees_per_level.items():
+            for new_id in range(last_id, last_id + num):
+                hidden_employees.append(
+                    Employee(
+                        key=new_id,
+                        name="Hidden",
+                        surname=f"{level}{new_id}",
+                        level=level,
+                        type="hidden",
+                    )
+                )
+            last_id += num
+
+        return hidden_employees
 
     # shouldnt this be a static function?
     def get_shifts(self) -> list[Shift]:
