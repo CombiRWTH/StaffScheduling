@@ -13,6 +13,9 @@ from .maximize_wishes import (
 from .minimize_consecutive_night_shifts import (
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
 )
+from .minimize_hidden_employee_count import (
+    MinimizeHiddenEmployeeCountObjective as MinimizeHiddenEmployeeCountObjective,
+)
 from .minimize_hidden_employees import (
     MinimizeHiddenEmployeesObjective as MinimizeHiddenEmployeesObjective,
 )

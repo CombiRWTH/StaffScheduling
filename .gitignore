@@ -10,3 +10,4 @@ site
 .env
 tests/cp/constraints/output_test_all_constraints*
 tests/cp/constraints/mass*
+processed_solutions/*

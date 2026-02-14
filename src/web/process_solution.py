@@ -105,9 +105,12 @@ def collect_day_information(solution: Solution, employees: list[Employee], shift
 
 
 def process_solution(
-    loader: Loader, output_filename: str = "processed_solution.json", solution_file_name: str | None = None
+    loader: Loader,
+    employees: list[Employee],
+    output_filename: str = "processed_solution.json",
+    solution_file_name: str | None = None,
 ):
-    employees = loader.get_employees()
+    # employees = loader.get_employees()
     shifts = loader.get_shifts()
 
     solution_files = loader.load_solution_file_names()
