@@ -1,8 +1,10 @@
 import os
 import shutil
+from datetime import date
 from pprint import pformat
+from typing import cast
 
-from ortools.sat.python.cp_model import CpSolver, CpSolverSolutionCallback
+from ortools.sat.python.cp_model import CpSolver, CpSolverSolutionCallback, IntVar
 from test_free_day_after_night_shift_phase import find_free_day_after_night_shift_phase_violations
 from test_hierarchy_of_intermediate_shifts import find_hierarchy_of_intermediate_shifts_violations
 from test_max_one_shift_per_day import find_max_one_shift_per_day_violations
@@ -37,6 +39,9 @@ from src.cp.objectives import (
     RotateShiftsForwardObjective,
 )
 from src.cp.variables import Variable
+from src.loader import FSLoader
+from src.solution import Solution
+from src.web.process_solution import process_solution
 
 
 def detailed_error_display(
@@ -130,7 +135,7 @@ def test_all_constraints_mass_case(
     model.cpModel.minimize(sum(model.penalties))
     solver: CpSolver = CpSolver()
     solver.parameters.num_workers = 0
-    solver.parameters.max_time_in_seconds = 15
+    solver.parameters.max_time_in_seconds = 30
     solver.parameters.linearization_level = 0
     cb = MultiSolutionCollector(model)
     solver.solve(model.cpModel, cb)
@@ -202,6 +207,15 @@ def test_all_constraints_single_case(
     shifts = model.shifts
 
     model.add_objective(MinimizeHiddenEmployeesObjective(100.0, employees, days, shifts))
+    model.add_objective(FreeDaysNearWeekendObjective(2.0, employees, days))
+    model.add_objective(MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts))
+    model.add_objective(MinimizeHiddenEmployeesObjective(100.0, employees, days, shifts))
+    model.add_objective(MinimizeOvertimeObjective(4.0, employees, days, shifts))
+    model.add_objective(NotTooManyConsecutiveDaysObjective(5, 1.0, employees, days))
+    model.add_objective(RotateShiftsForwardObjective(1.0, employees, days, shifts))
+    model.add_objective(MaximizeEmployeeWishesObjective(3.0, employees, days, shifts))
+    model.add_objective(FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts))
+    model.add_objective(EverySecondWeekendFreeObjective(1.0, employees, days))
 
     model.add_constraint(FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts))
     model.add_constraint(HierarchyOfIntermediateShiftsConstraint(employees, days, shifts))
@@ -218,6 +232,20 @@ def test_all_constraints_single_case(
     solver.parameters.max_time_in_seconds = 30
     solver.parameters.linearization_level = 0
     solver.solve(model.cpModel)
+
+    solution = Solution(
+        {cast(IntVar, variable).name: solver.value(variable) for variable in model.variables},
+        solver.objective_value,
+    )
+    solution_name = "soluting_of_test_all_costraints_single_case"
+    loader = FSLoader(77, start_date=date(2024, 11, 1), end_date=date(2024, 11, 30))
+    loader.write_solution(solution, solution_name)
+    process_solution(
+        loader=loader,
+        employees=employees,
+        output_filename=solution_name + "_processed.json",
+        solution_file_name=solution_name,
+    )
 
     if CpSolver.StatusName(solver) == "INFEASIBLE":
         raise Exception("There is no feasible solution and thus this test is pointless")
