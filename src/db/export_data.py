@@ -71,6 +71,10 @@ def setup_case_folder(planning_unit: int, from_date: date | None = None):
             except Exception as e:
                 logging.error(f"Failed to delete {file_path}. Reason: {e}")
 
+    # If the web folder doesn't exist, create it
+    if not os.path.exists(web_folder_path):
+        os.makedirs(web_folder_path, exist_ok=True)
+
     # Copy all static JSON files from cases_static_jsons to the target directory
     static_jsons_dir = os.path.abspath("./cases_static_jsons")
     if os.path.exists(static_jsons_dir):
