@@ -28,28 +28,47 @@ solver_state: dict[str, bool | str | int] = {
 # ---------------------------------------------------------------------------
 
 
+class TeeStream:
+    """Writes in parallel to the real stdout (console) and to our string buffer (API)."""
+
+    def __init__(self, original_stream, capture_buffer):
+        self.original_stream = original_stream
+        self.capture_buffer = capture_buffer
+
+    def write(self, data):
+        self.original_stream.write(data)  # Print it to the console
+        self.capture_buffer.write(data)  # Save it for the API response
+
+    def flush(self):
+        self.original_stream.flush()
+        self.capture_buffer.flush()
+
+
 @contextmanager
 def capture_console_output():
-    """Context manager to capture both print() output and logging output during the execution of a block of code."""
-    # 1. Capture print() output by redirecting sys.stdout to a StringIO buffer
+    """Captures prints and logs for the API, while still outputting them to the console."""
+
+    # 1. Branch the print output (Tee)
     stdout_capture = io.StringIO()
     old_stdout = sys.stdout
-    sys.stdout = stdout_capture
+    sys.stdout = TeeStream(old_stdout, stdout_capture)
 
-    # 2. Capture logging output by adding a StreamHandler that writes to another StringIO buffer
+    # 2. Branch the logging output
     log_capture = io.StringIO()
-    log_handler = logging.StreamHandler(log_capture)
-    log_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+
+    # We add a SECOND handler instead of replacing the existing one (which logs to the console).
+    api_log_handler = logging.StreamHandler(log_capture)
+    api_log_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+
     root_logger = logging.getLogger()
-    root_logger.addHandler(log_handler)
+    root_logger.addHandler(api_log_handler)
 
     try:
-        # Yield control back to the block of code that will run with this setup
         yield stdout_capture, log_capture
     finally:
-        # Restore original stdout and remove the logging handler
+        # Restore everything back to its normal state
         sys.stdout = old_stdout
-        root_logger.removeHandler(log_handler)
+        root_logger.removeHandler(api_log_handler)
 
 
 # ---------------------------------------------------------------------------
