@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from src.db.export_main import main as fetcher
 from src.db.import_main import main as inserter
-from src.solve import main as run_solver
+from src.services.solve_service import execute_solve, execute_solve_multiple
 
 app = FastAPI(title="Staff Scheduling API")
 
@@ -34,6 +34,12 @@ class SolveRequest(BaseModel):
     start_date: date
     end_date: date
     timeout: int = 300
+
+
+class SolveMultipleRequest(SolveRequest):
+    """Same as :class:`SolveRequest` but used for the
+    ``/solve-multiple`` route for clarity.
+    """
 
 
 # ---------------------------------------------------------------------------
@@ -95,14 +101,13 @@ def solve(request: SolveRequest) -> dict[str, bool | str]:
     result_status = "UNKNOWN"
     success = False
     try:
-        result = run_solver(
+        result_status = execute_solve(
             unit=request.unit,
             start_date=request.start_date,
             end_date=request.end_date,
             timeout=request.timeout,
             status_callback=phase_callback,
         )
-        result_status = result.solution.status_name
         success = result_status in ("FEASIBLE", "OPTIMAL")
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
@@ -110,6 +115,48 @@ def solve(request: SolveRequest) -> dict[str, bool | str]:
         solver_state["is_solving"] = False
         solver_state["phase"] = "idle"
         solver_state["timeout_set_for_phase_3"] = 0
+
+    return {"success": success, "status": result_status}
+
+
+@app.post("/solve-multiple")
+def solve_multiple(request: SolveMultipleRequest) -> dict[str, bool | str]:
+    """
+    Run three solver iterations with different weight configurations.
+
+    The solver state is updated with ``phase`` and ``weight_id`` so
+    the frontend can show which iteration is currently running.
+    Returns ``{"success": True/False, "status": "COMPLETED"}``.
+    """
+    solver_state["is_solving"] = True
+    solver_state["timeout_set_for_phase_3"] = request.timeout
+    solver_state["weight_id"] = 0
+
+    def phase_callback(phase_name: str, weight_id: int) -> None:
+        solver_state["phase"] = phase_name
+        solver_state["weight_id"] = weight_id
+
+    result_status = "UNKNOWN"
+    success = False
+    try:
+        # execute_solve_multiple returns a list of status names
+        statuses = execute_solve_multiple(
+            unit=request.unit,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            timeout=request.timeout,
+            status_callback=phase_callback,
+        )
+        # success if at least one run produced a feasible/optimal result
+        success = any(s in ("FEASIBLE", "OPTIMAL") for s in statuses)
+        result_status = "COMPLETED"
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    finally:
+        solver_state["is_solving"] = False
+        solver_state["phase"] = "idle"
+        solver_state["timeout_set_for_phase_3"] = 0
+        solver_state["weight_id"] = 0
 
     return {"success": success, "status": result_status}
 

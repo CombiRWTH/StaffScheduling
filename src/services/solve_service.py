@@ -108,8 +108,13 @@ def execute_solve_multiple(
     end_date: date,
     timeout: int,
     status_callback: Callable[[str, int], None] | None = None,
-):
+) -> list[str]:
+    """Run the solver three times with different weight presets.
+
+    Returns the list of status names produced by each run (in order).
+    """
     employees = None
+    statuses: list[str] = []
 
     for weight_id, weights in enumerate([DEFAULT_WEIGHTS, WEIGHTS_BALANCED, WEIGHTS_STAFF_FOCUS]):
         logging.info(
@@ -137,6 +142,7 @@ def execute_solve_multiple(
         # Important: We save the found employees for the next iteration,
         # so that phase 1 & 2 go faster!
         employees = result.employees
+        statuses.append(result.solution.status_name)
 
         loader = FSLoader(unit, start_date=start_date, end_date=end_date)
         in_name = f"solution_{unit}_{start_date}-{end_date}_w{weight_id}"
@@ -144,3 +150,5 @@ def execute_solve_multiple(
         process_solution(
             loader=loader, employees=employees, output_filename=in_name + "_processed.json", solution_file_name=in_name
         )
+
+    return statuses
