@@ -176,6 +176,7 @@ class Model:
         solution = Solution(
             {cast(IntVar, variable).name: solver.value(variable) for variable in self._variables},
             solver.objective_value,
+            solver.status_name(),
         )
 
         return solution
