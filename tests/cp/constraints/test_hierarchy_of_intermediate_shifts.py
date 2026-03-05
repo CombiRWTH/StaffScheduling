@@ -25,7 +25,7 @@ def find_hierarchy_of_intermediate_shifts_violations(
     weeks: list[tuple[list[Day], list[Day]]] = [
         (
             [day - timedelta(i) for i in range(1, 6) if day - timedelta(i) >= days[0]],
-            [day, day + timedelta(1) if day - timedelta(1) <= days[-1] else day],
+            [day, day + timedelta(1) if day + timedelta(1) <= days[-1] else day],
         )
         for day in days
         if day.weekday() == 5

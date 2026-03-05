@@ -89,7 +89,7 @@ def solve(unit: int, start: datetime, end: datetime, weight: tuple[str, ...], ti
         f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()} with weights {weights}."
     )
 
-    solver(
+    employees, _, _ = solver(
         unit=unit,
         start_date=start.date(),
         end_date=end.date(),
@@ -101,7 +101,12 @@ def solve(unit: int, start: datetime, end: datetime, weight: tuple[str, ...], ti
 
     solution_name = f"solution_{unit}_{start.date()}-{end.date()}_wdefault"
 
-    process_solution(loader=loader, output_filename=solution_name + "_processed.json", solution_file_name=solution_name)
+    process_solution(
+        loader=loader,
+        employees=employees,
+        output_filename=solution_name + "_processed.json",
+        solution_file_name=solution_name,
+    )
 
 
 @cli.command("solve-multiple")
@@ -155,6 +160,7 @@ def solve_multiple(unit: int, start: datetime, end: datetime, timeout: int):
         },
     ]
 
+    employees = None
     for weight_id, weights in enumerate(weight_sets):
         click.echo(
             "Creating staff schedule for planning unit "
@@ -162,19 +168,22 @@ def solve_multiple(unit: int, start: datetime, end: datetime, timeout: int):
             f"with weight set {weight_id}"
         )
 
-        solver(
+        employees, _, _ = solver(
             unit=unit,
             start_date=start.date(),
             end_date=end.date(),
             timeout=timeout,
             weights=weights,
             weight_id=weight_id,
+            employees=employees,
         )
         loader = FSLoader(unit, start_date=start.date(), end_date=end.date())
 
         in_name = f"solution_{unit}_{start.date()}-{end.date()}_w{weight_id}"
 
-        process_solution(loader=loader, output_filename=in_name + "_processed.json", solution_file_name=in_name)
+        process_solution(
+            loader=loader, employees=employees, output_filename=in_name + "_processed.json", solution_file_name=in_name
+        )
 
 
 @cli.command()

@@ -26,19 +26,18 @@ def find_target_working_time_violations(
                 var = shift_assignment_variables[employee][day][shift]
                 var_keys.append(var)
                 total_hours = total_hours + assignment[var] * shift.duration
+
+        unvavailable_days = set(employee.vacation_days) | set(employee._forbidden_days)  # pyright: ignore[reportPrivateUsage]
+        factor = 1 - len(unvavailable_days) / len(days)
         if (
-            abs(
-                total_hours
-                + employee.hidden_actual_working_time
-                - round(employee.target_working_time * (1 - len(employee.vacation_days) / len(days)))
-            )
-            > 460
+            abs(total_hours + employee.hidden_actual_working_time - round(employee.target_working_time * factor)) > 460
+            and employee.actual_working_time <= employee.target_working_time * factor
         ):
             violations.append(
                 (
                     {cast(IntVar, var).name: assignment[var] for var in var_keys},
                     total_hours + employee.hidden_actual_working_time,
-                    round(employee.target_working_time * (1 - len(employee.vacation_days) / len(days))),
+                    round(employee.target_working_time * factor),
                 )
             )
     return violations

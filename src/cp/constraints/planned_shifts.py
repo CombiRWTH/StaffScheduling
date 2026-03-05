@@ -43,7 +43,7 @@ class PlannedShiftsConstraint(Constraint):
                 # Map the shift code to ID
                 shift_id = Shift.SHIFT_MAPPING.get(shift_code)
                 if shift_id is None:
-                    logging.warning(f"Unknown shift code: {shift_code} for {employee.name}")
+                    # logging.warning(f"Unknown shift code: {shift_code} for {employee.name}")
                     # Case 77 and case 3 both have shifts that trigger this case (e.g. see "Rodriques").
                     # I think this may originate in the fact that all shifts are hardcoded :(
                     # print(f"\n\nUnknown shift code: {shift_code} for {employee.name}\n\n")

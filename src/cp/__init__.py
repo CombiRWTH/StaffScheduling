@@ -45,6 +45,9 @@ from .objectives import (
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
 )
 from .objectives import (
+    MinimizeHiddenEmployeeCountObjective as MinimizeHiddenEmployeeCountObjective,
+)
+from .objectives import (
     MinimizeHiddenEmployeesObjective as MinimizeHiddenEmployeesObjective,
 )
 from .objectives import (
