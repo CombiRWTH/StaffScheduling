@@ -108,7 +108,7 @@ def execute_solve_multiple(
     start_date: date,
     end_date: date,
     timeout: int,
-    status_callback: Callable[[str, int], None] | None = None,
+    status_callback: Callable[[str, int, int], None] | None = None,
 ) -> list[str]:
     """Run the solver three times with different weight presets.
 
@@ -116,8 +116,8 @@ def execute_solve_multiple(
     """
     employees = None
     statuses: list[str] = []
-
-    for weight_id, weights in enumerate([DEFAULT_WEIGHTS, WEIGHTS_BALANCED, WEIGHTS_STAFF_FOCUS]):
+    weight_set = [DEFAULT_WEIGHTS, WEIGHTS_BALANCED, WEIGHTS_STAFF_FOCUS]
+    for weight_id, weights in enumerate(weight_set):
         logging.info(
             f"Creating staff schedule for planning unit {unit} "
             f"from {start_date} to {end_date} with weight set {weight_id}"
@@ -127,7 +127,7 @@ def execute_solve_multiple(
         # and the current iteration (from that loop).
         def internal_phase_callback(phase_name: str, weight_id: int = weight_id) -> None:
             if status_callback is not None:
-                status_callback(phase_name, weight_id)
+                status_callback(phase_name, weight_id, len(weight_set))
 
         result = run_solver(
             unit=unit,
