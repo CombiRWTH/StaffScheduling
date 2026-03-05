@@ -1,46 +1,18 @@
-import json
 from datetime import datetime
-from pathlib import Path
-from typing import Any
 
 import click
 
 from src.db.export_main import main as fetcher
 from src.db.import_main import main as inserter
 from src.loader import FSLoader
-from src.solve import main as solver
+from src.services.solve_service import execute_solve, execute_solve_multiple
 from src.web import App
-from src.web.process_solution import process_solution
 
 
 @click.group()
 def cli():
     """Staff Scheduling CLI"""
     pass
-
-
-DEFAULT_WEIGHTS = {
-    "free_weekend": 2,
-    "consecutive_nights": 2,
-    "hidden": 100,
-    "overtime": 4,
-    "consecutive_days": 1,
-    "rotate": 1,
-    "wishes": 3,
-    "after_night": 3,
-    "second_weekend": 1,
-}
-
-
-def load_weights(unit: int, start: datetime) -> dict[str, Any]:
-    month_year = f"{start.month:02d}_{start.year}"
-    weights_path = Path("cases") / str(unit) / month_year / "weights.json"
-
-    if not weights_path.exists():
-        raise FileNotFoundError(f"Weights file not found: {weights_path}")
-
-    with weights_path.open("r", encoding="utf-8") as f:
-        return json.load(f)
 
 
 @cli.command()
@@ -60,53 +32,24 @@ def solve(unit: int, start: datetime, end: datetime, weight: tuple[str, ...], ti
     END is the end date for the planning period in YYYY-MM-DD format.
     """
 
-    weights: dict[str, Any]
-    try:
-        weights = load_weights(unit, start)
-        click.echo("Loaded weights from JSON.")
-    except FileNotFoundError:
-        weights = DEFAULT_WEIGHTS.copy()
-        click.echo(
-            "Weights file not found – using default weights instead.",
-            err=True,
-        )
-
+    # Parse the CLI weight overrides into a dictionary
+    weight_overrides = {}
     for w in weight:
         try:
             key, value = w.split("=")
-            value = int(value)
+            weight_overrides[key] = int(value)
         except ValueError:
             raise click.ClickException(f"Invalid --weight format: '{w}'. Use key=value.") from None
 
-        if key not in weights:
-            raise click.ClickException(
-                f"Unknown weight key '{key}'. Valid keys are: {', '.join(sorted(weights.keys()))}"
-            )
+    click.echo(f"Creating staff schedule for planning unit {unit}...")
 
-        weights[key] = value
-
-    click.echo(
-        f"Creating staff schedule for planning unit {unit} from {start.date()} to {end.date()} with weights {weights}."
-    )
-
-    employees, _, _ = solver(
-        unit=unit,
-        start_date=start.date(),
-        end_date=end.date(),
-        timeout=timeout,
-        weights=weights,
-    )
-
-    loader = FSLoader(unit, start_date=start.date(), end_date=end.date())
-
-    solution_name = f"solution_{unit}_{start.date()}-{end.date()}_wdefault"
-
-    process_solution(
-        loader=loader,
-        employees=employees,
-        output_filename=solution_name + "_processed.json",
-        solution_file_name=solution_name,
-    )
+    try:
+        execute_solve(
+            unit=unit, start_date=start.date(), end_date=end.date(), timeout=timeout, weight_overrides=weight_overrides
+        )
+    except ValueError as e:
+        # Catch the "Unknown weight key" error from the service
+        raise click.ClickException(str(e)) from None
 
 
 @cli.command("solve-multiple")
@@ -124,66 +67,13 @@ def solve_multiple(unit: int, start: datetime, end: datetime, timeout: int):
 
     END is the end date for the planning period in YYYY-MM-DD format.
     """
-    weight_sets = [
-        {
-            "free_weekend": 2,
-            "consecutive_nights": 2,
-            "hidden": 100,
-            "overtime": 4,
-            "consecutive_days": 1,
-            "rotate": 1,
-            "wishes": 3,
-            "after_night": 3,
-            "second_weekend": 1,
-        },
-        {
-            "free_weekend": 5,
-            "consecutive_nights": 1,
-            "hidden": 50,
-            "overtime": 10,
-            "consecutive_days": 1,
-            "rotate": 2,
-            "wishes": 3,
-            "after_night": 1,
-            "second_weekend": 1,
-        },
-        {
-            "free_weekend": 0.1,
-            "consecutive_nights": 5,
-            "hidden": 80,
-            "overtime": 1,
-            "consecutive_days": 2,
-            "rotate": 0,
-            "wishes": 5,
-            "after_night": 3,
-            "second_weekend": 2,
-        },
-    ]
 
-    employees = None
-    for weight_id, weights in enumerate(weight_sets):
-        click.echo(
-            "Creating staff schedule for planning unit "
-            f"{unit} from {start.date()} to {end.date()} "
-            f"with weight set {weight_id}"
-        )
+    def cli_callback(phase_name: str, weight_id: int):
+        click.echo(f"  [Weight Set {weight_id}] Phase: {phase_name}")
 
-        employees, _, _ = solver(
-            unit=unit,
-            start_date=start.date(),
-            end_date=end.date(),
-            timeout=timeout,
-            weights=weights,
-            weight_id=weight_id,
-            employees=employees,
-        )
-        loader = FSLoader(unit, start_date=start.date(), end_date=end.date())
+    click.echo(f"Starting multiple solves for planning unit {unit}...")
 
-        in_name = f"solution_{unit}_{start.date()}-{end.date()}_w{weight_id}"
-
-        process_solution(
-            loader=loader, employees=employees, output_filename=in_name + "_processed.json", solution_file_name=in_name
-        )
+    execute_solve_multiple(unit, start.date(), end.date(), timeout, cli_callback)
 
 
 @cli.command()
