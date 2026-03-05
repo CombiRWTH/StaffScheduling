@@ -94,6 +94,7 @@ def solve(request: SolveRequest) -> dict[str, bool | str]:
     """
     solver_state["is_solving"] = True
     solver_state["timeout_set_for_phase_3"] = request.timeout
+    solver_state["weight_id"] = 0
 
     def phase_callback(phase_name: str) -> None:
         solver_state["phase"] = phase_name
@@ -115,6 +116,7 @@ def solve(request: SolveRequest) -> dict[str, bool | str]:
         solver_state["is_solving"] = False
         solver_state["phase"] = "idle"
         solver_state["timeout_set_for_phase_3"] = 0
+        solver_state["weight_id"] = 0
 
     return {"success": success, "status": result_status}
 
