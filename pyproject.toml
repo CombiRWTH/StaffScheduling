@@ -16,6 +16,7 @@ dependencies = [
     "SQLAlchemy>=2.0.41",
     "pytest>=9.0.1",
     "uvicorn>=0.34.0",
+    "dotenv>=0.9.9",
 ]
 
 [dependency-groups]

@@ -1,11 +1,14 @@
 from datetime import date
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from src.db.export_main import main as fetcher
 from src.db.import_main import main as inserter
 from src.services.solve_service import execute_solve, execute_solve_multiple
+
+load_dotenv()
 
 app = FastAPI(title="Staff Scheduling API")
 
