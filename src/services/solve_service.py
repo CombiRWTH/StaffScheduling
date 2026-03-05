@@ -88,16 +88,17 @@ def execute_solve(
         status_callback=status_callback,
     )
 
-    # 3. Write the solution to files for the web frontend
-    loader = FSLoader(unit, start_date=start_date, end_date=end_date)
-    solution_name = f"solution_{unit}_{start_date}-{end_date}_wdefault"
+    # 3. Write the solution to files for the web frontend (only when a solution was found)
+    if result.solution.status_name in ("FEASIBLE", "OPTIMAL"):
+        loader = FSLoader(unit, start_date=start_date, end_date=end_date)
+        solution_name = f"solution_{unit}_{start_date}-{end_date}_wdefault"
 
-    process_solution(
-        loader=loader,
-        employees=result.employees,
-        output_filename=solution_name + "_processed.json",
-        solution_file_name=solution_name,
-    )
+        process_solution(
+            loader=loader,
+            employees=result.employees,
+            output_filename=solution_name + "_processed.json",
+            solution_file_name=solution_name,
+        )
 
     return result.solution.status_name
 
@@ -144,11 +145,15 @@ def execute_solve_multiple(
         employees = result.employees
         statuses.append(result.solution.status_name)
 
-        loader = FSLoader(unit, start_date=start_date, end_date=end_date)
-        in_name = f"solution_{unit}_{start_date}-{end_date}_w{weight_id}"
+        if result.solution.status_name in ("FEASIBLE", "OPTIMAL"):
+            loader = FSLoader(unit, start_date=start_date, end_date=end_date)
+            in_name = f"solution_{unit}_{start_date}-{end_date}_w{weight_id}"
 
-        process_solution(
-            loader=loader, employees=employees, output_filename=in_name + "_processed.json", solution_file_name=in_name
-        )
+            process_solution(
+                loader=loader,
+                employees=employees,
+                output_filename=in_name + "_processed.json",
+                solution_file_name=in_name,
+            )
 
     return statuses
