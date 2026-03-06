@@ -3,6 +3,7 @@ import logging
 import sys
 from contextlib import contextmanager
 from datetime import date
+from typing import Any
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -80,6 +81,7 @@ class DBRequest(BaseModel):
     planning_unit: int
     from_date: date
     till_date: date
+    solution_data: dict[str, Any] | None = None
 
 
 class SolveRequest(BaseModel):
@@ -122,10 +124,23 @@ def insert(request: DBRequest) -> dict[str, bool | str]:
     """Insert a previously generated solution into the TimeOffice database."""
     with capture_console_output() as (stdout, logs):
         try:
-            inserter(request.planning_unit, request.from_date, request.till_date, cli_input="i")
+            inserter(
+                request.planning_unit,
+                request.from_date,
+                request.till_date,
+                cli_input="i",
+                data=request.solution_data,
+            )
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return {"success": True, "log": logs.getvalue(), "stdout": stdout.getvalue()}
+    log_output = logs.getvalue()
+    stdout_output = stdout.getvalue()
+    return {
+        "success": True,
+        "log": log_output,
+        "stdout": stdout_output,
+        "console_output": f"{stdout_output}{log_output}",
+    }
 
 
 @app.post("/delete")
@@ -133,14 +148,27 @@ def delete(request: DBRequest) -> dict[str, bool | str]:
     """Delete a previously inserted solution from the TimeOffice database."""
     with capture_console_output() as (stdout, logs):
         try:
-            inserter(request.planning_unit, request.from_date, request.till_date, cli_input="d")
+            inserter(
+                request.planning_unit,
+                request.from_date,
+                request.till_date,
+                cli_input="d",
+                data=request.solution_data,
+            )
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return {"success": True, "log": logs.getvalue(), "stdout": stdout.getvalue()}
+    log_output = logs.getvalue()
+    stdout_output = stdout.getvalue()
+    return {
+        "success": True,
+        "log": log_output,
+        "stdout": stdout_output,
+        "console_output": f"{stdout_output}{log_output}",
+    }
 
 
 @app.post("/solve")
-def solve(request: SolveRequest) -> dict[str, bool | str]:
+def solve(request: SolveRequest) -> dict[str, bool | str | dict[str, Any] | None]:
     """
     Run the staff scheduling solver.
 
@@ -155,16 +183,19 @@ def solve(request: SolveRequest) -> dict[str, bool | str]:
         solver_state["phase"] = phase_name
 
     result_status = "UNKNOWN"
+    solution_data: dict[str, Any] | None = None
     success = False
     with capture_console_output() as (stdout, logs):
         try:
-            result_status = execute_solve(
+            result = execute_solve(
                 unit=request.unit,
                 start_date=request.start_date,
                 end_date=request.end_date,
                 timeout=request.timeout,
                 status_callback=phase_callback,
             )
+            result_status = result["status"]
+            solution_data = result["solution_data"]
             success = result_status in ("FEASIBLE", "OPTIMAL")
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
@@ -175,11 +206,18 @@ def solve(request: SolveRequest) -> dict[str, bool | str]:
     log_output = logs.getvalue()
     stdout_output = stdout.getvalue()
 
-    return {"success": success, "status": result_status, "log": log_output, "stdout": stdout_output}
+    return {
+        "success": success,
+        "status": result_status,
+        "solution_data": solution_data,
+        "log": log_output,
+        "stdout": stdout_output,
+        "console_output": f"{stdout_output}{log_output}",
+    }
 
 
 @app.post("/solve-multiple")
-def solve_multiple(request: SolveMultipleRequest) -> dict[str, bool | list[str] | str]:
+def solve_multiple(request: SolveMultipleRequest) -> dict[str, bool | list[dict[str, Any]] | str]:
     """
     Run three solver iterations with different weight configurations.
 
@@ -197,12 +235,12 @@ def solve_multiple(request: SolveMultipleRequest) -> dict[str, bool | list[str] 
         solver_state["weight_id"] = weight_id
         solver_state["total_weights"] = total_weights
 
-    result_status = []  # Collect statuses from all iterations
+    results: list[dict[str, Any]] = []
     success = False
     with capture_console_output() as (stdout, logs):
         try:
-            # execute_solve_multiple returns a list of status names
-            statuses = execute_solve_multiple(
+            # execute_solve_multiple returns metadata + solution data per run
+            solve_results = execute_solve_multiple(
                 unit=request.unit,
                 start_date=request.start_date,
                 end_date=request.end_date,
@@ -210,8 +248,8 @@ def solve_multiple(request: SolveMultipleRequest) -> dict[str, bool | list[str] 
                 status_callback=phase_callback,
             )
             # success if at least one run produced a feasible/optimal result
-            success = any(s in ("FEASIBLE", "OPTIMAL") for s in statuses)
-            result_status = statuses
+            success = any(r["status"] in ("FEASIBLE", "OPTIMAL") for r in solve_results)
+            results = [dict(r) for r in solve_results]
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
         finally:
@@ -221,7 +259,15 @@ def solve_multiple(request: SolveMultipleRequest) -> dict[str, bool | list[str] 
             solver_state["weight_id"] = 0
             solver_state["total_weights"] = 0
 
-    return {"success": success, "statuses": result_status, "log": logs.getvalue(), "stdout": stdout.getvalue()}
+    log_output = logs.getvalue()
+    stdout_output = stdout.getvalue()
+    return {
+        "success": success,
+        "results": results,
+        "log": log_output,
+        "stdout": stdout_output,
+        "console_output": f"{stdout_output}{log_output}",
+    }
 
 
 # ---------------------------------------------------------------------------

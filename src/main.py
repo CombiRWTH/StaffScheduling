@@ -68,8 +68,8 @@ def solve_multiple(unit: int, start: datetime, end: datetime, timeout: int):
     END is the end date for the planning period in YYYY-MM-DD format.
     """
 
-    def cli_callback(phase_name: str, weight_id: int):
-        click.echo(f"  [Weight Set {weight_id}] Phase: {phase_name}")
+    def cli_callback(phase_name: str, weight_id: int, total_weights: int):
+        click.echo(f"  [Weight Set {weight_id + 1}/{total_weights}] Phase: {phase_name}")
 
     click.echo(f"Starting multiple solves for planning unit {unit}...")
 

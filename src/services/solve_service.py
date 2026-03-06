@@ -3,7 +3,7 @@ import logging
 from collections.abc import Callable
 from datetime import date
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 from src.loader import FSLoader
 from src.solve import main as run_solver
@@ -46,6 +46,17 @@ WEIGHTS_STAFF_FOCUS = {
 }
 
 
+class SolveResult(TypedDict):
+    status: str
+    solution_data: dict[str, Any] | None
+
+
+class SolveMultipleResult(TypedDict):
+    weight_id: int
+    status: str
+    solution_data: dict[str, Any] | None
+
+
 def load_weights(unit: int, start_date: date) -> dict[str, Any]:
     """Loads weights from the JSON file or returns defaults if not found."""
     month_year = f"{start_date.month:02d}_{start_date.year}"
@@ -66,7 +77,7 @@ def execute_solve(
     timeout: int,
     weight_overrides: dict[str, int] | None = None,
     status_callback: Callable[[str], None] | None = None,
-) -> str:
+) -> SolveResult:
     """Executes a single solver run and processes the solution."""
 
     # 1. Load weights from JSON (or defaults) and apply any overrides
@@ -89,18 +100,19 @@ def execute_solve(
     )
 
     # 3. Write the solution to files for the web frontend (only when a solution was found)
+    solution_data: dict[str, Any] | None = None
     if result.solution.status_name in ("FEASIBLE", "OPTIMAL"):
         loader = FSLoader(unit, start_date=start_date, end_date=end_date)
         solution_name = f"solution_{unit}_{start_date}-{end_date}_wdefault"
 
-        process_solution(
+        solution_data = process_solution(
             loader=loader,
             employees=result.employees,
             output_filename=solution_name + "_processed.json",
             solution_file_name=solution_name,
         )
 
-    return result.solution.status_name
+    return {"status": result.solution.status_name, "solution_data": solution_data}
 
 
 def execute_solve_multiple(
@@ -109,13 +121,13 @@ def execute_solve_multiple(
     end_date: date,
     timeout: int,
     status_callback: Callable[[str, int, int], None] | None = None,
-) -> list[str]:
+) -> list[SolveMultipleResult]:
     """Run the solver three times with different weight presets.
 
-    Returns the list of status names produced by each run (in order).
+    Returns metadata and solution payload for each run (in order).
     """
     employees = None
-    statuses: list[str] = []
+    results: list[SolveMultipleResult] = []
     weight_set = [DEFAULT_WEIGHTS, WEIGHTS_BALANCED, WEIGHTS_STAFF_FOCUS]
     for weight_id, weights in enumerate(weight_set):
         logging.info(
@@ -143,17 +155,20 @@ def execute_solve_multiple(
         # Important: We save the found employees for the next iteration,
         # so that phase 1 & 2 go faster!
         employees = result.employees
-        statuses.append(result.solution.status_name)
+        status = result.solution.status_name
+        solution_data: dict[str, Any] | None = None
 
-        if result.solution.status_name in ("FEASIBLE", "OPTIMAL"):
+        if status in ("FEASIBLE", "OPTIMAL"):
             loader = FSLoader(unit, start_date=start_date, end_date=end_date)
             in_name = f"solution_{unit}_{start_date}-{end_date}_w{weight_id}"
 
-            process_solution(
+            solution_data = process_solution(
                 loader=loader,
                 employees=employees,
                 output_filename=in_name + "_processed.json",
                 solution_file_name=in_name,
             )
 
-    return statuses
+        results.append({"weight_id": weight_id, "status": status, "solution_data": solution_data})
+
+    return results

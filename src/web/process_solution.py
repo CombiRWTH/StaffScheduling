@@ -3,6 +3,7 @@ import os
 from collections import defaultdict
 from datetime import date, datetime
 from re import match
+from typing import Any
 
 from ..employee import Employee
 from ..loader import Loader
@@ -110,7 +111,7 @@ def process_solution(
     employees: list[Employee],
     output_filename: str = "processed_solution.json",
     solution_file_name: str | None = None,
-):
+) -> dict[str, Any]:
     # employees = loader.get_employees()
     shifts = loader.get_shifts()
 
@@ -146,3 +147,4 @@ def process_solution(
         json.dump(data, f, indent=4, default=str)
 
     print(f"Exported solution data to {output_filename}")
+    return data
