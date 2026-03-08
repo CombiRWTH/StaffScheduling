@@ -6,7 +6,7 @@ from datetime import date
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from src.db.export_main import main as fetcher
@@ -15,27 +15,7 @@ from src.services.solve_service import execute_solve, execute_solve_multiple
 
 load_dotenv()
 
-# --- logging configuration ------------------------------------------------
-# ensure basic configuration so that middleware and other code can log
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
-
 app = FastAPI(title="Staff Scheduling API")
-
-
-# middleware to log incoming requests and errors
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    logging.info(f"Incoming request: {request.method} {request.url} with body: {await request.body()}")
-    try:
-        response = await call_next(request)
-        logging.info(f"Completed response {response.status_code} for {request.method} {request.url}")
-        return response
-    except Exception as exc:
-        logging.exception(f"Error processing request {request.method} {request.url}: {exc}")
-        raise
 
 
 # Global state tracking the current solver phase.
