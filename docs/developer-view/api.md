@@ -72,7 +72,8 @@ Exports planning data from TimeOffice to local case JSON files.
 {
   "success": true,
   "log": "...captured log output...",
-  "stdout": "...captured console output..."
+  "stdout": "...captured console output...",
+  "console_output": "...combined stdout+log..."
 }
 ```
 
