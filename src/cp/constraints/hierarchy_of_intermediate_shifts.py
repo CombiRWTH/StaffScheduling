@@ -4,6 +4,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
+from ..constants import WEEKEND_DAYS
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables, Variable
 from .constraint import Constraint
 
@@ -63,7 +64,7 @@ class HierarchyOfIntermediateShiftsConstraint(Constraint):
             weekends: list[Day] = []
 
             for day in week_days:
-                if day.isoweekday() in [6, 7]:  # Saturday or Sunday
+                if day.isoweekday() in WEEKEND_DAYS:
                     weekends.append(day)
                 else:
                     weekdays.append(day)
