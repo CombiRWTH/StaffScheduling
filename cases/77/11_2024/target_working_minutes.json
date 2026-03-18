@@ -1,7 +1,7 @@
 {
   "employees": [
     {
-      "actual": 1920.0,
+      "actual": 0.0,
       "firstname": "Sandra",
       "key": 459,
       "name": "Shoemake",
@@ -22,18 +22,18 @@
       "target": 6930.0
     },
     {
-      "actual": 8765.0,
+      "actual": 0.0,
       "firstname": "Nele",
       "key": 822,
       "name": "Sewell",
-      "target": 9240.0
+      "target": 0.0
     },
     {
-      "actual": 3955.0,
+      "actual": 0.0,
       "firstname": "Liselotte",
       "key": 839,
       "name": "S\u00e4uffert",
-      "target": 4620.0
+      "target": 0.0
     },
     {
       "actual": 2079.0,
@@ -43,7 +43,7 @@
       "target": 8316.0
     },
     {
-      "actual": 460.0,
+      "actual": 0.0,
       "firstname": "Ingbert",
       "key": 917,
       "name": "Catoe",
@@ -85,7 +85,7 @@
       "target": 5544.0
     },
     {
-      "actual": 462.0,
+      "actual": 0.0,
       "firstname": "Constance",
       "key": 1230,
       "name": "Palacio",
@@ -113,7 +113,7 @@
       "target": 9240.0
     },
     {
-      "actual": 460.0,
+      "actual": 0.0,
       "firstname": "Eike",
       "key": 3868,
       "name": "Vanfleet",
@@ -141,11 +141,11 @@
       "target": 9240.0
     },
     {
-      "actual": 1.0,
+      "actual": 0.0,
       "firstname": "Heinz",
       "key": 6475,
       "name": "Binford",
-      "target": 2.0
+      "target": 0.0
     },
     {
       "actual": 0.0,
@@ -176,7 +176,7 @@
       "target": 9240.0
     },
     {
-      "actual": 460.0,
+      "actual": 0.0,
       "firstname": "Trude",
       "key": 6836,
       "name": "Valentino",
@@ -190,7 +190,7 @@
       "target": 9360.0
     },
     {
-      "actual": 8950.0,
+      "actual": 0.0,
       "firstname": "Marcus",
       "key": 7496,
       "name": "Demarco",
@@ -204,49 +204,49 @@
       "target": 9240.0
     },
     {
-      "actual": 920.0,
+      "actual": 0.0,
       "firstname": "Sieghardt",
       "key": 7741,
       "name": "Tharp",
-      "target": 960.0
+      "target": 0.0
     },
     {
-      "actual": 2300.0,
+      "actual": 0.0,
       "firstname": "Kilian",
       "key": 7752,
       "name": "Rodriques",
       "target": 9240.0
     },
     {
-      "actual": 2310.0,
+      "actual": 0.0,
       "firstname": "Julia",
       "key": 7770,
       "name": "Yeh",
       "target": 9240.0
     },
     {
-      "actual": 2310.0,
+      "actual": 0.0,
       "firstname": "Burkhild",
       "key": 7796,
       "name": "Hertzler",
       "target": 9240.0
     },
     {
-      "actual": 2310.0,
+      "actual": 0.0,
       "firstname": "Karena",
       "key": 7835,
       "name": "Driggers",
       "target": 9240.0
     },
     {
-      "actual": 460.0,
+      "actual": 0.0,
       "firstname": "Gertraute",
       "key": 7848,
       "name": "Winters",
       "target": 9240.0
     },
     {
-      "actual": 1386.0,
+      "actual": 0.0,
       "firstname": "Janett",
       "key": 7877,
       "name": "Staggs",
