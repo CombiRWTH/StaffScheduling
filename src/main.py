@@ -22,8 +22,7 @@ def cli():
 @click.option("--weight", multiple=True, help="Override weights")
 @click.option("--timeout", default=300, help="Timeout in seconds for the solver")
 def solve(unit: int, start: datetime, end: datetime, weight: tuple[str, ...], timeout: int):
-    """
-    Solve the scheduling problem for a given case and start date.
+    """Solve the scheduling problem for a given case and start date.
 
     UNIT is the case number to solve.
 
@@ -33,7 +32,7 @@ def solve(unit: int, start: datetime, end: datetime, weight: tuple[str, ...], ti
     """
 
     # Parse the CLI weight overrides into a dictionary
-    weight_overrides = {}
+    weight_overrides: dict[str, int] = {}
     for w in weight:
         try:
             key, value = w.split("=")

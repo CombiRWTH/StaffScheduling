@@ -3,7 +3,7 @@ import logging
 import sys
 from contextlib import contextmanager
 from datetime import date
-from typing import Any
+from typing import Any, TextIO
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -34,15 +34,16 @@ solver_state: dict[str, bool | str | int] = {
 class TeeStream:
     """Writes in parallel to the real stdout (console) and to our string buffer (API)."""
 
-    def __init__(self, original_stream, capture_buffer):
-        self.original_stream = original_stream
-        self.capture_buffer = capture_buffer
+    def __init__(self, original_stream: TextIO, capture_buffer: io.StringIO) -> None:
+        self.original_stream: TextIO = original_stream
+        self.capture_buffer: io.StringIO = capture_buffer
 
-    def write(self, data):
+    def write(self, data: str) -> int:
         self.original_stream.write(data)  # Print it to the console
         self.capture_buffer.write(data)  # Save it for the API response
+        return len(data)
 
-    def flush(self):
+    def flush(self) -> None:
         self.original_stream.flush()
         self.capture_buffer.flush()
 
