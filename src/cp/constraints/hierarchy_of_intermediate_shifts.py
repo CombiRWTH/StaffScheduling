@@ -70,20 +70,28 @@ class HierarchyOfIntermediateShiftsConstraint(Constraint):
 
             if weekdays and weekends:
                 # Add variables that represent max(weekdays), min(weekdays), max(weekends)
-                max_weekday = model.NewIntVar(0, len(self._employees), f"max_weekday_{week_days[0].isocalendar().week}")
-                min_weekday = model.NewIntVar(0, len(self._employees), f"min_weekday_{week_days[0].isocalendar().week}")
-                max_weekend = model.NewIntVar(0, len(self._employees), f"max_weekend_{week_days[0].isocalendar().week}")
-                min_weekend = model.NewIntVar(0, len(self._employees), f"min_weekend_{week_days[0].isocalendar().week}")
+                max_weekday = model.new_int_var(
+                    0, len(self._employees), f"max_weekday_{week_days[0].isocalendar().week}"
+                )
+                min_weekday = model.new_int_var(
+                    0, len(self._employees), f"min_weekday_{week_days[0].isocalendar().week}"
+                )
+                max_weekend = model.new_int_var(
+                    0, len(self._employees), f"max_weekend_{week_days[0].isocalendar().week}"
+                )
+                min_weekend = model.new_int_var(
+                    0, len(self._employees), f"min_weekend_{week_days[0].isocalendar().week}"
+                )
 
-                model.AddMaxEquality(max_weekday, [day_intermediate_shift_counts[day] for day in weekdays])
-                model.AddMinEquality(min_weekday, [day_intermediate_shift_counts[day] for day in weekdays])
-                model.AddMaxEquality(max_weekend, [day_intermediate_shift_counts[day] for day in weekends])
-                model.AddMinEquality(min_weekend, [day_intermediate_shift_counts[day] for day in weekends])
+                model.add_max_equality(max_weekday, [day_intermediate_shift_counts[day] for day in weekdays])
+                model.add_min_equality(min_weekday, [day_intermediate_shift_counts[day] for day in weekdays])
+                model.add_max_equality(max_weekend, [day_intermediate_shift_counts[day] for day in weekends])
+                model.add_min_equality(min_weekend, [day_intermediate_shift_counts[day] for day in weekends])
 
                 # Guarantee that shifts on weekdays and weekends are assigned evenly
-                model.Add(max_weekday - min_weekday <= 1)
-                model.Add(max_weekend - min_weekend <= 1)
+                model.add(max_weekday - min_weekday <= 1)
+                model.add(max_weekend - min_weekend <= 1)
 
                 # Enforce the hierarchy: min(weekdays) <= max(weekends) + 1
-                model.Add(max_weekday <= min_weekend + 1)
-                model.Add(min_weekday >= max_weekend)
+                model.add(max_weekday <= min_weekend + 1)
+                model.add(min_weekday >= max_weekend)
