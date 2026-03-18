@@ -173,9 +173,17 @@ class Model:
         print(f"  - objective value: {solver.objective_value}")
         print(f"  - info           : {solver.solution_info()}")
 
+        status_name = solver.status_name()
+
+        if status_name in ("FEASIBLE", "OPTIMAL"):
+            variables = {cast(IntVar, variable).name: solver.value(variable) for variable in self._variables}
+        else:
+            variables = {}
+
         solution = Solution(
-            {cast(IntVar, variable).name: solver.value(variable) for variable in self._variables},
+            variables,
             solver.objective_value,
+            status_name,
         )
 
         return solution
