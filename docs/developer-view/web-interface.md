@@ -23,7 +23,7 @@ StaffSchedulingWeb is a [Next.js](https://nextjs.org/) application (App Router) 
 ### Architecture at a Glance
 
 ```
-┌──────────────────────────────┐       HTTP / JSON        ┌──────────────────────────┐
+┌──────────────────────────────┐       HTTP / JSON         ┌──────────────────────────┐
 │   StaffSchedulingWeb         │  ◄──────────────────────► │   StaffScheduling API    │
 │   (Next.js Frontend)         │    /solve, /status, ...   │   (FastAPI Backend)      │
 │   Port 3000                  │                           │   Port 8000              │
