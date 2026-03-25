@@ -79,9 +79,12 @@ src/db/
 └── import_solution.py       # Import scheduling solutions
 ```
 
-## Web Interface (`src/web/`)
+## Legacy Web Interface (`src/web/`)
 
-Web-based user interface:
+!!! warning "Superseded by StaffSchedulingWeb"
+    The Flask-based visualization in `src/web/` was used during early development and has been **replaced by [StaffSchedulingWeb](./web-interface.md)** — a full-featured Next.js frontend that covers the entire scheduling workflow.
+
+The original, minimal web visualization:
 
 ```
 src/web/
@@ -90,6 +93,8 @@ src/web/
 └── templates/
     └── index.html           # Main web interface template
 ```
+
+For the current, production-ready web interface, see the **[StaffSchedulingWeb documentation](./web-interface.md)**.
 
 ## Test Cases (`cases/`)
 

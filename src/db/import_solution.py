@@ -36,20 +36,25 @@ def get_correct_path(filename: str, planning_unit: int, from_date: date | None =
     return output_path
 
 
-def load_json_files(start_date: date, end_date: date, planning_unit: int):
+def load_json_files(start_date: date, end_date: date, planning_unit: int, solution_data: dict[str, Any] | None = None):
     """Load the needed Employee file and the corresponding solution file,
-    which includes the shifts references to employees."""
-    sol_folder = "found_solutions"
+    which includes the shifts references to employees.
+    If `solution_data` is provided directly (e.g. via API),
+    it will be used instead of loading from file (legacy/CLI path)."""
 
-    # Build full path to the generated solution file for the selected planning unit and date range
-    solution_dir = os.path.join("./", sol_folder)
-    solution_file = os.path.join(solution_dir, f"solution_{planning_unit}_{start_date}-{end_date}.json")
+    data = solution_data
+    if solution_data is None:
+        sol_folder = "found_solutions"
+
+        # Build full path to the generated solution file for the selected planning unit and date range
+        solution_dir = os.path.join("./", sol_folder)
+        solution_file = os.path.join(solution_dir, f"solution_{planning_unit}_{start_date}-{end_date}.json")
+
+        with open(solution_file, encoding="utf-8") as f:
+            data = json.load(f)
 
     # employees.json is stored in the planning unit folder and in the month subfolder
     employee_file = get_correct_path("employees.json", planning_unit, start_date)
-
-    with open(solution_file, encoding="utf-8") as f:
-        data = json.load(f)
     with open(employee_file, encoding="utf-8") as f:
         emp_data = json.load(f)["employees"]
     return data, emp_data

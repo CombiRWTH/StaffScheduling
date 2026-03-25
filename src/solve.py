@@ -1,6 +1,6 @@
 import logging
 import time
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from datetime import date
 
 from ortools.sat.python.cp_model import CpSolver
@@ -32,12 +32,38 @@ from src.day import Day
 from src.employee import Employee
 from src.loader import FSLoader
 from src.shift import Shift
+from src.solution import Solution
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
+class SolveResult:
+    """Return type of main() that supports both 3-tuple unpacking (for CLI) and .solution attribute access."""
+
+    def __init__(
+        self,
+        employees: list[Employee],
+        days: list[Day],
+        shifts: list[Shift],
+        solution: Solution,
+    ) -> None:
+        self.employees = employees
+        self.days = days
+        self.shifts = shifts
+        self.solution = solution
+
+    def __iter__(self):
+        yield self.employees
+        yield self.days
+        yield self.shifts
+
+
 def solve_with_constraints_only(
-    employees: list[Employee], days: list[Day], shifts: list[Shift], min_staffing: dict[str, dict[str, dict[str, int]]]
+    employees: list[Employee],
+    days: list[Day],
+    shifts: list[Shift],
+    min_staffing: dict[str, dict[str, dict[str, int]]],
+    status_callback: Callable[[str], None] | None = None,
 ) -> str:
     constraints = [
         FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts),
@@ -76,7 +102,8 @@ def main(
     weights: Mapping[str, int | float] | None = None,
     weight_id: int | None = None,
     employees: list[Employee] | None = None,
-):
+    status_callback: Callable[[str], None] | None = None,
+) -> SolveResult:
     loader = FSLoader(unit, start_date=start_date, end_date=end_date)
     days = loader.get_days(start_date, end_date)
     shifts = loader.get_shifts()
@@ -89,6 +116,8 @@ def main(
         # phase 1 - find an upper bound
         # increase the hidden employee count raptitly for all classes simultaniously
         logging.info("Minimizing Hidden Employee Count Phase 1")
+        if status_callback is not None:
+            status_callback("phase_1_upper_bound")
         status = "INFEASIBLE"
         increase = 5
         num_hidden_employees_per_level = {"Azubi": -increase, "Fachkraft": -increase, "Hilfskraft": -increase}
@@ -104,6 +133,8 @@ def main(
         # phase 2 - find tight bounds
         # for each employee level lower the count unti it is tight
         logging.info("Minimizing Hidden Employee Count Phase 2")
+        if status_callback is not None:
+            status_callback("phase_2_tight_bound")
         for level, value in num_hidden_employees_per_level.items():
             tmp = num_hidden_employees_per_level
             for i in range(value - 1, -1, -1):
@@ -174,9 +205,11 @@ def main(
     for objective in objectives:
         model.add_objective(objective)
 
+    if status_callback is not None:
+        status_callback("phase_3_optimizing")
     solution = model.solve(timeout)
     wid = weight_id if weight_id is not None else "default"
     solution_name = f"solution_{unit}_{start_date}-{end_date}_w{wid}"
     loader.write_solution(solution, solution_name)
 
-    return employees, days, shifts
+    return SolveResult(employees, days, shifts, solution)

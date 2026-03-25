@@ -1,4 +1,4 @@
-# Documentation - User View
+# Documentation - Developer View
 The developer view is a extension of the user view. It provides all necessary information to use our application, to understand how we used Google's OR Tools to solve the problem of automatic staff scheduling, to dive deep into the structure of the TimeOffice database and to get an overview of our codebase before you start contributing.
 
 Get right into it:
@@ -10,3 +10,4 @@ Get right into it:
     - [querying](./database-overview/database-queries.md)
     - [tables](./database-overview/database-tables.md)
 - Start Contributing: [Codebase Overview](./codebase-overview.md)
+- Web Interface: [StaffSchedulingWeb](./web-interface.md) — a modern, browser-based frontend for the solver

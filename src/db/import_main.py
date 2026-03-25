@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import date
+from typing import Any
 
 from . import export_data, import_solution
 from .connection_setup import get_db_engine
@@ -11,6 +12,7 @@ def main(
     from_date: date = date(2024, 11, 1),  # Planning period start date
     till_date: date = date(2024, 11, 30),  # Planning period end date
     cli_input: str | None = None,  # Optional user input for action type
+    data: dict[str, Any] | None = None,
 ):
     """Sets up a basic connection to the TimeOffice database and imports the solution found by the algorithm."""
     engine = get_db_engine()
@@ -18,13 +20,12 @@ def main(
     # Load base data of generated plan
     base_data = export_data.export_planning_data(engine, planning_unit, from_date, till_date)
 
-    # Load solution and employee json
-    data, emp_data = import_solution.load_json_files(from_date, till_date, planning_unit)
+    # Load solution and employee json from files (legacy/CLI path) or use provided data (API path)
+    solution_data, emp_data = import_solution.load_json_files(from_date, till_date, planning_unit, solution_data=data)
+    planned_map = import_solution.load_planned_shifts(planning_unit, from_date)
 
     # Load mapping of employee to their job and their already planned shifts
     prim_to_refberuf = import_solution.load_person_to_job(engine)
-    planned_map = import_solution.load_planned_shifts(planning_unit, from_date)
-
     PE_ID = planning_unit
     PLAN_ID = base_data["plan_id"]
     STATUS_ID = 20  # Always "Sollplanung" as we only generate such plans
@@ -38,7 +39,7 @@ def main(
     SHIFT_SEGMENTS = import_solution.load_shift_segments(engine, SHIFT_TO_REFDIENST)
 
     df = import_solution.build_dataframe(
-        data,
+        solution_data,
         emp_data,
         prim_to_refberuf,
         SHIFT_SEGMENTS,

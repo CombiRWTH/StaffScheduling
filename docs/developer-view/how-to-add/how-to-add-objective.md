@@ -12,47 +12,59 @@ Create a new Python file in the `cp/objectives/` directory:
 
 ```python
 # cp/objectives/your_new_objective.py
-from . import Objective
-from employee import Employee
-from day import Day
-from shift import Shift
-from ..variables import Variable, EmployeeDayShiftVariable
-from ortools.sat.python.cp_model import CpModel, IntVar
-import logging
+from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
+
+from src.day import Day
+from src.employee import Employee
+from src.shift import Shift
+
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
+from .objective import Objective
 
 
 class YourNewObjective(Objective):
-    KEY = "your-objective-key"  # Unique identifier for CLI usage
+    @property
+    def KEY(self) -> str:
+        """
+ Returns a unique identifier of this class
+ """
+        return "a legacy artifact which usually carries the same name as the constraint."
 
-    def __init__(
-        self,
-        weight: float,
-        employees: list[Employee],
-        days: list[Day],
-        shifts: list[Shift],
-    ):
-        """
-        Initialize your objective with necessary data.
+    def __init__(
+        self,
+        weight: float,
+        employees: list[Employee],
+        days: list[Day],
+        shifts: list[Shift],
+ ):
+        """
+ Initialize your objective with the necessary data.
 
-        Args:
-            weight: Multiplier for this objective's contribution to the total objective
-            employees: List of all employees
-            days: List of dates in the planning period
-            shifts: List of available shifts
-        """
-        super().__init__(weight, employees, days, shifts)
+ Args:
+ weight: Multiplier for this objective's contribution to the total objective
+ employees: List of all employees
+ days: List of dates in the planning period
+ shifts: List of available shifts
+ """
+        super().__init__(weight, employees, days, shifts)
+        # Add any additional initialization here
 
-    def create(self, model: CpModel, variables: dict[str, IntVar]):
-        """
-        Define the objective logic using OR-Tools.
-        This method is called during model creation.
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+ ) -> LinearExpr:
+        """
+ Define the objective logic using OR-Tools.
+ This method is called during model creation.
 
-        Returns:
-            IntVar or linear expression: The objective term to be optimized
-        """
-        # Your objective implementation here
-        # Must return an expression that will be minimized
-        pass
+ Returns:
+ linear expression = The objective term to be optimized
+ """
+        # Your objective implementation here
+        # Must return an expression that will be minimized
+        pass
 ```
 
 ## Step 2: Implement the Objective Logic
@@ -60,24 +72,28 @@ class YourNewObjective(Objective):
 The `create` method is where you define your objective using OR-Tools CP-SAT API. The returned expression will be **minimized** by the solver:
 
 ```python
-def create(self, model: CpModel, variables: dict[str, IntVar]):
-    objective_terms = []
+# an example objective, which encourages free days after a night shift phase
+def create(
+    self,
+    model: CpModel,
+    shift_assignment_variables: ShiftAssignmentVariables,
+    employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+) -> LinearExpr:
+ penalties: list[IntVar] = []
 
-    for employee in self._employees:
-        # Example: Minimize total shifts assigned
-        employee_shifts = []
-        for day in self._days:
-            for shift in self._shifts:
-                variable_key = EmployeeDayShiftVariable.get_key(employee, day, shift)
-                if variable_key in variables:
-                    employee_shifts.append(variables[variable_key])
+    for employee in self._employees:
+        for day in self._days[:-2]:
+ night_var = shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]]
+ next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=1)]
+ after_next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=2)]
+ penalty_var = model.new_bool_var(f"free_days_after_night_{employee.get_key()}_{day}")
 
-        # Create an objective term for this employee
-        employee_total = sum(employee_shifts)
-        objective_terms.append(employee_total)
+ model.add(penalty_var == 1).only_enforce_if([night_var, next_day_var.Not(), after_next_day_var])
+ model.add(penalty_var == 0).only_enforce_if(night_var.Not())
 
-    # Return the weighted objective expression
-    return sum(objective_terms) * self._weight
+ penalties.append(penalty_var)
+
+    return cast(LinearExpr, sum(penalties) * self.weight)
 ```
 
 ## Step 3: Export the Objective
@@ -92,8 +108,8 @@ from .your_new_objective import YourNewObjective as YourNewObjective
 ```python
 # cp/__init__.py
 from .objectives import (
-    ...
-    YourNewObjective as YourNewObjective
+ ...
+ YourNewObjective as YourNewObjective
 )
 ```
 
@@ -104,21 +120,18 @@ Add your objective to the main solver script:
 ```python
 # solve.py
 from cp import (
-    # ... existing imports ...
-    YourNewObjective,
+    # ... existing imports ...
+ YourNewObjective,
 )
 
 def main():
-    cli = CLIParser([
-        # ... existing constraints ...
-        # ... existing objectives ...
-        YourNewObjective,
-    ])
 
-    # ...
+    # ...
 
-    objectives = [
-        # ... existing objectives ...
-        YourNewObjective(1.0, employees=employees, days=days, shifts=shifts),
-    ]
+ constraints = [
+        # ... existing constraints ...
+ YourNewObjective(1.0, employees=employees, days=days, shifts=shifts),
+ ]
+
+    # ...
 ```
