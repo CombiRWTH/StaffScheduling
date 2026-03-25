@@ -5,7 +5,7 @@ This chapter provides step-by-step guides for extending the shift scheduling sys
 The shift scheduling system has three main extensible components:
 
 ### Variables
-**Decision elements** that the solver can set when creating a schedule. Variables represent choices like "Does employee X work shift Y on day Z?".
+**Decision elements** that the solver can set when creating a schedule. Variables represent binary choices like "Does employee X work shift Y on day Z?"
 
 ### Constraints
 **Rules and requirements** that must be satisfied in any valid schedule. Constraints define what is allowed or forbidden, such as "An employee cannot work more than 8 hours per day".

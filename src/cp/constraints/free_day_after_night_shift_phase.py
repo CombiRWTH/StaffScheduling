@@ -6,6 +6,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
+from ..constants import SPECIAL_NIGHT_SHIFT_INDEX
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .constraint import Constraint
 
@@ -37,9 +38,11 @@ class FreeDayAfterNightShiftPhaseConstraint(Constraint):
                 ]
 
                 # N5 is a special form of night shifts
-                night_shift_today_variable_special = shift_assignment_variables[employee][day][self._shifts[7]]
+                night_shift_today_variable_special = shift_assignment_variables[employee][day][
+                    self._shifts[SPECIAL_NIGHT_SHIFT_INDEX]
+                ]
                 night_shift_tomorrow_variable_special = shift_assignment_variables[employee][day + timedelta(1)][
-                    self._shifts[7]
+                    self._shifts[SPECIAL_NIGHT_SHIFT_INDEX]
                 ]
 
                 day_tomorrow_variable = employee_works_on_day_variables[employee][day + timedelta(1)]

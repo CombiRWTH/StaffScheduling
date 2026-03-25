@@ -4,7 +4,7 @@ This guide explains how to create and integrate a new constraint into the staff 
 
 ## Overview
 
-Constraints are rules that must be satisfied in the generated shift plans. They ensure legal requirements and company policies. Also specific customer rules can be implemented.
+Constraints are rules that must be satisfied in the generated shift plans. They ensure legal requirements and company policies. Also, specific customer rules can be implemented.
 
 ## Step 1: Create the Constraint Class
 
@@ -12,32 +12,40 @@ Create a new Python file in the `cp/constraints/` directory:
 
 ```python
 # cp/constraints/your_new_constraint.py
-from . import Constraint
-from employee import Employee
-from day import Day
-from shift import Shift
-from ..variables import Variable, EmployeeDayShiftVariable
 from ortools.sat.python.cp_model import CpModel
-import logging
+
+from src.day import Day
+from src.employee import Employee
+from src.shift import Shift
+
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
+from .constraint import Constraint
 
 
 class YourNewConstraint(Constraint):
-    KEY = "your-constraint-key"  # Unique identifier for CLI usage
+    @property
+    def KEY(self) -> str:
+        return "one-shift-per-day"
 
-    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
-        """
-        Initialize your constraint with necessary data.
-        """
-        super().__init__(employees, days, shifts)
-        # Add any additional initialization here
+    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+         """
+ Initialize your constraint with the necessary data.
+ """
+        super().__init__(employees, days, shifts)
+        # Add any additional initialization here
 
-    def create(self, model: CpModel, variables: dict[str, Variable]):
-        """
-        Define the constraint logic using OR-Tools.
-        This method is called during model creation.
-        """
-        # Your constraint implementation here
-        pass
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+ ):
+        """
+ Define the constraint logic using OR-Tools.
+ This method is called during model creation.
+ """
+        # Your constraint implementation here
+        pass
 ```
 
 ## Step 2: Implement the Constraint Logic
@@ -45,18 +53,16 @@ class YourNewConstraint(Constraint):
 The `create` method is where you define your constraint using OR-Tools CP-SAT API:
 
 ```python
-def create(self, model: CpModel, variables: dict[str, Variable]):
-    for employee in self._employees:
-        for day in self._days:
-            # Example: Limit shifts per week
-            week_shifts = []
-            for shift in self._shifts:
-                variable_key = EmployeeDayShiftVariable.get_key(employee, day, shift)
-                if variable_key in variables:
-                    week_shifts.append(variables[variable_key])
-
-            # Add constraint to model
-            model.add(sum(week_shifts) <= 5)  # Max 5 shifts per week
+# an example constraint, which enforces that at most one shift can be assigned to an employee each day
+def create(
+    self,
+    model: CpModel,
+    shift_assignment_variables: ShiftAssignmentVariables,
+    employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+):
+    for employee in self._employees:
+        for day in self._days:
+ model.add_at_most_one(shift_assignment_variables[employee][day][shift] for shift in self._shifts)
 ```
 
 ## Step 3: Export the Constraint
@@ -70,8 +76,8 @@ from .your_new_constraint import YourNewConstraint as YourNewConstraint
 ```python
 # cp/__init__.py
 from .constraints import (
-    ...
-    YourNewConstraint as YourNewConstraint
+ ...
+ YourNewConstraint as YourNewConstraint
 )
 
 ```
@@ -82,20 +88,18 @@ Add your constraint to the main solver script:
 ```python
 # solve.py
 from cp import (
-    # ... existing imports ...
-    YourNewConstraint,
+    # ... existing imports ...
+ YourNewConstraint,
 )
 
 def main():
-    cli = CLIParser([
-        # ... existing constraints ...
-        YourNewConstraint,
-    ])
 
-    # ...
+    # ...
 
-    constraints = [
-        # ... existing constraints ...
-        YourNewConstraint(employees, days, shifts),
-    ]
+ constraints = [
+        # ... existing constraints ...
+ YourNewConstraint(employees, days, shifts),
+ ]
+
+    # ...
 ```

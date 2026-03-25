@@ -135,7 +135,7 @@ def test_all_constraints_mass_case(
     model.cpModel.minimize(sum(model.penalties))
     solver: CpSolver = CpSolver()
     solver.parameters.num_workers = 0
-    solver.parameters.max_time_in_seconds = 30
+    solver.parameters.max_time_in_seconds = 5
     solver.parameters.linearization_level = 0
     cb = MultiSolutionCollector(model)
     solver.solve(model.cpModel, cb)

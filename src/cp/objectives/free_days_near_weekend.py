@@ -6,6 +6,7 @@ from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 from src.day import Day
 from src.employee import Employee
 
+from ..constants import NEAR_WEEKEND_DAYS
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
 
@@ -40,7 +41,7 @@ class FreeDaysNearWeekendObjective(Objective):
             # here we do not ensure that we stay within the month, but we do in the
             # "free_day_after_night_shift_phase.py" file
             for day in self._days:
-                if day.isoweekday() in [5, 6, 7]:
+                if day.isoweekday() in NEAR_WEEKEND_DAYS:
                     free_day_variable = model.new_bool_var(f"free_first_day_e:{employee.get_key()}_d:{day}")
                     day_today_variable = employee_works_on_day_variables[employee][day]
                     model.add(day_today_variable == 0).only_enforce_if(free_day_variable)

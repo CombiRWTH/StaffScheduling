@@ -4,7 +4,10 @@ user-view/configuration/index.md:only-json-files-note
 
 ### Minimum Number of Staff
 
-To ensure that each shift is adequately staffed with qualified personnel, it is essential to set the minimum required number of staff members. This configuration can be changed in the file `cases/{case_id}/minimal_number_of_staff.json`.
+To ensure that each shift is adequately staffed with qualified personnel, it is essential to set the minimum required number of staff members. This configuration can be changed in `minimal_number_of_staff.json` in the active case folder, typically:
+
+- `cases/{case_id}/{MM_YYYY}/minimal_number_of_staff.json` for month-based cases
+- `cases/{case_id}/minimal_number_of_staff.json` for non-month cases
 
 The structure of this JSON file looks as follows:
 

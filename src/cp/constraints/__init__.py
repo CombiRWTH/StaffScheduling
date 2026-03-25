@@ -17,6 +17,6 @@ from .rounds_in_early_shift import (
 from .target_working_time import (
     TargetWorkingTimeConstraint as TargetWorkingTimeConstraint,
 )
-from .vaction_days_and_shifts import (
+from .vacation_days_and_shifts import (
     VacationDaysAndShiftsConstraint as VacationDaysAndShiftsConstraint,
 )

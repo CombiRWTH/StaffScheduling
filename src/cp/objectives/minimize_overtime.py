@@ -6,6 +6,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
+from ..constants import MAX_DURATION_MINUTES
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
 
@@ -38,7 +39,7 @@ class MinimizeOvertimeObjective(Objective):
 
         # we should have a more accurate estimation from the constraints in target_working_time.py
         # with TOLERANCE_MORE and TOLERANCE_LESS. Or is this on purpose because of the hidden employees?
-        max_duration = 31 * 24 * 60
+        max_duration = MAX_DURATION_MINUTES
 
         for employee in self._employees:
             target_working_time = employee.get_available_working_time()

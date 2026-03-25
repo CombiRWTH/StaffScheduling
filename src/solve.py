@@ -27,6 +27,7 @@ from src.cp import (
     TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint,
 )
+from src.cp.constants import MAX_CONSECUTIVE_DAYS
 from src.day import Day
 from src.employee import Employee
 from src.loader import FSLoader
@@ -34,8 +35,6 @@ from src.shift import Shift
 from src.solution import Solution
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-MAX_CONSECUTIVE_DAYS = 5
 
 
 class SolveResult:

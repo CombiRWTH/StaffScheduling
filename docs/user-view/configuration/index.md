@@ -1,16 +1,19 @@
 # --8<-- [start:only-json-files-note]
 !!! note
-    Currently, our application lacks a user-friendly interface for comfortably managing configurations. Instead, these settings are stored in JSON files, which requires manual editing to make any changes.
+    Configuration can be managed in two ways:
+
+    - Preferred: via the browser-based [StaffSchedulingWeb](https://julian466.github.io/StaffSchedulingWeb/) interface.
+    - Advanced/manual: by editing the JSON files in the case folder directly.
+
+    For month-based cases, files are usually located in `cases/{case_id}/{MM_YYYY}/...` (for example `cases/77/11_2024/...`).
 # --8<-- [end:only-json-files-note]
 
-Welcome to the configuration overview of our project! This document aims to provide users with a clear understanding of the various settings available within our application.
+This section explains which settings are available and where they are stored.
 
-Our application features two modes: the full version, which connects to a centralized database, and the light version, designed for use without database access. In the light version without database access you can adjust all configurations, in contrast to the full version
-where many configurations are already defined through the database.
+If you use StaffSchedulingWeb, you can maintain these settings through forms in the UI. The solver still reads the same JSON files in this repository.
 
-In this overview, we will differentiate between user-adjustable configurations that can be modified at any time and those specific to the light version.
+In CLI/light workflows, you can edit these files manually.
 
-Let’s explore the available configurations!
 
 
 ## User-Adjustable Configurations
@@ -35,4 +38,4 @@ Let’s explore the available configurations!
 
 - **Employees**: Modify employee information that is typically managed in TimeOffice [here](./staff).
 
-- **Planned Shifts:** Preplan fixed shifts, e.g. special shifts (Z60). Normally done in TimeOffice, but in light-version it can be changed [here](./planned-shifts)
+- **Planned Shifts:** Preplan fixed shifts, e.g. special shifts (Z60). Normally done in TimeOffice, but in light-version it can be changed [here](./planned-shifts).

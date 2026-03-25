@@ -1,26 +1,23 @@
-# Welcome to Staff Scheduling Documentations
+# Staff Scheduling Documentation
 
-We are happy to have you here! You can find answers to all your questions within this documentation, which is loosely divided into two distinct views: the [**User View**](./user-view) and the [**Developer View**](./developer-view).
+The Staff Scheduling documentation is organized into two main sections: the [**User View**](./user-view) and the [**Developer View**](./developer-view).
 
-If you are primarily interested in using and testing the Automatic Staff Scheduling system, you'll find all the important information in the [User View](./user-view) without delving too deeply into technical details. On the other hand, if you wish to contribute to or further develop this project, be sure to check out the [Developer View](./developer-view).
+The [User View](./user-view) focuses on practical usage of the automatic staff scheduling system and limits technical depth where possible. The [Developer View](./developer-view) provides the technical background required for contribution and further development.
 
-Please note that as a user, you can always dive deeper into the technical details, and as a developer, you are welcome to revisit the general concepts whenever needed.
+Both sections are designed to be complementary: user-focused guides can be used as entry points into technical details, and developer-focused guides can be paired with general conceptual material.
 
 ## Usage
-If you want to try out the automatic creation of the a staff schedule yourself, follow our
-"Getting Started Guides". There are two different versions of our program, with and without
-database access.
+Automatic staff schedule generation can be explored through the Getting Started guides. Two versions of the application are available: one with database access and one without.
 
 - Without database access: [Getting Started Guide (Light)](./user-view/getting-started-light-version)
 - With database access: [Getting Started Guide](./developer-view/getting-started-dev)
 
 ## Web Interface
 
-A modern, browser-based frontend for the Staff Scheduling solver is available as a separate project: **[StaffSchedulingWeb](https://julian466.github.io/StaffSchedulingWeb/)**. It provides a full graphical interface for data management, solver control, solution inspection, and TimeOffice integration - no command-line interaction required. See the [Web Interface documentation](./developer-view/web-interface) for details.
+A modern, browser-based frontend for the Staff Scheduling solver is available as a separate project: **[StaffSchedulingWeb](https://julian466.github.io/StaffSchedulingWeb/)**. It offers a full graphical interface for data management, solver control, solution inspection, and TimeOffice integration, with no command-line interaction required. See the [Web Interface documentation](./developer-view/web-interface) for details.
 
 ## Getting an Overview
-If you just want to get an overview over the codebase and the problem,
-you should start with those guides:
+The following guides provide an overview of the codebase and the underlying scheduling problem:
 
-- [Problem Defintion](./user-view/problem-definition)
+- [Problem Definition](./user-view/problem-definition)
 - [Codebase Overview](./developer-view/codebase-overview)
