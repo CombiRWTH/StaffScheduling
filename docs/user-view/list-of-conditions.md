@@ -44,8 +44,7 @@ Each employee is permitted to work only one shift per day. It is important to no
 
 ### Minimum Rest Time [^3]
 # --8<-- [start:min-rest-time]
-According to Occupational Health and Safety Law (Arbeitsschutzgesetz) the minimum rest time for normal employees need to be at least 11 hours. In hospitals there can be exception to this rule.
-We did not implement a solution that can vary the minimum rest time, but we just do not allow an early shift following a late shift, because then the rest time would only be 9 hours.
+According to Occupational Health and Safety Law (Arbeitsschutzgesetz) the minimum rest time for normal employees need to be at least 11 hours.
 # --8<-- [end:min-rest-time]
 
 
