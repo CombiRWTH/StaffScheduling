@@ -25,6 +25,9 @@ class RoundsInEarlyShiftConstraint(Constraint):
     ):
         qualified_employees = [employee for employee in self._employees if employee.qualified("rounds")]
 
+        if not qualified_employees:
+            return
+
         for day in self._days:
             if day.isoweekday() in WEEKDAYS:
                 early_shift_variables = [

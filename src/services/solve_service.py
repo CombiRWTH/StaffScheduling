@@ -19,6 +19,7 @@ DEFAULT_WEIGHTS = {
     "wishes": 3,
     "after_night": 3,
     "second_weekend": 1,
+    "preferred_block": 1,
 }
 
 WEIGHTS_BALANCED = {
@@ -31,6 +32,7 @@ WEIGHTS_BALANCED = {
     "wishes": 3,
     "after_night": 1,
     "second_weekend": 1,
+    "preferred_block": 1,
 }
 
 WEIGHTS_STAFF_FOCUS = {
@@ -43,6 +45,7 @@ WEIGHTS_STAFF_FOCUS = {
     "wishes": 5,
     "after_night": 3,
     "second_weekend": 2,
+    "preferred_block": 1,
 }
 
 

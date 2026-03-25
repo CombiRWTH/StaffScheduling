@@ -60,5 +60,8 @@ from .objectives import (
     Objective as Objective,
 )
 from .objectives import (
+    PreferredBlockLengthObjective as PreferredBlockLengthObjective,
+)
+from .objectives import (
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
 )

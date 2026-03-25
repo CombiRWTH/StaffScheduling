@@ -22,6 +22,7 @@ from src.cp import (
     Model,
     NotTooManyConsecutiveDaysObjective,
     PlannedShiftsConstraint,
+    PreferredBlockLengthObjective,
     RotateShiftsForwardObjective,
     RoundsInEarlyShiftConstraint,
     TargetWorkingTimeConstraint,
@@ -164,6 +165,7 @@ def main(
             "wishes": 3,
             "after_night": 3,
             "second_weekend": 1,
+            "preferred_block": 1,
         }
 
     logging.info("General information:")
@@ -185,6 +187,11 @@ def main(
         HierarchyOfIntermediateShiftsConstraint(employees, days, shifts),
         PlannedShiftsConstraint(employees, days, shifts),
     ]
+
+    if "preferred_block" not in weights.keys():
+        prefered_block_size = 1
+    else:
+        prefered_block_size = weights["preferred_block"]
     objectives = [
         FreeDaysNearWeekendObjective(weights["free_weekend"], employees, days),
         MinimizeConsecutiveNightShiftsObjective(weights["consecutive_nights"], employees, days, shifts),
@@ -195,6 +202,13 @@ def main(
         MaximizeEmployeeWishesObjective(weights["wishes"], employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(weights["after_night"], employees, days, shifts),
         EverySecondWeekendFreeObjective(weights["second_weekend"], employees, days),
+        PreferredBlockLengthObjective(
+            target_block_length=3,
+            max_block_length=7,
+            weight=prefered_block_size,
+            employees=employees,
+            days=days,
+        ),
         # MinimizeHiddenEmployeeCountObjective(weights["hidden_count"], employees, days, shifts),
     ]
 
