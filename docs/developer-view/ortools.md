@@ -9,6 +9,7 @@ When faced with difficult scheduling, routing, or optimization problems, traditi
     ```
     $ uv run staff-scheduling solve ... --solver-analyzer-log log_to_upload.txt
     ```
+    ![CP-SAT Analyzer example](./CP-SAT-Analyzer.png){ align=left, width="300" }
 
 
 # What is SAT-Solving?
