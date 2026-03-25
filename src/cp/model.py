@@ -132,7 +132,7 @@ class Model:
             self._penalties.append(penalty)
         self._objectives.append(objective)
 
-    def solve(self, timeout: int | None) -> Solution:
+    def solve(self, timeout: int | None, analyzer_log: str | None = None) -> Solution:
         logging.info("Solving model...")
         logging.info(
             f"  - number of variables: {len(self._shiftAssignmentVariables) + len(self._employeeWorksOnDayVariables)}"
@@ -156,6 +156,17 @@ class Model:
             logging.info(f"Timeout set to {timeout} seconds")
             solver.parameters.max_time_in_seconds = timeout
         solver.parameters.linearization_level = 0
+
+        if analyzer_log is not None:
+            logging.info("Writing solver log for the CP-SAT Analyzer to: " + analyzer_log)
+
+            def write_log(log: str) -> None:
+                with open(analyzer_log, "a") as f:
+                    f.write(log + "\n")
+
+            solver.parameters.log_search_progress = True
+            solver.parameters.log_to_stdout = False
+            solver.log_callback = write_log
 
         start_time = timeit.default_timer()
 
