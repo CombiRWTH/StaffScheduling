@@ -61,6 +61,7 @@ nav:
           - How to add a Objective: developer-view/how-to-add/how-to-add-objective.md
           - How to add a Variable: developer-view/how-to-add/how-to-add-variable.md
       - TimeOffice: developer-view/timeoffice.md
+      - VM-Setup: developer-view/vm-setup.md
       - JSON Dataformats: developer-view/json-dataformat.md
 
 
