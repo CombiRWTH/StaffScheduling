@@ -4,7 +4,10 @@ user-view/configuration/index.md:only-json-files-note
 
 ### Mapping of Qualifications
 
-In our application, qualifications are mapped to specific employee types to ensure proper categorization and management of personnel. This mapping is stored in the file located at `cases/{course_id}/employee_types.json`.
+In our application, qualifications are mapped to specific employee types to ensure proper categorization and management of personnel. This mapping is stored in `employee_types.json` in the active case folder, typically:
+
+- `cases/{case_id}/{MM_YYYY}/employee_types.json` for month-based cases
+- `cases/{case_id}/employee_types.json` for non-month cases
 
 The structure of this JSON file is as follows:
 

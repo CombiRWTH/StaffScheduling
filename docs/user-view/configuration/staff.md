@@ -4,14 +4,23 @@ user-view/configuration/index.md:only-json-files-note
 
 ### Adding or Deleting Employees
 
-Employee information is stored in the file located at `cases/{case_id}/employees.json`. Each employee entry follows this structure:
+Employee information is stored in `employees.json` in the active case folder, typically:
+
+- `cases/{case_id}/{MM_YYYY}/employees.json` for month-based cases
+- `cases/{case_id}/employees.json` for non-month cases
+
+The file contains an `employees` array. Each employee entry follows this structure:
 
 ```json
 {
-    "firstname": "Annelene",
-    "key": 6928,
-    "name": "Izzo",
-    "type": "Medizinische/r Fachangestellte/r (81102-004)"
+    "employees": [
+        {
+            "firstname": "Annelene",
+            "key": 6928,
+            "name": "Izzo",
+            "type": "Medizinische/r Fachangestellte/r (81102-004)"
+        }
+    ]
 }
 ```
 

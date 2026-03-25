@@ -4,24 +4,30 @@ user-view/configuration/index.md:only-json-files-note
 
 ### Weights Configuration
 
-!!! warning
-    Please note that the weights assigned to objectives must be greater than or equal to 1.
+Weights control the relative importance of optimization objectives (for example overtime vs. wishes).
 
-In our application, users can adjust the importance of various objectives within the general objective function to optimize scheduling and resource allocation. This configuration is managed in the `srs/solve.py` file.
+Current behavior:
 
-The objectives are defined as follows:
+- If present, weights are loaded from `cases/{case_id}/{MM_YYYY}/weights.json`.
+- If that file is missing, built-in defaults are used.
 
-```python
-objectives = [
-    FreeDaysNearWeekendObjective(10.0, employees, days),
-    MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
-    MinimizeHiddenEmployeesObjective(100.0, employees, days, shifts),
-    MinimizeOvertimeObjective(4.0, employees, days, shifts),
-    NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
-    RotateShiftsForwardObjective(1.0, employees, days, shifts),
-    MaximizeEmployeeWishesObjective(3.0, employees, days, shifts),
-    FreeDaysAfterNightShiftPhaseObjective(3.0, employees, days, shifts),
-]
+Example file:
+
+```json
+{
+    "free_weekend": 2,
+    "consecutive_nights": 2,
+    "hidden": 100,
+    "hidden_count": 1000000,
+    "overtime": 4,
+    "consecutive_days": 1,
+    "rotate": 1,
+    "wishes": 3,
+    "after_night": 3,
+    "second_weekend": 1
+}
 ```
 
-Each objective is assigned a weight represented by a numerical value (e.g., `10.0`, `2.0`, etc.). By changing these numbers in the codebase, users can effectively prioritize specific objectives according to their operational needs and preferences.
+Use larger values to prioritize an objective more strongly. Values can be `0` or fractional if desired.
+
+When using StaffSchedulingWeb, the preferred way is to adjust weights in the UI.
