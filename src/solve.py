@@ -186,6 +186,11 @@ def main(
         HierarchyOfIntermediateShiftsConstraint(employees, days, shifts),
         PlannedShiftsConstraint(employees, days, shifts),
     ]
+
+    if "preferred_block" not in weights.keys():
+        prefered_block_size = 1
+    else:
+        prefered_block_size = weights["preferred_block"]
     objectives = [
         FreeDaysNearWeekendObjective(weights["free_weekend"], employees, days),
         MinimizeConsecutiveNightShiftsObjective(weights["consecutive_nights"], employees, days, shifts),
@@ -199,7 +204,7 @@ def main(
         PreferredBlockLengthObjective(
             target_block_length=3,
             max_block_length=7,
-            weight=weights["preferred_block"],
+            weight=prefered_block_size,
             employees=employees,
             days=days,
         ),
