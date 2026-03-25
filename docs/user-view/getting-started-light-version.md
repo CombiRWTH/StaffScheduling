@@ -1,9 +1,3 @@
-# Super Light Version
-If you are only interest in viewing one example solution, simply download the file `ExampleSolutionView.html` from [Github](https://github.com/CombiRWTH/StaffScheduling/blob/main/ExampleSolutionView.html) and open it with your standard browser. Then you can view a found solution, which is based on the data given in `cases/3`.
-
-
-# Light Version
-
 # --8<-- [start:Prerequisites]
 ## Prerequisites
 
@@ -53,34 +47,10 @@ This will install all required dependencies.
 
 ## Usage
 
-# --8<-- [start:Solving]
-### 1. Solving
+### Solve in the Web Interface
 
-After installing dependencies, you can start solving staff scheduling problems by running
-```bash
-uv run staff-scheduling solve 3 01.11.2024 30.11.2024
-```
-The three corresponds to the `case_id` meaning in the folder `cases/3`. If you want to create your own case
-simply copy the folder 3 and rename it to another integer. Then you can change the number of employees etc., see [configuration](../configuration).
+Use **StaffSchedulingWeb** to configure, start, and inspect solves in a browser:
 
-The algorithm needs 5 minutes to find a solution.
-# --8<-- [end:Solving]
-
-# --8<-- [start:Viewing]
-### 2. Viewing
-After the algorithm found a solution you can view it by running
-```bash
-uv run staff-scheduling plot 3
-```
-If you have created your own case, you need to change the integer `3` to your new case.
-You can then view the solution by opening the link you see in the terminal, probably [http://127.0.0.1:5020](http://127.0.0.1:5020).
-
-Next to the assigned shift, our visualization offers some more insights.
-
-- colored small dot: employee is forbidden to work that specific shift (hard)
-- red background: employee is forbidden to work that day (hard), e.g. vacation day
-- colored small diamond: employee wishes to have shift corresponding to the color off
-- brown triangle: employee wished to have the whole day off
-- green background: wish for specific shift off was granted
-- yellow background: wish for complete day off was granted
-# --8<-- [end:Viewing]
+- Open the StaffSchedulingWeb documentation: [https://julian466.github.io/StaffSchedulingWeb/](https://julian466.github.io/StaffSchedulingWeb/)
+- Follow the setup and run steps there.
+- Use the UI to select your case and planning period, start the solver, and inspect results.
