@@ -12,6 +12,10 @@ from ..solution import Solution
 from .analyze_solution import analyze_solution
 
 
+# process_solution takes a solution created by the model and maps its variable assignments to a more structured format easily processed by the frontend. 
+# The processed solutions are stored in JSON format in the "processed_solutions" directory. 
+
+
 def employee_to_dict(emp: Employee):
     return {
         "id": emp.get_key(),
