@@ -80,6 +80,7 @@ def execute_solve(
     timeout: int,
     weight_overrides: dict[str, int] | None = None,
     status_callback: Callable[[str], None] | None = None,
+    analyzer_log: str | None = None,
 ) -> SolveResult:
     """Executes a single solver run and processes the solution."""
 
@@ -100,6 +101,7 @@ def execute_solve(
         timeout=timeout,
         weights=weights,
         status_callback=status_callback,
+        analyzer_log=analyzer_log,
     )
 
     # 3. Write the solution to files for the web frontend (only when a solution was found)

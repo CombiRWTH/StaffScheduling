@@ -21,7 +21,12 @@ def cli():
 @click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
 @click.option("--weight", multiple=True, help="Override weights")
 @click.option("--timeout", default=300, help="Timeout in seconds for the solver")
-def solve(unit: int, start: datetime, end: datetime, weight: tuple[str, ...], timeout: int):
+@click.option(
+    "--solver-analyzer-log",
+    default="",
+    help="Log the CP-SAT output to the specified file (which can be used for e.g. analyzing the search process)",
+)
+def solve(unit: int, start: datetime, end: datetime, weight: tuple[str, ...], timeout: int, solver_analyzer_log: str):
     """Solve the scheduling problem for a given case and start date.
 
     UNIT is the case number to solve.
@@ -44,7 +49,12 @@ def solve(unit: int, start: datetime, end: datetime, weight: tuple[str, ...], ti
 
     try:
         execute_solve(
-            unit=unit, start_date=start.date(), end_date=end.date(), timeout=timeout, weight_overrides=weight_overrides
+            unit=unit,
+            start_date=start.date(),
+            end_date=end.date(),
+            timeout=timeout,
+            weight_overrides=weight_overrides,
+            analyzer_log=None if solver_analyzer_log == "" else solver_analyzer_log,
         )
     except ValueError as e:
         # Catch the "Unknown weight key" error from the service
