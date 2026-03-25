@@ -42,7 +42,7 @@ class MinimizeHiddenEmployeeCountObjective(Objective):
 
             hidden_employee_is_used = model.new_bool_var(f"hidden_employee_is_used_{employee.get_key()}")
             for day in self._days:
-                model.Add(employee_works_on_day_variables[employee][day] <= hidden_employee_is_used)
+                model.add(employee_works_on_day_variables[employee][day] <= hidden_employee_is_used)
 
             hidden_employee_work_vars.append(hidden_employee_is_used)
 

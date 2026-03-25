@@ -40,7 +40,7 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
             possible_night_shift_phase_variables: list[IntVar] = []
             for employee in self._employees:
                 for day in self._days[: -(phase_length - 1)]:
-                    night_shift_phase_variable = model.NewBoolVar(
+                    night_shift_phase_variable = model.new_bool_var(
                         f"night_shift_phase_e:{employee.get_key()}_d:{day}_l:{phase_length}"
                     )
                     window = [

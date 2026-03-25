@@ -6,6 +6,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
+from ..constants import MAX_DURATION_MINUTES
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
 
@@ -36,7 +37,7 @@ class MinimizeHiddenEmployeesObjective(Objective):
     ) -> LinearExpr:
         possible_hidden_employee_variables: list[IntVar] = []
 
-        max_duration = 31 * 24 * 60
+        max_duration = MAX_DURATION_MINUTES
 
         for employee in self._employees:
             if not employee.hidden:

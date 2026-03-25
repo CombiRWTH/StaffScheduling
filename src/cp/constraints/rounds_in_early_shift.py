@@ -4,6 +4,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
+from ..constants import WEEKDAYS
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .constraint import Constraint
 
@@ -25,7 +26,7 @@ class RoundsInEarlyShiftConstraint(Constraint):
         qualified_employees = [employee for employee in self._employees if employee.qualified("rounds")]
 
         for day in self._days:
-            if day.isoweekday() in [1, 2, 3, 4, 5]:
+            if day.isoweekday() in WEEKDAYS:
                 early_shift_variables = [
                     shift_assignment_variables[employee][day][self._shifts[Shift.EARLY]]
                     for employee in qualified_employees

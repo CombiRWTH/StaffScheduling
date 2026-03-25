@@ -4,11 +4,9 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 
+from ..constants import DEFAULT_MONTHLY_TARGET_MINUTES, TOLERANCE_LESS, TOLERANCE_MORE
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .constraint import Constraint
-
-TOLERANCE_LESS = 460
-TOLERANCE_MORE = TOLERANCE_LESS
 
 
 class TargetWorkingTimeConstraint(Constraint):
@@ -52,7 +50,7 @@ class TargetWorkingTimeConstraint(Constraint):
                 continue
 
             if employee.hidden:
-                target_working_time = round(40 * 60 * 4.35)
+                target_working_time = DEFAULT_MONTHLY_TARGET_MINUTES
             else:
                 unvavailable_days = set(employee.vacation_days) | set(employee._forbidden_days)  # pyright: ignore[reportPrivateUsage]
                 factor = 1 - len(unvavailable_days) / len(self._days)
