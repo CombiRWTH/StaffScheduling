@@ -1,6 +1,7 @@
+from collections.abc import Iterable
 from typing import cast
 
-from ortools.sat.python.cp_model import CpModel, LinearExpr
+from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr, LiteralT
 
 from src.day import Day
 from src.employee import Employee
@@ -53,7 +54,7 @@ class PreferredBlockLengthObjective(Objective):
                     model.Add(start_of_block <= 1 - yesterday_work)
                     model.Add(start_of_block >= today_work - yesterday_work)
 
-                block_length_vars: list[tuple[int, LinearExpr]] = []
+                block_length_vars: list[tuple[int, LiteralT]] = []
                 remaining_days = len(self._days) - day_index
                 max_len_here = min(self._max_block_length, remaining_days)
 
@@ -72,18 +73,17 @@ class PreferredBlockLengthObjective(Objective):
                             block_var <= 1 - employee_works_on_day_variables[employee][self._days[day_index + length]]
                         )
 
-                model.AddAtMostOne([var for _, var in block_length_vars])
+                literals_list: Iterable[LiteralT] = [var for _, var in block_length_vars]
+                model.add_at_most_one(literals_list)
 
                 unmatched_block = model.NewBoolVar(f"block_unmatched_e:{employee.get_key()}_d:{day}")
-                model.Add(sum(var for _, var in block_length_vars) + unmatched_block == start_of_block)
+                model.Add(sum(cast(IntVar, var) for _, var in block_length_vars) + unmatched_block == start_of_block)
 
-                for length, var in block_length_vars:
-                    penalties.append(cast(LinearExpr, abs(length - self._target_block_length) * var))
+                for length, var in [(len, cast(IntVar, var)) for (len, var) in block_length_vars]:
+                    k: int = abs(length - self._target_block_length)
+                    penalties.append(k * var)
                 penalties.append(
-                    cast(
-                        LinearExpr,
-                        abs((self._max_block_length + 1) - self._target_block_length) * unmatched_block,
-                    )
+                    abs((self._max_block_length + 1) - self._target_block_length) * unmatched_block,
                 )
 
         return cast(LinearExpr, sum(penalties)) * self._weight
