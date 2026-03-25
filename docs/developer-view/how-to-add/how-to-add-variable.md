@@ -20,10 +20,10 @@ Create a new variable in `cp/variables/variable.py`:
 # an example template, which you could follow
 class YourNewVariable:
     """
- A dictionary wrapper that allows indexing with different objects (e.g., Employee, Day, and Shift).
+    A dictionary wrapper that allows indexing with different objects (e.g., Employee, Day, and Shift).
 
- Usage: wrapper_dict[...]...[...] -> Variable
- """
+    Usage: wrapper_dict[...]...[...] -> Variable
+    """
 
     def __init__(self, internal_dict: dict[key, value]):
         self._data = internal_dict
@@ -32,10 +32,9 @@ class YourNewVariable:
         return self._data[employee.get_key()]
 
     def __len__(self) -> int:
- l = ...
+        l = ...
         # compute length
         return l
-
 ```
 
 ## Step 2: Export the Variable
@@ -50,8 +49,8 @@ from .your_new_variable import YourNewVariable as YourNewVariable
 ```python
 # cp/__init__.py
 from .variables import (
- ...
- YourNewVariable as YourNewVariable
+    # ... existing imports ...
+    YourNewVariable as YourNewVariable
 )
 ```
 

@@ -28,9 +28,9 @@ class YourNewConstraint(Constraint):
         return "one-shift-per-day"
 
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
-         """
- Initialize your constraint with the necessary data.
- """
+        """
+        Initialize your constraint with the necessary data.
+        """
         super().__init__(employees, days, shifts)
         # Add any additional initialization here
 
@@ -41,9 +41,9 @@ class YourNewConstraint(Constraint):
         employee_works_on_day_variables: EmployeeWorksOnDayVariables,
  ):
         """
- Define the constraint logic using OR-Tools.
- This method is called during model creation.
- """
+        Define the constraint logic using OR-Tools.
+        This method is called during model creation.
+        """
         # Your constraint implementation here
         pass
 ```
@@ -62,7 +62,7 @@ def create(
 ):
     for employee in self._employees:
         for day in self._days:
- model.add_at_most_one(shift_assignment_variables[employee][day][shift] for shift in self._shifts)
+            model.add_at_most_one(shift_assignment_variables[employee][day][shift] for shift in self._shifts)
 ```
 
 ## Step 3: Export the Constraint
@@ -76,8 +76,8 @@ from .your_new_constraint import YourNewConstraint as YourNewConstraint
 ```python
 # cp/__init__.py
 from .constraints import (
- ...
- YourNewConstraint as YourNewConstraint
+    # ... existing imports ...
+    YourNewConstraint as YourNewConstraint
 )
 
 ```
@@ -89,17 +89,16 @@ Add your constraint to the main solver script:
 # solve.py
 from cp import (
     # ... existing imports ...
- YourNewConstraint,
+    YourNewConstraint,
 )
 
 def main():
-
     # ...
 
- constraints = [
+    constraints = [
         # ... existing constraints ...
- YourNewConstraint(employees, days, shifts),
- ]
+        YourNewConstraint(employees, days, shifts),
+    ]
 
-    # ...
+    # ...
 ```

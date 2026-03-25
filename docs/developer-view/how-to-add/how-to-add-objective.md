@@ -26,8 +26,8 @@ class YourNewObjective(Objective):
     @property
     def KEY(self) -> str:
         """
- Returns a unique identifier of this class
- """
+        Returns a unique identifier of this class
+        """
         return "a legacy artifact which usually carries the same name as the constraint."
 
     def __init__(
@@ -38,14 +38,14 @@ class YourNewObjective(Objective):
         shifts: list[Shift],
  ):
         """
- Initialize your objective with the necessary data.
+        Initialize your objective with the necessary data.
 
- Args:
- weight: Multiplier for this objective's contribution to the total objective
- employees: List of all employees
- days: List of dates in the planning period
- shifts: List of available shifts
- """
+        Args:
+        weight: Multiplier for this objective's contribution to the total objective
+        employees: List of all employees
+        days: List of dates in the planning period
+        shifts: List of available shifts
+        """
         super().__init__(weight, employees, days, shifts)
         # Add any additional initialization here
 
@@ -56,12 +56,12 @@ class YourNewObjective(Objective):
         employee_works_on_day_variables: EmployeeWorksOnDayVariables,
  ) -> LinearExpr:
         """
- Define the objective logic using OR-Tools.
- This method is called during model creation.
+        Define the objective logic using OR-Tools.
+        This method is called during model creation.
 
- Returns:
- linear expression = The objective term to be optimized
- """
+        Returns:
+        linear expression = The objective term to be optimized
+        """
         # Your objective implementation here
         # Must return an expression that will be minimized
         pass
@@ -79,19 +79,19 @@ def create(
     shift_assignment_variables: ShiftAssignmentVariables,
     employee_works_on_day_variables: EmployeeWorksOnDayVariables,
 ) -> LinearExpr:
- penalties: list[IntVar] = []
+    penalties: list[IntVar] = []
 
     for employee in self._employees:
         for day in self._days[:-2]:
- night_var = shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]]
- next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=1)]
- after_next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=2)]
- penalty_var = model.new_bool_var(f"free_days_after_night_{employee.get_key()}_{day}")
+            night_var = shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]]
+            next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=1)]
+            after_next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=2)]
+            penalty_var = model.new_bool_var(f"free_days_after_night_{employee.get_key()}_{day}")
 
- model.add(penalty_var == 1).only_enforce_if([night_var, next_day_var.Not(), after_next_day_var])
- model.add(penalty_var == 0).only_enforce_if(night_var.Not())
+            model.add(penalty_var == 1).only_enforce_if([night_var, next_day_var.Not(), after_next_day_var])
+            model.add(penalty_var == 0).only_enforce_if(night_var.Not())
 
- penalties.append(penalty_var)
+            penalties.append(penalty_var)
 
     return cast(LinearExpr, sum(penalties) * self.weight)
 ```
@@ -108,8 +108,8 @@ from .your_new_objective import YourNewObjective as YourNewObjective
 ```python
 # cp/__init__.py
 from .objectives import (
- ...
- YourNewObjective as YourNewObjective
+    # ... existing imports ...
+    YourNewObjective as YourNewObjective
 )
 ```
 
@@ -121,17 +121,16 @@ Add your objective to the main solver script:
 # solve.py
 from cp import (
     # ... existing imports ...
- YourNewObjective,
+    YourNewObjective,
 )
 
 def main():
-
     # ...
 
- constraints = [
+    constraints = [
         # ... existing constraints ...
- YourNewObjective(1.0, employees=employees, days=days, shifts=shifts),
- ]
+        YourNewObjective(1.0, employees=employees, days=days, shifts=shifts),
+    ]
 
     # ...
 ```
