@@ -19,6 +19,18 @@
       "type": "Altenpfleger/in (82102-002)"
     },
     {
+      "firstname": "Nele",
+      "key": 822,
+      "name": "Sewell",
+      "type": "Pflegeassistent/in (81302-014)"
+    },
+    {
+      "firstname": "Liselotte",
+      "key": 839,
+      "name": "S\u00e4uffert",
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
+    },
+    {
       "firstname": "Silvia",
       "key": 914,
       "name": "Harkins",
@@ -109,6 +121,12 @@
       "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
     },
     {
+      "firstname": "Heinz",
+      "key": 6475,
+      "name": "Binford",
+      "type": "Helfer/in - station\u00e4re Krankenpflege (81301-002)"
+    },
+    {
       "firstname": "Roseliese",
       "key": 6507,
       "name": "Rashid",
@@ -155,6 +173,12 @@
       "key": 7603,
       "name": "Roberson",
       "type": "Altenpfleger/in (82102-002)"
+    },
+    {
+      "firstname": "Sieghardt",
+      "key": 7741,
+      "name": "Tharp",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     {
       "firstname": "Kilian",
