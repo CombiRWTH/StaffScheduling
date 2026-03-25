@@ -6,7 +6,12 @@ user-view/configuration/index.md:only-json-files-note
 
 Blocked shifts are used to manually restrict specific shifts for individual employees based on their availability. For example, you may want to indicate that an employee is unavailable every Thursday, not allowed to work night shifts, or only permitted to work night shifts. This is a hard constraint.
 
-These configurations can be modified in the file named `cases/{case_id}/wishes_and_blocked.json`. The structure of this file looks as follows:
+These configurations can be modified in `wishes_and_blocked.json` in the active case folder, typically:
+
+- `cases/{case_id}/{MM_YYYY}/wishes_and_blocked.json` for month-based cases
+- `cases/{case_id}/wishes_and_blocked.json` for non-month cases
+
+The structure of this file looks as follows:
 
 ```json
 {
