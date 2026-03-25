@@ -5,8 +5,10 @@ from datetime import date, datetime, timedelta
 from src.employee import Employee
 from src.shift import Shift
 
-#analyze_solution and its helper functions calculate various metrics and violations based on the assigned shifts for each employee.
-#metrics are used in the creation of processed solutions
+# analyze_solution and its helper functions calculate various metrics
+# and violations based on the assigned shifts for each employee.
+# metrics are used in the creation of processed solutions
+
 
 def calculate_forward_rotation_violations(shifts_assigned: list[int]) -> int:
     valid_shifts = [s for s in shifts_assigned if s in {0, 2, 3}]
