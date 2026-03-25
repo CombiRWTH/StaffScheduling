@@ -2,6 +2,15 @@
 
 When faced with difficult scheduling, routing, or optimization problems, traditional programming methods often don't work well. These problems are known as combinatorial optimization problems. They can have millions or billions of possible solutions. This means that brute-force approaches are not a good way to solve them.
 
+!!! tip "Visualizing, annotating and understanding the solve process"
+    The [CP-SAT-Log-Analyzer](https://github.com/d-krupke/CP-SAT-Log-Analyzer) is a great tool to visualize and understand
+    the solver's behavior. It is [available online](https://cpsat-log-analyzer.streamlit.app) or can be [run locally](https://github.com/d-krupke/CP-SAT-Log-Analyzer?tab=readme-ov-file#development).
+    To obtain the required log file, run the usual solve process with the argument `--solver-analyzer-log <log_file>`
+    ```
+    $ uv run staff-scheduling solve ... --solver-analyzer-log log_to_upload.txt
+    ```
+
+
 # What is SAT-Solving?
 
 ## The Boolean Satisfiability Problem

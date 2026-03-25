@@ -103,6 +103,7 @@ def main(
     weight_id: int | None = None,
     employees: list[Employee] | None = None,
     status_callback: Callable[[str], None] | None = None,
+    analyzer_log: str | None = None,
 ) -> SolveResult:
     loader = FSLoader(unit, start_date=start_date, end_date=end_date)
     days = loader.get_days(start_date, end_date)
@@ -207,7 +208,7 @@ def main(
 
     if status_callback is not None:
         status_callback("phase_3_optimizing")
-    solution = model.solve(timeout)
+    solution = model.solve(timeout, analyzer_log=analyzer_log)
     wid = weight_id if weight_id is not None else "default"
     solution_name = f"solution_{unit}_{start_date}-{end_date}_w{wid}"
     loader.write_solution(solution, solution_name)
