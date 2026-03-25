@@ -55,10 +55,24 @@ uv run --env-file .env staff-scheduling fetch 77 2024-11-01 2024-11-30
 This reads the data from the database from Planungseinheit 77 in November 2024 and creates a folder
 in `cases/`.
 
---8<--
-user-view/getting-started-light-version.md:Solving
---8<--
+### 1. Solving
 
---8<--
-user-view/getting-started-light-version.md:Viewing
---8<--
+After fetching data, solve the scheduling problem for the same planning unit and date range:
+
+```bash
+uv run staff-scheduling solve 77 01.11.2024 30.11.2024
+```
+
+This writes solution files to `found_solutions/` and uses the fetched case data in `cases/77/11_2024/`.
+
+### 2. Viewing
+
+Preferred workflow: use StaffSchedulingWeb to inspect solutions in a browser UI. See [Web Interface](./web-interface.md).
+
+Legacy local viewer (optional):
+
+```bash
+uv run staff-scheduling plot 77
+```
+
+Then open the shown URL in your browser (usually [http://127.0.0.1:5020](http://127.0.0.1:5020)).
