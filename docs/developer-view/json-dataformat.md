@@ -1,227 +1,100 @@
-# File: `employees_types.json`
+# JSON Data Formats
 
-### Description
+This page is the developer-oriented reference for JSON files used by the backend pipeline.
+For user-editable configuration, prefer the User View configuration pages:
 
-This file contains three lists of interal job titles that are mapped to the job categories / level
-that we use: "Azubi", "Fachkraft" and "Hilfskraft".
+- [Overview of Configurations](../user-view/configuration/index.md)
+- [Assemble Staff](../user-view/configuration/staff.md)
+- [Modify Vacation Days](../user-view/configuration/vacation-days.md)
+- [Modify Forbidden Days / Shifts](../user-view/configuration/forbidden-days.md)
+- [Adapting Weights](../user-view/configuration/weights.md)
+- [Modify Round Permissions](../user-view/configuration/rounds-permissions.md)
+- [Qualification Mapping](../user-view/configuration/qualifications.md)
+- [Minimal Number of Staff](../user-view/configuration/min-staff.md)
+- [Blocking Shifts](../user-view/configuration/blocked-shifts.md)
+- [Preplanning Shifts](../user-view/configuration/planned-shifts.md)
+## File Location Convention
 
-### Structure
+Most case files live in one of these locations:
+- Month-based: `cases/{case_id}/{MM_YYYY}/{file}.json`
+- Fallback: `cases/{case_id}/{file}.json`
 
-```jsonc
-{
-  "Azubi": "list",          // List of all internal job titles that are seen as "Azubi"
-  "Fachkraft": "list",      // List of all internal job titles that are seen as "Fachkraft"
-  "Hilfskraft": "list"      // List of all internal job titles that are seen as "Hilfskraft"
-}
-```
-
+The filesystem loader first uses the month folder if available.
 ---
 
-# File: `employees.json`
+## Shared Config Files (see User View)
+The following files are documented in detail in the User View configuration pages and are only listed here for completeness:
 
-### Description
-
-This file contains a list of all employees within our planning unit (Planungseinheit), including their `key` (internal ID), `personnel_number`, `name`, `firstname`, and `title` (job title).
-
-### Structure
-
-```jsonc
-{
-  "employees": [             // List of all employees
-    {
-      "key": "int",          // Internal primary key ID
-      "firstname": "string", // First name of the employee
-      "name": "string",      // Last name of the employee
-      "type": "string"       // Job title (may include an intern classification code)
-    }
-  ]
-}
-```
+- `employees.json`
+- `employee_types.json`
+- `free_shifts_and_vacation_days.json`
+- `general_settings.json`
+- `minimal_number_of_staff.json`
+- `wishes_and_blocked.json`
+- `weights.json` (optional, month-based; defaults are used if missing)
 
 ---
+## Developer-Specific / Import Files
 
-# File: `free_shifts_and_vacation_days.json`
+### File: `shift_information.json`
+#### Description
 
-### Description
+Raw shift metadata exported from source systems. The solver currently uses internally defined shifts, but this file is still part of the case import data.
 
-This file contains the list of all employees within our PE (Planungseinheit) which already have submitted vacation days or shifts within TimeOffice or days that are either crossed off or worked within another PE. If an employee is not working somewehere else or has blocked days then an empty entry exists.
-
-### Structure
-
-```jsonc
-{
-  "employees": [             // List of all employees
-    {
-      "key": "int",          // Internal primary key ID
-      "firstname": "string", // First name of the employee
-      "name": "string",      // Last name of the employee
-      "forbidden_days": [    // Days that are crossed off within TimeOffice = not available
-        ["int"]
-      ],
-      "reserved": [          // Shifts that are crossed off within TimeOffice and worked in
-        ["int", "string"]    // another PE = not available
-      ],
-      "vacation_days": [     // Days that are marked as vacation days = not available
-        ["int"]
-      ]
-    }
-  ]
-}
-```
-
----
-
-# File: `general_settings.json`
-
-### Description
-
-This file contains qualifications of specific employees identified by their key.
-The only qualification currently in use is "rounds".
-
-### Structure
+#### Structure
 
 ```jsonc
-{
-  "qualifications": {
-    "employee_key_A": "list"["str"],
-    "employee_key_B": "list"["str"],
-    ...
-  }
-}
-```
-
----
-
-# File: `minimal_number_of_staff.json`
-
-### Description
-
-This file contains three tables in JSON Format: ["Azubi"](../user-view/list-of-conditions.md#azubis), [”Hilfskraft"](../user-view/list-of-conditions.md#hilfskräfte), ["Fachkräfte"](../user-view/list-of-conditions.md#fachkräfte). Those tables set the required number of employees of a specific type on every weekday for each shifts.
-
-### Structure
-
-```jsonc
-{
-  "Azubi": {
-    "Mo": {
-      "F": "int",
-      "N": "int",
-      "S": "int"
-    },
-    ...
-  },
-  "Hilfkraft": {
-    "Mo": {
-      "F": "int",
-      "N": "int",
-      "S": "int"
-    },
-    ...
-  },
-  "Fachkraft": {
-    "Mo": {
-      "F": "int",
-      "N": "int",
-      "S": "int"
-    },
-    ...
-  }
-}
-```
-
----
-
-# File: `shift_information.json`
-
-### Description
-
-This file contains all information known about each type of shift.
-
-### Structure
-
-```jsonc
+[
   {
-    "break_duration": "float",              // Break duration in Minutes
-    "end_time": "string YYYY-MM-DDTHH:MM:SS",   // end of shift, timestamp
-    "shift_duration": "float",              // difference between end and start in minutes
+    "break_duration": "float",                 // Minutes
+    "end_time": "string YYYY-MM-DDTHH:MM:SS",
+    "shift_duration": "float",                 // Minutes (including break)
     "shift_id": "string",
     "shift_name": "string",
-    "start_time": "string YYYY-MM-DDTHH:MM:SS",   // start of shift, timestamp
-    "working_minutes": "float"              // shift duration minus break duration
-  },
+    "start_time": "string YYYY-MM-DDTHH:MM:SS",
+    "working_minutes": "float"                 // Minutes (excluding break)
+  }
+]
 ```
+### File: `target_working_minutes.json`
 
+#### Description
+
+Target and already recorded working minutes per employee for the planning month.
+
+#### Structure
+
+```jsonc
+{
+  "employees": [
+    {
+      "key": "int",
+      "firstname": "string",
+      "name": "string",
+      "actual": "float",   // Already recorded minutes
+      "target": "float"    // Monthly target minutes
+    }
+  ]
+}
+```
+### File: `worked_sundays.json`
+
+#### Description
+
+Historical helper data for Sundays worked in the last 12 months.
+
+#### Structure
+
+```jsonc
+{
+  "worked_sundays": [
+    {
+      "key": "int",
+      "firstname": "string",
+      "name": "string",
+      "worked_sundays": "int"
+    }
+  ]
+}
+```
 ---
-
-# File: `target_working_minutes.json`
-
-### Description
-
-This file contains the list of all employees within our PE (Planungseinheit) referring to their monthly target working minutes and the already existing working minutes within TimeOffice.
-
-### Structure
-
-```jsonc
-{
-  "employees": [             // List of all employees
-    {
-      "key": "int",          // Internal primary key ID
-      "firstname": "string", // First name of the employee
-      "name": "string",      // Last name of the employee
-      "actual": "float",     // Already worked/registered working minutes within TimeOffice
-      "target": "float"      // Target working minutes for the current month
-    }
-  ]
-}
-```
-
----
-
-# File: `wishes_and_blocked.json`
-
-### Description
-
-This file contains the list of employees within our PE (Planungseinheit) which have submitted wishes of their preferences for off-shifts and off-days as well as unavailability due to special circumstances such as health or family-related restrictions. This file need to be created by hand as the wishes currently cannot be inserted via TimeOffice.
-
-### Structure
-
-```jsonc
-{
-  "employees": [               // List of all employees
-    {
-      "key": "int",            // Internal primary key ID
-      "firstname": "string",   // First name of the employee
-      "name": "string",        // Last name of the employee
-      "blocked_days": ["int"], // Unavailable days due to health reasons, family-related restrictions or personal unavailability
-      "blocked_shifts": [      // Unavailable shifts due to health reasons, family-related
-        ["int", "string"]      // restrictions or personal unavailability
-      ],
-      "wish_days": ["int"],    // Days that employee wishes to get off or avoid
-      "wish_shifts": [         // Shifts that employee wishes to get off or avoid
-        ["int", "string"]
-      ]
-    }
-  ]
-}
-```
-
-# File: `worked_sundays.json`
-
-### Description
-
-This file contains the list of all employees within our PE (Planungseinheit) and how many sundays they have already worked in the last 12 months.
-
-### Structure
-
-```jsonc
-{
-  "employees": [               // List of all employees
-    {
-      "key": "int",            // Internal primary key ID
-      "firstname": "string",   // First name of the employee
-      "name": "string",        // Last name of the employee
-      "worked_sundays": "int"  // Count of already worked sundays in last 12 months
-    }
-  ]
-}
-```
