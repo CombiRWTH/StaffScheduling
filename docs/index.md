@@ -14,6 +14,10 @@ database access.
 - Without database access: [Getting Started Guide (Light)](./user-view/getting-started-light-version)
 - With database access: [Getting Started Guide](./developer-view/getting-started-dev)
 
+## Web Interface
+
+A modern, browser-based frontend for the Staff Scheduling solver is available as a separate project: **[StaffSchedulingWeb](https://julian466.github.io/StaffSchedulingWeb/)**. It provides a full graphical interface for data management, solver control, solution inspection, and TimeOffice integration - no command-line interaction required. See the [Web Interface documentation](./developer-view/web-interface) for details.
+
 ## Getting an Overview
 If you just want to get an overview over the codebase and the problem,
 you should start with those guides:

@@ -7,3 +7,6 @@ Get right into it:
 - Understand the problem: [Problem Defintion](./problem-definition)
 - Know the Conditions: [List of Conditions](./list-of-conditions)
 - Run it yourself: [Getting Started](./getting-started-light-version)
+
+!!! tip "Web Interface Available"
+    Prefer a graphical interface? **[StaffSchedulingWeb](https://julian466.github.io/StaffSchedulingWeb/)** provides a browser-based frontend for the complete scheduling workflow — from data import to solution inspection. See the [Web Interface page](../developer-view/web-interface) for more information.

@@ -2,6 +2,9 @@
 
 This project provides a FastAPI-based HTTP interface so the solver can be used without the CLI.
 
+!!! note "Web Frontend"
+    A full-featured web application that consumes this API is available: **[StaffSchedulingWeb](https://julian466.github.io/StaffSchedulingWeb/)**. It provides a graphical interface for all API operations described below, including real-time solver progress monitoring and interactive solution inspection. See [Web Interface](./web-interface.md) for details.
+
 ## Start the API
 
 ```bash
@@ -32,7 +35,7 @@ solver and should be interpreted as follows:
 - `idle` – no solver is running
 - `phase_1_upper_bound` – first pass to compute an upper bound on hidden
   employees (fast, relaxes staffing constraints)
-- `phase_2_tight_bound` – second pass tuning hidden‑employee counts to a
+- `phase_2_tight_bound` – second pass tuning hidden-employee counts to a
   tight bound
 - `phase_3_optimizing` – main optimization/search phase (respects the
   `timeout` parameter)
@@ -47,7 +50,7 @@ Example response:
 }
 ```
 
-Additional properties during a multi‑solve run:
+Additional properties during a multi-solve run:
 
 - `weight_id` – index of the current weight configuration
 - `total_weights` – number of iterations planned
@@ -166,7 +169,7 @@ returns its own status and (when available) the processed solution data.
 
 Each object in `results` contains:
 
-- `weight_id` – zero‑based index of the weight configuration
+- `weight_id` – zero-based index of the weight configuration
 - `status` – OR-Tools return code for that iteration
 - `solution_data` – full processed solution dict or `null` if the run
   produced no valid solution
@@ -243,3 +246,6 @@ disk IO (useful for stateless frontend workflows).
 3. Poll `GET /status` while solving
 4. `POST /insert` to write the selected solution to TimeOffice
 5. Optional: `POST /delete` to revert inserted solution data
+
+!!! tip "Using the Web Interface"
+    All of these steps can be performed through the [StaffSchedulingWeb](./web-interface.md) graphical interface, which handles API calls, status polling, and result display automatically.
