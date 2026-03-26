@@ -5,19 +5,13 @@ user-view/list-of-conditions.md:rotate-shifts-forwards
 ### Implemented using Google's OR Tools
 
 ```python title="src/cp/objectives/rotate_shifts_forward.py"
-model.add_bool_and(
-    [current_shift_variable, next_desired_shift_variable]
-).only_enforce_if(rotation_variable)
-model.add_bool_or(
-    [
-        current_shift_variable.Not(),
-        next_desired_shift_variable.Not(),
-    ]
-).only_enforce_if(rotation_variable.Not())
-
-...
+# rotation_var is True when employee works from_shift on day1
+    model.add_bool_and([from_shift_var, to_shift_var]).only_enforce_if(rotation_var)
+    model.add_bool_or([from_shift_var.Not(), to_shift_var.Not()]).only_enforce_if(
+        rotation_var.Not()
+    )
 
 return sum(possible_rotation_variables) * -1 * self.weight
 ```
 
-Rotating the shifts forward is rewarded with a positive score in the objective function.
+Rotating the shifts forward is rewarded in the objective function.
