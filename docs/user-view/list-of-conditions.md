@@ -139,6 +139,7 @@ objectives = [
 - [Minimize overtime and undertime](#minimize-overtime-and-undertime)
 - [Not too many consecutive working days](#not-too-many-consecutive-working-days)
 - [Rotate shifts forwards](#rotate-shifts-forwards)
+- [Encourage preferred block length](#preferred-block-length)
 
 ## All Objectives
 
@@ -169,23 +170,12 @@ A schedule is found that increases the number of free days near weekends (Fri, S
 ### Maximize Wishes [^2]
 # --8<-- [start:maximize-wishes]
 We try to grant as many wishes of the employees as possible. The employee can wish for a free shift or a complete free day.
-In our visualization wishes are also shown:
-
-- colored small diamond: employee wishes to have shift corresponding to the color off
-- brown triangle: employee wished to have the whole day off
-- green background: wish for specific shift off was granted
-- yellow background: wish for complete day off was granted
 # --8<-- [end:maximize-wishes]
 
 
-### Minimize hidden employees
+### Minimize hidden employees/ Minimize hidden employee count
 # --8<-- [start:minimize-hidden-employees]
-Hidden employees are employees that do not exist. Shifts should only be assigned to
-them if otherwise a valid solution cannot be found. This for example happens, if there
-is a shortage on skilled employees.
-Hidden employees do not have the same rules as real employees, they can work multiple
-shifts per day. They should indicate how many employees / how many shifts are missing
-to get a valid schedule.
+Hidden employees are employees that have to be borrowed from a different hospital unit. Shifts should only be assigned to them if otherwise a valid solution cannot be found, e.g., if there is a shortage on skilled employees.
 # --8<-- [end:minimize-hidden-employees]
 
 
@@ -213,6 +203,10 @@ The forward shift rotation constraint requires employees to transition from earl
 An employee's weekly schedule should progress from early shifts to late shifts and then to night shifts, not the other way around.
 # --8<-- [end:rotate-shifts-forwards]
 
+### Encourage preferred block length [^4]
+# --8<-- [start:preferred-block-length]
+Similar to the objective that rewards forward rotating shifts, this objective is designed to create more employee friendly schedules. This is done by rewarding shift phases of the same shift that are close to the pre-defined optimal block length.
+# --8<-- [end:preferred-block-length]
 
 [^1]: [OR Tools Documentation](https://developers.google.com/optimization/reference/python/sat/python/cp_model#cp_model.CpModel)
 [^2]: Problem definition (as this was a lab course at RWTH)
