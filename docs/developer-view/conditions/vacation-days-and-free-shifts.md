@@ -8,15 +8,12 @@ This might be one of the easiest constraints. If an employee is unavailable for 
 
 ```python title="src/cp/constraints/vacation_days_and_shifts.py"
 if employee.unavailable(day):
-    day_variable = variables[EmployeeDayVariable.get_key(employee, day)]
+    day_variable = employee_works_on_day_variables[employee][day]
     model.add(day_variable == 0)
 ```
 
 ```python title="src/cp/constraints/vacation_days_and_shifts.py"
-for shift in self._shifts:
-    if employee.unavailable(day, shift):
-        shift_variable = variables[
-            EmployeeDayShiftVariable.get_key(employee, day, shift)
-        ]
-        model.add(shift_variable == 0)
+if employee.unavailable(day, shift):
+    shift_variable = shift_assignment_variables[employee][day][shift]
+    model.add(shift_variable == 0)
 ```

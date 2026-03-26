@@ -35,7 +35,7 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
         employee_works_on_day_variables: EmployeeWorksOnDayVariables,
     ) -> LinearExpr:
         penalties: list[LinearExpr] = []
-        # why not cover longer nightn shift phases in this for loop?
+        # why not cover longer night shift phases in this for loop?
         for phase_length in range(2, 5):
             possible_night_shift_phase_variables: list[IntVar] = []
             for employee in self._employees:

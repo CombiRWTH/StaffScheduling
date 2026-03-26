@@ -11,8 +11,7 @@ user-view/list-of-conditions.md:min-working-phases
 return sum(possible_overwork_variables) * self.weight
 ```
 
-For each non hidden employee we create variables that show potential day phases that are longer than `max_consecutive_shifts`, meaning working multiple days after each other. `max_consective_shifts` is set to `MAX_CONSECUTIVE_NIGHTS` which is defined as `5` in `src/solve.py`.
-The sum of those variables corresponding to phases is weighed and used as penalty. For longer phase length the weight is increased exponentially, penaltising long night shifts quite heavily.
+For each employee we create variables that show potential day phases that are longer than `MAX_CONSECUTIVE_DAYS`, which is defined in `src/cp/constants.py`.
 
 !!! note
 

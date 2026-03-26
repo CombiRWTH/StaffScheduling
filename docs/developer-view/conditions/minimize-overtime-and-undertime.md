@@ -13,4 +13,4 @@ user-view/list-of-conditions.md:min-over-and-undertime
 return sum(possible_overtime_absolute_variables) * self._weight
 ```
 
-Each minute of overtime or undertime is punished with a negative score in the objective function.
+Each minute of overtime or undertime is punished the objective function.
