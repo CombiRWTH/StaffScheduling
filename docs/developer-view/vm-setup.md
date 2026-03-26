@@ -1,10 +1,7 @@
-# VM Process Documentation
-
-
-
 ## Accessing the VM
 
 Download the required VM access files from Moodle, including:
+
 - The `.rdp` file to connect to the VM
 - The VM password
 
@@ -22,7 +19,7 @@ Once connected to the VM:
 - Double click a month to open the planning interface
 - Save the initial plan to populate databases with staff info
 - Click the dropdown next to the magic wand and select *rwth_staff_scheduling*
-- This will execute a script found at `C:\Tools` and launch the [workflow frontend](./web-interface.md) for the selected month and station.
+- This will execute a script found at `C:\Tools\run.bat` (or in the repo at `src/run.bat`) and launch the [workflow frontend](./web-interface.md) for the selected month and station.
 - The relevant repositories are located in:
 
 ```
