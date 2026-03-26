@@ -5,10 +5,11 @@ user-view/list-of-conditions.md:maximize-wishes
 ### Implemented using Google's OR Tools
 
 ```python title="src/cp/objectives/maximize_wishes.py"
+for ...
+    for ...
+        penalties.append(penalty)
 
-model.Add(penalty == 1).OnlyEnforceIf(var)
-model.Add(penalty == 0).OnlyEnforceIf(var.Not())
-penalties.append(penalty)
+return cast(LinearExpr, sum(penalties)) * self.weight
 ```
 
-For each non hidden employee we penalties all wished shifts or days that are not granted. `var` in this case means that the employee has to work the wished day or wished shift.
+For each employee we penalize all wished shifts or days that are not granted.

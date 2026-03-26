@@ -51,6 +51,7 @@ nav:
               - Minimize overtime and undertime: developer-view/conditions/minimize-overtime-and-undertime.md
               - Not too many consecutive working days: developer-view/conditions/not-too-many-consecutive-working-days.md
               - Rotate shifts forwards: developer-view/conditions/rotate-shifts-forwards.md
+              - Encourage preferred block length: developer-view/conditions/preferred-block-length.md
       - Database:
             - Connection and Overview: developer-view/database-overview/database-connection.md
             - Tables: developer-view/database-overview/database-tables.md
