@@ -1,10 +1,7 @@
-# VM Process Documentation
-
-
-
 ## Accessing the VM
 
 Download the required VM access files from Moodle, including:
+
 - The `.rdp` file to connect to the VM
 - The VM password
 
