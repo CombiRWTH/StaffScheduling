@@ -1,3 +1,6 @@
-ExampleSolutionView.html linguist-generated  # Exclude from stats
+# Exclude generated HTML from GitHub language stats
+ExampleSolutionView.html linguist-generated
+# Treat docs as documentation in GitHub Linguist
 docs/** linguist-documentation
+# Treat case data as generated in GitHub Linguist
 cases/** linguist-generated
