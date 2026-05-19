@@ -1,13 +1,66 @@
-.venv
-database/.env
-*.pyc
-tempCodeRunnerFile.py
+# OS / editor files
+.DS_Store
 .DS_store
-found_solutions/*.json
-algorihtm/__pycache__
-.idea
-site
+.idea/
+.vscode/
+*.swp
+*.swo
+tempCodeRunnerFile.py
+
+# Docker / local runtime files
+.docker/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Local notebooks / scratch files
+.ipynb_checkpoints/
+scratch/
+tmp/
+temp/
+
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyright/
+.coverage
+.coverage.*
+htmlcov/
+
+# Build / packaging artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Documentation build output
+site/
+
+# Environment / secrets
 .env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Solver outputs
+found_solutions/*.json
+processed_solutions/*
+
+cases/*/
+!cases/case_catalog.md
+
+# Test-generated outputs
 tests/cp/constraints/output_test_all_constraints*
 tests/cp/constraints/mass*
-processed_solutions/*
+tests/cp/constraints/mass_test_results/
