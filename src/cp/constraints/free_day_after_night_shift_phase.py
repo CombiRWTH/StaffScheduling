@@ -5,6 +5,7 @@ from ortools.sat.python.cp_model import CpModel
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..constants import SPECIAL_NIGHT_SHIFT_INDEX
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
@@ -16,11 +17,11 @@ class FreeDayAfterNightShiftPhaseConstraint(Constraint):
     def KEY(self) -> str:
         return "free-day-after-night-shift-phase"
 
-    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift], stations: list[Station]):
         """
         Initializes the constraint that ensures an employee has a free day after a night shift phase.
         """
-        super().__init__(employees, days, shifts)
+        super().__init__(employees, days, shifts, stations)
 
     def create(
         self,

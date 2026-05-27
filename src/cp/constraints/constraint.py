@@ -5,18 +5,20 @@ from ortools.sat.python.cp_model import CpModel, LinearExpr
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 
 
 class Constraint(ABC):
-    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift], stations: list[Station]):
         """
         Initializes the constraint with the given employees, days, and shifts.
         """
         self._employees = employees
         self._days = days
         self._shifts = shifts
+        self._stations = stations
 
     @property
     @abstractmethod

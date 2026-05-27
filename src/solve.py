@@ -86,8 +86,10 @@ def solve_with_constraints_only(
     solver.parameters.num_workers = 8
     solver.parameters.max_time_in_seconds = 5
     solver.parameters.linearization_level = 0
+    solver.parameters.log_search_progress = True
 
     start = time.time()
+
     solver.solve(model.cpModel)
     end = time.time()
     logging.info(f"Wall time: {end - start}")
