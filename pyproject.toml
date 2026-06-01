@@ -56,3 +56,9 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "W", "I", "C4", "ISC", "PT", "Q", "UP"] # Plan to add 'N' and 'ANN' later
+
+[tool.pytest.ini_options]
+addopts = "-m 'not integration'"
+markers = [
+    "integration: tests that run the solver or cross module boundaries"
+]

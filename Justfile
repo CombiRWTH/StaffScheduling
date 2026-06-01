@@ -11,17 +11,17 @@ _default:
 sync:
     uv sync
 
-test:
-    uv run pytest
+test *args:
+    uv run pytest {{args}}
 
-lint:
-    uv run ruff check .
+lint *args:
+    uv run ruff check . {{args}}
 
-format:
-    uv run ruff format .
+format *args:
+    uv run ruff format . {{args}}
 
-typecheck:
-    uv run pyright .
+typecheck *args:
+    uv run pyright . {{args}}
 
 check: lint typecheck test
 
