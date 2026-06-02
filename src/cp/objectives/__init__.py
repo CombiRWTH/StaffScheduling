@@ -32,3 +32,6 @@ from .preferred_block_length import (
 from .rotate_shifts_forward import (
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
 )
+from .minimize_wish_penalty_range import (
+    MinimizeWishPenaltyRangeObjective as MinimizeWishPenaltyRangeObjective,
+)

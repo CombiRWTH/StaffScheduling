@@ -12,6 +12,7 @@ from src.cp import (
     FreeDaysNearWeekendObjective,
     HierarchyOfIntermediateShiftsConstraint,
     MaximizeEmployeeWishesObjective,
+    MinimizeWishPenaltyRangeObjective, 
     MaxOneShiftPerDayConstraint,
     MinimizeConsecutiveNightShiftsObjective,
     # MinimizeHiddenEmployeeCountObjective,
@@ -200,6 +201,7 @@ def main(
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, weights["consecutive_days"], employees, days),
         RotateShiftsForwardObjective(weights["rotate"], employees, days, shifts),
         MaximizeEmployeeWishesObjective(weights["wishes"], employees, days, shifts),
+        MinimizeWishPenaltyRangeObjective(weights["wishes"], employees, days, shifts),
         FreeDaysAfterNightShiftPhaseObjective(weights["after_night"], employees, days, shifts),
         EverySecondWeekendFreeObjective(weights["second_weekend"], employees, days),
         PreferredBlockLengthObjective(

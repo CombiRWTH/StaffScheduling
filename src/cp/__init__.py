@@ -65,3 +65,6 @@ from .objectives import (
 from .objectives import (
     RotateShiftsForwardObjective as RotateShiftsForwardObjective,
 )
+from .objectives import (
+    MinimizeWishPenaltyRangeObjective as MinimizeWishPenaltyRangeObjective,
+)
