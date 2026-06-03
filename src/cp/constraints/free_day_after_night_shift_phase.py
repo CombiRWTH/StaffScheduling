@@ -17,6 +17,9 @@ class FreeDayAfterNightShiftPhaseConstraint(Constraint):
         return "free-day-after-night-shift-phase"
 
     def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+        """
+        Initializes the constraint that ensures an employee has a free day after a night shift phase.
+        """
         super().__init__(employees, days, shifts)
 
     def create(
@@ -25,36 +28,36 @@ class FreeDayAfterNightShiftPhaseConstraint(Constraint):
         shift_assignment_variables: ShiftAssignmentVariables,
         employee_works_on_day_variables: EmployeeWorksOnDayVariables,
     ) -> None:
-        regular_night_shift = self._find_shift_by_id(Shift.NIGHT)
-        special_night_shift = self._find_shift_by_id(SPECIAL_NIGHT_SHIFT_INDEX)
-
-        night_shifts = [shift for shift in (regular_night_shift, special_night_shift) if shift is not None]
-
-        if not night_shifts:
-            return
+        # This function falsely ignores special night shifts
 
         for employee in self._employees:
             for day in self._days[:-1]:
-                tomorrow = day + timedelta(days=1)
-                day_tomorrow_variable = employee_works_on_day_variables[employee][tomorrow]
-
-                night_shift_today_variables = [
-                    shift_assignment_variables[employee][day][shift] for shift in night_shifts
-                ]
-                night_shift_tomorrow_variables = [
-                    shift_assignment_variables[employee][tomorrow][shift] for shift in night_shifts
+                night_shift_today_variable = shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]]
+                night_shift_tomorrow_variable = shift_assignment_variables[employee][day + timedelta(1)][
+                    self._shifts[Shift.NIGHT]
                 ]
 
-                for night_shift_today_variable in night_shift_today_variables:
-                    model.add(day_tomorrow_variable == 0).only_enforce_if(
-                        [
-                            night_shift_today_variable,
-                            *[
-                                night_shift_tomorrow_variable.Not()
-                                for night_shift_tomorrow_variable in night_shift_tomorrow_variables
-                            ],
-                        ]
-                    )
+                # N5 is a special form of night shifts
+                night_shift_today_variable_special = shift_assignment_variables[employee][day][
+                    self._shifts[SPECIAL_NIGHT_SHIFT_INDEX]
+                ]
+                night_shift_tomorrow_variable_special = shift_assignment_variables[employee][day + timedelta(1)][
+                    self._shifts[SPECIAL_NIGHT_SHIFT_INDEX]
+                ]
 
-    def _find_shift_by_id(self, shift_id: int) -> Shift | None:
-        return next((shift for shift in self._shifts if shift.get_id() == shift_id), None)
+                day_tomorrow_variable = employee_works_on_day_variables[employee][day + timedelta(1)]
+                # where are day_tomorrow_variables enforced? this may be the cause of the bug menitioned in the docs
+                model.add(day_tomorrow_variable == 0).only_enforce_if(
+                    [
+                        night_shift_today_variable,
+                        night_shift_tomorrow_variable.Not(),
+                        night_shift_tomorrow_variable_special.Not(),
+                    ]
+                )
+                model.add(day_tomorrow_variable == 0).only_enforce_if(
+                    [
+                        night_shift_today_variable_special,
+                        night_shift_tomorrow_variable.Not(),
+                        night_shift_tomorrow_variable_special.Not(),
+                    ]
+                )
