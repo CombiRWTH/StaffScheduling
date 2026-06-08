@@ -1,9 +1,9 @@
-from src.scheduling.models.dataset import SchedulingDataset, StationMonthData
+from src.scheduling.models import SchedulingDataset, StationMonthData
 from src.scheduling.timeoffice.cache import TimeOfficeCache
 from src.scheduling.timeoffice.database import TimeOfficeDatabase
 from src.scheduling.timeoffice.mapping import TimeOfficeMapper
 from src.scheduling.timeoffice.models import FetchStationsRequest
-from src.scheduling.timeoffice.settings import TimeOfficeSettings
+from src.scheduling.timeoffice.settings import TimeOfficeSettings, load_settings
 
 
 class TimeOfficeService:
@@ -66,7 +66,7 @@ class TimeOfficeService:
 
 def create_timeoffice_service(settings: TimeOfficeSettings | None = None) -> TimeOfficeService:
     """Create the default TimeOffice service."""
-    settings = settings or TimeOfficeSettings()
+    settings = settings or load_settings()
 
     return TimeOfficeService(
         settings=settings,

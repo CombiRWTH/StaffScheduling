@@ -17,14 +17,16 @@ from src.scheduling.models.station import Station
 class StationMonthData(BaseModel):
     """Scheduling-relevant data for one station and one planning period.
 
-    This is the canonical cache payload. It is not TimeOffice-specific and it is
-    not solver-specific.
+    This is the canonical cache payload.
+    It is not TimeOffice-specific and it is not solver-specific.
     """
 
     schema_version: int = 1
 
     station: Station
     period: PlanningPeriod
+
+    source_plan_id: int | None = None
 
     employees: tuple[Employee, ...] = ()
     shifts: tuple[Shift, ...] = ()

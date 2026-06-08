@@ -1,7 +1,6 @@
 from pathlib import Path
 
-from src.scheduling.models.core import PlanningPeriod
-from src.scheduling.models.dataset import StationMonthData
+from src.scheduling.models import PlanningPeriod, StationMonthData
 from src.scheduling.timeoffice.models import CacheWriteResult
 from src.scheduling.timeoffice.settings import TimeOfficeSettings
 
@@ -52,7 +51,7 @@ class TimeOfficeCache:
 
         data_path = self.station_month_data_path(station_id, data.period)
         data_path.write_text(
-            data.model_dump_json(indent=2),
+            data.model_dump_json(indent=2) + "\n",
             encoding="utf-8",
         )
 

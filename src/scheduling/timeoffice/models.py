@@ -2,7 +2,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, field_validator
 
-from src.scheduling.models.core import PlanningPeriod
+from src.scheduling.models import PlanningPeriod
+from src.scheduling.timeoffice.source_models import TimeOfficePlanEmployeeSource, TimeOfficePlanSource
 
 
 class FetchStationsRequest(BaseModel):
@@ -35,14 +36,14 @@ class FetchStationsRequest(BaseModel):
 class TimeOfficeSourceData(BaseModel):
     """Raw TimeOffice source data read from the database.
 
-    Current iteration: shallow placeholder.
-
-    Later this should hold typed source-record collections. It must stay
-    TimeOffice-facing and must not become the canonical scheduling model.
+    This model stays TimeOffice-facing. It must not become the canonical
+    scheduling model.
     """
 
     station_ids: tuple[int, ...]
     period: PlanningPeriod
+    plans: tuple[TimeOfficePlanSource, ...] = ()
+    plan_employees: tuple[TimeOfficePlanEmployeeSource, ...] = ()
 
 
 class CacheWriteResult(BaseModel):
