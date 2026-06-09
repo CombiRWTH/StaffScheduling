@@ -13,6 +13,7 @@ from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
 from src.solution import Solution
+from src.station import Station
 
 from .constraints import Constraint
 from .objectives import Objective
@@ -33,15 +34,17 @@ class Model:
     _employees: list[Employee]
     _days: list[Day]
     _shifts: list[Shift]
+    _stations: list[Station]
     _objectives: list[Objective]
     _penalties: list[LinearExpr]
     _constraints: list[Constraint]
 
-    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift], stations: list[Station]):
         self._model = CpModel()
         self._employees = employees
         self._days = days
         self._shifts = shifts
+        self._stations = stations
         self._objectives = []
         self._penalties = []
         self._constraints = []
@@ -49,6 +52,7 @@ class Model:
             self._employees,
             self._days,
             self._shifts,
+            self._stations,
             self._model,
         )
         self._employeeWorksOnDayVariables = create_employee_works_on_day_variables(
@@ -62,6 +66,7 @@ class Model:
             self._employees,
             self._days,
             self._shifts,
+            self._stations,
             self._model,
         )
 
@@ -78,8 +83,9 @@ class Model:
         for employee in self._employees:
             for day in self._days:
                 for shift in self._shifts:
-                    var = self._shiftAssignmentVariables[employee][day][shift]
-                    variables.append(var)
+                    for station in self._stations:
+                        var = self._shiftAssignmentVariables[employee][day][shift][station]
+                        variables.append(var)
 
         # Add employee works on day variables
         for employee in self._employees:
@@ -117,6 +123,10 @@ class Model:
     @property
     def shifts(self) -> list[Shift]:
         return self._shifts
+
+    @property
+    def stations(self) -> list[Station]:
+        return self._stations
 
     @property
     def penalties(self) -> list[LinearExpr]:

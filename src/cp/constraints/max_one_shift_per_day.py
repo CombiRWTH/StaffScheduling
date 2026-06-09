@@ -3,21 +3,23 @@ from ortools.sat.python.cp_model import CpModel
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .constraint import Constraint
 
 
 class MaxOneShiftPerDayConstraint(Constraint):
+    # This constraint ensures that an employee is assigned to at most one shift on one station per day.
     @property
     def KEY(self) -> str:
         return "one-shift-per-day"
 
-    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift], stations: list[Station]):
         """
         Initializes the constraint that ensures an employee has at most one shift per day.
         """
-        super().__init__(employees, days, shifts)
+        super().__init__(employees, days, shifts, stations)
 
     def create(
         self,
@@ -27,4 +29,8 @@ class MaxOneShiftPerDayConstraint(Constraint):
     ):
         for employee in self._employees:
             for day in self._days:
-                model.add_at_most_one(shift_assignment_variables[employee][day][shift] for shift in self._shifts)
+                model.add_at_most_one(
+                    shift_assignment_variables[employee][day][shift][station]
+                    for shift in self._shifts
+                    for station in self._stations
+                )

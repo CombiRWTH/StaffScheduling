@@ -5,6 +5,7 @@ from ortools.sat.python.cp_model import CpModel
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .constraint import Constraint
@@ -15,11 +16,11 @@ class VacationDaysAndShiftsConstraint(Constraint):
     def KEY(self) -> str:
         return "vacation-days-and-shifts"
 
-    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift], stations: list[Station]):
         """
         Initializes the constraint that ensures employees do not have shifts on their vacation days.
         """
-        super().__init__(employees, days, shifts)
+        super().__init__(employees, days, shifts, stations)
 
     def create(
         self,
@@ -38,12 +39,14 @@ class VacationDaysAndShiftsConstraint(Constraint):
 
                     # what about holidays starting at the beginning of a month?
                     if day.day > 1:
-                        night_shift_variable = shift_assignment_variables[employee][day - timedelta(1)][
-                            self._shifts[Shift.NIGHT]
-                        ]
-                        model.add(night_shift_variable == 0)
+                        for station in self._stations:
+                            night_shift_variable = shift_assignment_variables[employee][day - timedelta(1)][
+                                self._shifts[Shift.NIGHT]
+                            ][station]
+                            model.add(night_shift_variable == 0)
 
                 for shift in self._shifts:
                     if employee.unavailable(day, shift):
-                        shift_variable = shift_assignment_variables[employee][day][shift]
-                        model.add(shift_variable == 0)
+                        for station in self._stations:
+                            shift_variable = shift_assignment_variables[employee][day][shift][station]
+                            model.add(shift_variable == 0)

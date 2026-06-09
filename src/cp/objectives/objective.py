@@ -5,6 +5,7 @@ from ortools.sat.python.cp_model import CpModel, LinearExpr
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..constraints import Constraint
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
@@ -19,11 +20,12 @@ class Objective(Constraint):
         employees: list[Employee],
         days: list[Day],
         shifts: list[Shift],
+        stations: list[Station],
     ):
         """
         Initializes the objective with a weight and the given employees, days, and shifts.
         """
-        super().__init__(employees, days, shifts)
+        super().__init__(employees, days, shifts, stations)
         self._weight = weight
 
     @property

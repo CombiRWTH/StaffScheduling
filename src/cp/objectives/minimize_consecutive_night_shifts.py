@@ -6,6 +6,7 @@ from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
@@ -22,11 +23,12 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
         employees: list[Employee],
         days: list[Day],
         shifts: list[Shift],
+        stations: list[Station],
     ):
         """
         Initializes the objective that minimizes the number of consecutive night shifts.
         """
-        super().__init__(weight, employees, days, shifts)
+        super().__init__(weight, employees, days, shifts, stations)
 
     def create(
         self,
@@ -35,6 +37,23 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
         employee_works_on_day_variables: EmployeeWorksOnDayVariables,
     ) -> LinearExpr:
         penalties: list[LinearExpr] = []
+
+        works_night_shift_on_day_variables = dict[Employee, dict[Day, IntVar]]()
+        for employee in self._employees:
+            works_night_shift_on_day_variables[employee] = dict[Day, IntVar]()
+            for day in self._days:
+                works_night_shift_on_day = model.new_bool_var(
+                    f"works_night_shift_on_day_e:{employee.get_key()}_d:{day}"
+                )
+                model.add_max_equality(
+                    works_night_shift_on_day,
+                    [
+                        shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]][station]
+                        for station in self._stations
+                    ],
+                )
+                works_night_shift_on_day_variables[employee][day] = works_night_shift_on_day
+
         # why not cover longer night shift phases in this for loop?
         for phase_length in range(2, 5):
             possible_night_shift_phase_variables: list[IntVar] = []
@@ -43,10 +62,11 @@ class MinimizeConsecutiveNightShiftsObjective(Objective):
                     night_shift_phase_variable = model.new_bool_var(
                         f"night_shift_phase_e:{employee.get_key()}_d:{day}_l:{phase_length}"
                     )
+
                     window = [
-                        shift_assignment_variables[employee][day + timedelta(i)][self._shifts[Shift.NIGHT]]
-                        for i in range(phase_length)
+                        works_night_shift_on_day_variables[employee][day + timedelta(i)] for i in range(phase_length)
                     ]
+
                     model.add_bool_and(window).only_enforce_if(night_shift_phase_variable)
                     model.add_bool_or([night.Not() for night in window]).only_enforce_if(
                         night_shift_phase_variable.Not()

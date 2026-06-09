@@ -16,7 +16,7 @@ class Employee:
     _vacation_shifts: list[tuple[int, str]]
     _wish_days: list[int]
     _wish_shifts: list[tuple[int, str]]
-    _planned_shifts: list[tuple[int, str]] = []
+    _planned_shifts: list[tuple[int, str, str]] = []
     _qualifications: list[str]
 
     def __init__(
@@ -35,7 +35,7 @@ class Employee:
         vacation_shifts: list[tuple[int, str]] | None = None,
         wish_days: list[int] | None = None,
         wish_shifts: list[tuple[int, str]] | None = None,
-        planned_shifts: list[tuple[int, str]] | None = None,
+        planned_shifts: list[tuple[int, str, str]] | None = None,
         qualifications: list[str] | None = None,
     ):
         """
@@ -126,7 +126,7 @@ class Employee:
         return self._wish_shifts
 
     @property
-    def get_planned_shifts(self) -> list[tuple[int, str]]:
+    def get_planned_shifts(self) -> list[tuple[int, str, str]]:
         return self._planned_shifts
 
     @property

@@ -5,6 +5,7 @@ from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
@@ -21,12 +22,13 @@ class MinimizeHiddenEmployeeCountObjective(Objective):
         employees: list[Employee],
         days: list[Day],
         shifts: list[Shift],
+        stations: list[Station],
     ):
         """
         Initializes the objective to minimize overtime for employees.
         Overtime is calculated as the difference between the total working time and the target working time.
         """
-        super().__init__(weight, employees, days, shifts)
+        super().__init__(weight, employees, days, shifts, stations)
 
     def create(
         self,
@@ -41,8 +43,10 @@ class MinimizeHiddenEmployeeCountObjective(Objective):
                 continue
 
             hidden_employee_is_used = model.new_bool_var(f"hidden_employee_is_used_{employee.get_key()}")
-            for day in self._days:
-                model.add(employee_works_on_day_variables[employee][day] <= hidden_employee_is_used)
+
+            model.add_max_equality(
+                hidden_employee_is_used, [employee_works_on_day_variables[employee][day] for day in self._days]
+            )
 
             hidden_employee_work_vars.append(hidden_employee_is_used)
 

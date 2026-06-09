@@ -3,6 +3,7 @@ from ortools.sat.python.cp_model import CpModel, LinearExpr
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..constants import WEEKEND_DAYS
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables, Variable
@@ -19,6 +20,7 @@ class HierarchyOfIntermediateShiftsConstraint(Constraint):
         employees: list[Employee],
         days: list[Day],
         shifts: list[Shift],
+        stations: list[Station],
     ):
         """
         Initializes the constraint that introduces a hierarchy to the inter
@@ -26,7 +28,7 @@ class HierarchyOfIntermediateShiftsConstraint(Constraint):
         should be assigned. Then one intermediate shift on the weekends,
         then a second intermediate shift on the weekdays and then at the weekends.
         """
-        super().__init__(employees, days, shifts)
+        super().__init__(employees, days, shifts, stations)
 
     def create(
         self,
@@ -42,57 +44,58 @@ class HierarchyOfIntermediateShiftsConstraint(Constraint):
                 weeks[week_number] = []
             weeks[week_number].append(day)
 
-        # Apply constraints week by week
-        for week_days in weeks.values():
-            # For each day in this week, store the sum of intermediate shift assignments
-            day_intermediate_shift_counts: dict[Day, LinearExpr] = {}
+        # Apply constraints week by week for each station
+        for station in self._stations:
+            for week_days in weeks.values():
+                # For each day in this week, store the sum of intermediate shift assignments
+                day_intermediate_shift_counts: dict[Day, LinearExpr] = {}
 
-            for day in week_days:
-                intermediate_shift_variables: list[Variable] = []
+                for day in week_days:
+                    intermediate_shift_variables: list[Variable] = []
 
-                # Only count non-hidden employees
-                for employee in self._employees:
-                    if not employee.hidden:
-                        intermediate_shift_variables.append(
-                            shift_assignment_variables[employee][day][self._shifts[Shift.INTERMEDIATE]]
-                        )
+                    # Only count non-hidden employees
+                    for employee in self._employees:
+                        if not employee.hidden:
+                            intermediate_shift_variables.append(
+                                shift_assignment_variables[employee][day][self._shifts[Shift.INTERMEDIATE]][station]
+                            )
 
-                day_intermediate_shift_counts[day] = LinearExpr.Sum(intermediate_shift_variables)  # type: ignore
+                    day_intermediate_shift_counts[day] = LinearExpr.Sum(intermediate_shift_variables)  # type: ignore
 
-            # Separate days into weekdays and weekends for this week
-            weekdays: list[Day] = []
-            weekends: list[Day] = []
+                # Separate days into weekdays and weekends for this week
+                weekdays: list[Day] = []
+                weekends: list[Day] = []
 
-            for day in week_days:
-                if day.isoweekday() in WEEKEND_DAYS:
-                    weekends.append(day)
-                else:
-                    weekdays.append(day)
+                for day in week_days:
+                    if day.isoweekday() in WEEKEND_DAYS:
+                        weekends.append(day)
+                    else:
+                        weekdays.append(day)
 
-            if weekdays and weekends:
-                # Add variables that represent max(weekdays), min(weekdays), max(weekends)
-                max_weekday = model.new_int_var(
-                    0, len(self._employees), f"max_weekday_{week_days[0].isocalendar().week}"
-                )
-                min_weekday = model.new_int_var(
-                    0, len(self._employees), f"min_weekday_{week_days[0].isocalendar().week}"
-                )
-                max_weekend = model.new_int_var(
-                    0, len(self._employees), f"max_weekend_{week_days[0].isocalendar().week}"
-                )
-                min_weekend = model.new_int_var(
-                    0, len(self._employees), f"min_weekend_{week_days[0].isocalendar().week}"
-                )
+                if weekdays and weekends:
+                    # Add variables that represent max(weekdays), min(weekdays), max(weekends)
+                    max_weekday = model.new_int_var(
+                        0, len(self._employees), f"max_weekday_{week_days[0].isocalendar().week}"
+                    )
+                    min_weekday = model.new_int_var(
+                        0, len(self._employees), f"min_weekday_{week_days[0].isocalendar().week}"
+                    )
+                    max_weekend = model.new_int_var(
+                        0, len(self._employees), f"max_weekend_{week_days[0].isocalendar().week}"
+                    )
+                    min_weekend = model.new_int_var(
+                        0, len(self._employees), f"min_weekend_{week_days[0].isocalendar().week}"
+                    )
 
-                model.add_max_equality(max_weekday, [day_intermediate_shift_counts[day] for day in weekdays])
-                model.add_min_equality(min_weekday, [day_intermediate_shift_counts[day] for day in weekdays])
-                model.add_max_equality(max_weekend, [day_intermediate_shift_counts[day] for day in weekends])
-                model.add_min_equality(min_weekend, [day_intermediate_shift_counts[day] for day in weekends])
+                    model.add_max_equality(max_weekday, [day_intermediate_shift_counts[day] for day in weekdays])
+                    model.add_min_equality(min_weekday, [day_intermediate_shift_counts[day] for day in weekdays])
+                    model.add_max_equality(max_weekend, [day_intermediate_shift_counts[day] for day in weekends])
+                    model.add_min_equality(min_weekend, [day_intermediate_shift_counts[day] for day in weekends])
 
-                # Guarantee that shifts on weekdays and weekends are assigned evenly
-                model.add(max_weekday - min_weekday <= 1)
-                model.add(max_weekend - min_weekend <= 1)
+                    # Guarantee that shifts on weekdays and weekends are assigned evenly
+                    model.add(max_weekday - min_weekday <= 1)
+                    model.add(max_weekend - min_weekend <= 1)
 
-                # Enforce the hierarchy: min(weekdays) <= max(weekends) + 1
-                model.add(max_weekday <= min_weekend + 1)
-                model.add(min_weekday >= max_weekend)
+                    # Enforce the hierarchy: min(weekdays) <= max(weekends) + 1
+                    model.add(max_weekday <= min_weekend + 1)
+                    model.add(min_weekday >= max_weekend)

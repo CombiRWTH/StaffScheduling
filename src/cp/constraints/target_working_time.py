@@ -3,6 +3,7 @@ from ortools.sat.python.cp_model import CpModel, Domain, LinearExpr
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..constants import DEFAULT_MONTHLY_TARGET_MINUTES, TOLERANCE_LESS, TOLERANCE_MORE
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
@@ -14,11 +15,11 @@ class TargetWorkingTimeConstraint(Constraint):
     def KEY(self) -> str:
         return "target-working-time"
 
-    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
+    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift], stations: list[Station]):
         """
         Initializes the constraint that ensures each employee works a target amount of time.
         """
-        super().__init__(employees, days, shifts)
+        super().__init__(employees, days, shifts, stations)
 
     def create(
         self,
@@ -32,12 +33,13 @@ class TargetWorkingTimeConstraint(Constraint):
             possible_working_time: list[LinearExpr] = []
             for day in self._days:
                 for shift in self._shifts:
-                    # why are mothly shifts not supposed to count towards the monthly hours?
-                    if shift.is_exclusive:
-                        continue
+                    for station in self._stations:
+                        # why are mothly shifts not supposed to count towards the monthly hours?
+                        if shift.is_exclusive:
+                            continue
 
-                    variable = shift_assignment_variables[employee][day][shift]
-                    possible_working_time.append(variable * shift.duration)
+                        variable = shift_assignment_variables[employee][day][shift][station]
+                        possible_working_time.append(variable * shift.duration)
 
             working_time_variable = model.new_int_var_from_domain(
                 working_time_domain, f"working_time_e:{employee.get_key()}"

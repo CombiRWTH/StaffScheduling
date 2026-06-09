@@ -33,8 +33,8 @@ class MaximizeEmployeeWishesObjective(Objective):
                     shift = next((s for s in self._shifts if s.abbreviation == abbr), None)
                     if shift is None:
                         continue
-
-                    var = shift_assignment_variables[employee][day][shift]
-                    penalties.append(var)
+                    for station in self._stations:
+                        var = shift_assignment_variables[employee][day][shift][station]
+                        penalties.append(var)
 
         return cast(LinearExpr, sum(penalties)) * self.weight

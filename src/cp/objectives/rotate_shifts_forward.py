@@ -5,6 +5,7 @@ from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .objective import Objective
@@ -21,6 +22,7 @@ class RotateShiftsForwardObjective(Objective):
         employees: list[Employee],
         days: list[Day],
         shifts: list[Shift],
+        stations: list[Station],
     ):
         """
         Initializes the objective that ensures the forward rotation in shifts.
@@ -28,7 +30,7 @@ class RotateShiftsForwardObjective(Objective):
         Only checks rotations within a short timeframe (3 days) to avoid penalizing
         natural weekly resets (NIGHT -> EARLY after a rotation cycle is acceptable).
         """
-        super().__init__(weight, employees, days, shifts)
+        super().__init__(weight, employees, days, shifts, stations)
 
     def create(
         self,
@@ -61,47 +63,49 @@ class RotateShiftsForwardObjective(Objective):
         max_days_between = 3
 
         # Check all employees and day pairs within the time threshold
-        for employee in self._employees:
-            for day_idx in range(len(self._days)):
-                day1 = self._days[day_idx]
+        for station_first in self._stations:
+            for station_second in self._stations:
+                for employee in self._employees:
+                    for day_idx in range(len(self._days)):
+                        day1 = self._days[day_idx]
 
-                # Check days within the next max_days_between days
-                for offset in range(1, min(max_days_between + 1, len(self._days) - day_idx)):
-                    day2 = self._days[day_idx + offset]
+                        # Check days within the next max_days_between days
+                        for offset in range(1, min(max_days_between + 1, len(self._days) - day_idx)):
+                            day2 = self._days[day_idx + offset]
 
-                    # Check all rotation patterns
-                    for from_shift_type, to_shift_type, is_backward in rotation_patterns:
-                        # Get the actual shift objects with these types
-                        from_shift = shift_by_type.get(from_shift_type)
-                        to_shift = shift_by_type.get(to_shift_type)
+                            # Check all rotation patterns
+                            for from_shift_type, to_shift_type, is_backward in rotation_patterns:
+                                # Get the actual shift objects with these types
+                                from_shift = shift_by_type.get(from_shift_type)
+                                to_shift = shift_by_type.get(to_shift_type)
 
-                        # Skip if shift types don't exist in this problem
-                        if from_shift is None or to_shift is None:
-                            continue
+                                # Skip if shift types don't exist in this problem
+                                if from_shift is None or to_shift is None:
+                                    continue
 
-                        # Create a variable for this rotation pattern
-                        rotation_type = "backward" if is_backward else "forward"
-                        rotation_var = model.new_bool_var(
-                            f"{rotation_type}_rotation_e:{employee.get_key()}_"
-                            f"d1:{day1}_s1:{from_shift_type}_"
-                            f"d2:{day2}_s2:{to_shift_type}"
-                        )
+                                # Create a variable for this rotation pattern
+                                rotation_type = "backward" if is_backward else "forward"
+                                rotation_var = model.new_bool_var(
+                                    f"{rotation_type}_rotation_e:{employee.get_key()}_"
+                                    f"d1:{day1}_s1:{from_shift_type}_"
+                                    f"d2:{day2}_s2:{to_shift_type}"
+                                )
 
-                        # rotation_var is True when employee works from_shift on day1
-                        # AND to_shift on day2
-                        from_shift_var = shift_assignment_variables[employee][day1][from_shift]
-                        to_shift_var = shift_assignment_variables[employee][day2][to_shift]
+                                # rotation_var is True when employee works from_shift on day1
+                                # AND to_shift on day2
+                                from_shift_var = shift_assignment_variables[employee][day1][from_shift][station_first]
+                                to_shift_var = shift_assignment_variables[employee][day2][to_shift][station_second]
 
-                        model.add_bool_and([from_shift_var, to_shift_var]).only_enforce_if(rotation_var)
-                        model.add_bool_or([from_shift_var.Not(), to_shift_var.Not()]).only_enforce_if(
-                            rotation_var.Not()
-                        )
+                                model.add_bool_and([from_shift_var, to_shift_var]).only_enforce_if(rotation_var)
+                                model.add_bool_or([from_shift_var.Not(), to_shift_var.Not()]).only_enforce_if(
+                                    rotation_var.Not()
+                                )
 
-                        # Add to appropriate list based on rotation type
-                        if is_backward:
-                            backward_rotation_violations.append(rotation_var)
-                        else:
-                            forward_rotation_rewards.append(rotation_var)
+                                # Add to appropriate list based on rotation type
+                                if is_backward:
+                                    backward_rotation_violations.append(rotation_var)
+                                else:
+                                    forward_rotation_rewards.append(rotation_var)
 
         # In minimization: penalties add to cost (+), rewards subtract from cost (-)
         penalty_term = cast(LinearExpr, sum(backward_rotation_violations)) * self.weight

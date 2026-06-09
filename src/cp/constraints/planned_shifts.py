@@ -5,6 +5,7 @@ from ortools.sat.python.cp_model import CpModel
 from src.day import Day
 from src.employee import Employee
 from src.shift import Shift
+from src.station import Station
 
 from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
 from .constraint import Constraint
@@ -15,8 +16,8 @@ class PlannedShiftsConstraint(Constraint):
     def KEY(self) -> str:
         return "planned-shifts"
 
-    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift]):
-        super().__init__(employees, days, shifts)
+    def __init__(self, employees: list[Employee], days: list[Day], shifts: list[Shift], stations: list[Station]):
+        super().__init__(employees, days, shifts, stations)
 
     def create(
         self,
@@ -27,7 +28,7 @@ class PlannedShiftsConstraint(Constraint):
         # Collect employees with exclusive shifts
         employees_with_exclusive_shifts: dict[str, set[int]] = {}
         for employee in self._employees:
-            for day_num, shift_code in employee.get_planned_shifts:
+            for day_num, shift_code, station_code in employee.get_planned_shifts:
                 # Track exclusive shifts
                 if shift_code in Shift.EXCLUSIVE_SHIFTS:
                     if shift_code not in employees_with_exclusive_shifts:
@@ -54,8 +55,17 @@ class PlannedShiftsConstraint(Constraint):
                 if not shift:
                     logging.warning(f"Shift with ID {shift_id} (code: {shift_code}) not found")
                     continue
+
+                # Find the station
+                station = next(
+                    (s for s in self._stations if s == station_code), None
+                )  # has to be adapted if stations are not just ints anymore
+                if station is None:
+                    logging.warning(f"Station with code {station_code} not found for planned shift")
+                    continue
+
                 # Set the planned shift
-                variable = shift_assignment_variables[employee][day][shift]
+                variable = shift_assignment_variables[employee][day][shift][station]
                 model.add(variable == 1)
         # Forbidden exclusive shifts for unauthorized employees
         for exclusive_shift_code in Shift.EXCLUSIVE_SHIFTS:
@@ -76,8 +86,9 @@ class PlannedShiftsConstraint(Constraint):
             for employee in self._employees:
                 if employee.get_key() not in authorized_employees:
                     for day in self._days:
-                        variable = shift_assignment_variables[employee][day][exclusive_shift]
-                        model.add(variable == 0)
+                        for station in self._stations:
+                            variable = shift_assignment_variables[employee][day][exclusive_shift][station]
+                            model.add(variable == 0)
 
     def _find_shift_by_id(self, shift_id: int) -> Shift | None:
         for shift in self._shifts:
