@@ -80,7 +80,7 @@ def execute_solve(
     timeout: int,
     weight_overrides: dict[str, int] | None = None,
     status_callback: Callable[[str], None] | None = None,
-    analyzer_log: str | None = None,
+    analyzer_log: str | None = "solver_log.txt",
 ) -> SolveResult:
     """Executes a single solver run and processes the solution."""
 

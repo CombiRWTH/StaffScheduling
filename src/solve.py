@@ -7,6 +7,7 @@ from ortools.sat.python.cp_model import CpSolver
 
 from src.cp import (
     EverySecondWeekendFreeObjective,
+    FairPreferencesObjective,
     FreeDayAfterNightShiftPhaseConstraint,
     FreeDaysAfterNightShiftPhaseObjective,
     FreeDaysNearWeekendObjective,
@@ -210,6 +211,7 @@ def main(
             days=days,
         ),
         # MinimizeHiddenEmployeeCountObjective(weights["hidden_count"], employees, days, shifts),
+        FairPreferencesObjective(weight=1000, employees=employees, days=days, shifts=shifts),
     ]
 
     model = Model(employees, days, shifts)

@@ -33,6 +33,9 @@ from .objectives import (
     EverySecondWeekendFreeObjective as EverySecondWeekendFreeObjective,
 )
 from .objectives import (
+    FairPreferencesObjective as FairPreferencesObjective,
+)
+from .objectives import (
     FreeDaysAfterNightShiftPhaseObjective as FreeDaysAfterNightShiftPhaseObjective,
 )
 from .objectives import (
