@@ -167,6 +167,7 @@ def main(
             "after_night": 3,
             "second_weekend": 1,
             "preferred_block": 1,
+            "fairness": 3,
         }
 
     logging.info("General information:")
@@ -210,8 +211,8 @@ def main(
             employees=employees,
             days=days,
         ),
+        FairPreferencesObjective(weights["fairness"], employees=employees, days=days, shifts=shifts),
         # MinimizeHiddenEmployeeCountObjective(weights["hidden_count"], employees, days, shifts),
-        FairPreferencesObjective(weight=1000, employees=employees, days=days, shifts=shifts),
     ]
 
     model = Model(employees, days, shifts)
