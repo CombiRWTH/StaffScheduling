@@ -1,6 +1,17 @@
-from typing import Literal
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
+
+
+class ShiftKind(StrEnum):
+    """Canonical solver-facing shift category."""
+
+    EARLY = "early"
+    INTERMEDIATE = "intermediate"
+    LATE = "late"
+    NIGHT = "night"
+    MANAGEMENT = "management"
+    OTHER = "other"
 
 
 class Shift(BaseModel):
@@ -18,7 +29,7 @@ class Shift(BaseModel):
     source_shift_id: int | None = None
     source_code: str | None = None
 
-    kind: Literal["early", "intermediate", "late", "night", "management", "other"]
+    kind: ShiftKind
 
     start_minute: int = Field(ge=0, lt=24 * 60)
     end_minute: int = Field(ge=0, lt=24 * 60)
@@ -27,6 +38,7 @@ class Shift(BaseModel):
     break_minutes: int = Field(default=0, ge=0)
     net_work_minutes: int = Field(ge=0)
 
+    assignable: bool = True
     counts_as_work: bool = True
     counts_for_minimum_staffing: bool = True
     is_night: bool = False

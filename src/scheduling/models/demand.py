@@ -1,7 +1,12 @@
 from datetime import date
-from typing import Literal
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
+
+
+class DemandType(StrEnum):
+    MINIMUM = "minimum"
+    OPTIONAL = "optional"
 
 
 class Demand(BaseModel):
@@ -16,6 +21,6 @@ class Demand(BaseModel):
     required_group_id: str | None = None
     required_qualification_id: str | None = None
 
-    demand_type: Literal["minimum", "optional"] = "minimum"
+    demand_type: DemandType = DemandType.MINIMUM
     priority: int = Field(default=0, ge=0)
     weight: int = Field(default=1, ge=0)

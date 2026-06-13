@@ -45,7 +45,6 @@ def fetch(
             start=start.date(),
             end=end.date(),
         ),
-        use_cache=use_cache,
     )
 
     timeoffice = create_timeoffice_service()

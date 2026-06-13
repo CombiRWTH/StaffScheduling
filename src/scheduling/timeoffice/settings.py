@@ -1,6 +1,4 @@
-from pathlib import Path
-
-from pydantic import Field, SecretStr
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,11 +15,6 @@ class TimeOfficeSettings(BaseSettings):
     db_name: str
     db_user: str
     db_password: SecretStr
-
-    enable_cache: bool = True
-    cache_root: Path = Path(".cache/timeoffice")
-
-    jump_pool_station_ids: tuple[int, ...] = Field(default_factory=tuple)
 
 
 def load_settings() -> TimeOfficeSettings:
