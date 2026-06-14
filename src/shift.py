@@ -26,12 +26,12 @@ class Shift:
         # Special Shifts
         "Z60": MANAGEMENT,  # Leitungsschicht
         # Alternative Shiftcodes
-        "F2_": 5,
-        "S2_": 6,
+        "F2_": EARLY,
+        "S2_": LATE,
         "N5": 7,
     }
     # Only these shifts are exclusive (only for explicitly planned employees and will not count for min staffing)
-    EXCLUSIVE_SHIFTS = ["Z60", "F2_", "S2_", "N5"]
+    EXCLUSIVE_SHIFTS = ["Z60", "N5"]
 
     _id: int
     _name: str

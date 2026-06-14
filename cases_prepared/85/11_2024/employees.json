@@ -1,0 +1,130 @@
+{
+  "employees": [
+    {
+      "firstname": "Richardis",
+      "key": 803,
+      "name": "Reis",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Adelina",
+      "key": 941,
+      "name": "Mosqueda",
+      "type": "Krankenschwester/-pfleger (81302-008)"
+    },
+    {
+      "firstname": "Lidia",
+      "key": 946,
+      "name": "Macdowell",
+      "type": "Stationsleiter/in - Pflegedienst (81393-011)"
+    },
+    {
+      "firstname": "Resie",
+      "key": 954,
+      "name": "Bright",
+      "type": "Servicekraft (63302-045)"
+    },
+    {
+      "firstname": "Daniela",
+      "key": 1144,
+      "name": "Dalessandro",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Pauline",
+      "key": 1147,
+      "name": "Czerwinski",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Charlotte",
+      "key": 1186,
+      "name": "Musick",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Rotraud",
+      "key": 1474,
+      "name": "Renna",
+      "type": "Pflegefachmann/-frau (81302-028)"
+    },
+    {
+      "firstname": "Ehrentrau",
+      "key": 2939,
+      "name": "Snead",
+      "type": "Pflegefachmann/-frau (81302-028)"
+    },
+    {
+      "firstname": "Dahlia",
+      "key": 4082,
+      "name": "Dufour",
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
+    },
+    {
+      "firstname": "Siegmar",
+      "key": 5866,
+      "name": "Mcbrayer",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Auguste",
+      "key": 6303,
+      "name": "Hayek",
+      "type": "Helfer/in - station\u00e4re Krankenpflege (81301-002)"
+    },
+    {
+      "firstname": "Uschi",
+      "key": 6318,
+      "name": "Gamblin",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Heinz",
+      "key": 6475,
+      "name": "Binford",
+      "type": "Helfer/in - station\u00e4re Krankenpflege (81301-002)"
+    },
+    {
+      "firstname": "Gerda",
+      "key": 6724,
+      "name": "Vinton",
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    {
+      "firstname": "Wiebke",
+      "key": 6773,
+      "name": "Liddell",
+      "type": "Pflegeassistent/in (81302-014)"
+    },
+    {
+      "firstname": "Sigrid",
+      "key": 7006,
+      "name": "Cormier",
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    {
+      "firstname": "Annemargr",
+      "key": 7490,
+      "name": "Waldinger",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Thassilo",
+      "key": 7743,
+      "name": "Logsdon",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    {
+      "firstname": "Annerike",
+      "key": 7771,
+      "name": "Ulery",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    {
+      "firstname": "Ingetrud",
+      "key": 7789,
+      "name": "Shumaker",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    }
+  ]
+}

@@ -264,6 +264,7 @@ def export_personal_data_to_json(
 def export_target_working_minutes_to_json(
     engine: Engine,
     planning_unit: int,
+    plan_id: int,
     month: int,
     from_date: date | None = None,
     filename: str = "target_working_minutes.json",
@@ -279,20 +280,30 @@ def export_target_working_minutes_to_json(
     """
 
     # SQL Query to export the target working hours from TPersonalKontenJeMonat
-    query = f"""SELECT
-                    p.Prim,
-                    p.Name AS 'name',
-                    p.Vorname AS 'firstname',
-                    pkt.RefKonten,
-                    pkt.Wert2
-                FROM TPersonalKontenJeMonat pkt
-                JOIN TPersonal p ON pkt.RefPersonal = p.Prim
-                WHERE (pkt.RefKonten = 1  OR pkt.RefKonten = 19 OR pkt.RefKonten = 55) AND pkt.Monat = {month}
-                ORDER BY p.Name asc"""
+    query = f"""
+        SELECT
+            p.Prim,
+            p.Name AS 'name',
+            p.Vorname AS 'firstname',
+            pkt.RefKonten,
+            pkt.Wert2
+        FROM TPlanPersonal pp
+        JOIN TPersonal p
+            ON pp.RefPersonal = p.Prim
+        LEFT JOIN TPersonalKontenJeMonat pkt
+            ON pkt.RefPersonal = p.Prim
+           AND pkt.Monat = {month}
+           AND pkt.RefKonten IN (1, 19, 55)
+        WHERE pp.RefPlan = {plan_id}
+        ORDER BY p.Name ASC
+    """
 
     df = pd.read_sql(query, engine)
 
     # Convert hours (Wert2) to minutes and round to nearest whole number
+    df["Wert2"] = df["Wert2"].fillna(0)
+    df["RefKonten"] = df["RefKonten"].fillna(1)
+    df["RefKonten"] = df["RefKonten"].astype(int)
     df["Wert2"] = (df["Wert2"] * 60).round(0)
 
     # Merging different entries for each employee to summarize all Konten in one entry
@@ -484,10 +495,10 @@ def export_free_shift_and_vacation_days_json(
             p.Name       AS 'name',
             p.Vorname    AS 'firstname',
             pkg.Datum    AS 'planned_shifts',
-			d.KurzBez    AS 'dienst'
+            d.KurzBez    AS 'dienst'
         FROM TPlanPersonalKommtGeht pkg
         JOIN TPersonal p ON pkg.RefPersonal = p.Prim
-		JOIN TDienste d ON pkg.RefDienste = d.Prim
+        JOIN TDienste d ON pkg.RefDienste = d.Prim
         WHERE pkg.Datum BETWEEN CONVERT(date,'{START_DATE}',23) AND CONVERT(date,'{END_DATE}',23)
             AND pkg.RefgAbw IS NULL
             """
@@ -537,18 +548,22 @@ def export_free_shift_and_vacation_days_json(
     )
     shift_map = {k: {"planned_shifts": [[d, kb] for d, kb in v]} for k, v in shift_map.items()}
 
-    # Mapping  Prim -> Set (present days in Konto)
+    # Mapping Prim -> Set(present days in Konto)
     konto_map = acc_df.groupby("Prim")["day"].apply(set).to_dict()
 
-    # Add missing days (present in calendar but not in accounting entries) as forbidden days
-    for prim_person in whitelist:
-        kontotage = konto_map.get(prim_person, set())
-        fehlende = sorted(all_days - kontotage)
+    # Only infer missing accounting days as forbidden if TPlanPersonalKommtGeht
+    # actually contains data for the relevant employees in this period.
+    kommt_geht_has_data = not (vac_df.empty and forb_df.empty and shift_df.empty)
 
-        rec = forb_map.setdefault(prim_person, {"forbidden_days": []})
+    if kommt_geht_has_data:
+        for prim_person in whitelist:
+            days = konto_map.get(prim_person, set())
+            missing = sorted(all_days - days)
 
-        # merge (without duplicates) + sort
-        rec["forbidden_days"] = sorted(set(rec["forbidden_days"]) | set(fehlende))
+            rec = forb_map.setdefault(prim_person, {"forbidden_days": []})
+            rec["forbidden_days"] = sorted(set(rec["forbidden_days"]) | set(missing))
+    else:
+        logging.warning(f"There is no Data in TPlanPersonalKommtGehtduring the period {START_DATE} - {END_DATE}.")
 
     employees_out = []
     for prim, meta in prim2meta.items():

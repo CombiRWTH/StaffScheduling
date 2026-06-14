@@ -1,0 +1,67 @@
+{
+  "employees": [
+    {
+      "actual": 0.0,
+      "firstname": "Claudia",
+      "key": 1165,
+      "name": "Papa",
+      "target": 10780.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Bertwalda",
+      "key": 1184,
+      "name": "Pedroza",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Theobald",
+      "key": 1191,
+      "name": "Anoch",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "R\u00fcdiger",
+      "key": 1231,
+      "name": "Lary",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Helfred",
+      "key": 1238,
+      "name": "Zucker",
+      "target": 10127.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Alheid",
+      "key": 3642,
+      "name": "Phinney",
+      "target": 11392.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Patrizia",
+      "key": 4085,
+      "name": "Madl",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Liliane",
+      "key": 5656,
+      "name": "Bow",
+      "target": 11047.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Evalinde",
+      "key": 7802,
+      "name": "Long",
+      "target": 15190.0
+    }
+  ]
+}

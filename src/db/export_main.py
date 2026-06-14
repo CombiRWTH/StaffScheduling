@@ -15,7 +15,9 @@ def main(planning_unit: int = 77, from_date: date = date(2024, 11, 1), till_date
     export_data.export_shift_data_to_json(engine, planning_unit, from_date)
 
     export_data.export_personal_data_to_json(engine, planning_unit, base_data["plan_id"], from_date)
-    export_data.export_target_working_minutes_to_json(engine, planning_unit, base_data["year_month"], from_date)
+    export_data.export_target_working_minutes_to_json(
+        engine, planning_unit, base_data["plan_id"], base_data["year_month"], from_date
+    )
     export_data.export_worked_sundays_to_json(
         engine, planning_unit, base_data["minus_a_year"], base_data["till_date"], from_date
     )

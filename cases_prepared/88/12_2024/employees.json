@@ -1,0 +1,58 @@
+{
+  "employees": [
+    {
+      "firstname": "Claudia",
+      "key": 1165,
+      "name": "Papa",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Bertwalda",
+      "key": 1184,
+      "name": "Pedroza",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Theobald",
+      "key": 1191,
+      "name": "Anoch",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "R\u00fcdiger",
+      "key": 1231,
+      "name": "Lary",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Helfred",
+      "key": 1238,
+      "name": "Zucker",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Alheid",
+      "key": 3642,
+      "name": "Phinney",
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    {
+      "firstname": "Patrizia",
+      "key": 4085,
+      "name": "Madl",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    {
+      "firstname": "Liliane",
+      "key": 5656,
+      "name": "Bow",
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    {
+      "firstname": "Evalinde",
+      "key": 7802,
+      "name": "Long",
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
+    }
+  ]
+}
