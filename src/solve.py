@@ -12,6 +12,7 @@ from src.cp import (
     FreeDaysNearWeekendObjective,
     HierarchyOfIntermediateShiftsConstraint,
     MaximizeEmployeeWishesObjective,
+    MaximizePreferredStationObjective,
     MaxOneShiftPerDayConstraint,
     MinimizeConsecutiveNightShiftsObjective,
     # MinimizeHiddenEmployeeCountObjective,
@@ -63,22 +64,23 @@ def solve_with_constraints_only(
     employees: list[Employee],
     days: list[Day],
     shifts: list[Shift],
+    stations: list[str],
     min_staffing: dict[str, dict[str, dict[str, int]]],
     status_callback: Callable[[str], None] | None = None,
 ) -> str:
     constraints = [
-        FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts),
-        MinRestTimeConstraint(employees, days, shifts),
-        MinStaffingConstraint(min_staffing, employees, days, shifts),
-        RoundsInEarlyShiftConstraint(employees, days, shifts),
-        MaxOneShiftPerDayConstraint(employees, days, shifts),
-        TargetWorkingTimeConstraint(employees, days, shifts),
-        VacationDaysAndShiftsConstraint(employees, days, shifts),
-        HierarchyOfIntermediateShiftsConstraint(employees, days, shifts),
-        PlannedShiftsConstraint(employees, days, shifts),
+        FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts, stations),
+        MinRestTimeConstraint(employees, days, shifts, stations),
+        MinStaffingConstraint(min_staffing, employees, days, shifts, stations),
+        RoundsInEarlyShiftConstraint(employees, days, shifts, stations),
+        MaxOneShiftPerDayConstraint(employees, days, shifts, stations),
+        TargetWorkingTimeConstraint(employees, days, shifts, stations),
+        VacationDaysAndShiftsConstraint(employees, days, shifts, stations),
+        HierarchyOfIntermediateShiftsConstraint(employees, days, shifts, stations),
+        PlannedShiftsConstraint(employees, days, shifts, stations),
     ]
 
-    model = Model(employees, days, shifts)
+    model = Model(employees, days, shifts, stations)
     for constraint in constraints:
         model.add_constraint(constraint)
 
@@ -111,6 +113,7 @@ def main(
     loader = FSLoader(unit, start_date=start_date, end_date=end_date)
     days = loader.get_days(start_date, end_date)
     shifts = loader.get_shifts()
+    stations = loader.get_stations()
     min_staffing = loader.get_min_staffing()
 
     if employees is None:
@@ -129,7 +132,11 @@ def main(
             num_hidden_employees_per_level = {x: y + increase for (x, y) in num_hidden_employees_per_level.items()}
             logging.info(f"Trying to solve with {num_hidden_employees_per_level}")
             status = solve_with_constraints_only(
-                employees + FSLoader.get_hidden_employees(num_hidden_employees_per_level), days, shifts, min_staffing
+                employees + FSLoader.get_hidden_employees(num_hidden_employees_per_level),
+                days,
+                shifts,
+                stations,
+                min_staffing,
             )
             logging.info(f'Solver returned status = "{status}"')
         logging.info(f"Hidden Employee Upper Bound: {num_hidden_employees_per_level}\n")
@@ -145,7 +152,7 @@ def main(
                 tmp[level] = i
                 logging.info(f"Trying to solve with {tmp}")
                 status = solve_with_constraints_only(
-                    employees + FSLoader.get_hidden_employees(tmp), days, shifts, min_staffing
+                    employees + FSLoader.get_hidden_employees(tmp), days, shifts, stations, min_staffing
                 )
                 logging.info(f'Solver returned status = "{status}"')
                 if status == "INFEASIBLE" or status == "UNKNOWN":
@@ -155,20 +162,28 @@ def main(
 
         employees += FSLoader.get_hidden_employees(num_hidden_employees_per_level)
 
+    default_weights = {
+        "free_weekend": 2,
+        "consecutive_nights": 2,
+        "hidden": 100,
+        "hidden_count": 1000000,
+        "overtime": 4,
+        "consecutive_days": 1,
+        "rotate": 1,
+        "wishes": 3,
+        "after_night": 3,
+        "second_weekend": 1,
+        "preferred_block": 1,
+        "preferred_station": 1,
+    }
+
+    # 2. Sicheres Mergen: Überschreibt Defaults mit Nutzer-Inputs,
+    # füllt aber alle fehlenden Schlüssel auf.
     if weights is None:
-        weights = {
-            "free_weekend": 2,
-            "consecutive_nights": 2,
-            "hidden": 100,
-            "hidden_count": 1000000,
-            "overtime": 4,
-            "consecutive_days": 1,
-            "rotate": 1,
-            "wishes": 3,
-            "after_night": 3,
-            "second_weekend": 1,
-            "preferred_block": 1,
-        }
+        weights = default_weights
+    else:
+        # Merge-Operator: Kombiniert beide Dictionaries
+        weights = default_weights | weights
 
     logging.info("General information:")
     logging.info(f"  - planning unit: {unit}")
@@ -179,15 +194,15 @@ def main(
     logging.info(f"  - number of shifts: {len(shifts)}")
 
     constraints = [
-        FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts),
-        MinRestTimeConstraint(employees, days, shifts),
-        MinStaffingConstraint(min_staffing, employees, days, shifts),
-        RoundsInEarlyShiftConstraint(employees, days, shifts),
-        MaxOneShiftPerDayConstraint(employees, days, shifts),
-        TargetWorkingTimeConstraint(employees, days, shifts),
-        VacationDaysAndShiftsConstraint(employees, days, shifts),
-        HierarchyOfIntermediateShiftsConstraint(employees, days, shifts),
-        PlannedShiftsConstraint(employees, days, shifts),
+        FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts, stations),
+        MinRestTimeConstraint(employees, days, shifts, stations),
+        MinStaffingConstraint(min_staffing, employees, days, shifts, stations),
+        RoundsInEarlyShiftConstraint(employees, days, shifts, stations),
+        MaxOneShiftPerDayConstraint(employees, days, shifts, stations),
+        TargetWorkingTimeConstraint(employees, days, shifts, stations),
+        VacationDaysAndShiftsConstraint(employees, days, shifts, stations),
+        HierarchyOfIntermediateShiftsConstraint(employees, days, shifts, stations),
+        PlannedShiftsConstraint(employees, days, shifts, stations),
     ]
 
     if "preferred_block" not in weights.keys():
@@ -196,13 +211,13 @@ def main(
         prefered_block_size = weights["preferred_block"]
     objectives = [
         FreeDaysNearWeekendObjective(weights["free_weekend"], employees, days),
-        MinimizeConsecutiveNightShiftsObjective(weights["consecutive_nights"], employees, days, shifts),
-        MinimizeHiddenEmployeesObjective(weights["hidden"], employees, days, shifts),
-        MinimizeOvertimeObjective(weights["overtime"], employees, days, shifts),
+        MinimizeConsecutiveNightShiftsObjective(weights["consecutive_nights"], employees, days, shifts, stations),
+        MinimizeHiddenEmployeesObjective(weights["hidden"], employees, days, shifts, stations),
+        MinimizeOvertimeObjective(weights["overtime"], employees, days, shifts, stations),
         NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, weights["consecutive_days"], employees, days),
-        RotateShiftsForwardObjective(weights["rotate"], employees, days, shifts),
-        MaximizeEmployeeWishesObjective(weights["wishes"], employees, days, shifts),
-        FreeDaysAfterNightShiftPhaseObjective(weights["after_night"], employees, days, shifts),
+        RotateShiftsForwardObjective(weights["rotate"], employees, days, shifts, stations),
+        MaximizeEmployeeWishesObjective(weights["wishes"], employees, days, shifts, stations),
+        FreeDaysAfterNightShiftPhaseObjective(weights["after_night"], employees, days, shifts, stations),
         EverySecondWeekendFreeObjective(weights["second_weekend"], employees, days),
         PreferredBlockLengthObjective(
             target_block_length=3,
@@ -211,10 +226,11 @@ def main(
             employees=employees,
             days=days,
         ),
+        MaximizePreferredStationObjective(weights["preferred_station"], employees, days, shifts, stations),
         # MinimizeHiddenEmployeeCountObjective(weights["hidden_count"], employees, days, shifts),
     ]
 
-    model = Model(employees, days, shifts)
+    model = Model(employees, days, shifts, stations)
 
     for constraint in constraints:
         model.add_constraint(constraint)

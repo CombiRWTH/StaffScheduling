@@ -37,21 +37,14 @@ class FreeDaysAfterNightShiftPhaseObjective(Objective):
 
         for employee in self._employees:
             for day in self._days[:-2]:
+                station_vars = [
+                    shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]][station]
+                    for station in self._stations
+                ]
+
                 night_var = model.new_bool_var(f"night_shift_{employee.get_key()}_{day}")
-                model.add(night_var == 1).only_enforce_if(
-                    sum(
-                        shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]][station]
-                        for station in self._stations
-                    )
-                    > 0
-                )
-                model.add(night_var == 0).only_enforce_if(
-                    sum(
-                        shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]][station]
-                        for station in self._stations
-                    )
-                    == 0
-                )
+
+                model.add_max_equality(night_var, station_vars)
 
                 next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=1)]
                 after_next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=2)]

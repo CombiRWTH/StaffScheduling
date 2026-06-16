@@ -7,6 +7,9 @@ from .free_days_after_night_shift_phase import (
 from .free_days_near_weekend import (
     FreeDaysNearWeekendObjective as FreeDaysNearWeekendObjective,
 )
+from .maximize_preferred_station import (
+    MaximizePreferredStationObjective as MaximizePreferredStationObjective,
+)
 from .maximize_wishes import (
     MaximizeEmployeeWishesObjective as MaximizeEmployeeWishesObjective,
 )

@@ -74,7 +74,7 @@ class FSLoader(Loader):
         fs_employees_forbidden_shifts: dict[str, list[tuple[int, str]]] = {}
         fs_employees_vacation_days: dict[str, list[int]] = {}
         fs_employees_vacation_shifts: dict[str, list[tuple[int, str]]] = {}
-        fs_employees_planned_shifts: dict[str, list[tuple[int, str]]] = {}
+        fs_employees_planned_shifts: dict[str, list[tuple[int, str, str]]] = {}
         fs_employees_hidden_actual: dict[str, int] = {}
         shift_map = {shift.name: shift for shift in self.get_shifts()}
         for fs_employee in fs_employees_vacation:
@@ -87,7 +87,9 @@ class FSLoader(Loader):
                     (x[0], x[1]) for x in fs_employee["vacation_shifts"]
                 ]
             if "planned_shifts" in fs_employee:
-                fs_employees_planned_shifts[fs_employee["key"]] = [(x[0], x[1]) for x in fs_employee["planned_shifts"]]
+                fs_employees_planned_shifts[fs_employee["key"]] = [
+                    (x[0], x[1], x[2]) for x in fs_employee["planned_shifts"]
+                ]
                 fs_employees_hidden_actual[fs_employee["key"]] = fs_employees_actual.get(fs_employee["key"], 0) - sum(
                     [shift_map[x[1]].duration for x in fs_employee["planned_shifts"] if x[1] in shift_map.keys()]
                 )
@@ -199,6 +201,10 @@ class FSLoader(Loader):
 
     def get_days(self, start_date: date, end_date: date) -> list[date]:
         return [start_date + timedelta(days=i) for i in range(end_date.day - start_date.day + 1)]
+
+    def get_stations(self) -> list[str]:
+        # todo
+        return ["teststation"]
 
     def get_min_staffing(self) -> dict[str, dict[str, dict[str, int]]]:
         fs_min_staffing = self._load_json(self._get_file_path("minimal_number_of_staff"))

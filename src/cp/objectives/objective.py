@@ -20,7 +20,7 @@ class Objective(Constraint):
         employees: list[Employee],
         days: list[Day],
         shifts: list[Shift],
-        stations: list[Station],
+        stations: list[Station] | None = None,
     ):
         """
         Initializes the objective with a weight and the given employees, days, and shifts.

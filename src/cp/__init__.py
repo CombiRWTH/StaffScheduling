@@ -42,6 +42,9 @@ from .objectives import (
     MaximizeEmployeeWishesObjective as MaximizeEmployeeWishesObjective,
 )
 from .objectives import (
+    MaximizePreferredStationObjective as MaximizePreferredStationObjective,
+)
+from .objectives import (
     MinimizeConsecutiveNightShiftsObjective as MinimizeConsecutiveNightShiftsObjective,
 )
 from .objectives import (
