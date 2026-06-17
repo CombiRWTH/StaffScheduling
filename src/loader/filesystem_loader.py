@@ -121,6 +121,7 @@ class FSLoader(Loader):
             surname = fs_employee["name"]
             firstname = fs_employee["firstname"]
             type = fs_employee["type"]
+            preferred_station = "teststation"  # todo adapt if preferred station is included in the input data
             level = fs_employees_levels[type]
             qualifications = fs_qualifications.get(f"{key}", [])
 
@@ -157,6 +158,7 @@ class FSLoader(Loader):
                     wish_shifts=wish_shifts,
                     planned_shifts=planned_shifts,
                     qualifications=qualifications,
+                    preferred_station=preferred_station,
                 )
             )
 

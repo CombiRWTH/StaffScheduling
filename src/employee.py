@@ -1,5 +1,6 @@
 from src.day import Day
 from src.shift import Shift
+from src.station import Station
 
 
 class Employee:
@@ -18,6 +19,7 @@ class Employee:
     _wish_shifts: list[tuple[int, str]]
     _planned_shifts: list[tuple[int, str, str]] = []
     _qualifications: list[str]
+    _preferred_station: Station | None = None
 
     def __init__(
         self,
@@ -37,6 +39,7 @@ class Employee:
         wish_shifts: list[tuple[int, str]] | None = None,
         planned_shifts: list[tuple[int, str, str]] | None = None,
         qualifications: list[str] | None = None,
+        preferred_station: Station | None = None,
     ):
         """
         Initializes an Employee instance.
@@ -73,6 +76,7 @@ class Employee:
         self._wish_shifts = wish_shifts
         self._planned_shifts = planned_shifts or []
         self._qualifications = qualifications
+        self._preferred_station = preferred_station
 
     def get_key(self) -> int:
         return self._key
@@ -148,3 +152,7 @@ class Employee:
     @property
     def vacation_shifts(self) -> list[tuple[int, str]]:
         return self._vacation_shifts
+
+    @property
+    def get_preferred_station(self) -> Station | None:
+        return self._preferred_station
