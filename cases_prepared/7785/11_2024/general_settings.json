@@ -1,0 +1,81 @@
+{
+  "SHIFT_NAME_TO_INDEX": {
+    "Early": 0,
+    "Late": 1,
+    "Night": 2
+  },
+  "qualifications": {
+    "1144": [
+      "rounds"
+    ],
+    "1147": [
+      "rounds"
+    ],
+    "1186": [
+      "rounds"
+    ],
+    "1474": [
+      "rounds"
+    ],
+    "2939": [
+      "rounds"
+    ],
+    "2963": [
+      "rounds"
+    ],
+    "3868": [
+      "rounds"
+    ],
+    "4082": [
+      "rounds"
+    ],
+    "5866": [
+      "rounds"
+    ],
+    "6303": [
+      "rounds"
+    ],
+    "6318": [
+      "rounds"
+    ],
+    "6475": [
+      "rounds"
+    ],
+    "6724": [
+      "rounds"
+    ],
+    "6773": [
+      "rounds"
+    ],
+    "7006": [
+      "rounds"
+    ],
+    "7490": [
+      "rounds"
+    ],
+    "7743": [
+      "rounds"
+    ],
+    "7771": [
+      "rounds"
+    ],
+    "7789": [
+      "rounds"
+    ],
+    "791": [
+      "rounds"
+    ],
+    "803": [
+      "rounds"
+    ],
+    "941": [
+      "rounds"
+    ],
+    "946": [
+      "rounds"
+    ],
+    "954": [
+      "rounds"
+    ]
+  }
+}
