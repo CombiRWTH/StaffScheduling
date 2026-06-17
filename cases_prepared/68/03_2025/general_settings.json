@@ -1,0 +1,45 @@
+{
+  "SHIFT_NAME_TO_INDEX": {
+    "Early": 0,
+    "Late": 1,
+    "Night": 2
+  },
+  "qualifications": {
+    "1218": [
+      "rounds"
+    ],
+    "5844": [
+      "rounds"
+    ],
+    "6259": [
+      "rounds"
+    ],
+    "6303": [
+      "rounds"
+    ],
+    "6318": [
+      "rounds"
+    ],
+    "6724": [
+      "rounds"
+    ],
+    "7490": [
+      "rounds"
+    ],
+    "7741": [
+      "rounds"
+    ],
+    "835": [
+      "rounds"
+    ],
+    "839": [
+      "rounds"
+    ],
+    "843": [
+      "rounds"
+    ],
+    "918": [
+      "rounds"
+    ]
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "employees": [
+    {
+      "actual": 0.0,
+      "firstname": "Richardis",
+      "key": 803,
+      "name": "Reis",
+      "target": 10780.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Liselotte",
+      "key": 839,
+      "name": "S\u00e4uffert",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Waltraud",
+      "key": 918,
+      "name": "Ambriz",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Daniela",
+      "key": 1144,
+      "name": "Dalessandro",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Pauline",
+      "key": 1147,
+      "name": "Czerwinski",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Friedhard",
+      "key": 1167,
+      "name": "Min",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Heideline",
+      "key": 1175,
+      "name": "Paladino",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Charlotte",
+      "key": 1186,
+      "name": "Musick",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Ehrentrau",
+      "key": 2939,
+      "name": "Snead",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Siegbritt",
+      "key": 2944,
+      "name": "Halperin",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Swetlana",
+      "key": 2946,
+      "name": "Homes",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Ingemarie",
+      "key": 4073,
+      "name": "Przybylski",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Marfriede",
+      "key": 4081,
+      "name": "Burgard",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Leonore",
+      "key": 4100,
+      "name": "Storck",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Liliane",
+      "key": 5656,
+      "name": "Bow",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Annette",
+      "key": 6259,
+      "name": "Trovato",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Liesgret",
+      "key": 6304,
+      "name": "Wendel",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Marinette",
+      "key": 6977,
+      "name": "Pilgram",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Sigrid",
+      "key": 7006,
+      "name": "Cormier",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Annemargr",
+      "key": 7490,
+      "name": "Waldinger",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Thassilo",
+      "key": 7743,
+      "name": "Logsdon",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Klara",
+      "key": 7793,
+      "name": "Magdaleno",
+      "target": 0.0
+    }
+  ]
+}

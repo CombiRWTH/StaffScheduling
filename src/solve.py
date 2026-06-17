@@ -2,6 +2,7 @@ import logging
 import time
 from collections.abc import Callable, Mapping
 from datetime import date
+from itertools import combinations
 
 from ortools.sat.python.cp_model import CpSolver
 
@@ -99,6 +100,94 @@ def solve_with_constraints_only(
     return CpSolver.StatusName(solver)
 
 
+def _solve_constraint_subset(
+    employees: list[Employee],
+    days: list[Day],
+    shifts: list[Shift],
+    constraints: list,
+    timeout: int = 5,
+) -> str:
+    model = Model(employees, days, shifts)
+
+    for constraint in constraints:
+        model.add_constraint(constraint)
+
+    solver = CpSolver()
+    solver.parameters.num_workers = 8
+    solver.parameters.max_time_in_seconds = timeout
+    solver.parameters.linearization_level = 0
+
+    status = solver.Solve(model.cpModel)
+    return solver.StatusName(status)
+
+
+def build_constraint_registry(
+    employees: list[Employee],
+    days: list[Day],
+    shifts: list[Shift],
+    min_staffing: dict[str, dict[str, dict[str, int]]],
+) -> list[tuple[str, object]]:
+    return [
+        ("FreeDayAfterNightShiftPhaseConstraint", FreeDayAfterNightShiftPhaseConstraint(employees, days, shifts)),
+        ("MinRestTimeConstraint", MinRestTimeConstraint(employees, days, shifts)),
+        ("MinStaffingConstraint", MinStaffingConstraint(min_staffing, employees, days, shifts)),
+        ("RoundsInEarlyShiftConstraint", RoundsInEarlyShiftConstraint(employees, days, shifts)),
+        ("MaxOneShiftPerDayConstraint", MaxOneShiftPerDayConstraint(employees, days, shifts)),
+        ("TargetWorkingTimeConstraint", TargetWorkingTimeConstraint(employees, days, shifts)),
+        ("VacationDaysAndShiftsConstraint", VacationDaysAndShiftsConstraint(employees, days, shifts)),
+        ("HierarchyOfIntermediateShiftsConstraint", HierarchyOfIntermediateShiftsConstraint(employees, days, shifts)),
+        ("PlannedShiftsConstraint", PlannedShiftsConstraint(employees, days, shifts)),
+    ]
+
+
+def diagnose_constraint_conflicts_with_max_hidden(
+    employees: list[Employee],
+    days: list[Day],
+    shifts: list[Shift],
+    min_staffing: dict[str, dict[str, dict[str, int]]],
+    max_hidden_per_level: int = 50,
+    timeout: int = 5,
+) -> list[tuple[str, ...]]:
+    hidden_counts = {
+        "Azubi": max_hidden_per_level,
+        "Fachkraft": max_hidden_per_level,
+        "Hilfskraft": max_hidden_per_level,
+    }
+
+    test_employees = employees + FSLoader.get_hidden_employees(hidden_counts, start=len(employees))
+
+    registry = build_constraint_registry(test_employees, days, shifts, min_staffing)
+
+    logging.info("Testing each constraint individually with maximum hidden employees...")
+
+    for name, constraint in registry:
+        status = _solve_constraint_subset(test_employees, days, shifts, [constraint], timeout)
+        logging.info(f"{name}: {status}")
+
+    logging.info("Testing constraint combinations...")
+
+    infeasible_combinations: list[tuple[str, ...]] = []
+
+    for size in range(2, len(registry) + 1):
+        logging.info(f"Testing combinations of size {size}...")
+
+        for combo in combinations(registry, size):
+            names = tuple(name for name, _ in combo)
+            constraints = [constraint for _, constraint in combo]
+
+            status = _solve_constraint_subset(test_employees, days, shifts, constraints, timeout)
+
+            if status in {"INFEASIBLE", "UNKNOWN"}:
+                logging.warning(f"Conflict found: {names} -> {status}")
+                infeasible_combinations.append(names)
+
+        if infeasible_combinations:
+            logging.warning("Smallest infeasible combinations found. Stopping search.")
+            break
+
+    return infeasible_combinations
+
+
 def main(
     unit: int,
     start_date: date,
@@ -115,6 +204,17 @@ def main(
     shifts = loader.get_shifts()
     stations = loader.get_stations()
     min_staffing = loader.get_min_staffing()
+    """
+    conflicts = diagnose_constraint_conflicts_with_max_hidden(
+        employees=loader.get_employees(),
+        days=days,
+        shifts=shifts,
+        min_staffing=min_staffing,
+        max_hidden_per_level=50,
+        timeout=5,
+    )
+
+    logging.warning(f"Minimal infeasible constraint combinations: {conflicts}")"""
 
     if employees is None:
         employees = loader.get_employees()

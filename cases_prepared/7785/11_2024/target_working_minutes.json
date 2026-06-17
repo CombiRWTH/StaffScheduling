@@ -1,6 +1,153 @@
 {
   "employees": [
     {
+      "actual": 0.0,
+      "firstname": "Richardis",
+      "key": 803,
+      "name": "Reis",
+      "target": 10780.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Adelina",
+      "key": 941,
+      "name": "Mosqueda",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Lidia",
+      "key": 946,
+      "name": "Macdowell",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Resie",
+      "key": 954,
+      "name": "Bright",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Daniela",
+      "key": 1144,
+      "name": "Dalessandro",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Pauline",
+      "key": 1147,
+      "name": "Czerwinski",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Charlotte",
+      "key": 1186,
+      "name": "Musick",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Rotraud",
+      "key": 1474,
+      "name": "Renna",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Ehrentrau",
+      "key": 2939,
+      "name": "Snead",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Dahlia",
+      "key": 4082,
+      "name": "Dufour",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Siegmar",
+      "key": 5866,
+      "name": "Mcbrayer",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Auguste",
+      "key": 6303,
+      "name": "Hayek",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Uschi",
+      "key": 6318,
+      "name": "Gamblin",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Heinz",
+      "key": 6475,
+      "name": "Binford",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Gerda",
+      "key": 6724,
+      "name": "Vinton",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Wiebke",
+      "key": 6773,
+      "name": "Liddell",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Sigrid",
+      "key": 7006,
+      "name": "Cormier",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Annemargr",
+      "key": 7490,
+      "name": "Waldinger",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Thassilo",
+      "key": 7743,
+      "name": "Logsdon",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Annerike",
+      "key": 7771,
+      "name": "Ulery",
+      "target": 0.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Ingetrud",
+      "key": 7789,
+      "name": "Shumaker",
+      "target": 0.0
+    },
+    {
       "actual": 1920.0,
       "firstname": "Sandra",
       "key": 459,
@@ -22,11 +169,11 @@
       "target": 6930.0
     },
     {
-      "actual": 8765.0,
+      "actual": 0.0,
       "firstname": "Nele",
       "key": 822,
       "name": "Sewell",
-      "target": 9240.0
+      "target": 6533.33
     },
     {
       "actual": 3955.0,
@@ -190,11 +337,11 @@
       "target": 9360.0
     },
     {
-      "actual": 8950.0,
+      "actual": 0.0,
       "firstname": "Marcus",
       "key": 7496,
       "name": "Demarco",
-      "target": 8400.0
+      "target": 11760.0
     },
     {
       "actual": 0.0,
@@ -204,11 +351,11 @@
       "target": 9240.0
     },
     {
-      "actual": 920.0,
+      "actual": 0.0,
       "firstname": "Sieghardt",
       "key": 7741,
       "name": "Tharp",
-      "target": 960.0
+      "target": 9800.0
     },
     {
       "actual": 2300.0,

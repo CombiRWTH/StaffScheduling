@@ -1,0 +1,144 @@
+{
+  "employees": [
+    {
+      "actual": 9360.0,
+      "firstname": "Adriane",
+      "key": 790,
+      "name": "Mccomas",
+      "target": 9360.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Janett",
+      "key": 791,
+      "name": "Branz",
+      "target": 6930.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Silvia",
+      "key": 914,
+      "name": "Harkins",
+      "target": 8316.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Ingbert",
+      "key": 917,
+      "name": "Catoe",
+      "target": 7680.0
+    },
+    {
+      "actual": 4620.0,
+      "firstname": "Jenny",
+      "key": 921,
+      "name": "Keese",
+      "target": 4620.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "B\u00e4rbl",
+      "key": 924,
+      "name": "Merriweather",
+      "target": 4561.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Lina",
+      "key": 925,
+      "name": "Farniok",
+      "target": 2772.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Margaritt",
+      "key": 927,
+      "name": "Mittrach",
+      "target": 9360.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Daniele",
+      "key": 928,
+      "name": "Wunderlich",
+      "target": 5544.0
+    },
+    {
+      "actual": 880.0,
+      "firstname": "Constance",
+      "key": 1230,
+      "name": "Palacio",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Kersten",
+      "key": 2932,
+      "name": "Devers",
+      "target": 9240.0
+    },
+    {
+      "actual": 880.0,
+      "firstname": "Renilde",
+      "key": 2963,
+      "name": "Hoots",
+      "target": 9240.0
+    },
+    {
+      "actual": 9240.0,
+      "firstname": "Elgine",
+      "key": 3566,
+      "name": "Seligman",
+      "target": 9240.0
+    },
+    {
+      "actual": 880.0,
+      "firstname": "Eike",
+      "key": 3868,
+      "name": "Vanfleet",
+      "target": 8778.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Henni",
+      "key": 5367,
+      "name": "Donis",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Trude",
+      "key": 6836,
+      "name": "Valentino",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Annelene",
+      "key": 6928,
+      "name": "Izzo",
+      "target": 9360.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Ludger",
+      "key": 7603,
+      "name": "Roberson",
+      "target": 9240.0
+    },
+    {
+      "actual": 6930.0,
+      "firstname": "Thassilo",
+      "key": 7743,
+      "name": "Logsdon",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Irma",
+      "key": 7919,
+      "name": "Weathers",
+      "target": 9240.0
+    }
+  ]
+}
