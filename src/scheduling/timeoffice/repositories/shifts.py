@@ -1,19 +1,54 @@
 from collections import defaultdict
-from collections.abc import Sequence
-from datetime import datetime as DateTime
+from datetime import datetime
+from typing import Self
 
+from pydantic import model_validator
 from sqlalchemy import Connection, bindparam, text
-from sqlalchemy.engine import RowMapping
 
-from src.scheduling.models import SchedulingBaseModel, Shift
-from src.scheduling.timeoffice.facts import TimeOfficeFacts, TimeOfficeShiftFact
-from src.scheduling.timeoffice.repositories.helpers import (
-    clean_text,
-    normalize_code,
-    required,
-    to_datetime,
-    to_non_negative_int,
-)
+from scheduling.models import SchedulingBaseModel, Shift
+from scheduling.timeoffice.facts import TimeOfficeFacts, TimeOfficeShiftFact
+from scheduling.timeoffice.repositories.types import CleanText, SourceInt, SourceNullableInt, TimeOfficeSourceRow
+
+
+class _TimeOfficeShiftRow(TimeOfficeSourceRow):
+    shift_id: SourceInt
+    shift_code: CleanText
+    shift_type_id: SourceInt
+
+    segment_start: datetime | None = None
+    segment_end: datetime | None = None
+    segment_minutes: SourceNullableInt = None
+
+    @model_validator(mode="after")
+    def validate_segment_shape(self) -> Self:
+        has_start = self.segment_start is not None
+        has_end = self.segment_end is not None
+
+        if has_start != has_end:
+            raise ValueError(
+                "Incomplete TimeOffice shift segment: "
+                f"shift_id={self.shift_id} "
+                f"segment_start={self.segment_start!r} "
+                f"segment_end={self.segment_end!r}."
+            )
+
+        if self.segment_start is not None and self.segment_end is not None:
+            if self.segment_end <= self.segment_start:
+                raise ValueError(
+                    "Invalid TimeOffice shift segment: "
+                    f"shift_id={self.shift_id} "
+                    f"segment_start={self.segment_start!r} "
+                    f"segment_end={self.segment_end!r}."
+                )
+
+        if self.segment_minutes is not None and self.segment_minutes < 0:
+            raise ValueError(
+                "Invalid negative TimeOffice shift segment minutes: "
+                f"shift_id={self.shift_id} "
+                f"segment_minutes={self.segment_minutes!r}."
+            )
+
+        return self
 
 
 class ShiftRepositoryResult(SchedulingBaseModel):
@@ -26,26 +61,19 @@ class TimeOfficeShiftRepository:
     def __init__(self, *, facts: TimeOfficeFacts) -> None:
         self._facts = facts
 
-    def fetch(
-        self,
-        *,
-        connection: Connection,
-    ) -> ShiftRepositoryResult:
-        shift_ids = tuple(int(shift_fact.source_shift_id) for shift_fact in self._facts.shift_facts)
+    def fetch(self, *, connection: Connection) -> ShiftRepositoryResult:
+        shift_ids = tuple(self._facts.shift_facts_by_id.keys())
 
         if not shift_ids:
             return ShiftRepositoryResult(shifts=())
 
-        rows = tuple(
-            connection.execute(
-                self._query(),
-                {"shift_ids": shift_ids},
-            )
-            .mappings()
-            .all()
+        rows = self._fetch_rows(
+            connection=connection,
+            shift_ids=shift_ids,
         )
 
         shifts = self._map_rows(rows)
+
         self._validate_requested_shifts(
             requested_shift_ids=shift_ids,
             shifts=shifts,
@@ -53,13 +81,17 @@ class TimeOfficeShiftRepository:
 
         return ShiftRepositoryResult(shifts=shifts)
 
-    def _query(self):
-        return text(
+    def _fetch_rows(
+        self,
+        *,
+        connection: Connection,
+        shift_ids: tuple[int, ...],
+    ) -> tuple[_TimeOfficeShiftRow, ...]:
+        query = text(
             """
             SELECT
                 d.Prim AS shift_id,
                 d.KurzBez AS shift_code,
-                d.Bezeichnung AS shift_name,
                 d.RefDienstTypen AS shift_type_id,
 
                 sz.Kommt AS segment_start,
@@ -76,72 +108,64 @@ class TimeOfficeShiftRepository:
             """
         ).bindparams(bindparam("shift_ids", expanding=True))
 
-    def _map_rows(self, rows: Sequence[RowMapping]) -> tuple[Shift, ...]:
-        rows_by_shift_id: dict[int, list[RowMapping]] = defaultdict(list)
-
-        for row in rows:
-            shift_id = int(
-                required(
-                    row["shift_id"],
-                    field_name="shift_id",
-                    context="TDienste",
-                )
+        raw_rows = (
+            connection.execute(
+                query,
+                {"shift_ids": shift_ids},
             )
-            rows_by_shift_id[shift_id].append(row)
+            .mappings()
+            .all()
+        )
 
-        shift_facts_by_id = {int(shift_fact.source_shift_id): shift_fact for shift_fact in self._facts.shift_facts}
+        return tuple(_TimeOfficeShiftRow.model_validate(row) for row in raw_rows)
+
+    def _map_rows(self, rows: tuple[_TimeOfficeShiftRow, ...]) -> tuple[Shift, ...]:
+        rows_by_shift_id = self._group_rows_by_shift_id(rows)
 
         return tuple(
             self._map_shift(
                 shift_id=shift_id,
                 rows=shift_rows,
-                shift_fact=shift_facts_by_id[shift_id],
+                shift_fact=self._facts.shift_facts_by_id[shift_id],
             )
             for shift_id, shift_rows in sorted(rows_by_shift_id.items())
         )
+
+    def _group_rows_by_shift_id(self, rows: tuple[_TimeOfficeShiftRow, ...]) -> dict[int, list[_TimeOfficeShiftRow]]:
+        rows_by_shift_id: dict[int, list[_TimeOfficeShiftRow]] = defaultdict(list)
+
+        for row in rows:
+            rows_by_shift_id[row.shift_id].append(row)
+
+        return dict(rows_by_shift_id)
 
     def _map_shift(
         self,
         *,
         shift_id: int,
-        rows: list[RowMapping],
+        rows: list[_TimeOfficeShiftRow],
         shift_fact: TimeOfficeShiftFact,
     ) -> Shift:
         first_row = rows[0]
-        context = f"TDienste shift_id={shift_id}"
 
-        source_code = clean_text(
-            required(
-                first_row["shift_code"],
-                field_name="shift_code",
-                context=context,
+        source_code = first_row.shift_code
+
+        if self._normalize_shift_code(source_code) != self._normalize_shift_code(shift_fact.expected_code):
+            raise ValueError(
+                "Unexpected TimeOffice shift code for known scheduling shift: "
+                f"shift_id={shift_id} expected={shift_fact.expected_code!r} actual={source_code!r}."
             )
-        )
-        if source_code is None:
-            raise ValueError(f"Empty TimeOffice shift code in {context}.")
 
-        self._validate_expected_code(
-            shift_id=shift_id,
-            actual_code=source_code,
-            expected_code=shift_fact.expected_code,
-        )
-
-        shift_type_id = int(
-            required(
-                first_row["shift_type_id"],
-                field_name="shift_type_id",
-                context=context,
+        if first_row.shift_type_id not in self._facts.work_shift_type_ids:
+            raise ValueError(
+                "Known scheduling shift is not configured as real work shift in TimeOffice: "
+                f"shift_id={shift_id} shift_type_id={first_row.shift_type_id}."
             )
-        )
-        self._validate_real_work_shift(
-            shift_id=shift_id,
-            shift_type_id=shift_type_id,
-        )
 
         segments = self._map_segments(rows=rows, shift_id=shift_id)
+
         start_at = segments[0][0]
         end_at = segments[-1][1]
-        net_work_minutes = self._net_work_minutes(segments)
 
         return Shift(
             shift_id=shift_id,
@@ -150,95 +174,56 @@ class TimeOfficeShiftRepository:
             staffing_role=shift_fact.staffing_role,
             start_minute=self._minute_of_day(start_at),
             end_minute=self._minute_of_day(end_at),
-            net_work_minutes=net_work_minutes,
+            net_work_minutes=self._net_work_minutes(segments),
         )
 
     def _map_segments(
-        self,
-        *,
-        rows: list[RowMapping],
-        shift_id: int,
-    ) -> tuple[tuple[DateTime, DateTime, int], ...]:
-        segments: list[tuple[DateTime, DateTime, int]] = []
+        self, *, rows: list[_TimeOfficeShiftRow], shift_id: int
+    ) -> tuple[tuple[datetime, datetime, int], ...]:
+        segments: list[tuple[datetime, datetime, int]] = []
 
         for row in rows:
-            if row["segment_start"] is None and row["segment_end"] is None:
+            if row.segment_start is None and row.segment_end is None:
                 continue
 
-            context = f"TDiensteSollzeiten shift_id={shift_id}"
-
-            start_at = required(
-                to_datetime(row["segment_start"]),
-                field_name="segment_start",
-                context=context,
-            )
-            end_at = required(
-                to_datetime(row["segment_end"]),
-                field_name="segment_end",
-                context=context,
-            )
-            minutes = to_non_negative_int(row["segment_minutes"])
-
-            if end_at <= start_at:
+            if row.segment_start is None or row.segment_end is None:
                 raise ValueError(
-                    f"Invalid shift segment in {context}: segment_start={start_at!r} segment_end={end_at!r}."
+                    "Invalid TimeOffice shift row after source-row validation: "
+                    f"shift_id={shift_id} "
+                    f"segment_start={row.segment_start!r} "
+                    f"segment_end={row.segment_end!r}."
                 )
 
-            segments.append((start_at, end_at, minutes))
+            segments.append(
+                (
+                    row.segment_start,
+                    row.segment_end,
+                    row.segment_minutes or 0,
+                )
+            )
 
         if not segments:
             raise ValueError(f"No timing segments found for TimeOffice shift_id={shift_id}.")
 
         return tuple(segments)
 
-    def _net_work_minutes(
-        self,
-        segments: tuple[tuple[DateTime, DateTime, int], ...],
-    ) -> int:
+    def _net_work_minutes(self, segments: tuple[tuple[datetime, datetime, int], ...]) -> int:
         source_minutes = sum(segment_minutes for _, _, segment_minutes in segments)
+
         if source_minutes > 0:
             return source_minutes
 
         return sum(int((end_at - start_at).total_seconds() // 60) for start_at, end_at, _ in segments)
 
-    def _validate_expected_code(
-        self,
-        *,
-        shift_id: int,
-        actual_code: str,
-        expected_code: str,
-    ) -> None:
-        if normalize_code(actual_code) != normalize_code(expected_code):
-            raise ValueError(
-                "Unexpected TimeOffice shift code for known scheduling shift: "
-                f"shift_id={shift_id} expected={expected_code!r} actual={actual_code!r}."
-            )
-
-    def _validate_real_work_shift(
-        self,
-        *,
-        shift_id: int,
-        shift_type_id: int,
-    ) -> None:
-        real_work_shift_type_ids = {int(shift_type_id) for shift_type_id in self._facts.real_work_shift_type_ids}
-
-        if shift_type_id not in real_work_shift_type_ids:
-            raise ValueError(
-                "Known scheduling shift is not configured as real work shift in TimeOffice: "
-                f"shift_id={shift_id} shift_type_id={shift_type_id}."
-            )
-
-    def _validate_requested_shifts(
-        self,
-        *,
-        requested_shift_ids: tuple[int, ...],
-        shifts: tuple[Shift, ...],
-    ) -> None:
+    def _validate_requested_shifts(self, *, requested_shift_ids: tuple[int, ...], shifts: tuple[Shift, ...]) -> None:
         returned_shift_ids = {shift.shift_id for shift in shifts}
         missing_shift_ids = sorted(set(requested_shift_ids) - returned_shift_ids)
 
         if missing_shift_ids:
             raise ValueError(f"Missing TimeOffice shift definitions for shift_ids={missing_shift_ids}.")
 
-    def _minute_of_day(self, value: DateTime) -> int:
+    def _minute_of_day(self, value: datetime) -> int:
         return value.hour * 60 + value.minute
+
+    def _normalize_shift_code(self, value: str) -> str:
+        return value.strip().casefold()

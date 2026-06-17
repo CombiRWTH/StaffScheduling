@@ -4,10 +4,10 @@ from typing import Self
 
 from pydantic import model_validator
 
-from src.scheduling.models.core import SchedulingBaseModel
-from src.scheduling.models.employee import EmployeeId
-from src.scheduling.models.planning_unit import PlanningUnitId
-from src.scheduling.models.shift import ShiftId
+from scheduling.models.core import SchedulingBaseModel
+from scheduling.models.employee import EmployeeId
+from scheduling.models.planning_unit import PlanningUnitId
+from scheduling.models.shift import ShiftId
 
 
 class AssignmentType(StrEnum):
@@ -40,9 +40,9 @@ class Assignment(SchedulingBaseModel):
     @model_validator(mode="after")
     def validate_assignment(self) -> Self:
         if self.assignment_type == AssignmentType.PLANNED and self.planning_unit_id is None:
-            raise ValueError("PLANNED assignments must reference planning_unit_id.")
+            raise ValueError("Planned assignment must reference planning_unit_id.")
 
         if self.assignment_type == AssignmentType.EXTERNAL and self.planning_unit_id is not None:
-            raise ValueError("EXTERNAL assignments must not reference planning_unit_id.")
+            raise ValueError("External assignment must not reference planning_unit_id.")
 
         return self

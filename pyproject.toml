@@ -1,24 +1,16 @@
 [project]
-name = "staffscheduling"
-version = "0.0.0"
+name = "scheduling"
+version = "0.1.0"
 description = ""
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.137.0",
+    "ortools>=9.15.6755",
     "SQLAlchemy>=2.0.50",
+    "pyodbc>=5.3.0",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.1",
-    "ortools>=9.15.6755",
-
-    # Legacy -> Should be removed after refactoring
-    "click>=8.2.0",
-    "flask>=3.1.0",
-    "pyodbc>=5.2.0",
-    "matplotlib>=3.10.1",
-    "pandas>=2.2.3",
-    "numpy>=2.2.5",
-    "dotenv>=0.9.9",
 ]
 
 [dependency-groups]
@@ -41,28 +33,18 @@ docs = [
 ]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src"]
-
-[project.scripts]
-staff-scheduling = "src.main:main"
-staff-scheduling-api = "src.api.main:main"
-
-[tool.pyright]
-typeCheckingMode = "strict"
-reportUnusedVariable = "warning"
-ignore = [
-    "src/db/**" # Database integration needs significant refactoring and is excluded from type checking
-]
+requires = ["uv_build>=0.11.21,<0.12"]
+build-backend = "uv_build"
 
 [tool.ruff]
 line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "W", "I", "C4", "ISC", "PT", "Q", "UP"] # Plan to add 'N' and 'ANN' later
+
+[tool.pyright]
+typeCheckingMode = "strict"
+reportUnusedVariable = "warning"
 
 [tool.pytest.ini_options]
 addopts = "-m 'not integration'"

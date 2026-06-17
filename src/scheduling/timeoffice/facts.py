@@ -3,10 +3,11 @@ from dataclasses import dataclass
 from enum import IntEnum
 from types import MappingProxyType
 
-from src.scheduling.models.availability import AvailabilityType
-from src.scheduling.models.employee import Capability, StaffLevel
-from src.scheduling.models.planning_unit import PlanningUnitId, PlanningUnitKind
-from src.scheduling.models.shift import ShiftId, ShiftKind, StaffingDemandRole
+from scheduling.models.availability import AvailabilityType
+from scheduling.models.employee import Capability, StaffLevel
+from scheduling.models.planning_unit import PlanningUnitId, PlanningUnitKind
+from scheduling.models.shift import ShiftId, ShiftKind, StaffingDemandRole
+from scheduling.models.wish import WishKind
 
 
 class TimeOfficePlanStatusId(IntEnum):
@@ -53,13 +54,6 @@ class TimeOfficeShiftFact:
     staffing_role: StaffingDemandRole
 
 
-@dataclass(frozen=True, slots=True)
-class TimeOfficeAvailabilityFact:
-    source_shift_id: int
-    expected_code: str
-    availability_type: AvailabilityType
-
-
 IsoWeekday = int  # Monday=1 ... Sunday=7
 
 
@@ -94,16 +88,20 @@ class TimeOfficeFacts:
 
     planning_unit_kind_map: dict[int, PlanningUnitKind]
 
-    real_work_shift_type_ids: tuple[int, ...]
-    shift_facts: tuple[TimeOfficeShiftFact, ...]
+    work_shift_type_ids: tuple[int, ...]
+    shift_facts_by_id: Mapping[int, TimeOfficeShiftFact]
 
-    profession_staff_level_map: dict[int, StaffLevel]
-    # Temporary project/problem assumptions. Not DB-backed.
-    employee_capabilities_map: dict[int, tuple[Capability, ...]]
-
-    availability_facts: tuple[TimeOfficeAvailabilityFact, ...]
-
+    staff_level_by_profession_id_map: dict[int, StaffLevel]
     demand_facts: tuple[TimeOfficeDemandFact, ...]
+
+    # Temporary project/problem assumptions. Not DB-backed.
+    capabilities_by_employee_id_map: dict[int, tuple[Capability, ...]]
+
+    availability_type_by_absence_code: Mapping[str, AvailabilityType]
+    wish_kind_by_absence_code: Mapping[str, WishKind]
+
+    monthly_target_work_account_id: int
+    monthly_actual_work_account_id: int
 
 
 TIMEOFFICE_FACTS = TimeOfficeFacts(
@@ -118,64 +116,64 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
         337: PlanningUnitKind.STATION,
         408: PlanningUnitKind.SHARED_POOL,
     },
-    real_work_shift_type_ids=(1,),
-    shift_facts=(
-        TimeOfficeShiftFact(
+    work_shift_type_ids=(1,),
+    shift_facts_by_id={
+        EARLY_F2_SHIFT_ID: TimeOfficeShiftFact(
             source_shift_id=EARLY_F2_SHIFT_ID,
             expected_code="F2_",
             kind=ShiftKind.EARLY,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
-        TimeOfficeShiftFact(
+        LATE_S2_SHIFT_ID: TimeOfficeShiftFact(
             source_shift_id=LATE_S2_SHIFT_ID,
             expected_code="S2_",
             kind=ShiftKind.LATE,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
-        TimeOfficeShiftFact(
+        NIGHT_N2_SHIFT_ID: TimeOfficeShiftFact(
             source_shift_id=NIGHT_N2_SHIFT_ID,
             expected_code="N2_",
             kind=ShiftKind.NIGHT,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
-        TimeOfficeShiftFact(
+        INTERMEDIATE_T75_SHIFT_ID: TimeOfficeShiftFact(
             source_shift_id=INTERMEDIATE_T75_SHIFT_ID,
             expected_code="T75_",
             kind=ShiftKind.INTERMEDIATE,
             staffing_role=StaffingDemandRole.OPTIONAL_COVERAGE,
         ),
-        TimeOfficeShiftFact(
+        MANAGEMENT_Z60_SHIFT_ID: TimeOfficeShiftFact(
             source_shift_id=MANAGEMENT_Z60_SHIFT_ID,
             expected_code="Z60",
             kind=ShiftKind.MANAGEMENT,
             staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
         ),
-        TimeOfficeShiftFact(
+        NIGHT_N5_SHIFT_ID: TimeOfficeShiftFact(
             source_shift_id=NIGHT_N5_SHIFT_ID,
             expected_code="N5",
             kind=ShiftKind.NIGHT,
             staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
         ),
-        TimeOfficeShiftFact(
+        NIGHT_N15_SHIFT_ID: TimeOfficeShiftFact(
             source_shift_id=NIGHT_N15_SHIFT_ID,
             expected_code="N15",
             kind=ShiftKind.NIGHT,
             staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
         ),
-        TimeOfficeShiftFact(
+        OTHER_T8X_SHIFT_ID: TimeOfficeShiftFact(
             source_shift_id=OTHER_T8X_SHIFT_ID,
             expected_code="T8x",
             kind=ShiftKind.OTHER,
             staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
         ),
-        TimeOfficeShiftFact(
+        OTHER_Z52_SHIFT_ID: TimeOfficeShiftFact(
             source_shift_id=OTHER_Z52_SHIFT_ID,
             expected_code="Z52",
             kind=ShiftKind.OTHER,
             staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
         ),
-    ),
-    profession_staff_level_map={
+    },
+    staff_level_by_profession_id_map={
         # Fachkraft
         803: StaffLevel.PROFESSIONAL,  # Gesundheits- und Krankenpfleger/in
         110: StaffLevel.PROFESSIONAL,  # Pflegefachkraft (Krankenpflege)
@@ -195,61 +193,37 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
         837: StaffLevel.TRAINEE,  # A-Pflegefachkraft (Krankenpflege)
         1478: StaffLevel.TRAINEE,  # A-Pflegefachkraft (Altenpflege)
     },
-    employee_capabilities_map={
-        # Problem/legacy assumption: FWB employees for weekday early rounds.
+    capabilities_by_employee_id_map={
         # Not DB-backed yet.
+        # Problem/legacy assumption: FWB employees for weekday early rounds.
         791: (Capability.ROUNDS,),  # Branz, Janett
         2963: (Capability.ROUNDS,),  # Hoots, Renilde
         3868: (Capability.ROUNDS,),  # Vanfleet, Eike
         # Problem assumption: night-watch employees.
-        # TPersonalVertraege.IstReineNachtwache did not confirm this, so keep it
-        # explicitly marked as temporary/problem-derived.
         925: (Capability.NIGHT_WATCH,),  # Farniok, Lina
         6681: (Capability.NIGHT_WATCH,),  # Labelle, Saskia
         928: (Capability.NIGHT_WATCH,),  # Wunderlich, Daniele
     },
-    availability_facts=(
-        TimeOfficeAvailabilityFact(
-            source_shift_id=2434,
-            expected_code="U",
-            availability_type=AvailabilityType.VACATION,
-        ),
-        TimeOfficeAvailabilityFact(
-            source_shift_id=2091,
-            expected_code="ZU",
-            availability_type=AvailabilityType.VACATION,
-        ),
-        TimeOfficeAvailabilityFact(
-            source_shift_id=1089,
-            expected_code="FR",
-            availability_type=AvailabilityType.FREE_DAY,
-        ),
-        TimeOfficeAvailabilityFact(
-            source_shift_id=26,
-            expected_code="SC",
-            availability_type=AvailabilityType.TRAINING,
-        ),
-        TimeOfficeAvailabilityFact(
-            source_shift_id=739,
-            expected_code="FI",
-            availability_type=AvailabilityType.TRAINING,
-        ),
-        TimeOfficeAvailabilityFact(
-            source_shift_id=1078,
-            expected_code="EZ",
-            availability_type=AvailabilityType.UNAVAILABLE,
-        ),
-        TimeOfficeAvailabilityFact(
-            source_shift_id=1086,
-            expected_code="RE",
-            availability_type=AvailabilityType.UNAVAILABLE,
-        ),
-        TimeOfficeAvailabilityFact(
-            source_shift_id=1092,
-            expected_code="AZV",
-            availability_type=AvailabilityType.FREE_DAY,
-        ),
+    availability_type_by_absence_code=MappingProxyType(
+        {
+            "U": AvailabilityType.VACATION,
+            "ZU": AvailabilityType.VACATION,
+            "FR": AvailabilityType.FREE_DAY,
+            "AZV": AvailabilityType.FREE_DAY,
+            # Conservative hard blockers until TimeOffice/domain semantics are confirmed.
+            "SC": AvailabilityType.UNAVAILABLE,
+            "EZ": AvailabilityType.UNAVAILABLE,
+            "RE": AvailabilityType.UNAVAILABLE,
+            "FI": AvailabilityType.UNAVAILABLE,
+        }
     ),
+    wish_kind_by_absence_code=MappingProxyType(
+        {
+            "FR": WishKind.FREE_DAY,
+        }
+    ),
+    monthly_target_work_account_id=1,
+    monthly_actual_work_account_id=55,
     demand_facts=(
         # Fachkraft
         TimeOfficeDemandFact(

@@ -2,10 +2,11 @@ import logging
 
 from sqlalchemy import URL, Engine, create_engine
 
-from src.scheduling.models import PlanningPeriod, SchedulingDataset
-from src.scheduling.settings import Settings
-from src.scheduling.timeoffice.facts import TimeOfficeFacts
-from src.scheduling.timeoffice.repositories import TimeOfficeRepositories
+from scheduling.models import PlanningPeriod
+from scheduling.settings import Settings
+from scheduling.timeoffice.facts import TimeOfficeFacts
+from scheduling.timeoffice.repositories import TimeOfficeRepositories
+from scheduling.validation.dataset import ValidatedSchedulingDataset
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class TimeOfficeDatabase:
         *,
         selected_planning_unit_ids: tuple[int, ...],
         period: PlanningPeriod,
-    ) -> SchedulingDataset:
+    ) -> ValidatedSchedulingDataset:
         if not selected_planning_unit_ids:
             raise ValueError("At least one planning unit must be selected.")
 
@@ -96,7 +97,21 @@ class TimeOfficeDatabase:
                 employees=personnel_result.employees,
             )
 
-        return SchedulingDataset(
+            wish_result = self._repositories.wishes.fetch(
+                connection=connection,
+                plans=planning_unit_result.plans,
+                employees=personnel_result.employees,
+                shifts=shift_result.shifts,
+                period=period,
+            )
+
+            monthly_work_account_result = self._repositories.monthly_work_accounts.fetch(
+                connection=connection,
+                employees=personnel_result.employees,
+                period=period,
+            )
+
+        return ValidatedSchedulingDataset(
             period=period,
             planning_units=planning_unit_result.planning_units,
             plans=planning_unit_result.plans,
@@ -108,4 +123,6 @@ class TimeOfficeDatabase:
             availability=roster_result.availability,
             demand_requirements=demand_result.demand_requirements,
             sunday_work_history=sunday_work_history_result.sunday_work_history,
+            wishes=wish_result.wishes,
+            monthly_work_accounts=monthly_work_account_result.monthly_work_accounts,
         )

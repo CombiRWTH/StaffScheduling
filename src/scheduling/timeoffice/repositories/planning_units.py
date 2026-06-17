@@ -1,15 +1,29 @@
-from sqlalchemy import Connection, bindparam, text
-from sqlalchemy.engine import RowMapping
+from typing import Self
 
-from src.scheduling.models import (
-    Plan,
-    PlanningPeriod,
-    PlanningUnit,
-    PlanningUnitKind,
-    SchedulingBaseModel,
-)
-from src.scheduling.timeoffice.facts import TimeOfficeFacts
-from src.scheduling.timeoffice.repositories.helpers import required
+from pydantic import model_validator
+from sqlalchemy import Connection, bindparam, text
+
+from scheduling.models import Plan, PlanningPeriod, PlanningUnit, PlanningUnitKind, SchedulingBaseModel
+from scheduling.timeoffice.facts import TimeOfficeFacts
+from scheduling.timeoffice.repositories.types import SourceInt, TimeOfficeSourceRow
+
+
+class _TimeOfficePlanningUnitRow(TimeOfficeSourceRow):
+    planning_unit_id: SourceInt
+    plan_id: SourceInt
+    plan_planning_unit_id: SourceInt
+
+    @model_validator(mode="after")
+    def validate_plan_reference(self) -> Self:
+        if self.plan_planning_unit_id != self.planning_unit_id:
+            raise ValueError(
+                "TimeOffice plan row references a different planning unit than the selected unit: "
+                f"planning_unit_id={self.planning_unit_id} "
+                f"plan_id={self.plan_id} "
+                f"plan_planning_unit_id={self.plan_planning_unit_id}."
+            )
+
+        return self
 
 
 class PlanningUnitRepositoryResult(SchedulingBaseModel):
@@ -33,37 +47,30 @@ class TimeOfficePlanningUnitRepository:
         if not selected_planning_unit_ids:
             return PlanningUnitRepositoryResult(planning_units=(), plans=())
 
-        rows = tuple(
-            connection.execute(
-                self._query(),
-                {
-                    "planning_unit_ids": selected_planning_unit_ids,
-                    "period_start": period.start,
-                    "period_end": period.end,
-                    "planning_interval_id": self._facts.monthly_planning_interval_id,
-                    "planning_status_id": self._facts.target_planning_status_id,
-                },
-            )
-            .mappings()
-            .all()
+        rows = self._fetch_rows(
+            connection=connection,
+            selected_planning_unit_ids=selected_planning_unit_ids,
+            period=period,
         )
 
-        planning_units = tuple(self._map_planning_unit(row) for row in rows)
-        plans = tuple(self._map_plan(row) for row in rows)
-
-        self._validate_result(
+        self._validate_rows(
             requested_ids=selected_planning_unit_ids,
-            planning_units=planning_units,
-            plans=plans,
+            rows=rows,
         )
 
         return PlanningUnitRepositoryResult(
-            planning_units=planning_units,
-            plans=plans,
+            planning_units=self._map_planning_units(rows),
+            plans=self._map_plans(rows),
         )
 
-    def _query(self):
-        return text(
+    def _fetch_rows(
+        self,
+        *,
+        connection: Connection,
+        selected_planning_unit_ids: tuple[int, ...],
+        period: PlanningPeriod,
+    ) -> tuple[_TimeOfficePlanningUnitRow, ...]:
+        query = text(
             """
             SELECT
                 pe.Prim AS planning_unit_id,
@@ -81,60 +88,64 @@ class TimeOfficePlanningUnitRepository:
             """
         ).bindparams(bindparam("planning_unit_ids", expanding=True))
 
-    def _map_planning_unit(self, row: RowMapping) -> PlanningUnit:
-        planning_unit_id = int(
-            required(
-                row["planning_unit_id"],
-                field_name="planning_unit_id",
-                context="TPlanungseinheiten",
+        raw_rows = (
+            connection.execute(
+                query,
+                {
+                    "planning_unit_ids": selected_planning_unit_ids,
+                    "period_start": period.start,
+                    "period_end": period.end,
+                    "planning_interval_id": self._facts.monthly_planning_interval_id,
+                    "planning_status_id": self._facts.target_planning_status_id,
+                },
             )
+            .mappings()
+            .all()
         )
 
-        return PlanningUnit(
-            planning_unit_id=planning_unit_id,
-            display_name=f"Planning Unit {planning_unit_id}",
-            kind=self._facts.planning_unit_kind_map.get(
-                planning_unit_id,
-                PlanningUnitKind.STATION,
-            ),
-        )
+        return tuple(_TimeOfficePlanningUnitRow.model_validate(row) for row in raw_rows)
 
-    def _map_plan(self, row: RowMapping) -> Plan:
-        return Plan(
-            plan_id=int(required(row["plan_id"], field_name="plan_id", context="TPlan")),
-            planning_unit_id=int(
-                required(
-                    row["plan_planning_unit_id"],
-                    field_name="plan_planning_unit_id",
-                    context="TPlan",
-                )
-            ),
-        )
-
-    def _validate_result(
-        self,
-        *,
-        requested_ids: tuple[int, ...],
-        planning_units: tuple[PlanningUnit, ...],
-        plans: tuple[Plan, ...],
-    ) -> None:
+    def _validate_rows(self, *, requested_ids: tuple[int, ...], rows: tuple[_TimeOfficePlanningUnitRow, ...]) -> None:
         requested = set(requested_ids)
-        returned_units = [unit.planning_unit_id for unit in planning_units]
-        returned_plans = [plan.planning_unit_id for plan in plans]
+        returned_ids = [row.planning_unit_id for row in rows]
 
-        missing = sorted(requested - set(returned_units))
+        missing = sorted(requested - set(returned_ids))
         if missing:
             raise ValueError(f"No selected TimeOffice target plan found for planning_unit_ids={missing}.")
 
-        duplicates = sorted(
-            {planning_unit_id for planning_unit_id in returned_units if returned_units.count(planning_unit_id) > 1}
-        )
+        duplicates = self._duplicate_values(returned_ids)
         if duplicates:
             raise ValueError(f"Multiple selected TimeOffice target plans found for planning_unit_ids={duplicates}.")
 
-        if set(returned_units) != set(returned_plans):
-            raise ValueError(
-                "Planning units and plans do not match: "
-                f"planning_units={sorted(returned_units)} "
-                f"plans={sorted(returned_plans)}."
+    def _map_planning_units(self, rows: tuple[_TimeOfficePlanningUnitRow, ...]) -> tuple[PlanningUnit, ...]:
+        return tuple(
+            PlanningUnit(
+                planning_unit_id=row.planning_unit_id,
+                display_name=f"Planning Unit {row.planning_unit_id}",
+                kind=self._facts.planning_unit_kind_map.get(
+                    row.planning_unit_id,
+                    PlanningUnitKind.STATION,
+                ),
             )
+            for row in rows
+        )
+
+    def _map_plans(self, rows: tuple[_TimeOfficePlanningUnitRow, ...]) -> tuple[Plan, ...]:
+        return tuple(
+            Plan(
+                plan_id=row.plan_id,
+                planning_unit_id=row.plan_planning_unit_id,
+            )
+            for row in rows
+        )
+
+    def _duplicate_values(self, values: list[int]) -> list[int]:
+        seen: set[int] = set()
+        duplicates: set[int] = set()
+
+        for value in values:
+            if value in seen:
+                duplicates.add(value)
+            seen.add(value)
+
+        return sorted(duplicates)

@@ -4,8 +4,8 @@ from typing import Self
 
 from pydantic import model_validator
 
-from src.scheduling.models.core import NonEmptyStr, PositiveId, SchedulingBaseModel
-from src.scheduling.models.employee import EmployeeId, StaffLevel
+from scheduling.models.core import NonEmptyStr, PositiveId, SchedulingBaseModel
+from scheduling.models.employee import EmployeeId, StaffLevel
 
 PlanningUnitId = PositiveId
 

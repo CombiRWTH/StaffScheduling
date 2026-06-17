@@ -1,9 +1,10 @@
-from datetime import date as Date
+from datetime import date, datetime
+from typing import Self
 
+from pydantic import model_validator
 from sqlalchemy import Connection, bindparam, text
-from sqlalchemy.engine import RowMapping
 
-from src.scheduling.models import (
+from scheduling.models import (
     Assignment,
     AssignmentType,
     Availability,
@@ -13,12 +14,58 @@ from src.scheduling.models import (
     PlanningPeriod,
     SchedulingBaseModel,
 )
-from src.scheduling.timeoffice.facts import (
-    TimeOfficeAvailabilityFact,
-    TimeOfficeFacts,
-    TimeOfficeShiftFact,
+from scheduling.timeoffice.facts import TimeOfficeFacts, TimeOfficeShiftFact
+from scheduling.timeoffice.repositories.types import (
+    CleanNullableText,
+    SourceInt,
+    SourceNullableInt,
+    TimeOfficeSourceRow,
 )
-from src.scheduling.timeoffice.repositories.helpers import required, to_datetime
+
+
+class _TimeOfficeRosterRow(TimeOfficeSourceRow):
+    plan_id: SourceNullableInt = None
+    employee_id: SourceInt
+    roster_date: datetime
+
+    work_shift_id: SourceNullableInt = None
+    work_shift_code: CleanNullableText = None
+
+    global_absence_shift_id: SourceNullableInt = None
+    absence_shift_id: SourceNullableInt = None
+    resolved_absence_shift_id: SourceNullableInt = None
+    resolved_absence_code: CleanNullableText = None
+
+    planning_unit_id: SourceNullableInt = None
+
+    @model_validator(mode="after")
+    def validate_row_kind(self) -> Self:
+        has_work_shift = self.work_shift_id is not None
+        has_absence = self.global_absence_shift_id is not None or self.absence_shift_id is not None
+
+        if not has_work_shift and not has_absence:
+            raise ValueError(
+                "Invalid TimeOffice roster row: neither work shift nor absence is set "
+                f"for employee_id={self.employee_id}, roster_date={self.roster_date}."
+            )
+
+        return self
+
+    @model_validator(mode="after")
+    def validate_absence_references(self) -> Self:
+        if (
+            self.global_absence_shift_id is not None
+            and self.absence_shift_id is not None
+            and self.global_absence_shift_id != self.absence_shift_id
+        ):
+            raise ValueError(
+                "Conflicting TimeOffice absence references in "
+                "TPlanPersonalKommtGeht: "
+                f"RefgAbw={self.global_absence_shift_id} "
+                f"RefDienstAbw={self.absence_shift_id}."
+            )
+
+        return self
 
 
 class RosterRepositoryResult(SchedulingBaseModel):
@@ -33,9 +80,9 @@ class TimeOfficeRosterRepository:
     - work rows as Assignment
     - absence rows as Availability
 
-    Wishes/preferences are intentionally not emitted here yet, even though
-    TPlanPersonalKommtGeht has `Wunschdienst`. They need a separate source
-    analysis and a separate Preference model.
+    Wishes/preferences are handled by TimeOfficeWishRepository. This repository
+    intentionally keeps the existing roster import behavior and does not change
+    semantics around Wunschdienst rows in this refactor.
     """
 
     def __init__(self, *, facts: TimeOfficeFacts) -> None:
@@ -52,22 +99,14 @@ class TimeOfficeRosterRepository:
         if not plans or not employees:
             return RosterRepositoryResult(assignments=(), availability=())
 
-        selected_plan_ids = tuple(plan.plan_id for plan in plans)
-        selected_planning_unit_ids = tuple(plan.planning_unit_id for plan in plans)
-        employee_ids = tuple(employee.employee_id for employee in employees)
-
-        rows = tuple(
-            connection.execute(
-                self._query(),
-                {
-                    "employee_ids": employee_ids,
-                    "period_start": period.start,
-                    "period_end": period.end,
-                },
-            )
-            .mappings()
-            .all()
+        rows = self._fetch_rows(
+            connection=connection,
+            employees=employees,
+            period=period,
         )
+
+        selected_plan_ids = {plan.plan_id for plan in plans}
+        selected_planning_unit_ids = {plan.planning_unit_id for plan in plans}
 
         return RosterRepositoryResult(
             assignments=self._map_assignments(
@@ -78,28 +117,30 @@ class TimeOfficeRosterRepository:
             availability=self._map_availability(rows=rows),
         )
 
-    def _query(self):
-        return text(
+    def _fetch_rows(
+        self,
+        *,
+        connection: Connection,
+        employees: tuple[Employee, ...],
+        period: PlanningPeriod,
+    ) -> tuple[_TimeOfficeRosterRow, ...]:
+        query = text(
             """
             SELECT
                 pkg.RefPlan AS plan_id,
                 pkg.RefPersonal AS employee_id,
                 pkg.Datum AS roster_date,
-                pkg.lfdNr AS segment_number,
 
                 pkg.RefDienste AS work_shift_id,
                 work_d.KurzBez AS work_shift_code,
 
                 pkg.RefgAbw AS global_absence_shift_id,
-                global_absence_d.KurzBez AS global_absence_shift_code,
-
                 pkg.RefDienstAbw AS absence_shift_id,
-                absence_d.KurzBez AS absence_shift_code,
 
-                pkg.RefPlanungseinheiten AS planning_unit_id,
-                pkg.RefPeinheitOwner AS planning_unit_owner_id,
+                COALESCE(pkg.RefgAbw, pkg.RefDienstAbw) AS resolved_absence_shift_id,
+                COALESCE(global_absence_d.KurzBez, absence_d.KurzBez) AS resolved_absence_code,
 
-                pkg.Wunschdienst AS is_wish
+                pkg.RefPlanungseinheiten AS planning_unit_id
             FROM TPlanPersonalKommtGeht pkg
             LEFT JOIN TDienste work_d
                 ON work_d.Prim = pkg.RefDienste
@@ -122,74 +163,99 @@ class TimeOfficeRosterRepository:
             """
         ).bindparams(bindparam("employee_ids", expanding=True))
 
+        raw_rows = (
+            connection.execute(
+                query,
+                {
+                    "employee_ids": tuple(employee.employee_id for employee in employees),
+                    "period_start": period.start,
+                    "period_end": period.end,
+                },
+            )
+            .mappings()
+            .all()
+        )
+
+        return tuple(_TimeOfficeRosterRow.model_validate(row) for row in raw_rows)
+
     def _map_assignments(
         self,
         *,
-        rows: tuple[RowMapping, ...],
-        selected_plan_ids: tuple[int, ...],
-        selected_planning_unit_ids: tuple[int, ...],
+        rows: tuple[_TimeOfficeRosterRow, ...],
+        selected_plan_ids: set[int],
+        selected_planning_unit_ids: set[int],
     ) -> tuple[Assignment, ...]:
-        shift_facts = {int(fact.source_shift_id): fact for fact in self._facts.shift_facts}
-
-        selected_plan_id_set = set(selected_plan_ids)
-        selected_planning_unit_id_set = set(selected_planning_unit_ids)
-
-        assignments_by_key: dict[
-            tuple[int, Date, int, AssignmentType, int | None],
-            Assignment,
-        ] = {}
+        assignments: list[Assignment] = []
         unmapped_shift_ids: dict[int, int] = {}
 
         for row in rows:
-            raw_shift_id = row["work_shift_id"]
-            if raw_shift_id is None:
+            if row.work_shift_id is None:
                 continue
 
-            shift_id = int(raw_shift_id)
-            shift_fact = shift_facts.get(shift_id)
+            shift_fact = self._facts.shift_facts_by_id.get(row.work_shift_id)
 
             if shift_fact is None:
-                unmapped_shift_ids[shift_id] = unmapped_shift_ids.get(shift_id, 0) + 1
+                unmapped_shift_ids[row.work_shift_id] = unmapped_shift_ids.get(row.work_shift_id, 0) + 1
                 continue
 
-            self._validate_work_shift_code(row=row, fact=shift_fact)
-
-            employee_id = self._employee_id(row)
-            roster_date = required(
-                to_datetime(row["roster_date"]),
-                field_name="roster_date",
-                context="TPlanPersonalKommtGeht",
-            ).date()
-
-            plan_id = self._optional_int(
-                row["plan_id"],
-                field_name="plan_id",
-                context="TPlanPersonalKommtGeht",
+            assignments.append(
+                self._map_assignment(
+                    row=row,
+                    shift_fact=shift_fact,
+                    selected_plan_ids=selected_plan_ids,
+                    selected_planning_unit_ids=selected_planning_unit_ids,
+                )
             )
 
-            planning_unit_id = self._optional_int(
-                row["planning_unit_id"],
-                field_name="planning_unit_id",
-                context="TPlanPersonalKommtGeht",
+        if unmapped_shift_ids:
+            details = ", ".join(f"{shift_id} count={count}" for shift_id, count in sorted(unmapped_shift_ids.items()))
+            raise ValueError(
+                "Unmapped TimeOffice work shift ids found in "
+                "TPlanPersonalKommtGeht. Add them to "
+                "TIMEOFFICE_FACTS.shift_facts_by_id or explicitly decide "
+                f"to exclude them. Details: {details}."
             )
 
-            assignment_type = self._assignment_type(
-                plan_id=plan_id,
-                planning_unit_id=planning_unit_id,
-                selected_plan_ids=selected_plan_id_set,
-                selected_planning_unit_ids=selected_planning_unit_id_set,
+        return self._deduplicate_assignments(tuple(assignments))
+
+    def _map_assignment(
+        self,
+        *,
+        row: _TimeOfficeRosterRow,
+        shift_fact: TimeOfficeShiftFact,
+        selected_plan_ids: set[int],
+        selected_planning_unit_ids: set[int],
+    ) -> Assignment:
+        if row.work_shift_id is None:
+            raise ValueError(
+                "Cannot map TimeOffice assignment without work_shift_id: "
+                f"employee_id={row.employee_id} roster_date={row.roster_date}."
             )
 
-            effective_planning_unit_id = planning_unit_id if assignment_type == AssignmentType.PLANNED else None
+        self._validate_work_shift_code(row=row, fact=shift_fact)
 
-            assignment = Assignment(
-                employee_id=employee_id,
-                date=roster_date,
-                shift_id=shift_id,
-                assignment_type=assignment_type,
-                planning_unit_id=effective_planning_unit_id,
-            )
+        assignment_type = self._assignment_type(
+            plan_id=row.plan_id,
+            planning_unit_id=row.planning_unit_id,
+            selected_plan_ids=selected_plan_ids,
+            selected_planning_unit_ids=selected_planning_unit_ids,
+        )
 
+        return Assignment(
+            employee_id=row.employee_id,
+            date=row.roster_date.date(),
+            shift_id=row.work_shift_id,
+            assignment_type=assignment_type,
+            planning_unit_id=(row.planning_unit_id if assignment_type == AssignmentType.PLANNED else None),
+        )
+
+    def _deduplicate_assignments(self, assignments: tuple[Assignment, ...]) -> tuple[Assignment, ...]:
+        assignments_by_key: dict[
+            tuple[int, date, int, AssignmentType, int | None],
+            Assignment,
+        ] = {}
+
+        for assignment in assignments:
             key = (
                 assignment.employee_id,
                 assignment.date,
@@ -199,15 +265,6 @@ class TimeOfficeRosterRepository:
             )
             assignments_by_key.setdefault(key, assignment)
 
-        if unmapped_shift_ids:
-            details = ", ".join(f"{shift_id} count={count}" for shift_id, count in sorted(unmapped_shift_ids.items()))
-            raise ValueError(
-                "Unmapped TimeOffice work shift ids found in "
-                "TPlanPersonalKommtGeht. Add them to "
-                "TIMEOFFICE_FACTS.scheduling_shift_facts or explicitly decide "
-                f"to exclude them. Details: {details}."
-            )
-
         return tuple(
             assignments_by_key[key]
             for key in sorted(
@@ -216,66 +273,67 @@ class TimeOfficeRosterRepository:
                     item[0],
                     item[1],
                     item[2],
-                    item[3],
-                    item[4] or -1,
+                    item[3].value,
+                    -1 if item[4] is None else item[4],
                 ),
             )
         )
 
-    def _map_availability(
-        self,
-        *,
-        rows: tuple[RowMapping, ...],
-    ) -> tuple[Availability, ...]:
-        availability_facts = {int(fact.source_shift_id): fact for fact in self._facts.availability_facts}
-
-        availability_by_key: dict[
-            tuple[int, Date, AvailabilityType],
-            Availability,
-        ] = {}
-        unmapped_absence_ids: dict[int, int] = {}
+    def _map_availability(self, *, rows: tuple[_TimeOfficeRosterRow, ...]) -> tuple[Availability, ...]:
+        availability: list[Availability] = []
 
         for row in rows:
-            absence_shift_id = self._absence_shift_id(row)
+            absence_shift_id = self._resolved_absence_shift_id(row)
+
             if absence_shift_id is None:
                 continue
 
-            fact = availability_facts.get(absence_shift_id)
-            if fact is None:
-                unmapped_absence_ids[absence_shift_id] = unmapped_absence_ids.get(absence_shift_id, 0) + 1
-                continue
-
-            self._validate_absence_code(row=row, fact=fact)
-
-            employee_id = self._employee_id(row)
-            roster_date = required(
-                to_datetime(row["roster_date"]),
-                field_name="roster_date",
-                context="TPlanPersonalKommtGeht",
-            ).date()
-
-            availability = Availability(
-                employee_id=employee_id,
-                date=roster_date,
-                availability_type=fact.availability_type,
+            availability.append(
+                self._map_availability_row(
+                    row=row,
+                    absence_shift_id=absence_shift_id,
+                )
             )
 
-            key = (
-                availability.employee_id,
-                availability.date,
-                availability.availability_type,
-            )
-            availability_by_key.setdefault(key, availability)
+        return self._deduplicate_availability(tuple(availability))
 
-        if unmapped_absence_ids:
-            details = ", ".join(
-                f"{absence_id} count={count}" for absence_id, count in sorted(unmapped_absence_ids.items())
-            )
+    def _map_availability_row(self, *, row: _TimeOfficeRosterRow, absence_shift_id: int) -> Availability:
+        if row.resolved_absence_code is None:
             raise ValueError(
-                "Unmapped TimeOffice absence shift ids found in "
-                "TPlanPersonalKommtGeht. Add them to "
-                f"TIMEOFFICE_FACTS.availability_facts. Details: {details}."
+                "Missing resolved absence code for TimeOffice roster row: "
+                f"absence_shift_id={absence_shift_id} "
+                f"employee_id={row.employee_id} "
+                f"roster_date={row.roster_date}."
             )
+
+        availability_type = self._facts.availability_type_by_absence_code.get(row.resolved_absence_code)
+
+        if availability_type is None:
+            raise ValueError(
+                "Unmapped TimeOffice absence code: "
+                f"absence_shift_id={absence_shift_id} "
+                f"absence_code={row.resolved_absence_code!r}."
+            )
+
+        return Availability(
+            employee_id=row.employee_id,
+            date=row.roster_date.date(),
+            availability_type=availability_type,
+        )
+
+    def _deduplicate_availability(self, availability: tuple[Availability, ...]) -> tuple[Availability, ...]:
+        availability_by_key: dict[
+            tuple[int, date, AvailabilityType],
+            Availability,
+        ] = {}
+
+        for item in availability:
+            key = (
+                item.employee_id,
+                item.date,
+                item.availability_type,
+            )
+            availability_by_key.setdefault(key, item)
 
         return tuple(
             availability_by_key[key]
@@ -284,7 +342,7 @@ class TimeOfficeRosterRepository:
                 key=lambda item: (
                     item[0],
                     item[1],
-                    item[2],
+                    item[2].value,
                 ),
             )
         )
@@ -302,88 +360,25 @@ class TimeOfficeRosterRepository:
 
         return AssignmentType.EXTERNAL
 
-    def _absence_shift_id(self, row: RowMapping) -> int | None:
-        global_absence_shift_id = self._optional_int(
-            row["global_absence_shift_id"],
-            field_name="global_absence_shift_id",
-            context="TPlanPersonalKommtGeht",
-        )
-        absence_shift_id = self._optional_int(
-            row["absence_shift_id"],
-            field_name="absence_shift_id",
-            context="TPlanPersonalKommtGeht",
-        )
+    def _resolved_absence_shift_id(self, row: _TimeOfficeRosterRow) -> int | None:
+        if row.global_absence_shift_id is not None:
+            return row.global_absence_shift_id
 
-        if global_absence_shift_id is None:
-            return absence_shift_id
+        if row.absence_shift_id is not None:
+            return row.absence_shift_id
 
-        if absence_shift_id is None:
-            return global_absence_shift_id
+        return None
 
-        if global_absence_shift_id != absence_shift_id:
-            raise ValueError(
-                "Conflicting TimeOffice absence references in "
-                "TPlanPersonalKommtGeht: "
-                f"RefgAbw={global_absence_shift_id} "
-                f"RefDienstAbw={absence_shift_id}."
-            )
+    def _validate_work_shift_code(self, *, row: _TimeOfficeRosterRow, fact: TimeOfficeShiftFact) -> None:
+        if row.work_shift_id is None:
+            raise ValueError("Cannot validate work shift code without work_shift_id.")
 
-        return absence_shift_id
+        if row.work_shift_code is None:
+            raise ValueError(f"Missing TDienste.KurzBez for TimeOffice work shift source_shift_id={row.work_shift_id}.")
 
-    def _validate_work_shift_code(
-        self,
-        *,
-        row: RowMapping,
-        fact: TimeOfficeShiftFact,
-    ) -> None:
-        actual_code = row["work_shift_code"]
-        if actual_code is None:
-            raise ValueError(
-                f"Missing TDienste.KurzBez for TimeOffice work shift source_shift_id={fact.source_shift_id}."
-            )
-
-        actual = str(actual_code).strip()
-        if actual != fact.expected_code:
+        if row.work_shift_code != fact.expected_code:
             raise ValueError(
                 "Unexpected TimeOffice work shift code: "
-                f"source_shift_id={fact.source_shift_id} "
-                f"expected={fact.expected_code!r} actual={actual!r}."
+                f"source_shift_id={row.work_shift_id} "
+                f"expected={fact.expected_code!r} actual={row.work_shift_code!r}."
             )
-
-    def _validate_absence_code(
-        self,
-        *,
-        row: RowMapping,
-        fact: TimeOfficeAvailabilityFact,
-    ) -> None:
-        actual_code = row["absence_shift_code"] or row["global_absence_shift_code"]
-        if actual_code is None:
-            raise ValueError(
-                f"Missing TDienste.KurzBez for TimeOffice absence shift source_shift_id={fact.source_shift_id}."
-            )
-
-        actual = str(actual_code).strip()
-        if actual != fact.expected_code:
-            raise ValueError(
-                "Unexpected TimeOffice absence code: "
-                f"source_shift_id={fact.source_shift_id} "
-                f"expected={fact.expected_code!r} actual={actual!r}."
-            )
-
-    def _employee_id(self, row: RowMapping) -> int:
-        return int(
-            required(
-                row["employee_id"],
-                field_name="employee_id",
-                context="TPlanPersonalKommtGeht",
-            )
-        )
-
-    def _optional_int(self, value: object, *, field_name: str, context: str) -> int | None:
-        if value is None:
-            return None
-
-        if isinstance(value, bool) or not isinstance(value, int):
-            raise ValueError(f"Expected int or NULL for {field_name} in {context}, got {value!r}.")
-
-        return value

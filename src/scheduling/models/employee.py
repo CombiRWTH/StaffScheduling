@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from src.scheduling.models.core import NonEmptyStr, PositiveId, SchedulingBaseModel
+from scheduling.models.core import NonEmptyStr, PositiveId, SchedulingBaseModel
 
 EmployeeId = PositiveId
 

@@ -1,13 +1,13 @@
-from src.scheduling.timeoffice.repositories.container import TimeOfficeRepositories
-from src.scheduling.timeoffice.repositories.demand import DemandRepositoryResult, TimeOfficeDemandRepository
-from src.scheduling.timeoffice.repositories.personnel import PersonnelRepositoryResult, TimeOfficePersonnelRepository
-from src.scheduling.timeoffice.repositories.planning_units import (
+from scheduling.timeoffice.repositories.container import TimeOfficeRepositories
+from scheduling.timeoffice.repositories.demand import DemandRepositoryResult, TimeOfficeDemandRepository
+from scheduling.timeoffice.repositories.personnel import PersonnelRepositoryResult, TimeOfficePersonnelRepository
+from scheduling.timeoffice.repositories.planning_units import (
     PlanningUnitRepositoryResult,
     TimeOfficePlanningUnitRepository,
 )
-from src.scheduling.timeoffice.repositories.roster import RosterRepositoryResult, TimeOfficeRosterRepository
-from src.scheduling.timeoffice.repositories.shifts import ShiftRepositoryResult, TimeOfficeShiftRepository
-from src.scheduling.timeoffice.repositories.sunday_work_history import (
+from scheduling.timeoffice.repositories.roster import RosterRepositoryResult, TimeOfficeRosterRepository
+from scheduling.timeoffice.repositories.shifts import ShiftRepositoryResult, TimeOfficeShiftRepository
+from scheduling.timeoffice.repositories.sunday_work_history import (
     SundayWorkHistoryRepositoryResult,
     TimeOfficeSundayWorkHistoryRepository,
 )

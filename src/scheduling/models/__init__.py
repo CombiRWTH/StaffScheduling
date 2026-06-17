@@ -1,13 +1,15 @@
-from src.scheduling.models.assignment import Assignment, AssignmentType
-from src.scheduling.models.availability import Availability, AvailabilityType
-from src.scheduling.models.core import MinuteOfDay, NonEmptyStr, NonNegativeInt, PositiveId, SchedulingBaseModel
-from src.scheduling.models.dataset import PlanningPeriod, SchedulingDataset
-from src.scheduling.models.demand import DemandRequirement
-from src.scheduling.models.employee import Capability, Employee, EmployeeId, StaffLevel
-from src.scheduling.models.plan import Plan, PlanId, PlanParticipant
-from src.scheduling.models.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitKind, PlanningUnitMembership
-from src.scheduling.models.shift import Shift, ShiftId, ShiftKind, StaffingDemandRole
-from src.scheduling.models.sunday_work_history import EmployeeSundayWorkHistory
+from scheduling.models.assignment import Assignment, AssignmentType
+from scheduling.models.availability import Availability, AvailabilityType
+from scheduling.models.core import MinuteOfDay, NonEmptyStr, NonNegativeInt, PositiveId, SchedulingBaseModel
+from scheduling.models.dataset import PlanningPeriod, SchedulingDataset
+from scheduling.models.demand import DemandRequirement
+from scheduling.models.employee import Capability, Employee, EmployeeId, StaffLevel
+from scheduling.models.monthly_work_account import MonthlyWorkAccount
+from scheduling.models.plan import Plan, PlanId, PlanParticipant
+from scheduling.models.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitKind, PlanningUnitMembership
+from scheduling.models.shift import Shift, ShiftId, ShiftKind, StaffingDemandRole
+from scheduling.models.sunday_work_history import EmployeeSundayWorkHistory
+from scheduling.models.wish import Wish, WishKind
 
 __all__ = [
     "PositiveId",
@@ -38,4 +40,7 @@ __all__ = [
     "StaffingDemandRole",
     "DemandRequirement",
     "EmployeeSundayWorkHistory",
+    "Wish",
+    "WishKind",
+    "MonthlyWorkAccount",
 ]

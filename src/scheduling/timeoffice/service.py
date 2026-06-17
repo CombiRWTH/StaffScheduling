@@ -1,6 +1,7 @@
-from src.scheduling.models import PlanningPeriod, SchedulingDataset
-from src.scheduling.timeoffice.database import TimeOfficeDatabase
-from src.scheduling.timeoffice.facts import TimeOfficeFacts
+from scheduling.models import PlanningPeriod
+from scheduling.timeoffice.database import TimeOfficeDatabase
+from scheduling.timeoffice.facts import TimeOfficeFacts
+from scheduling.validation.dataset import ValidatedSchedulingDataset
 
 
 class TimeOfficeService:
@@ -20,7 +21,7 @@ class TimeOfficeService:
         *,
         planning_unit_ids: tuple[int, ...],
         period: PlanningPeriod,
-    ) -> SchedulingDataset:
+    ) -> ValidatedSchedulingDataset:
         selected_planning_unit_ids = self._normalize_planning_unit_ids(planning_unit_ids)
 
         return self._database.fetch_dataset(

@@ -1,7 +1,10 @@
-from sqlalchemy import Connection, bindparam, text
-from sqlalchemy.engine import RowMapping
+from datetime import datetime
+from typing import Self
 
-from src.scheduling.models import (
+from pydantic import model_validator
+from sqlalchemy import Connection, bindparam, text
+
+from scheduling.models import (
     Capability,
     Employee,
     Plan,
@@ -11,8 +14,40 @@ from src.scheduling.models import (
     SchedulingBaseModel,
     StaffLevel,
 )
-from src.scheduling.timeoffice.facts import TimeOfficeFacts
-from src.scheduling.timeoffice.repositories.helpers import clean_text, required, to_datetime
+from scheduling.timeoffice.facts import TimeOfficeFacts
+from scheduling.timeoffice.repositories.types import CleanNullableText, SourceInt, TimeOfficeSourceRow
+
+
+class _TimeOfficePlanPersonnelRow(TimeOfficeSourceRow):
+    plan_id: SourceInt
+    planning_unit_id: SourceInt
+    employee_id: SourceInt
+    employee_profession_id: SourceInt
+    first_name: CleanNullableText = None
+    last_name: CleanNullableText = None
+
+
+class _TimeOfficePlanningUnitMembershipRow(TimeOfficeSourceRow):
+    planning_unit_id: SourceInt
+    employee_id: SourceInt
+    membership_profession_id: SourceInt
+    valid_from: datetime
+    valid_until: datetime | None = None
+    is_home: bool
+    is_replacement: bool
+
+    @model_validator(mode="after")
+    def validate_interval(self) -> Self:
+        if self.valid_until is not None and self.valid_until < self.valid_from:
+            raise ValueError(
+                "Invalid TimeOffice planning-unit membership interval: "
+                f"planning_unit_id={self.planning_unit_id} "
+                f"employee_id={self.employee_id} "
+                f"valid_from={self.valid_from!r} "
+                f"valid_until={self.valid_until!r}."
+            )
+
+        return self
 
 
 class PersonnelRepositoryResult(SchedulingBaseModel):
@@ -47,22 +82,21 @@ class TimeOfficePersonnelRepository:
             plans=plans,
         )
 
-        employees = self._map_employees(plan_personnel_rows)
-        plan_participants = tuple(self._map_plan_participant(row) for row in plan_personnel_rows)
+        employees = self._deduplicate_employees(tuple(self._map_employee(row) for row in plan_personnel_rows))
 
-        employee_ids = tuple(employee.employee_id for employee in employees)
+        plan_participants = self._map_plan_participants(plan_personnel_rows)
 
-        memberships = self._fetch_memberships(
+        membership_rows = self._fetch_membership_rows(
             connection=connection,
             planning_unit_ids=planning_unit_ids,
-            employee_ids=employee_ids,
+            employee_ids=tuple(employee.employee_id for employee in employees),
             period=period,
         )
 
         return PersonnelRepositoryResult(
             employees=employees,
             plan_participants=plan_participants,
-            planning_unit_memberships=memberships,
+            planning_unit_memberships=self._map_memberships(membership_rows),
         )
 
     def _fetch_plan_personnel_rows(
@@ -70,47 +104,8 @@ class TimeOfficePersonnelRepository:
         *,
         connection: Connection,
         plans: tuple[Plan, ...],
-    ) -> tuple[RowMapping, ...]:
-        plan_ids = tuple(plan.plan_id for plan in plans)
-
-        return tuple(
-            connection.execute(
-                self._plan_personnel_query(),
-                {"plan_ids": plan_ids},
-            )
-            .mappings()
-            .all()
-        )
-
-    def _fetch_memberships(
-        self,
-        *,
-        connection: Connection,
-        planning_unit_ids: tuple[int, ...],
-        employee_ids: tuple[int, ...],
-        period: PlanningPeriod,
-    ) -> tuple[PlanningUnitMembership, ...]:
-        if not planning_unit_ids or not employee_ids:
-            return ()
-
-        rows = tuple(
-            connection.execute(
-                self._membership_query(),
-                {
-                    "planning_unit_ids": planning_unit_ids,
-                    "employee_ids": employee_ids,
-                    "period_start": period.start,
-                    "period_end": period.end,
-                },
-            )
-            .mappings()
-            .all()
-        )
-
-        return tuple(self._map_membership(row) for row in rows)
-
-    def _plan_personnel_query(self):
-        return text(
+    ) -> tuple[_TimeOfficePlanPersonnelRow, ...]:
+        query = text(
             """
             SELECT DISTINCT
                 pp.RefPlan AS plan_id,
@@ -133,8 +128,29 @@ class TimeOfficePersonnelRepository:
             """
         ).bindparams(bindparam("plan_ids", expanding=True))
 
-    def _membership_query(self):
-        return text(
+        raw_rows = (
+            connection.execute(
+                query,
+                {"plan_ids": tuple(plan.plan_id for plan in plans)},
+            )
+            .mappings()
+            .all()
+        )
+
+        return tuple(_TimeOfficePlanPersonnelRow.model_validate(row) for row in raw_rows)
+
+    def _fetch_membership_rows(
+        self,
+        *,
+        connection: Connection,
+        planning_unit_ids: tuple[int, ...],
+        employee_ids: tuple[int, ...],
+        period: PlanningPeriod,
+    ) -> tuple[_TimeOfficePlanningUnitMembershipRow, ...]:
+        if not planning_unit_ids or not employee_ids:
+            return ()
+
+        query = text(
             """
             SELECT DISTINCT
                 pep.RefPlanungseinheiten AS planning_unit_id,
@@ -164,56 +180,54 @@ class TimeOfficePersonnelRepository:
             bindparam("employee_ids", expanding=True),
         )
 
-    def _map_employees(self, rows: tuple[RowMapping, ...]) -> tuple[Employee, ...]:
+        raw_rows = (
+            connection.execute(
+                query,
+                {
+                    "planning_unit_ids": planning_unit_ids,
+                    "employee_ids": employee_ids,
+                    "period_start": period.start,
+                    "period_end": period.end,
+                },
+            )
+            .mappings()
+            .all()
+        )
+
+        return tuple(_TimeOfficePlanningUnitMembershipRow.model_validate(row) for row in raw_rows)
+
+    def _map_employee(self, row: _TimeOfficePlanPersonnelRow) -> Employee:
+        return Employee(
+            employee_id=row.employee_id,
+            display_name=self._display_name(
+                employee_id=row.employee_id,
+                first_name=row.first_name,
+                last_name=row.last_name,
+            ),
+            staff_level=self._staff_level_from_profession(
+                row.employee_profession_id,
+                context=f"TPersonal employee_id={row.employee_id}",
+            ),
+            capabilities=self._capabilities_for_employee(row.employee_id),
+        )
+
+    def _deduplicate_employees(self, employees: tuple[Employee, ...]) -> tuple[Employee, ...]:
         employees_by_id: dict[int, Employee] = {}
 
-        for row in rows:
-            employee_id = int(
-                required(
-                    row["employee_id"],
-                    field_name="employee_id",
-                    context="TPlanPersonal",
-                )
-            )
+        for employee in employees:
+            existing = employees_by_id.get(employee.employee_id)
 
-            employee_profession_id = int(
-                required(
-                    row["employee_profession_id"],
-                    field_name="employee_profession_id",
-                    context=f"TPersonal employee_id={employee_id}",
-                )
-            )
-
-            employee = Employee(
-                employee_id=employee_id,
-                display_name=self._display_name(
-                    employee_id=employee_id,
-                    first_name=row["first_name"],
-                    last_name=row["last_name"],
-                ),
-                staff_level=self._staff_level_from_profession(
-                    employee_profession_id,
-                    context=f"TPersonal employee_id={employee_id}",
-                ),
-                capabilities=self._capabilities_for_employee(employee_id),
-            )
-
-            existing = employees_by_id.get(employee_id)
             if existing is not None:
-                if (
-                    existing.display_name != employee.display_name
-                    or existing.staff_level != employee.staff_level
-                    or existing.capabilities != employee.capabilities
-                ):
+                if existing != employee:
                     raise ValueError(
                         "Conflicting duplicate employee rows from TPlanPersonal/TPersonal: "
-                        f"employee_id={employee_id} "
+                        f"employee_id={employee.employee_id} "
                         f"existing={existing!r} new={employee!r}."
                     )
 
                 continue
 
-            employees_by_id[employee_id] = employee
+            employees_by_id[employee.employee_id] = employee
 
         return tuple(
             sorted(
@@ -222,95 +236,42 @@ class TimeOfficePersonnelRepository:
             )
         )
 
-    def _map_plan_participant(self, row: RowMapping) -> PlanParticipant:
-        return PlanParticipant(
-            plan_id=int(
-                required(
-                    row["plan_id"],
-                    field_name="plan_id",
-                    context="TPlanPersonal",
-                )
-            ),
-            planning_unit_id=int(
-                required(
-                    row["planning_unit_id"],
-                    field_name="planning_unit_id",
-                    context="TPlanPersonal",
-                )
-            ),
-            employee_id=int(
-                required(
-                    row["employee_id"],
-                    field_name="employee_id",
-                    context="TPlanPersonal",
-                )
-            ),
-        )
-
-    def _map_membership(self, row: RowMapping) -> PlanningUnitMembership:
-        planning_unit_id = int(
-            required(
-                row["planning_unit_id"],
-                field_name="planning_unit_id",
-                context="TPlanungseinheitenPersonal",
+    def _map_plan_participants(self, rows: tuple[_TimeOfficePlanPersonnelRow, ...]) -> tuple[PlanParticipant, ...]:
+        return tuple(
+            PlanParticipant(
+                plan_id=row.plan_id,
+                planning_unit_id=row.planning_unit_id,
+                employee_id=row.employee_id,
             )
+            for row in rows
         )
-        employee_id = int(
-            required(
-                row["employee_id"],
-                field_name="employee_id",
-                context="TPlanungseinheitenPersonal",
+
+    def _map_memberships(
+        self, rows: tuple[_TimeOfficePlanningUnitMembershipRow, ...]
+    ) -> tuple[PlanningUnitMembership, ...]:
+        return tuple(
+            PlanningUnitMembership(
+                planning_unit_id=row.planning_unit_id,
+                employee_id=row.employee_id,
+                valid_from=row.valid_from.date(),
+                valid_until=row.valid_until.date() if row.valid_until is not None else None,
+                staff_level=self._staff_level_from_profession(
+                    row.membership_profession_id,
+                    context=(
+                        "TPlanungseinheitenPersonal "
+                        f"planning_unit_id={row.planning_unit_id} "
+                        f"employee_id={row.employee_id}"
+                    ),
+                ),
+                is_home=row.is_home,
+                is_replacement=row.is_replacement,
             )
+            for row in rows
         )
 
-        membership_profession_id = int(
-            required(
-                row["membership_profession_id"],
-                field_name="membership_profession_id",
-                context=(f"TPlanungseinheitenPersonal planning_unit_id={planning_unit_id} employee_id={employee_id}"),
-            )
-        )
+    def _staff_level_from_profession(self, profession_id: int, *, context: str) -> StaffLevel:
+        staff_level = self._facts.staff_level_by_profession_id_map.get(profession_id)
 
-        valid_from = required(
-            to_datetime(row["valid_from"]),
-            field_name="valid_from",
-            context=(f"TPlanungseinheitenPersonal planning_unit_id={planning_unit_id} employee_id={employee_id}"),
-        ).date()
-
-        valid_until = to_datetime(row["valid_until"]).date() if row["valid_until"] is not None else None
-
-        return PlanningUnitMembership(
-            planning_unit_id=planning_unit_id,
-            employee_id=employee_id,
-            valid_from=valid_from,
-            valid_until=valid_until,
-            staff_level=self._staff_level_from_profession(
-                membership_profession_id,
-                context=(f"TPlanungseinheitenPersonal planning_unit_id={planning_unit_id} employee_id={employee_id}"),
-            ),
-            is_home=bool(
-                required(
-                    row["is_home"],
-                    field_name="is_home",
-                    context="TPlanungseinheitenPersonal",
-                )
-            ),
-            is_replacement=bool(
-                required(
-                    row["is_replacement"],
-                    field_name="is_replacement",
-                    context="TPlanungseinheitenPersonal",
-                )
-            ),
-        )
-
-    def _staff_level_from_profession(
-        self,
-        profession_id: int,
-        *,
-        context: str,
-    ) -> StaffLevel:
-        staff_level = self._facts.profession_staff_level_map.get(profession_id)
         if staff_level is None:
             raise ValueError(
                 f"No StaffLevel mapping configured for TimeOffice profession_id={profession_id} in {context}."
@@ -319,19 +280,17 @@ class TimeOfficePersonnelRepository:
         return staff_level
 
     def _capabilities_for_employee(self, employee_id: int) -> tuple[Capability, ...]:
-        return tuple(self._facts.employee_capabilities_map.get(employee_id, ()))
+        return tuple(self._facts.capabilities_by_employee_id_map.get(employee_id, ()))
 
     def _display_name(
         self,
         *,
         employee_id: int,
-        first_name: object,
-        last_name: object,
+        first_name: str | None,
+        last_name: str | None,
     ) -> str:
-        first = clean_text(first_name)
-        last = clean_text(last_name)
+        display_name = " ".join(part for part in (last_name, first_name) if part)
 
-        display_name = " ".join(part for part in (last, first) if part)
         if display_name:
             return display_name
 

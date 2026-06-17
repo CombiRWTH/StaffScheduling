@@ -4,11 +4,12 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy import Engine
 
-from src.scheduling.settings import get_settings
-from src.scheduling.timeoffice.database import TimeOfficeDatabase, create_db_engine
-from src.scheduling.timeoffice.facts import TIMEOFFICE_FACTS, TimeOfficeFacts
-from src.scheduling.timeoffice.repositories import TimeOfficeRepositories
-from src.scheduling.timeoffice.service import TimeOfficeService
+from scheduling.settings import get_settings
+from scheduling.solver.tmp import SolverService
+from scheduling.timeoffice.database import TimeOfficeDatabase, create_db_engine
+from scheduling.timeoffice.facts import TIMEOFFICE_FACTS, TimeOfficeFacts
+from scheduling.timeoffice.repositories import TimeOfficeRepositories
+from scheduling.timeoffice.service import TimeOfficeService
 
 
 @lru_cache(maxsize=1)
@@ -44,3 +45,7 @@ def get_timeoffice_service(
 ) -> TimeOfficeService:
     """Create the high-level TimeOffice service."""
     return TimeOfficeService(database=database, facts=facts)
+
+
+async def get_solver_service() -> SolverService:
+    return SolverService()
