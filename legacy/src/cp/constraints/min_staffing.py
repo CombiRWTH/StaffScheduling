@@ -1,0 +1,68 @@
+from ortools.sat.python.cp_model import CpModel
+
+from legacy.src.day import Day
+from legacy.src.employee import Employee
+from legacy.src.shift import Shift
+
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables, Variable
+from .constraint import Constraint
+
+
+class MinStaffingConstraint(Constraint):
+    @property
+    def KEY(self) -> str:
+        return "min-staffing"
+
+    _min_staffing: dict[str, dict[str, dict[str, int]]]
+
+    def __init__(
+        self,
+        min_staffing: dict[str, dict[str, dict[str, int]]],
+        employees: list[Employee],
+        days: list[Day],
+        shifts: list[Shift],
+    ):
+        """
+        Initializes the constraint that ensures minimum staffing levels for each shift on each day.
+        """
+        super().__init__(employees, days, shifts)
+        self._min_staffing = min_staffing
+
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ):
+        weekday_abbreviations = {
+            1: "Mo",
+            2: "Di",
+            3: "Mi",
+            4: "Do",
+            5: "Fr",
+            6: "Sa",
+            7: "So",
+        }
+        for day in self._days:
+            weekday = weekday_abbreviations[day.isoweekday()]
+
+            for required_level in self._min_staffing.keys():
+                eligible_employees = self._get_eligible_employees(required_level)
+
+                for shift in self._shifts:
+                    if shift.is_exclusive:
+                        continue
+                    min_staffing = self._min_staffing[required_level][weekday].get(shift.abbreviation, None)
+
+                    potential_working_staff: list[Variable] = []
+                    for eligible_employee in eligible_employees:
+                        variable = shift_assignment_variables[eligible_employee][day][shift]
+                        potential_working_staff.append(variable)
+
+                    if min_staffing is not None:
+                        model.add(sum(potential_working_staff) == min_staffing)
+                    else:
+                        model.add(sum(potential_working_staff) >= 0)
+
+    def _get_eligible_employees(self, required_level: str) -> list[Employee]:
+        return [employee for employee in self._employees if employee.level == required_level]

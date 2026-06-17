@@ -5,24 +5,29 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "click>=8.2.0",
-    "fastapi>=0.115.0",
-    "flask>=3.1.0",
-    "matplotlib>=3.10.1",
-    "numpy>=2.2.5",
-    "ortools>=9.12.4544",
-    "pandas>=2.2.3",
-    "pyodbc>=5.2.0",
-    "SQLAlchemy>=2.0.41",
-    "pytest>=9.0.1",
-    "uvicorn>=0.34.0",
-    "dotenv>=0.9.9",
-    "pydantic>=2.12.5",
+    "fastapi[standard]>=0.137.0",
+    "SQLAlchemy>=2.0.50",
+    "pydantic>=2.13.4",
     "pydantic-settings>=2.14.1",
+    "ortools>=9.15.6755",
+
+    # Legacy -> Should be removed after refactoring
+    "click>=8.2.0",
+    "flask>=3.1.0",
+    "pyodbc>=5.2.0",
+    "matplotlib>=3.10.1",
+    "pandas>=2.2.3",
+    "numpy>=2.2.5",
+    "dotenv>=0.9.9",
 ]
 
 [dependency-groups]
-dev = ["pre-commit>=4.2.0", "pyright>=1.1.407", "ruff>=0.14.4"]
+dev = [
+    "pre-commit>=4.6.0",
+    "pyright>=1.1.410",
+    "ruff>=0.15.17",
+    "pytest>=9.1.0",
+]
 
 [project.optional-dependencies]
 docs = [

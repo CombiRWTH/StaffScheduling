@@ -3,9 +3,9 @@ from typing import cast
 
 from ortools.sat.python.cp_model import CpSolver, IntVar
 
-from src.cp.constraints import MaxOneShiftPerDayConstraint
-from src.cp.model import Model
-from src.cp.variables import Variable
+from legacy.src.cp.constraints import MaxOneShiftPerDayConstraint
+from legacy.src.cp.model import Model
+from legacy.src.cp.variables import Variable
 
 
 def find_max_one_shift_per_day_violations(assignment: dict[Variable, int], model: Model) -> list[dict[str, int]]:

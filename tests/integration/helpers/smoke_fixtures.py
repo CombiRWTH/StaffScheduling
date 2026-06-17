@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from datetime import date, timedelta
 
-from src.employee import Employee
-from src.shift import Shift
+from legacy.src.employee import Employee
+from legacy.src.shift import Shift
 
 type WeekdayAbbreviation = str
 type EmployeeLevel = str

@@ -1,0 +1,116 @@
+{
+  "jobs": [
+    {
+      "caseId": 77,
+      "completedAt": "2026-05-05T15:07:43.342Z",
+      "consoleOutput": "Exporting planning data for planning unit 77 from 2024-12-01 to 2024-12-31.\n2026-05-05 17:07:42,035 - INFO - Deleting file or folder: /Users/tom/University/StaffSchedulingLab/StaffScheduling/cases/77/12_2024/web/jobs.json\n2026-05-05 17:07:42,036 - INFO - copied static JSON file: wishes_and_blocked.json\n2026-05-05 17:07:42,036 - INFO - copied static JSON file: minimal_number_of_staff.json\n2026-05-05 17:07:42,036 - INFO - copied static JSON file: employee_types.json\n2026-05-05 17:07:42,037 - INFO - copied static JSON file: general_settings.json\n2026-05-05 17:07:42,554 - INFO - \u2705 Export abgeschlossen \u2013 shift_information.json erstellt\n2026-05-05 17:07:42,628 - INFO - \u2705 Export abgeschlossen \u2013 employees.json erstellt\n2026-05-05 17:07:42,712 - INFO - \u2705 Export abgeschlossen \u2013 target_working_minutes.json erstellt\n2026-05-05 17:07:42,862 - INFO - \u2705 Export abgeschlossen \u2013 worked_sundays.json erstellt\n2026-05-05 17:07:43,339 - INFO - \u2705 Export abgeschlossen \u2013 free_shifts_and_vacation_days.json erstellt\n",
+      "createdAt": "2026-05-05T15:07:42.032Z",
+      "duration": 1309,
+      "id": "79f2d02a-13f3-438a-b37f-149e5ca2b1dc",
+      "params": {
+        "end": "2024-12-31",
+        "start": "2024-12-01",
+        "unit": 77
+      },
+      "status": "completed",
+      "type": "fetch"
+    },
+    {
+      "caseId": 77,
+      "completedAt": "2026-05-05T15:07:33.481Z",
+      "createdAt": "2026-05-05T15:07:33.096Z",
+      "duration": 385,
+      "error": "HTTP 500: {\"detail\":\"single positional indexer is out-of-bounds\"}",
+      "id": "f7bd0bd9-425c-4c93-adfe-ea96fab59ee0",
+      "params": {
+        "end": "2024-09-30",
+        "start": "2024-09-01",
+        "unit": 77
+      },
+      "status": "failed",
+      "type": "fetch"
+    },
+    {
+      "caseId": 77,
+      "completedAt": "2026-05-05T15:07:28.511Z",
+      "createdAt": "2026-05-05T15:07:27.973Z",
+      "duration": 538,
+      "error": "HTTP 500: {\"detail\":\"single positional indexer is out-of-bounds\"}",
+      "id": "7dee7877-f5fe-4d76-b595-adb2f87c3197",
+      "params": {
+        "end": "2024-09-30",
+        "start": "2024-09-01",
+        "unit": 77
+      },
+      "status": "failed",
+      "type": "fetch"
+    },
+    {
+      "caseId": 77,
+      "completedAt": "2026-05-05T15:07:22.787Z",
+      "createdAt": "2026-05-05T15:07:21.871Z",
+      "duration": 916,
+      "error": "HTTP 500: {\"detail\":\"single positional indexer is out-of-bounds\"}",
+      "id": "c1176c99-8343-4dab-940a-1d1a37e54d82",
+      "params": {
+        "end": "2024-09-30",
+        "start": "2024-09-01",
+        "unit": 77
+      },
+      "status": "failed",
+      "type": "fetch"
+    },
+    {
+      "caseId": 77,
+      "completedAt": "2026-05-05T15:05:50.515Z",
+      "createdAt": "2026-05-05T15:05:50.197Z",
+      "duration": 318,
+      "error": "HTTP 500: {\"detail\":\"single positional indexer is out-of-bounds\"}",
+      "id": "bcf72211-561b-4597-9e98-d30509b797af",
+      "params": {
+        "end": "2024-09-30",
+        "start": "2024-09-01",
+        "unit": 77
+      },
+      "status": "failed",
+      "type": "fetch"
+    },
+    {
+      "caseId": 77,
+      "completedAt": "2026-05-05T15:05:45.444Z",
+      "createdAt": "2026-05-05T15:05:45.024Z",
+      "duration": 420,
+      "error": "HTTP 500: {\"detail\":\"single positional indexer is out-of-bounds\"}",
+      "id": "6e24842d-9242-4bcd-be16-528b0de9ea91",
+      "params": {
+        "end": "2024-09-30",
+        "start": "2024-09-01",
+        "unit": 77
+      },
+      "status": "failed",
+      "type": "fetch"
+    },
+    {
+      "caseId": 77,
+      "completedAt": "2026-05-05T14:49:46.645Z",
+      "consoleOutput": "\nStatistics\n  - conflicts      : 0\n  - branches       : 0\n  - wall time      : 0.487368 s\n  - objective value: 0.0\n  - status         : INFEASIBLE\n  - objective value: 0.0\n  - info           : \n2026-05-05 16:49:32,971 - INFO - Weights file not found \u2013 using default weights instead.\n2026-05-05 16:49:32,974 - INFO - Minimizing Hidden Employee Count Phase 1\n2026-05-05 16:49:32,974 - INFO - Trying to solve with {'Azubi': 0, 'Fachkraft': 0, 'Hilfskraft': 0}\n2026-05-05 16:49:33,365 - INFO - Wall time: 0.028208017349243164\n2026-05-05 16:49:33,368 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:33,368 - INFO - Trying to solve with {'Azubi': 5, 'Fachkraft': 5, 'Hilfskraft': 5}\n2026-05-05 16:49:34,145 - INFO - Wall time: 0.055181026458740234\n2026-05-05 16:49:34,155 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:34,156 - INFO - Trying to solve with {'Azubi': 10, 'Fachkraft': 10, 'Hilfskraft': 10}\n2026-05-05 16:49:34,875 - INFO - Wall time: 0.0816187858581543\n2026-05-05 16:49:34,880 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:34,880 - INFO - Trying to solve with {'Azubi': 15, 'Fachkraft': 15, 'Hilfskraft': 15}\n2026-05-05 16:49:35,754 - INFO - Wall time: 0.07904887199401855\n2026-05-05 16:49:35,773 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:35,773 - INFO - Trying to solve with {'Azubi': 20, 'Fachkraft': 20, 'Hilfskraft': 20}\n2026-05-05 16:49:36,831 - INFO - Wall time: 0.10423707962036133\n2026-05-05 16:49:36,853 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:36,853 - INFO - Hidden Employee Upper Bound: {'Azubi': 20, 'Fachkraft': 20, 'Hilfskraft': 20}\n\n2026-05-05 16:49:36,853 - INFO - Minimizing Hidden Employee Count Phase 2\n2026-05-05 16:49:36,853 - INFO - Trying to solve with {'Azubi': 19, 'Fachkraft': 20, 'Hilfskraft': 20}\n2026-05-05 16:49:37,943 - INFO - Wall time: 0.08040714263916016\n2026-05-05 16:49:37,968 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:37,968 - INFO - Trying to solve with {'Azubi': 20, 'Fachkraft': 19, 'Hilfskraft': 20}\n2026-05-05 16:49:38,974 - INFO - Wall time: 0.11797595024108887\n2026-05-05 16:49:38,996 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:38,997 - INFO - Trying to solve with {'Azubi': 20, 'Fachkraft': 20, 'Hilfskraft': 19}\n2026-05-05 16:49:40,092 - INFO - Wall time: 0.07974696159362793\n2026-05-05 16:49:40,106 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:40,106 - INFO - Hidden Employee Tight Bound: {'Azubi': 20, 'Fachkraft': 20, 'Hilfskraft': 20}\n\n2026-05-05 16:49:40,106 - INFO - General information:\n2026-05-05 16:49:40,106 - INFO -   - planning unit: 77\n2026-05-05 16:49:40,106 - INFO -   - start date: 2025-02-01\n2026-05-05 16:49:40,106 - INFO -   - end date: 2025-02-28\n2026-05-05 16:49:40,106 - INFO -   - number of employees: 100\n2026-05-05 16:49:40,106 - INFO -   - number of days: 28\n2026-05-05 16:49:40,106 - INFO -   - number of shifts: 8\n2026-05-05 16:49:43,559 - INFO - Found 4 complete weekends in the planning period\n2026-05-05 16:49:45,720 - INFO - Solving model...\n2026-05-05 16:49:45,721 - INFO -   - number of variables: 25200\n2026-05-05 16:49:45,721 - INFO -   - number of objectives: 10\n2026-05-05 16:49:45,721 - INFO -   - number of constraints: 9\n2026-05-05 16:49:45,721 - INFO - Constraints:\n2026-05-05 16:49:45,721 - INFO -   - Free Day After Night Shift Phase\n2026-05-05 16:49:45,721 - INFO -   - Minimum Rest Time\n2026-05-05 16:49:45,721 - INFO -   - Min Staffing\n2026-05-05 16:49:45,721 - INFO -   - Rounds In Early Shift\n2026-05-05 16:49:45,721 - INFO -   - One Shift Per Day\n2026-05-05 16:49:45,721 - INFO -   - Target Working Time\n2026-05-05 16:49:45,721 - INFO -   - Vacation Days And Shifts\n2026-05-05 16:49:45,721 - INFO -   - Hierarchy Of Intermediate Shifts\n2026-05-05 16:49:45,721 - INFO -   - Planned Shifts\n2026-05-05 16:49:45,721 - INFO - Objectives:\n2026-05-05 16:49:45,721 - INFO -   - Free Days Near Weekend (weight: 2)\n2026-05-05 16:49:45,721 - INFO -   - Minimize Consecutive Night Shifts (weight: 2)\n2026-05-05 16:49:45,721 - INFO -   - Minimize Hidden Employees (weight: 100)\n2026-05-05 16:49:45,721 - INFO -   - Minimize Overtime (weight: 4)\n2026-05-05 16:49:45,721 - INFO -   - Not Too Many Consecutive Days (weight: 1)\n2026-05-05 16:49:45,721 - INFO -   - Rotate Shifts Forward (weight: 1)\n2026-05-05 16:49:45,721 - INFO -   - Maximize Employee Wishes (weight: 3)\n2026-05-05 16:49:45,721 - INFO -   - Free Day After Night Shift Phase (weight: 3)\n2026-05-05 16:49:45,721 - INFO -   - Every Second Weekend Free (weight: 1)\n2026-05-05 16:49:45,721 - INFO -   - Preferred Block Length (weight: 1)\n2026-05-05 16:49:45,872 - INFO - Timeout set to 600 seconds\n2026-05-05 16:49:46,565 - INFO - Solving completed in 0.69 seconds\n",
+      "createdAt": "2026-05-05T14:49:32.953Z",
+      "duration": 13689,
+      "error": "2026-05-05 16:49:32,971 - INFO - Weights file not found \u2013 using default weights instead.\n2026-05-05 16:49:32,974 - INFO - Minimizing Hidden Employee Count Phase 1\n2026-05-05 16:49:32,974 - INFO - Trying to solve with {'Azubi': 0, 'Fachkraft': 0, 'Hilfskraft': 0}\n2026-05-05 16:49:33,365 - INFO - Wall time: 0.028208017349243164\n2026-05-05 16:49:33,368 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:33,368 - INFO - Trying to solve with {'Azubi': 5, 'Fachkraft': 5, 'Hilfskraft': 5}\n2026-05-05 16:49:34,145 - INFO - Wall time: 0.055181026458740234\n2026-05-05 16:49:34,155 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:34,156 - INFO - Trying to solve with {'Azubi': 10, 'Fachkraft': 10, 'Hilfskraft': 10}\n2026-05-05 16:49:34,875 - INFO - Wall time: 0.0816187858581543\n2026-05-05 16:49:34,880 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:34,880 - INFO - Trying to solve with {'Azubi': 15, 'Fachkraft': 15, 'Hilfskraft': 15}\n2026-05-05 16:49:35,754 - INFO - Wall time: 0.07904887199401855\n2026-05-05 16:49:35,773 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:35,773 - INFO - Trying to solve with {'Azubi': 20, 'Fachkraft': 20, 'Hilfskraft': 20}\n2026-05-05 16:49:36,831 - INFO - Wall time: 0.10423707962036133\n2026-05-05 16:49:36,853 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:36,853 - INFO - Hidden Employee Upper Bound: {'Azubi': 20, 'Fachkraft': 20, 'Hilfskraft': 20}\n\n2026-05-05 16:49:36,853 - INFO - Minimizing Hidden Employee Count Phase 2\n2026-05-05 16:49:36,853 - INFO - Trying to solve with {'Azubi': 19, 'Fachkraft': 20, 'Hilfskraft': 20}\n2026-05-05 16:49:37,943 - INFO - Wall time: 0.08040714263916016\n2026-05-05 16:49:37,968 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:37,968 - INFO - Trying to solve with {'Azubi': 20, 'Fachkraft': 19, 'Hilfskraft': 20}\n2026-05-05 16:49:38,974 - INFO - Wall time: 0.11797595024108887\n2026-05-05 16:49:38,996 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:38,997 - INFO - Trying to solve with {'Azubi': 20, 'Fachkraft': 20, 'Hilfskraft': 19}\n2026-05-05 16:49:40,092 - INFO - Wall time: 0.07974696159362793\n2026-05-05 16:49:40,106 - INFO - Solver returned status = \"INFEASIBLE\"\n2026-05-05 16:49:40,106 - INFO - Hidden Employee Tight Bound: {'Azubi': 20, 'Fachkraft': 20, 'Hilfskraft': 20}\n\n2026-05-05 16:49:40,106 - INFO - General information:\n2026-05-05 16:49:40,106 - INFO -   - planning unit: 77\n2026-05-05 16:49:40,106 - INFO -   - start date: 2025-02-01\n2026-05-05 16:49:40,106 - INFO -   - end date: 2025-02-28\n2026-05-05 16:49:40,106 - INFO -   - number of employees: 100\n2026-05-05 16:49:40,106 - INFO -   - number of days: 28\n2026-05-05 16:49:40,106 - INFO -   - number of shifts: 8\n2026-05-05 16:49:43,559 - INFO - Found 4 complete weekends in the planning period\n2026-05-05 16:49:45,720 - INFO - Solving model...\n2026-05-05 16:49:45,721 - INFO -   - number of variables: 25200\n2026-05-05 16:49:45,721 - INFO -   - number of objectives: 10\n2026-05-05 16:49:45,721 - INFO -   - number of constraints: 9\n2026-05-05 16:49:45,721 - INFO - Constraints:\n2026-05-05 16:49:45,721 - INFO -   - Free Day After Night Shift Phase\n2026-05-05 16:49:45,721 - INFO -   - Minimum Rest Time\n2026-05-05 16:49:45,721 - INFO -   - Min Staffing\n2026-05-05 16:49:45,721 - INFO -   - Rounds In Early Shift\n2026-05-05 16:49:45,721 - INFO -   - One Shift Per Day\n2026-05-05 16:49:45,721 - INFO -   - Target Working Time\n2026-05-05 16:49:45,721 - INFO -   - Vacation Days And Shifts\n2026-05-05 16:49:45,721 - INFO -   - Hierarchy Of Intermediate Shifts\n2026-05-05 16:49:45,721 - INFO -   - Planned Shifts\n2026-05-05 16:49:45,721 - INFO - Objectives:\n2026-05-05 16:49:45,721 - INFO -   - Free Days Near Weekend (weight: 2)\n2026-05-05 16:49:45,721 - INFO -   - Minimize Consecutive Night Shifts (weight: 2)\n2026-05-05 16:49:45,721 - INFO -   - Minimize Hidden Employees (weight: 100)\n2026-05-05 16:49:45,721 - INFO -   - Minimize Overtime (weight: 4)\n2026-05-05 16:49:45,721 - INFO -   - Not Too Many Consecutive Days (weight: 1)\n2026-05-05 16:49:45,721 - INFO -   - Rotate Shifts Forward (weight: 1)\n2026-05-05 16:49:45,721 - INFO -   - Maximize Employee Wishes (weight: 3)\n2026-05-05 16:49:45,721 - INFO -   - Free Day After Night Shift Phase (weight: 3)\n2026-05-05 16:49:45,721 - INFO -   - Every Second Weekend Free (weight: 1)\n2026-05-05 16:49:45,721 - INFO -   - Preferred Block Length (weight: 1)\n2026-05-05 16:49:45,872 - INFO - Timeout set to 600 seconds\n2026-05-05 16:49:46,565 - INFO - Solving completed in 0.69 seconds\n",
+      "id": "1475e654-4864-4108-b8b9-928e335f354f",
+      "metadata": {
+        "expectedSolutions": 1,
+        "feasibleSolutions": [],
+        "solutionsGenerated": 0
+      },
+      "params": {
+        "end": "2025-02-28",
+        "start": "2025-02-01",
+        "timeout": 600,
+        "unit": 77
+      },
+      "status": "failed",
+      "type": "solve"
+    }
+  ]
+}

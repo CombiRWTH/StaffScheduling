@@ -4,6 +4,14 @@ from datetime import time as Time
 from typing import Any
 
 
+def required[T](value: T | None, *, field_name: str, context: str) -> T:
+    """Return a required TimeOffice value or fail with source context."""
+    if value is None:
+        raise ValueError(f"Missing required TimeOffice field {field_name} for {context}.")
+
+    return value
+
+
 def clean_text(value: Any) -> str | None:
     """Normalize empty source text values to None."""
     if value is None:
@@ -13,16 +21,6 @@ def clean_text(value: Any) -> str | None:
 
     if not cleaned:
         return None
-
-    return cleaned
-
-
-def required_text(value: Any, *, field_name: str, context: str) -> str:
-    """Return required non-empty text or raise a useful source error."""
-    cleaned = clean_text(value)
-
-    if cleaned is None:
-        raise ValueError(f"Missing required TimeOffice field {field_name} for {context}.")
 
     return cleaned
 
@@ -73,6 +71,6 @@ def to_non_negative_int(value: Any) -> int:
     result = int(value)
 
     if result < 0:
-        return 0
+        raise ValueError(f"Expected non-negative TimeOffice integer, got {result}.")
 
     return result

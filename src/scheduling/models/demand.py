@@ -1,26 +1,18 @@
-from datetime import date
-from enum import StrEnum
+from datetime import date as Date
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from src.scheduling.models.core import SchedulingBaseModel
+from src.scheduling.models.employee import StaffLevel
+from src.scheduling.models.planning_unit import PlanningUnitId
+from src.scheduling.models.shift import ShiftId
 
 
-class DemandType(StrEnum):
-    MINIMUM = "minimum"
-    OPTIONAL = "optional"
+class DemandRequirement(SchedulingBaseModel):
+    """Hard minimum staffing demand for one planning unit, date, shift and staff level."""
 
-
-class Demand(BaseModel):
-    """Staffing need or optional coverage goal for a station/date/shift."""
-
-    station_id: int = Field(gt=0)
-    date: date
-    shift_id: str
-
-    required_count: int = Field(ge=0)
-
-    required_group_id: str | None = None
-    required_qualification_id: str | None = None
-
-    demand_type: DemandType = DemandType.MINIMUM
-    priority: int = Field(default=0, ge=0)
-    weight: int = Field(default=1, ge=0)
+    planning_unit_id: PlanningUnitId
+    date: Date
+    shift_id: ShiftId
+    staff_level: StaffLevel
+    required_count: int = Field(gt=0)

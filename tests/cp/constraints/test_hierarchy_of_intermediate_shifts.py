@@ -4,11 +4,11 @@ from typing import cast
 
 from ortools.sat.python.cp_model import CpSolver, IntVar
 
-from src.cp.constraints import HierarchyOfIntermediateShiftsConstraint
-from src.cp.model import Model
-from src.cp.variables import Variable
-from src.day import Day
-from src.shift import Shift
+from legacy.src.cp.constraints import HierarchyOfIntermediateShiftsConstraint
+from legacy.src.cp.model import Model
+from legacy.src.cp.variables import Variable
+from legacy.src.day import Day
+from legacy.src.shift import Shift
 
 
 def find_hierarchy_of_intermediate_shifts_violations(

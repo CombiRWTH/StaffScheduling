@@ -15,7 +15,7 @@ from test_rounds_in_early_shifts import find_rounds_in_early_shifts_violations
 from test_target_working_time import find_target_working_time_violations
 from test_vaction_days_and_shifts import find_vaction_days_and_shifts_violations
 
-from src.cp.constraints import (
+from legacy.src.cp.constraints import (
     FreeDayAfterNightShiftPhaseConstraint,
     HierarchyOfIntermediateShiftsConstraint,
     MaxOneShiftPerDayConstraint,
@@ -26,8 +26,8 @@ from src.cp.constraints import (
     TargetWorkingTimeConstraint,
     VacationDaysAndShiftsConstraint,
 )
-from src.cp.model import Model
-from src.cp.objectives import (
+from legacy.src.cp.model import Model
+from legacy.src.cp.objectives import (
     EverySecondWeekendFreeObjective,
     FreeDaysAfterNightShiftPhaseObjective,
     FreeDaysNearWeekendObjective,
@@ -38,10 +38,10 @@ from src.cp.objectives import (
     NotTooManyConsecutiveDaysObjective,
     RotateShiftsForwardObjective,
 )
-from src.cp.variables import Variable
-from src.loader import FSLoader
-from src.solution import Solution
-from src.web.process_solution import process_solution
+from legacy.src.cp.variables import Variable
+from legacy.src.loader import FSLoader
+from legacy.src.solution import Solution
+from legacy.src.web.process_solution import process_solution
 
 
 def detailed_error_display(

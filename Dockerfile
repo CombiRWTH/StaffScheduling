@@ -34,12 +34,10 @@ WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
 
-RUN mkdir -p cases found_solutions
-
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked
+    uv sync --locked --no-dev
 
 EXPOSE 8000
 
 # Bind to 0.0.0.0 so the API is reachable from outside the container.
-CMD ["uv", "run", "--no-sync", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["fastapi", "run", "src/scheduling/api/app.py", "--host", "0.0.0.0", "--port", "8000"]

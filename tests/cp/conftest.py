@@ -2,11 +2,11 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.cp import Model
-from src.day import Day
-from src.employee import Employee
-from src.loader import FSLoader
-from src.shift import Shift
+from legacy.src.cp import Model
+from legacy.src.day import Day
+from legacy.src.employee import Employee
+from legacy.src.loader import FSLoader
+from legacy.src.shift import Shift
 
 alice: Employee = Employee(
     key=1,

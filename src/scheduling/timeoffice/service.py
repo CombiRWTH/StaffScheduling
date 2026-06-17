@@ -1,40 +1,52 @@
-from src.scheduling.models.dataset import SchedulingDataset
-from src.scheduling.timeoffice.config import TIMEOFFICE_CONFIG, TimeOfficeConfig
+from src.scheduling.models import PlanningPeriod, SchedulingDataset
 from src.scheduling.timeoffice.database import TimeOfficeDatabase
-from src.scheduling.timeoffice.models import FetchStationsRequest
-from src.scheduling.timeoffice.settings import TimeOfficeSettings, load_settings
+from src.scheduling.timeoffice.facts import TimeOfficeFacts
 
 
 class TimeOfficeService:
-    """Public facade for TimeOffice data transfer."""
+    """Application-facing service for loading scheduling data from TimeOffice."""
 
     def __init__(
         self,
-        settings: TimeOfficeSettings,
+        *,
+        facts: TimeOfficeFacts,
         database: TimeOfficeDatabase,
-    ):
-        self._settings = settings
+    ) -> None:
+        self._facts = facts
         self._database = database
 
-    def fetch(self, request: FetchStationsRequest) -> SchedulingDataset:
-        """Provide scheduling data for the requested TimeOffice stations."""
-        print(
-            "[timeoffice] service.fetch "
-            f"stations={list(request.station_ids)} "
-            f"period={request.period.start.isoformat()}..{request.period.end.isoformat()}"
+    def fetch_dataset(
+        self,
+        *,
+        planning_unit_ids: tuple[int, ...],
+        period: PlanningPeriod,
+    ) -> SchedulingDataset:
+        selected_planning_unit_ids = self._normalize_planning_unit_ids(planning_unit_ids)
+
+        return self._database.fetch_dataset(
+            selected_planning_unit_ids=selected_planning_unit_ids,
+            period=period,
         )
 
-        return self._database.read(request)
+    def _normalize_planning_unit_ids(
+        self,
+        planning_unit_ids: tuple[int, ...],
+    ) -> tuple[int, ...]:
+        normalized = tuple(dict.fromkeys(int(value) for value in planning_unit_ids))
 
+        if not normalized:
+            raise ValueError("At least one planning unit must be selected.")
 
-def create_timeoffice_service(
-    settings: TimeOfficeSettings | None = None,
-    config: TimeOfficeConfig = TIMEOFFICE_CONFIG,
-) -> TimeOfficeService:
-    """Create the default TimeOffice service."""
-    settings = settings or load_settings()
+        unknown_ids = sorted(
+            planning_unit_id
+            for planning_unit_id in normalized
+            if planning_unit_id not in self._facts.planning_unit_kind_map
+        )
+        if unknown_ids:
+            raise ValueError(
+                "Unknown TimeOffice planning_unit_ids requested: "
+                f"{unknown_ids}. Add them to TIMEOFFICE_FACTS.planning_unit_kind_map "
+                "or fix the request."
+            )
 
-    return TimeOfficeService(
-        settings=settings,
-        database=TimeOfficeDatabase(settings, config),
-    )
+        return normalized

@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from src.services.solve_service import execute_solve
+from legacy.src.services.solve_service import execute_solve
 from tests.integration.helpers.smoke_fixtures import SMOKE_TEST_WEIGHTS, SmokeSolveFixture, make_smoke_solve_fixture
 
 

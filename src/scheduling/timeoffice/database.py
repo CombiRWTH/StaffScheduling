@@ -1,76 +1,111 @@
-from sqlalchemy import URL, create_engine
-from sqlalchemy.engine import Engine
+import logging
 
-from src.scheduling.models.dataset import SchedulingDataset
-from src.scheduling.timeoffice.config import TIMEOFFICE_CONFIG, TimeOfficeConfig
-from src.scheduling.timeoffice.models import FetchStationsRequest
-from src.scheduling.timeoffice.repositories.employees import TimeOfficeEmployeeRepository
-from src.scheduling.timeoffice.repositories.plans import TimeOfficePlanRepository
-from src.scheduling.timeoffice.repositories.shifts import TimeOfficeShiftRepository
-from src.scheduling.timeoffice.settings import TimeOfficeSettings
+from sqlalchemy import URL, Engine, create_engine
+
+from src.scheduling.models import PlanningPeriod, SchedulingDataset
+from src.scheduling.settings import Settings
+from src.scheduling.timeoffice.facts import TimeOfficeFacts
+from src.scheduling.timeoffice.repositories import TimeOfficeRepositories
+
+logger = logging.getLogger(__name__)
+
+
+def create_db_engine(settings: Settings) -> Engine:
+    """Build the SQLAlchemy Engine for the TimeOffice SQL Server database."""
+    url = URL.create(
+        drivername="mssql+pyodbc",
+        username=settings.db_user,
+        password=settings.db_password.get_secret_value(),
+        host=settings.db_server,
+        database=settings.db_name,
+        query={
+            "driver": settings.db_driver,
+            "TrustServerCertificate": "yes",
+        },
+    )
+
+    return create_engine(url)
 
 
 class TimeOfficeDatabase:
-    """Read TimeOffice data and build the canonical scheduling dataset.
+    """Loads reduced scheduling data from TimeOffice.
 
-    This class owns the database connection and explicit repository orchestration.
-    Repositories own SQL access, source-local validation, and mapping to canonical
-    scheduling models.
+    This class owns the database connection boundary and repository call order.
+    It does not contain solver logic or TimeOffice row mapping details.
     """
 
     def __init__(
         self,
-        settings: TimeOfficeSettings,
-        config: TimeOfficeConfig = TIMEOFFICE_CONFIG,
-    ):
-        self._settings = settings
-        self._config = config
-        self._engine: Engine = create_engine(self._database_url())
+        *,
+        engine: Engine,
+        repositories: TimeOfficeRepositories,
+        facts: TimeOfficeFacts,
+    ) -> None:
+        self._engine = engine
+        self._repositories = repositories
+        self._facts = facts
 
-        self._plans = TimeOfficePlanRepository(config)
-        self._employees = TimeOfficeEmployeeRepository()
-        self._shifts = TimeOfficeShiftRepository(config)
-
-    def _database_url(self) -> URL:
-        """Build the SQLAlchemy URL for the TimeOffice SQL Server database."""
-        query: dict[str, str] = {
-            "driver": self._settings.db_driver,
-            "TrustServerCertificate": "yes",
-        }
-
-        return URL.create(
-            drivername="mssql+pyodbc",
-            username=self._settings.db_user,
-            password=self._settings.db_password.get_secret_value(),
-            host=self._settings.db_server,
-            database=self._settings.db_name,
-            query=query,
-        )
-
-    def read(self, request: FetchStationsRequest) -> SchedulingDataset:
-        """Read and map TimeOffice data into the canonical scheduling dataset."""
-        print(
-            "[timeoffice] database.read "
-            f"stations={list(request.station_ids)} "
-            f"period={request.period.start.isoformat()}..{request.period.end.isoformat()}"
-        )
+    def fetch_dataset(
+        self,
+        *,
+        selected_planning_unit_ids: tuple[int, ...],
+        period: PlanningPeriod,
+    ) -> SchedulingDataset:
+        if not selected_planning_unit_ids:
+            raise ValueError("At least one planning unit must be selected.")
 
         with self._engine.connect() as connection:
-            plan_result = self._plans.fetch(connection, request)
-            employee_result = self._employees.fetch(connection, plan_result.plans)
-            shift_result = self._shifts.fetch(connection)
+            planning_unit_result = self._repositories.planning_units.fetch(
+                connection=connection,
+                selected_planning_unit_ids=selected_planning_unit_ids,
+                period=period,
+            )
+
+            planning_unit_ids = tuple(
+                planning_unit.planning_unit_id for planning_unit in planning_unit_result.planning_units
+            )
+
+            personnel_result = self._repositories.personnel.fetch(
+                connection=connection,
+                plans=planning_unit_result.plans,
+                planning_unit_ids=planning_unit_ids,
+                period=period,
+            )
+
+            shift_result = self._repositories.shifts.fetch(
+                connection=connection,
+            )
+
+            roster_result = self._repositories.roster.fetch(
+                connection=connection,
+                plans=planning_unit_result.plans,
+                employees=personnel_result.employees,
+                period=period,
+            )
+
+            demand_result = self._repositories.demand.fetch(
+                connection=connection,
+                period=period,
+                planning_units=planning_unit_result.planning_units,
+                shifts=shift_result.shifts,
+            )
+
+            sunday_work_history_result = self._repositories.sunday_work_history.fetch(
+                connection=connection,
+                period=period,
+                employees=personnel_result.employees,
+            )
 
         return SchedulingDataset(
-            period=request.period,
-            stations=plan_result.stations,
-            regular_station_ids=self._config.regular_station_ids_for(request.station_ids),
-            jump_pool_station_ids=self._config.jump_pool_station_ids_for(request.station_ids),
-            employees=employee_result.employees,
+            period=period,
+            planning_units=planning_unit_result.planning_units,
+            plans=planning_unit_result.plans,
+            employees=personnel_result.employees,
+            plan_participants=personnel_result.plan_participants,
+            planning_unit_memberships=personnel_result.planning_unit_memberships,
             shifts=shift_result.shifts,
-            demand=(),
-            memberships=employee_result.memberships,
-            assignments=(),
-            availability=(),
-            rules=(),
-            preferences=(),
+            assignments=roster_result.assignments,
+            availability=roster_result.availability,
+            demand_requirements=demand_result.demand_requirements,
+            sunday_work_history=sunday_work_history_result.sunday_work_history,
         )

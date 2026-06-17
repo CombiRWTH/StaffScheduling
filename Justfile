@@ -1,18 +1,14 @@
-APP_NAME := "staff-scheduling-api"
 IMAGE_NAME := "staff-scheduling-api"
 PORT := "8000"
 
 # Shared Docker args for dev commands
-DOCKER_DEV_ARGS := "-p " + PORT + ":8000 --env-file .env -v $PWD:/app -v staff-scheduling-venv:/app/.venv -v staff-scheduling-uv-cache:/root/.cache/uv"
+DOCKER_DEV_ARGS := "-p " + PORT + ":8000 --env-file .env -v $PWD/src:/app/src"
 
 _default:
     just --list
 
 sync:
-    uv sync
-
-test *args:
-    uv run pytest {{args}}
+    uv sync --all-extras
 
 lint *args:
     uv run ruff check . {{args}}
@@ -23,23 +19,19 @@ format *args:
 typecheck *args:
     uv run pyright . {{args}}
 
+test *args:
+    uv run pytest {{args}}
+
 check: lint typecheck test
 
 build:
     docker build -t {{IMAGE_NAME}} .
 
-# App CLI wrapper:
-cli *args:
-    docker run --rm -it \
-        {{DOCKER_DEV_ARGS}} \
-        {{IMAGE_NAME}} \
-        uv run staff-scheduling {{args}}
-
 dev:
     docker run --rm -it \
         {{DOCKER_DEV_ARGS}} \
         {{IMAGE_NAME}} \
-        uv run uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+        uv run fastapi dev src/scheduling/api/app.py --host 0.0.0.0 --port 8000
 
 docker-shell:
     docker run --rm -it \
@@ -47,5 +39,5 @@ docker-shell:
         {{IMAGE_NAME}} \
         bash
 
-status:
-    curl http://localhost:{{PORT}}/status
+health:
+    curl http://localhost:{{PORT}}/health

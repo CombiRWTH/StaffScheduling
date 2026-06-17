@@ -1,0 +1,150 @@
+from legacy.src.day import Day
+from legacy.src.shift import Shift
+
+
+class Employee:
+    _key: int
+    _surname: str
+    _name: str
+    _level: str
+    _type: str
+    _target_working_time: int
+    _actual_working_time: int = 0
+    _forbidden_days: list[int]
+    _forbidden_shifts: list[tuple[int, str]]
+    _vacation_days: list[int]
+    _vacation_shifts: list[tuple[int, str]]
+    _wish_days: list[int]
+    _wish_shifts: list[tuple[int, str]]
+    _planned_shifts: list[tuple[int, str]] = []
+    _qualifications: list[str]
+
+    def __init__(
+        self,
+        key: int,
+        surname: str,
+        name: str,
+        level: str,
+        type: str,
+        target_working_time: int = 0,
+        actual_working_time: int = 0,
+        hidden_actual_working_time: int = 0,
+        forbidden_days: list[int] | None = None,
+        forbidden_shifts: list[tuple[int, str]] | None = None,
+        vacation_days: list[int] | None = None,
+        vacation_shifts: list[tuple[int, str]] | None = None,
+        wish_days: list[int] | None = None,
+        wish_shifts: list[tuple[int, str]] | None = None,
+        planned_shifts: list[tuple[int, str]] | None = None,
+        qualifications: list[str] | None = None,
+    ):
+        """
+        Initializes an Employee instance.
+        """
+        if qualifications is None:
+            qualifications = []
+        if planned_shifts is None:
+            planned_shifts = []
+        if wish_shifts is None:
+            wish_shifts = []
+        if wish_days is None:
+            wish_days = []
+        if vacation_shifts is None:
+            vacation_shifts = []
+        if vacation_days is None:
+            vacation_days = []
+        if forbidden_shifts is None:
+            forbidden_shifts = []
+        if forbidden_days is None:
+            forbidden_days = []
+        self._key = key
+        self._surname = surname
+        self._name = name
+        self._level = level
+        self._type = type
+        self._target_working_time = target_working_time
+        self._actual_working_time = actual_working_time
+        self._hidden_actual_working_time = hidden_actual_working_time
+        self._forbidden_days = forbidden_days
+        self._forbidden_shifts = forbidden_shifts
+        self._vacation_days = vacation_days
+        self._vacation_shifts = vacation_shifts
+        self._wish_days = wish_days
+        self._wish_shifts = wish_shifts
+        self._planned_shifts = planned_shifts or []
+        self._qualifications = qualifications
+
+    def get_key(self) -> int:
+        return self._key
+
+    @property
+    def level(self) -> str:
+        return self._level
+
+    @property
+    def hidden(self) -> bool:
+        return self._type == "hidden"
+
+    @property
+    def name(self) -> str:
+        return f"{self._surname} {self._name}"
+
+    def qualified(self, qualification: str) -> bool:
+        """
+        Checks if the employee has a specific qualification.
+        """
+        return qualification in self._qualifications
+
+    def get_available_working_time(self) -> int:
+        """
+        Calculates the target working time for the employee.
+        """
+        if self.hidden:
+            return round(40 * 4.35 * 60)  # 40 hours per week for hidden employees
+
+        return max(self._target_working_time - self._actual_working_time, 0)
+
+    def unavailable(self, day: Day, shift: Shift | None = None) -> bool:
+        """
+        Checks if the employee has vacation or is not available on a specific day and optionally a specific shift.
+        If `shift` is None, it checks if the employee has vacation on that day regardless of the shift.
+        """
+        if shift is None:
+            return day.day in self._vacation_days or day.day in self._forbidden_days
+
+        return (day.day, shift.abbreviation) in self._vacation_shifts or (
+            day.day,
+            shift.abbreviation,
+        ) in self._forbidden_shifts
+
+    @property
+    def get_wish_days(self) -> list[int]:
+        return self._wish_days
+
+    @property
+    def get_wish_shifts(self) -> list[tuple[int, str]]:
+        return self._wish_shifts
+
+    @property
+    def get_planned_shifts(self) -> list[tuple[int, str]]:
+        return self._planned_shifts
+
+    @property
+    def target_working_time(self) -> int:
+        return self._target_working_time
+
+    @property
+    def actual_working_time(self) -> int:
+        return self._actual_working_time
+
+    @property
+    def hidden_actual_working_time(self) -> int:
+        return self._hidden_actual_working_time
+
+    @property
+    def vacation_days(self) -> list[int]:
+        return self._vacation_days
+
+    @property
+    def vacation_shifts(self) -> list[tuple[int, str]]:
+        return self._vacation_shifts

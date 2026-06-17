@@ -1,44 +1,63 @@
 from enum import StrEnum
+from typing import Self
 
-from pydantic import BaseModel, Field
+from pydantic import Field, model_validator
+
+from src.scheduling.models.core import (
+    MinuteOfDay,
+    NonEmptyStr,
+    PositiveId,
+    SchedulingBaseModel,
+)
+
+ShiftId = PositiveId
 
 
 class ShiftKind(StrEnum):
-    """Canonical solver-facing shift category."""
+    """Reduced shift kind used by scheduling rules.
+
+    This is not a full TimeOffice shift taxonomy. It only contains categories
+    relevant for demand, rest rules, night rules, and project-specific work.
+    """
 
     EARLY = "early"
-    INTERMEDIATE = "intermediate"
     LATE = "late"
     NIGHT = "night"
+    INTERMEDIATE = "intermediate"
     MANAGEMENT = "management"
     OTHER = "other"
 
 
-class Shift(BaseModel):
-    """Canonical assignable shift definition.
+class StaffingDemandRole(StrEnum):
+    """How a shift relates to staffing demand."""
 
-    One Shift represents one assignable shift variant. Similar shifts can be
-    grouped through shift_group_id, e.g. several TimeOffice night shifts can all
-    belong to group "night" while keeping their own shift_id/source metadata.
+    REQUIRED_MINIMUM = "required_minimum"
+    OPTIONAL_COVERAGE = "optional_coverage"
+    NON_MINIMUM_WORK = "non_minimum_work"
+
+
+class Shift(SchedulingBaseModel):
+    """Scheduling-relevant view of a TimeOffice shift.
+
+    The TimeOffice adapter maps raw shift IDs/types/codes into this reduced
+    model. The solver should use this model, not raw TimeOffice catalog fields.
     """
 
-    shift_id: str
-    shift_group_id: str | None = None
-    name: str
-
-    source_shift_id: int | None = None
-    source_code: str | None = None
+    shift_id: ShiftId
+    code: NonEmptyStr
 
     kind: ShiftKind
+    staffing_role: StaffingDemandRole
 
-    start_minute: int = Field(ge=0, lt=24 * 60)
-    end_minute: int = Field(ge=0, lt=24 * 60)
-    ends_next_day: bool = False
+    start_minute: MinuteOfDay
+    end_minute: MinuteOfDay
 
-    break_minutes: int = Field(default=0, ge=0)
-    net_work_minutes: int = Field(ge=0)
+    # Net paid/planned work time used for monthly target-hour balancing.
+    net_work_minutes: int = Field(gt=0)
 
-    assignable: bool = True
-    counts_as_work: bool = True
-    counts_for_minimum_staffing: bool = True
-    is_night: bool = False
+    @model_validator(mode="after")
+    def validate_shift(self) -> Self:
+        if self.start_minute == self.end_minute:
+            raise ValueError("Shift start_minute and end_minute must differ.")
+
+        return self

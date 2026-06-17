@@ -1,22 +1,19 @@
-from datetime import date
-from typing import Self
+from typing import Annotated
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 
-class PlanningPeriod(BaseModel):
-    """Inclusive planning period for a scheduling run."""
+class SchedulingBaseModel(BaseModel):
+    """Base model for canonical scheduling data."""
 
-    start: date
-    end: date
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+        str_strip_whitespace=True,
+    )
 
-    @model_validator(mode="after")
-    def end_must_not_be_before_start(self) -> Self:
-        if self.end < self.start:
-            raise ValueError("Planning period end date must not be before start date.")
-        return self
 
-    @property
-    def month_folder(self) -> str:
-        """Return the cache month folder for this period."""
-        return f"{self.start.month:02d}_{self.start.year}"
+NonEmptyStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+PositiveId = Annotated[int, Field(gt=0)]
+NonNegativeInt = Annotated[int, Field(ge=0)]
+MinuteOfDay = Annotated[int, Field(ge=0, lt=24 * 60)]

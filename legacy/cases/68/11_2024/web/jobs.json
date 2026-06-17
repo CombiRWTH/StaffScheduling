@@ -1,0 +1,19 @@
+{
+  "jobs": [
+    {
+      "caseId": 68,
+      "completedAt": "2026-06-10T12:25:47.362Z",
+      "consoleOutput": "Exporting planning data for planning unit 68 from 2024-11-01 to 2024-11-30.\n2026-06-10 12:25:46,658 - INFO - copied static JSON file: wishes_and_blocked.json\n2026-06-10 12:25:46,660 - INFO - copied static JSON file: minimal_number_of_staff.json\n2026-06-10 12:25:46,662 - INFO - copied static JSON file: employee_types.json\n2026-06-10 12:25:46,664 - INFO - copied static JSON file: general_settings.json\n2026-06-10 12:25:46,945 - INFO - \u2705 Export abgeschlossen \u2013 shift_information.json erstellt\n2026-06-10 12:25:46,990 - INFO - \u2705 Export abgeschlossen \u2013 employees.json erstellt\n2026-06-10 12:25:47,044 - INFO - \u2705 Export abgeschlossen \u2013 target_working_minutes.json erstellt\n2026-06-10 12:25:47,094 - INFO - \u2705 Export abgeschlossen \u2013 worked_sundays.json erstellt\n2026-06-10 12:25:47,357 - INFO - \u2705 Export abgeschlossen \u2013 free_shifts_and_vacation_days.json erstellt\n",
+      "createdAt": "2026-06-10T12:25:46.622Z",
+      "duration": 739,
+      "id": "049b9346-aa08-4cd7-8c12-9857fcf0add2",
+      "params": {
+        "end": "2024-11-30",
+        "start": "2024-11-01",
+        "unit": 68
+      },
+      "status": "completed",
+      "type": "fetch"
+    }
+  ]
+}

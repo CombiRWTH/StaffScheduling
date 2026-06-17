@@ -4,10 +4,10 @@ from typing import cast
 
 from ortools.sat.python.cp_model import CpSolver, IntVar
 
-from src.cp.constraints import PlannedShiftsConstraint
-from src.cp.model import Model
-from src.cp.variables import Variable
-from src.shift import Shift
+from legacy.src.cp.constraints import PlannedShiftsConstraint
+from legacy.src.cp.model import Model
+from legacy.src.cp.variables import Variable
+from legacy.src.shift import Shift
 
 
 def find_planned_shifts_violations(assignment: dict[Variable, int], model: Model) -> list[dict[str, int]]:

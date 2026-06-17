@@ -1,0 +1,28 @@
+{
+  "worked_sundays": [
+    {
+      "firstname": "Augustin",
+      "key": 5920,
+      "name": "Carreras",
+      "worked_sundays": 3
+    },
+    {
+      "firstname": "Trude",
+      "key": 6836,
+      "name": "Valentino",
+      "worked_sundays": 2
+    },
+    {
+      "firstname": "Irma",
+      "key": 7919,
+      "name": "Weathers",
+      "worked_sundays": 2
+    },
+    {
+      "firstname": "Ludger",
+      "key": 7603,
+      "name": "Roberson",
+      "worked_sundays": 1
+    }
+  ]
+}
