@@ -36,7 +36,7 @@ class MaximizePreferredStationObjective(Objective):
 
         for employee in self._employees:
             preferred_station = employee.get_preferred_station
-            if preferred_station is None:
+            if preferred_station == 408 or preferred_station is None:  # 408 is the springerpool
                 continue
 
             for day in self._days:

@@ -1,1 +1,1 @@
-type Station = str
+type Station = int

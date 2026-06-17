@@ -9,6 +9,7 @@ from typing import Any
 from src.employee import Employee
 from src.shift import Shift
 from src.solution import Solution
+from src.station import Station
 
 from .loader import Loader
 
@@ -121,7 +122,9 @@ class FSLoader(Loader):
             surname = fs_employee["name"]
             firstname = fs_employee["firstname"]
             type = fs_employee["type"]
-            preferred_station = "teststation"  # todo adapt if preferred station is included in the input data
+            preferred_station = fs_employee[
+                "preferred_station"
+            ]  # todo adapt if preferred station is included in the input data
             level = fs_employees_levels[type]
             qualifications = fs_qualifications.get(f"{key}", [])
 
@@ -204,9 +207,9 @@ class FSLoader(Loader):
     def get_days(self, start_date: date, end_date: date) -> list[date]:
         return [start_date + timedelta(days=i) for i in range(end_date.day - start_date.day + 1)]
 
-    def get_stations(self) -> list[str]:
+    def get_stations(self) -> list[Station]:
         # todo
-        return ["teststation"]
+        return [77, 88]
 
     def get_min_staffing(self) -> dict[str, dict[str, dict[str, int]]]:
         fs_min_staffing = self._load_json(self._get_file_path("minimal_number_of_staff"))
