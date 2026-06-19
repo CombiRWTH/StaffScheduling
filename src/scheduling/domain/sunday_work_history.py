@@ -1,7 +1,7 @@
 from pydantic import Field
 
-from scheduling.models.core import SchedulingBaseModel
-from scheduling.models.employee import EmployeeId
+from scheduling.domain.core import SchedulingBaseModel
+from scheduling.domain.employee import EmployeeId
 
 
 class EmployeeSundayWorkHistory(SchedulingBaseModel):

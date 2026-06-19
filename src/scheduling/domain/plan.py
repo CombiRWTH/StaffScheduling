@@ -1,6 +1,6 @@
-from scheduling.models.core import PositiveId, SchedulingBaseModel
-from scheduling.models.employee import EmployeeId
-from scheduling.models.planning_unit import PlanningUnitId
+from scheduling.domain.core import PositiveId, SchedulingBaseModel
+from scheduling.domain.employee import EmployeeId
+from scheduling.domain.planning_unit import PlanningUnitId
 
 PlanId = PositiveId
 

@@ -1,19 +1,24 @@
-import asyncio
 import logging
-import uuid
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, status
+from fastapi import Depends, FastAPI, Query
 
-from scheduling.api.dependencies import get_solver_service, get_timeoffice_service
+from scheduling.api.dependencies import ApiRuntime, get_timeoffice_service
+from scheduling.api.solve.job_store import InMemorySolveJobStore
+from scheduling.api.solve.router import solve_router
 from scheduling.api.types import ApiDate
-from scheduling.api.web_router import web_router
+from scheduling.api.web.router import web_router
+from scheduling.domain import PlanningPeriod
+from scheduling.domain.assignment import AssignmentType
+from scheduling.domain.wish import WishKind
 from scheduling.logging import configure_logging
-from scheduling.models import PlanningPeriod
-from scheduling.models.assignment import AssignmentType
-from scheduling.models.wish import WishKind
 from scheduling.settings import get_settings
-from scheduling.solver.tmp import FakeSolution, SolverService
+from scheduling.solver.service import SolverService
+from scheduling.timeoffice.database import TimeOfficeDatabase, create_db_engine
+from scheduling.timeoffice.facts import TIMEOFFICE_FACTS
+from scheduling.timeoffice.repositories.container import TimeOfficeRepositories
 from scheduling.timeoffice.service import TimeOfficeService
 
 settings = get_settings()
@@ -21,10 +26,36 @@ configure_logging(level=settings.log_level)
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Staff Scheduling API")
-app.include_router(web_router)
 
-solve_lock = asyncio.Lock()
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    configure_logging(level=settings.log_level)
+
+    engine = create_db_engine(settings=settings)
+    facts = TIMEOFFICE_FACTS
+    repositories = TimeOfficeRepositories.create(facts=facts)
+    database = TimeOfficeDatabase(
+        engine=engine,
+        repositories=repositories,
+        facts=facts,
+    )
+
+    app.state.runtime = ApiRuntime(
+        engine=engine,
+        timeoffice_service=TimeOfficeService(database=database, facts=facts),
+        solver_service=SolverService(),
+        solve_job_store=InMemorySolveJobStore(),
+    )
+
+    try:
+        yield
+    finally:
+        engine.dispose()
+
+
+app = FastAPI(title="Staff Scheduling API", lifespan=lifespan)
+app.include_router(solve_router)
+app.include_router(web_router)
 
 
 @app.get("/health")
@@ -69,49 +100,3 @@ def fetch_timeoffice_dataset(
         "monthly_work_accounts": len(dataset.monthly_work_accounts),
         "employees_without_monthly_work_account": len(dataset.employees) - len(dataset.monthly_work_accounts),
     }
-
-
-@app.post("/solve")
-async def solve_schedule(
-    background_tasks: BackgroundTasks,
-    solver: Annotated[SolverService, Depends(get_solver_service)],
-) -> dict[str, str]:
-    try:
-        async with asyncio.timeout(2):
-            await solve_lock.acquire()
-    except TimeoutError as e:
-        raise HTTPException(
-            status_code=status.HTTP_423_LOCKED,
-            detail="Solver already working on a different solution. Try again later!",
-        ) from e
-
-    unique_id = uuid.uuid4()
-
-    async def task() -> None:
-        try:
-            await solver.fake_solve(id=unique_id)
-        finally:
-            solve_lock.release()
-
-    background_tasks.add_task(task)
-
-    return {
-        "status": "accepted",
-        "solution_id": str(unique_id),
-    }
-
-
-@app.get("/solution")
-def get_solution(
-    id: Annotated[uuid.UUID, Query()],
-    solver: Annotated[SolverService, Depends(get_solver_service)],
-) -> FakeSolution:
-    solution = next(filter(lambda s: s.id == id, solver.solutions), None)
-
-    if solution is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Solution not found!",
-        )
-
-    return solution

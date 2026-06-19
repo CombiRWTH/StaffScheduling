@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from sqlalchemy import Connection
 
-from scheduling.models import (
+from scheduling.domain import (
     DemandRequirement,
     PlanningPeriod,
     PlanningUnit,
@@ -11,7 +11,7 @@ from scheduling.models import (
     Shift,
     StaffingDemandRole,
 )
-from scheduling.models.employee import StaffLevel
+from scheduling.domain.employee import StaffLevel
 from scheduling.timeoffice.facts import TimeOfficeDemandFact, TimeOfficeFacts
 
 

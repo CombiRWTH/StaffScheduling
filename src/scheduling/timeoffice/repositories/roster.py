@@ -4,7 +4,7 @@ from typing import Self
 from pydantic import model_validator
 from sqlalchemy import Connection, bindparam, text
 
-from scheduling.models import (
+from scheduling.domain import (
     Assignment,
     AssignmentType,
     Availability,

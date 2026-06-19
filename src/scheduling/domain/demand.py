@@ -2,10 +2,10 @@ from datetime import date as Date
 
 from pydantic import Field
 
-from scheduling.models.core import SchedulingBaseModel
-from scheduling.models.employee import StaffLevel
-from scheduling.models.planning_unit import PlanningUnitId
-from scheduling.models.shift import ShiftId
+from scheduling.domain.core import SchedulingBaseModel
+from scheduling.domain.employee import StaffLevel
+from scheduling.domain.planning_unit import PlanningUnitId
+from scheduling.domain.shift import ShiftId
 
 
 class DemandRequirement(SchedulingBaseModel):

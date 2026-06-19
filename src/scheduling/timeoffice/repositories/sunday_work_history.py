@@ -2,7 +2,7 @@ from datetime import date
 
 from sqlalchemy import Connection, bindparam, text
 
-from scheduling.models import Employee, EmployeeSundayWorkHistory, PlanningPeriod, SchedulingBaseModel
+from scheduling.domain import Employee, EmployeeSundayWorkHistory, PlanningPeriod, SchedulingBaseModel
 from scheduling.timeoffice.repositories.types import CleanNullableText, SourceInt, TimeOfficeSourceRow
 
 

@@ -2,7 +2,7 @@ from typing import Self
 
 from pydantic import model_validator
 
-from scheduling.models.dataset import SchedulingDataset
+from scheduling.domain.dataset import SchedulingDataset
 from scheduling.validation.context import DatasetValidationContext
 from scheduling.validation.validators import (
     validate_assignments,

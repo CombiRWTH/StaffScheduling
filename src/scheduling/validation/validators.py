@@ -1,6 +1,6 @@
 from datetime import date as Date
 
-from scheduling.models import (
+from scheduling.domain import (
     AssignmentType,
     AvailabilityType,
     EmployeeId,
@@ -12,7 +12,7 @@ from scheduling.models import (
     StaffLevel,
     WishKind,
 )
-from scheduling.models.dataset import SchedulingDataset
+from scheduling.domain.dataset import SchedulingDataset
 from scheduling.validation.context import DatasetValidationContext
 
 

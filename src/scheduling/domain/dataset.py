@@ -3,17 +3,17 @@ from typing import Self
 
 from pydantic import model_validator
 
-from scheduling.models.assignment import Assignment
-from scheduling.models.availability import Availability
-from scheduling.models.core import SchedulingBaseModel
-from scheduling.models.demand import DemandRequirement
-from scheduling.models.employee import Employee
-from scheduling.models.monthly_work_account import MonthlyWorkAccount
-from scheduling.models.plan import Plan, PlanParticipant
-from scheduling.models.planning_unit import PlanningUnit, PlanningUnitMembership
-from scheduling.models.shift import Shift
-from scheduling.models.sunday_work_history import EmployeeSundayWorkHistory
-from scheduling.models.wish import Wish
+from scheduling.domain.assignment import Assignment
+from scheduling.domain.availability import Availability
+from scheduling.domain.core import SchedulingBaseModel
+from scheduling.domain.demand import DemandRequirement
+from scheduling.domain.employee import Employee
+from scheduling.domain.monthly_work_account import MonthlyWorkAccount
+from scheduling.domain.plan import Plan, PlanParticipant
+from scheduling.domain.planning_unit import PlanningUnit, PlanningUnitMembership
+from scheduling.domain.shift import Shift
+from scheduling.domain.sunday_work_history import EmployeeSundayWorkHistory
+from scheduling.domain.wish import Wish
 
 
 class PlanningPeriod(SchedulingBaseModel):

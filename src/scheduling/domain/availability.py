@@ -4,9 +4,9 @@ from typing import Self
 
 from pydantic import model_validator
 
-from scheduling.models.core import SchedulingBaseModel
-from scheduling.models.employee import EmployeeId
-from scheduling.models.shift import ShiftId
+from scheduling.domain.core import SchedulingBaseModel
+from scheduling.domain.employee import EmployeeId
+from scheduling.domain.shift import ShiftId
 
 
 class AvailabilityType(StrEnum):

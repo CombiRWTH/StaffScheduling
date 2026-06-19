@@ -1,4 +1,4 @@
-from scheduling.models import PlanningPeriod
+from scheduling.domain import PlanningPeriod
 from scheduling.timeoffice.database import TimeOfficeDatabase
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.validation.dataset import ValidatedSchedulingDataset

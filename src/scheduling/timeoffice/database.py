@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import URL, Engine, create_engine
 
-from scheduling.models import PlanningPeriod
+from scheduling.domain import PlanningPeriod
 from scheduling.settings import Settings
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.repositories import TimeOfficeRepositories

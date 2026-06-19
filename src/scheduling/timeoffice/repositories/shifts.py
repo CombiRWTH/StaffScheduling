@@ -5,7 +5,7 @@ from typing import Self
 from pydantic import model_validator
 from sqlalchemy import Connection, bindparam, text
 
-from scheduling.models import SchedulingBaseModel, Shift
+from scheduling.domain import SchedulingBaseModel, Shift
 from scheduling.timeoffice.facts import TimeOfficeFacts, TimeOfficeShiftFact
 from scheduling.timeoffice.repositories.types import CleanText, SourceInt, SourceNullableInt, TimeOfficeSourceRow
 

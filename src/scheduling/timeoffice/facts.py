@@ -3,11 +3,11 @@ from dataclasses import dataclass
 from enum import IntEnum
 from types import MappingProxyType
 
-from scheduling.models.availability import AvailabilityType
-from scheduling.models.employee import Capability, StaffLevel
-from scheduling.models.planning_unit import PlanningUnitId, PlanningUnitKind
-from scheduling.models.shift import ShiftId, ShiftKind, StaffingDemandRole
-from scheduling.models.wish import WishKind
+from scheduling.domain.availability import AvailabilityType
+from scheduling.domain.employee import Capability, StaffLevel
+from scheduling.domain.planning_unit import PlanningUnitId, PlanningUnitKind
+from scheduling.domain.shift import ShiftId, ShiftKind, StaffingDemandRole
+from scheduling.domain.wish import WishKind
 
 
 class TimeOfficePlanStatusId(IntEnum):

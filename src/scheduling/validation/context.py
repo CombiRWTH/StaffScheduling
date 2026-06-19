@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from scheduling.models import (
+from scheduling.domain import (
     EmployeeId,
     Plan,
     PlanId,
@@ -11,7 +11,7 @@ from scheduling.models import (
     Shift,
     ShiftId,
 )
-from scheduling.models.dataset import SchedulingDataset
+from scheduling.domain.dataset import SchedulingDataset
 from scheduling.validation.helpers import ensure_unique
 
 

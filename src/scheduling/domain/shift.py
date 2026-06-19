@@ -3,7 +3,7 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from scheduling.models.core import (
+from scheduling.domain.core import (
     MinuteOfDay,
     NonEmptyStr,
     PositiveId,
