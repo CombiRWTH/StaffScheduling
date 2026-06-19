@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.12-slim-bookworm AS base
 
 ENV PYTHONUNBUFFERED=1 \
     UV_COMPILE_BYTECODE=1 \
@@ -39,5 +39,4 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 EXPOSE 8000
 
-# Bind to 0.0.0.0 so the API is reachable from outside the container.
 CMD ["fastapi", "run", "src/scheduling/api/app.py", "--host", "0.0.0.0", "--port", "8000"]
