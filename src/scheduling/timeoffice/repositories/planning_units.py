@@ -3,7 +3,7 @@ from typing import Self
 from pydantic import model_validator
 from sqlalchemy import Connection, bindparam, text
 
-from scheduling.domain import Plan, PlanningPeriod, PlanningUnit, PlanningUnitKind, SchedulingBaseModel
+from scheduling.domain import Plan, PlanningMonth, PlanningUnit, PlanningUnitKind, SchedulingBaseModel
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.repositories.types import SourceInt, TimeOfficeSourceRow
 
@@ -42,7 +42,7 @@ class TimeOfficePlanningUnitRepository:
         *,
         connection: Connection,
         selected_planning_unit_ids: tuple[int, ...],
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
     ) -> PlanningUnitRepositoryResult:
         if not selected_planning_unit_ids:
             return PlanningUnitRepositoryResult(planning_units=(), plans=())
@@ -50,7 +50,7 @@ class TimeOfficePlanningUnitRepository:
         rows = self._fetch_rows(
             connection=connection,
             selected_planning_unit_ids=selected_planning_unit_ids,
-            period=period,
+            planning_month=planning_month,
         )
 
         self._validate_rows(
@@ -68,7 +68,7 @@ class TimeOfficePlanningUnitRepository:
         *,
         connection: Connection,
         selected_planning_unit_ids: tuple[int, ...],
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
     ) -> tuple[_TimeOfficePlanningUnitRow, ...]:
         query = text(
             """
@@ -82,8 +82,8 @@ class TimeOfficePlanningUnitRepository:
             WHERE pe.Prim IN :planning_unit_ids
                 AND p.RefPlanungsIntervalle = :planning_interval_id
                 AND p.RefStati = :planning_status_id
-                AND CONVERT(date, p.VonDat) = :period_start
-                AND CONVERT(date, p.BisDat) = :period_end
+                AND CONVERT(date, p.VonDat) = :start
+                AND CONVERT(date, p.BisDat) = :end
             ORDER BY pe.Prim
             """
         ).bindparams(bindparam("planning_unit_ids", expanding=True))
@@ -93,8 +93,8 @@ class TimeOfficePlanningUnitRepository:
                 query,
                 {
                     "planning_unit_ids": selected_planning_unit_ids,
-                    "period_start": period.start,
-                    "period_end": period.end,
+                    "start": planning_month.start,
+                    "end": planning_month.end,
                     "planning_interval_id": self._facts.monthly_planning_interval_id,
                     "planning_status_id": self._facts.target_planning_status_id,
                 },

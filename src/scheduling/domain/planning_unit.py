@@ -46,7 +46,7 @@ class PlanningUnitMembership(SchedulingBaseModel):
     This comes from TimeOffice `TPlanungseinheitenPersonal`.
 
     Multiple intervals for the same employee and planning unit are valid because
-    eligibility can change inside the planning period.
+    eligibility can change inside the planning month.
     """
 
     planning_unit_id: PlanningUnitId

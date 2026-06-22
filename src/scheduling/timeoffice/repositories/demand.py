@@ -4,7 +4,7 @@ from sqlalchemy import Connection
 
 from scheduling.domain import (
     DemandRequirement,
-    PlanningPeriod,
+    PlanningMonth,
     PlanningUnit,
     PlanningUnitKind,
     SchedulingBaseModel,
@@ -40,7 +40,7 @@ class TimeOfficeDemandRepository:
         self,
         *,
         connection: Connection,
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
         planning_units: tuple[PlanningUnit, ...],
         shifts: tuple[Shift, ...],
     ) -> DemandRepositoryResult:
@@ -50,7 +50,7 @@ class TimeOfficeDemandRepository:
 
         return DemandRepositoryResult(
             demand_requirements=self._build_from_facts(
-                period=period,
+                planning_month=planning_month,
                 planning_units=planning_units,
                 shifts=shifts,
             )
@@ -59,7 +59,7 @@ class TimeOfficeDemandRepository:
     def _build_from_facts(
         self,
         *,
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
         planning_units: tuple[PlanningUnit, ...],
         shifts: tuple[Shift, ...],
     ) -> tuple[DemandRequirement, ...]:
@@ -74,8 +74,8 @@ class TimeOfficeDemandRepository:
             DemandRequirement,
         ] = {}
 
-        current_date = period.start
-        while current_date <= period.end:
+        current_date = planning_month.start
+        while current_date <= planning_month.end:
             iso_weekday = current_date.isoweekday()
 
             for planning_unit in station_planning_units:

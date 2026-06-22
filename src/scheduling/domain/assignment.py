@@ -15,6 +15,7 @@ class AssignmentType(StrEnum):
 
     PLANNED = "planned"
     EXTERNAL = "external"
+    GENERATED = "generated"
 
 
 class Assignment(SchedulingBaseModel):

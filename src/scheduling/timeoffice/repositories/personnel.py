@@ -8,7 +8,7 @@ from scheduling.domain import (
     Capability,
     Employee,
     Plan,
-    PlanningPeriod,
+    PlanningMonth,
     PlanningUnitMembership,
     PlanParticipant,
     SchedulingBaseModel,
@@ -68,7 +68,7 @@ class TimeOfficePersonnelRepository:
         connection: Connection,
         plans: tuple[Plan, ...],
         planning_unit_ids: tuple[int, ...],
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
     ) -> PersonnelRepositoryResult:
         if not plans:
             return PersonnelRepositoryResult(
@@ -90,7 +90,7 @@ class TimeOfficePersonnelRepository:
             connection=connection,
             planning_unit_ids=planning_unit_ids,
             employee_ids=tuple(employee.employee_id for employee in employees),
-            period=period,
+            planning_month=planning_month,
         )
 
         return PersonnelRepositoryResult(
@@ -145,7 +145,7 @@ class TimeOfficePersonnelRepository:
         connection: Connection,
         planning_unit_ids: tuple[int, ...],
         employee_ids: tuple[int, ...],
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
     ) -> tuple[_TimeOfficePlanningUnitMembershipRow, ...]:
         if not planning_unit_ids or not employee_ids:
             return ()
@@ -163,10 +163,10 @@ class TimeOfficePersonnelRepository:
             FROM TPlanungseinheitenPersonal pep
             WHERE pep.RefPlanungseinheiten IN :planning_unit_ids
                 AND pep.RefPersonal IN :employee_ids
-                AND CONVERT(date, pep.VonDat) <= :period_end
+                AND CONVERT(date, pep.VonDat) <= :end
                 AND (
                     pep.BisDat IS NULL
-                    OR CONVERT(date, pep.BisDat) >= :period_start
+                    OR CONVERT(date, pep.BisDat) >= :start
                 )
                 AND ISNULL(pep.KeinEPlan, 0) = 0
             ORDER BY
@@ -186,8 +186,8 @@ class TimeOfficePersonnelRepository:
                 {
                     "planning_unit_ids": planning_unit_ids,
                     "employee_ids": employee_ids,
-                    "period_start": period.start,
-                    "period_end": period.end,
+                    "start": planning_month.start,
+                    "end": planning_month.end,
                 },
             )
             .mappings()

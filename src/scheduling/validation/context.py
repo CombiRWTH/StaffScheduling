@@ -8,10 +8,10 @@ from scheduling.domain import (
     PlanId,
     PlanningUnitId,
     PlanningUnitKind,
+    SchedulingDataset,
     Shift,
     ShiftId,
 )
-from scheduling.domain.dataset import SchedulingDataset
 from scheduling.validation.helpers import ensure_unique
 
 

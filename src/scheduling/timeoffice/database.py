@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import URL, Engine, create_engine
 
-from scheduling.domain import PlanningPeriod
+from scheduling.domain import PlanningMonth
 from scheduling.settings import Settings
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.repositories import TimeOfficeRepositories
@@ -50,7 +50,7 @@ class TimeOfficeDatabase:
         self,
         *,
         selected_planning_unit_ids: tuple[int, ...],
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
     ) -> ValidatedSchedulingDataset:
         if not selected_planning_unit_ids:
             raise ValueError("At least one planning unit must be selected.")
@@ -59,7 +59,7 @@ class TimeOfficeDatabase:
             planning_unit_result = self._repositories.planning_units.fetch(
                 connection=connection,
                 selected_planning_unit_ids=selected_planning_unit_ids,
-                period=period,
+                planning_month=planning_month,
             )
 
             planning_unit_ids = tuple(
@@ -70,7 +70,7 @@ class TimeOfficeDatabase:
                 connection=connection,
                 plans=planning_unit_result.plans,
                 planning_unit_ids=planning_unit_ids,
-                period=period,
+                planning_month=planning_month,
             )
 
             shift_result = self._repositories.shifts.fetch(
@@ -81,19 +81,19 @@ class TimeOfficeDatabase:
                 connection=connection,
                 plans=planning_unit_result.plans,
                 employees=personnel_result.employees,
-                period=period,
+                planning_month=planning_month,
             )
 
             demand_result = self._repositories.demand.fetch(
                 connection=connection,
-                period=period,
+                planning_month=planning_month,
                 planning_units=planning_unit_result.planning_units,
                 shifts=shift_result.shifts,
             )
 
             sunday_work_history_result = self._repositories.sunday_work_history.fetch(
                 connection=connection,
-                period=period,
+                planning_month=planning_month,
                 employees=personnel_result.employees,
             )
 
@@ -102,17 +102,17 @@ class TimeOfficeDatabase:
                 plans=planning_unit_result.plans,
                 employees=personnel_result.employees,
                 shifts=shift_result.shifts,
-                period=period,
+                planning_month=planning_month,
             )
 
             monthly_work_account_result = self._repositories.monthly_work_accounts.fetch(
                 connection=connection,
                 employees=personnel_result.employees,
-                period=period,
+                planning_month=planning_month,
             )
 
         return ValidatedSchedulingDataset(
-            period=period,
+            planning_month=planning_month,
             planning_units=planning_unit_result.planning_units,
             plans=planning_unit_result.plans,
             employees=personnel_result.employees,

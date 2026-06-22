@@ -1,18 +1,19 @@
-from datetime import date as Date
+from datetime import date
 
 from scheduling.domain import (
     AssignmentType,
     AvailabilityType,
     EmployeeId,
     PlanId,
+    PlanningMonth,
     PlanningUnitId,
     PlanningUnitKind,
+    SchedulingDataset,
     ShiftId,
     StaffingDemandRole,
     StaffLevel,
     WishKind,
 )
-from scheduling.domain.dataset import SchedulingDataset
 from scheduling.validation.context import DatasetValidationContext
 
 
@@ -61,7 +62,7 @@ def validate_plan_participants(dataset: SchedulingDataset, context: DatasetValid
 
 
 def validate_planning_unit_memberships(dataset: SchedulingDataset, context: DatasetValidationContext) -> None:
-    seen: set[tuple[PlanningUnitId, EmployeeId, Date, Date | None]] = set()
+    seen: set[tuple[PlanningUnitId, EmployeeId, date, date | None]] = set()
 
     for membership in dataset.planning_unit_memberships:
         if membership.planning_unit_id not in context.planning_unit_ids:
@@ -91,13 +92,15 @@ def validate_planning_unit_memberships(dataset: SchedulingDataset, context: Data
 
 
 def validate_assignments(dataset: SchedulingDataset, context: DatasetValidationContext) -> None:
-    seen: set[tuple[EmployeeId, Date, ShiftId, AssignmentType, PlanningUnitId | None]] = set()
+    seen: set[tuple[EmployeeId, date, ShiftId, AssignmentType, PlanningUnitId | None]] = set()
 
     for assignment in dataset.assignments:
-        if not dataset.period.contains(assignment.date):
-            raise ValueError(
-                f"Assignment outside planning period: employee_id={assignment.employee_id} date={assignment.date}."
-            )
+        _validate_date_in_planning_month(
+            planning_month=dataset.planning_month,
+            value=assignment.date,
+            label="Assignment",
+            details=f"employee_id={assignment.employee_id}",
+        )
 
         if assignment.employee_id not in context.employee_ids:
             raise ValueError(f"Assignment references unknown employee_id={assignment.employee_id}.")
@@ -108,11 +111,14 @@ def validate_assignments(dataset: SchedulingDataset, context: DatasetValidationC
         # Assignment shape invariants belong in Assignment itself.
         # Dataset validation only checks references.
         if (
-            assignment.assignment_type == AssignmentType.PLANNED
+            assignment.assignment_type in {AssignmentType.PLANNED, AssignmentType.GENERATED}
             and assignment.planning_unit_id is not None
             and assignment.planning_unit_id not in context.planning_unit_ids
         ):
-            raise ValueError(f"Planned assignment references unknown planning_unit_id={assignment.planning_unit_id}.")
+            raise ValueError(
+                f"{assignment.assignment_type.value} assignment references unknown "
+                f"planning_unit_id={assignment.planning_unit_id}."
+            )
 
         key = (
             assignment.employee_id,
@@ -133,14 +139,15 @@ def validate_assignments(dataset: SchedulingDataset, context: DatasetValidationC
 
 
 def validate_availability(dataset: SchedulingDataset, context: DatasetValidationContext) -> None:
-    seen: set[tuple[EmployeeId, Date, AvailabilityType, tuple[ShiftId, ...] | None]] = set()
+    seen: set[tuple[EmployeeId, date, AvailabilityType, tuple[ShiftId, ...] | None]] = set()
 
     for availability in dataset.availability:
-        if not dataset.period.contains(availability.date):
-            raise ValueError(
-                "Availability outside planning period: "
-                f"employee_id={availability.employee_id} date={availability.date}."
-            )
+        _validate_date_in_planning_month(
+            planning_month=dataset.planning_month,
+            value=availability.date,
+            label="Availability",
+            details=f"employee_id={availability.employee_id}",
+        )
 
         if availability.employee_id not in context.employee_ids:
             raise ValueError(f"Availability references unknown employee_id={availability.employee_id}.")
@@ -168,14 +175,15 @@ def validate_availability(dataset: SchedulingDataset, context: DatasetValidation
 
 
 def validate_demand_requirements(dataset: SchedulingDataset, context: DatasetValidationContext) -> None:
-    seen: set[tuple[PlanningUnitId, Date, ShiftId, StaffLevel]] = set()
+    seen: set[tuple[PlanningUnitId, date, ShiftId, StaffLevel]] = set()
 
     for demand in dataset.demand_requirements:
-        if not dataset.period.contains(demand.date):
-            raise ValueError(
-                "DemandRequirement outside planning period: "
-                f"planning_unit_id={demand.planning_unit_id} date={demand.date}."
-            )
+        _validate_date_in_planning_month(
+            planning_month=dataset.planning_month,
+            value=demand.date,
+            label="DemandRequirement",
+            details=f"planning_unit_id={demand.planning_unit_id}",
+        )
 
         if demand.planning_unit_id not in context.planning_unit_ids:
             raise ValueError(f"DemandRequirement references unknown planning_unit_id={demand.planning_unit_id}.")
@@ -224,7 +232,7 @@ def validate_sunday_work_history(dataset: SchedulingDataset, context: DatasetVal
 
 
 def validate_wishes(dataset: SchedulingDataset, context: DatasetValidationContext) -> None:
-    seen: set[tuple[EmployeeId, PlanningUnitId, Date, WishKind, ShiftId | None]] = set()
+    seen: set[tuple[EmployeeId, PlanningUnitId, date, WishKind, ShiftId | None]] = set()
 
     for wish in dataset.wishes:
         if wish.employee_id not in context.employee_ids:
@@ -233,8 +241,12 @@ def validate_wishes(dataset: SchedulingDataset, context: DatasetValidationContex
         if wish.planning_unit_id not in context.planning_unit_ids:
             raise ValueError(f"Wish references unknown planning_unit_id={wish.planning_unit_id}.")
 
-        if not dataset.period.contains(wish.date):
-            raise ValueError(f"Wish date outside planning period: employee_id={wish.employee_id}, date={wish.date}.")
+        _validate_date_in_planning_month(
+            planning_month=dataset.planning_month,
+            value=wish.date,
+            label="Wish",
+            details=f"employee_id={wish.employee_id}",
+        )
 
         if wish.shift_id is not None and wish.shift_id not in context.shift_ids:
             raise ValueError(f"Wish references unknown shift_id={wish.shift_id}.")
@@ -246,9 +258,15 @@ def validate_wishes(dataset: SchedulingDataset, context: DatasetValidationContex
             wish.kind,
             wish.shift_id,
         )
-
         if key in seen:
-            raise ValueError(f"Duplicate wish: {key}.")
+            raise ValueError(
+                "Duplicate Wish "
+                f"employee_id={wish.employee_id} "
+                f"planning_unit_id={wish.planning_unit_id} "
+                f"date={wish.date} "
+                f"kind={wish.kind} "
+                f"shift_id={wish.shift_id}."
+            )
 
         seen.add(key)
 
@@ -258,9 +276,27 @@ def validate_monthly_work_accounts(dataset: SchedulingDataset, context: DatasetV
 
     for account in dataset.monthly_work_accounts:
         if account.employee_id not in context.employee_ids:
-            raise ValueError(f"Monthly work account references unknown employee_id={account.employee_id}.")
+            raise ValueError(f"MonthlyWorkAccount references unknown employee_id={account.employee_id}.")
 
         if account.employee_id in seen_employee_ids:
-            raise ValueError(f"Duplicate monthly work account for employee_id={account.employee_id}.")
+            raise ValueError(f"Duplicate MonthlyWorkAccount employee_id={account.employee_id}.")
 
         seen_employee_ids.add(account.employee_id)
+
+
+def _validate_date_in_planning_month(
+    *,
+    planning_month: PlanningMonth,
+    value: date,
+    label: str,
+    details: str,
+) -> None:
+    if planning_month.start <= value <= planning_month.end:
+        return
+
+    raise ValueError(
+        f"{label} outside planning month: "
+        f"{details} "
+        f"date={value} "
+        f"planning_month={planning_month.year:04d}-{planning_month.month:02d}."
+    )

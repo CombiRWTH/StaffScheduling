@@ -5,7 +5,7 @@ from typing import Self
 from pydantic import model_validator
 from sqlalchemy import Connection, bindparam, text
 
-from scheduling.domain import Employee, Plan, PlanningPeriod, SchedulingBaseModel, Shift, Wish, WishKind
+from scheduling.domain import Employee, Plan, PlanningMonth, SchedulingBaseModel, Shift, Wish, WishKind
 from scheduling.timeoffice.facts import TimeOfficeFacts, TimeOfficeShiftFact
 from scheduling.timeoffice.repositories.types import (
     CleanNullableText,
@@ -99,7 +99,7 @@ class TimeOfficeWishRepository:
         plans: tuple[Plan, ...],
         employees: tuple[Employee, ...],
         shifts: tuple[Shift, ...],
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
     ) -> TimeOfficeWishRepositoryResult:
         if not plans or not employees:
             return TimeOfficeWishRepositoryResult(wishes=())
@@ -108,7 +108,7 @@ class TimeOfficeWishRepository:
             connection=connection,
             plans=plans,
             employees=employees,
-            period=period,
+            planning_month=planning_month,
         )
 
         wishes = self._map_wishes(rows=rows, shifts=shifts)
@@ -121,7 +121,7 @@ class TimeOfficeWishRepository:
         connection: Connection,
         plans: tuple[Plan, ...],
         employees: tuple[Employee, ...],
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
     ) -> tuple[_TimeOfficeWishRow, ...]:
         query = text(
             """
@@ -156,7 +156,7 @@ class TimeOfficeWishRepository:
             WHERE pkg.RefPersonal IN :employee_ids
                 AND pkg.RefPlan IN :plan_ids
                 AND pkg.RefPlanungseinheiten IN :planning_unit_ids
-                AND CONVERT(date, pkg.Datum) BETWEEN :period_start AND :period_end
+                AND CONVERT(date, pkg.Datum) BETWEEN :start AND :end
                 AND ISNULL(pkg.Wunschdienst, 0) <> 0
                 AND (
                     pkg.RefDienste IS NOT NULL
@@ -185,8 +185,8 @@ class TimeOfficeWishRepository:
                     "plan_ids": tuple(plan.plan_id for plan in plans),
                     "planning_unit_ids": tuple(plan.planning_unit_id for plan in plans),
                     "employee_ids": tuple(employee.employee_id for employee in employees),
-                    "period_start": period.start,
-                    "period_end": period.end,
+                    "start": planning_month.start,
+                    "end": planning_month.end,
                 },
             )
             .mappings()

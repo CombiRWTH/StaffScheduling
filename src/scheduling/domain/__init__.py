@@ -1,7 +1,7 @@
 from scheduling.domain.assignment import Assignment, AssignmentType
 from scheduling.domain.availability import Availability, AvailabilityType
 from scheduling.domain.core import MinuteOfDay, NonEmptyStr, NonNegativeInt, PositiveId, SchedulingBaseModel
-from scheduling.domain.dataset import PlanningPeriod, SchedulingDataset
+from scheduling.domain.dataset import PlanningMonth, SchedulingDataset
 from scheduling.domain.demand import DemandRequirement
 from scheduling.domain.employee import Capability, Employee, EmployeeId, StaffLevel
 from scheduling.domain.monthly_work_account import MonthlyWorkAccount
@@ -18,7 +18,7 @@ __all__ = [
     "MinuteOfDay",
     "SchedulingBaseModel",
     "SchedulingDataset",
-    "PlanningPeriod",
+    "PlanningMonth",
     "Plan",
     "PlanId",
     "PlanParticipant",

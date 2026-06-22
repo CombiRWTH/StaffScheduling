@@ -11,7 +11,7 @@ from scheduling.domain import (
     AvailabilityType,
     Employee,
     Plan,
-    PlanningPeriod,
+    PlanningMonth,
     SchedulingBaseModel,
 )
 from scheduling.timeoffice.facts import TimeOfficeFacts, TimeOfficeShiftFact
@@ -94,7 +94,7 @@ class TimeOfficeRosterRepository:
         connection: Connection,
         plans: tuple[Plan, ...],
         employees: tuple[Employee, ...],
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
     ) -> RosterRepositoryResult:
         if not plans or not employees:
             return RosterRepositoryResult(assignments=(), availability=())
@@ -102,7 +102,7 @@ class TimeOfficeRosterRepository:
         rows = self._fetch_rows(
             connection=connection,
             employees=employees,
-            period=period,
+            planning_month=planning_month,
         )
 
         selected_plan_ids = {plan.plan_id for plan in plans}
@@ -122,7 +122,7 @@ class TimeOfficeRosterRepository:
         *,
         connection: Connection,
         employees: tuple[Employee, ...],
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
     ) -> tuple[_TimeOfficeRosterRow, ...]:
         query = text(
             """
@@ -149,7 +149,7 @@ class TimeOfficeRosterRepository:
             LEFT JOIN TDienste absence_d
                 ON absence_d.Prim = pkg.RefDienstAbw
             WHERE pkg.RefPersonal IN :employee_ids
-                AND CONVERT(date, pkg.Datum) BETWEEN :period_start AND :period_end
+                AND CONVERT(date, pkg.Datum) BETWEEN :start AND :end
                 AND (
                     pkg.RefDienste IS NOT NULL
                     OR pkg.RefgAbw IS NOT NULL
@@ -168,8 +168,8 @@ class TimeOfficeRosterRepository:
                 query,
                 {
                     "employee_ids": tuple(employee.employee_id for employee in employees),
-                    "period_start": period.start,
-                    "period_end": period.end,
+                    "start": planning_month.start,
+                    "end": planning_month.end,
                 },
             )
             .mappings()

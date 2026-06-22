@@ -1,11 +1,11 @@
-from datetime import date as Date
-from typing import Self
+from calendar import monthrange
+from datetime import date
 
-from pydantic import model_validator
+from pydantic import Field, computed_field
 
+from scheduling.domain import SchedulingBaseModel
 from scheduling.domain.assignment import Assignment
 from scheduling.domain.availability import Availability
-from scheduling.domain.core import SchedulingBaseModel
 from scheduling.domain.demand import DemandRequirement
 from scheduling.domain.employee import Employee
 from scheduling.domain.monthly_work_account import MonthlyWorkAccount
@@ -16,21 +16,27 @@ from scheduling.domain.sunday_work_history import EmployeeSundayWorkHistory
 from scheduling.domain.wish import Wish
 
 
-class PlanningPeriod(SchedulingBaseModel):
-    """Inclusive planning period for one scheduling dataset."""
+class PlanningMonth(SchedulingBaseModel):
+    year: int = Field(ge=2000, le=2200)
+    month: int = Field(ge=1, le=12)
 
-    start: Date
-    end: Date
+    @computed_field
+    @property
+    def start(self) -> date:
+        return date(self.year, self.month, 1)
 
-    @model_validator(mode="after")
-    def validate_period(self) -> Self:
-        if self.start > self.end:
-            raise ValueError(f"PlanningPeriod.start must be before or equal to end: {self.start} > {self.end}")
+    @computed_field
+    @property
+    def end(self) -> date:
+        return date(
+            self.year,
+            self.month,
+            monthrange(self.year, self.month)[1],
+        )
 
-        return self
-
-    def contains(self, date: Date) -> bool:
-        return self.start <= date <= self.end
+    @property
+    def label(self) -> str:
+        return f"{self.year:04d}-{self.month:02d}"
 
 
 class SchedulingDataset(SchedulingBaseModel):
@@ -41,7 +47,7 @@ class SchedulingDataset(SchedulingBaseModel):
     OR-Tools variables are derived later.
     """
 
-    period: PlanningPeriod
+    planning_month: PlanningMonth
 
     planning_units: tuple[PlanningUnit, ...]
     plans: tuple[Plan, ...]

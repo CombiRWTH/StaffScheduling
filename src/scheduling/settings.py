@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field, SecretStr
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,7 +10,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    log_level: str = Field(default="INFO")
+    log_level: str = "INFO"
 
     # TimeOffice Database
     db_driver: str = "ODBC Driver 18 for SQL Server"
@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     db_name: str
     db_user: str
     db_password: SecretStr
+
+    # Solver
+    solver_max_time_seconds: float = 30
+    solver_num_search_workers: int | None = None
+    solver_random_seed: int | None = None
+    solver_log_search_progress: bool = False
 
 
 @lru_cache(maxsize=1)

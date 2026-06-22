@@ -1,21 +1,22 @@
 import uuid
 from datetime import UTC, datetime
 
-from scheduling.api.solve.schemas import SolveCommand, SolveJob, SolveJobStatus
-from scheduling.solver.tmp import SolverResult
+from scheduling.api.solve.job_models import SolveCommand, SolveJob, SolveJobStatus
+from scheduling.solver.models import Solution
 
 
 class InMemorySolveJobStore:
-    """Process-local in-memory solve job store.
+    """Process-local store for solve job state.
 
-    This is intentionally API runtime state. It is not shared across multiple
-    Uvicorn workers and should be replaced by persistent storage if needed.
+    Jobs are kept only in the current API process. They are lost on restart and
+    are not shared across multiple Uvicorn workers.
     """
 
     def __init__(self) -> None:
         self._jobs: dict[uuid.UUID, SolveJob] = {}
 
     def create(self, command: SolveCommand) -> SolveJob:
+        """Create an accepted solve job without starting execution."""
         job = SolveJob(
             job_id=uuid.uuid4(),
             status=SolveJobStatus.ACCEPTED,
@@ -26,6 +27,7 @@ class InMemorySolveJobStore:
         return job
 
     def get(self, job_id: uuid.UUID) -> SolveJob | None:
+        """Return a job known to this process."""
         return self._jobs.get(job_id)
 
     def mark_running(self, job_id: uuid.UUID) -> SolveJob:
@@ -36,7 +38,7 @@ class InMemorySolveJobStore:
             error=None,
         )
 
-    def mark_succeeded(self, job_id: uuid.UUID, result: SolverResult) -> SolveJob:
+    def mark_succeeded(self, job_id: uuid.UUID, result: Solution) -> SolveJob:
         return self._update(
             job_id,
             status=SolveJobStatus.SUCCEEDED,

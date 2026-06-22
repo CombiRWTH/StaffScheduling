@@ -2,7 +2,7 @@ from datetime import date
 
 from sqlalchemy import Connection, bindparam, text
 
-from scheduling.domain import Employee, EmployeeSundayWorkHistory, PlanningPeriod, SchedulingBaseModel
+from scheduling.domain import Employee, EmployeeSundayWorkHistory, PlanningMonth, SchedulingBaseModel
 from scheduling.timeoffice.repositories.types import CleanNullableText, SourceInt, TimeOfficeSourceRow
 
 
@@ -40,7 +40,7 @@ class TimeOfficeSundayWorkHistoryRepository:
         self,
         *,
         connection: Connection,
-        period: PlanningPeriod,
+        planning_month: PlanningMonth,
         employees: tuple[Employee, ...],
     ) -> SundayWorkHistoryRepositoryResult:
         if not employees:
@@ -52,8 +52,8 @@ class TimeOfficeSundayWorkHistoryRepository:
             connection=connection,
             employees=employees,
             sunday_account_id=sunday_account_id,
-            lookback_start=self._subtract_years(period.end, self.LOOKBACK_YEARS),
-            lookback_end=period.end,
+            lookback_start=self._subtract_years(planning_month.end, self.LOOKBACK_YEARS),
+            lookback_end=planning_month.end,
         )
 
         return SundayWorkHistoryRepositoryResult(sunday_work_history=self._map_history_rows(rows))
