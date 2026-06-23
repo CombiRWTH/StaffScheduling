@@ -4,7 +4,6 @@ from scheduling.domain import (
     AssignmentType,
     AvailabilityType,
     EmployeeId,
-    PlanId,
     PlanningMonth,
     PlanningUnitId,
     PlanningUnitKind,
@@ -28,37 +27,6 @@ def validate_plans(dataset: SchedulingDataset, context: DatasetValidationContext
             raise ValueError(f"Multiple selected plans reference the same planning_unit_id={plan.planning_unit_id}.")
 
         seen_planning_units.add(plan.planning_unit_id)
-
-
-def validate_plan_participants(dataset: SchedulingDataset, context: DatasetValidationContext) -> None:
-    seen: set[tuple[PlanId, EmployeeId]] = set()
-
-    for participant in dataset.plan_participants:
-        if participant.plan_id not in context.plan_ids:
-            raise ValueError(f"PlanParticipant references unknown plan_id={participant.plan_id}.")
-
-        if participant.planning_unit_id not in context.planning_unit_ids:
-            raise ValueError(f"PlanParticipant references unknown planning_unit_id={participant.planning_unit_id}.")
-
-        if participant.employee_id not in context.employee_ids:
-            raise ValueError(f"PlanParticipant references unknown employee_id={participant.employee_id}.")
-
-        plan = context.plans_by_id[participant.plan_id]
-        if participant.planning_unit_id != plan.planning_unit_id:
-            raise ValueError(
-                "PlanParticipant planning_unit_id does not match its Plan: "
-                f"plan_id={participant.plan_id} "
-                f"participant_planning_unit_id={participant.planning_unit_id} "
-                f"plan_planning_unit_id={plan.planning_unit_id}."
-            )
-
-        key = (participant.plan_id, participant.employee_id)
-        if key in seen:
-            raise ValueError(
-                f"Duplicate PlanParticipant plan_id={participant.plan_id} employee_id={participant.employee_id}."
-            )
-
-        seen.add(key)
 
 
 def validate_planning_unit_memberships(dataset: SchedulingDataset, context: DatasetValidationContext) -> None:
@@ -95,6 +63,12 @@ def validate_assignments(dataset: SchedulingDataset, context: DatasetValidationC
     seen: set[tuple[EmployeeId, date, ShiftId, AssignmentType, PlanningUnitId | None]] = set()
 
     for assignment in dataset.assignments:
+        if assignment.assignment_type == AssignmentType.GENERATED:
+            raise ValueError(
+                "SchedulingDataset must not contain generated assignments. "
+                "Generated assignments belong to Solution, not imported dataset facts."
+            )
+
         _validate_date_in_planning_month(
             planning_month=dataset.planning_month,
             value=assignment.date,
@@ -108,17 +82,8 @@ def validate_assignments(dataset: SchedulingDataset, context: DatasetValidationC
         if assignment.shift_id not in context.shift_ids:
             raise ValueError(f"Assignment references unknown shift_id={assignment.shift_id}.")
 
-        # Assignment shape invariants belong in Assignment itself.
-        # Dataset validation only checks references.
-        if (
-            assignment.assignment_type in {AssignmentType.PLANNED, AssignmentType.GENERATED}
-            and assignment.planning_unit_id is not None
-            and assignment.planning_unit_id not in context.planning_unit_ids
-        ):
-            raise ValueError(
-                f"{assignment.assignment_type.value} assignment references unknown "
-                f"planning_unit_id={assignment.planning_unit_id}."
-            )
+        if assignment.planning_unit_id is not None and assignment.planning_unit_id not in context.planning_unit_ids:
+            raise ValueError(f"Assignment references unknown planning_unit_id={assignment.planning_unit_id}.")
 
         key = (
             assignment.employee_id,
@@ -152,8 +117,10 @@ def validate_availability(dataset: SchedulingDataset, context: DatasetValidation
         if availability.employee_id not in context.employee_ids:
             raise ValueError(f"Availability references unknown employee_id={availability.employee_id}.")
 
+        normalized_shift_ids = None
         if availability.shift_ids is not None:
-            unknown_shift_ids = sorted(set(availability.shift_ids) - context.shift_ids)
+            normalized_shift_ids = tuple(sorted(availability.shift_ids))
+            unknown_shift_ids = sorted(set(normalized_shift_ids) - context.shift_ids)
             if unknown_shift_ids:
                 raise ValueError(f"Availability references unknown shift_ids={unknown_shift_ids}.")
 
@@ -161,7 +128,7 @@ def validate_availability(dataset: SchedulingDataset, context: DatasetValidation
             availability.employee_id,
             availability.date,
             availability.availability_type,
-            availability.shift_ids,
+            normalized_shift_ids,
         )
         if key in seen:
             raise ValueError(
@@ -294,9 +261,4 @@ def _validate_date_in_planning_month(
     if planning_month.start <= value <= planning_month.end:
         return
 
-    raise ValueError(
-        f"{label} outside planning month: "
-        f"{details} "
-        f"date={value} "
-        f"planning_month={planning_month.year:04d}-{planning_month.month:02d}."
-    )
+    raise ValueError(f"{label} outside planning month: {details} date={value} planning_month={planning_month.label}.")

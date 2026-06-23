@@ -1,6 +1,5 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
-from enum import IntEnum
 from types import MappingProxyType
 
 from scheduling.domain.availability import AvailabilityType
@@ -9,93 +8,90 @@ from scheduling.domain.planning_unit import PlanningUnitId, PlanningUnitKind
 from scheduling.domain.shift import ShiftId, ShiftKind, StaffingDemandRole
 from scheduling.domain.wish import WishKind
 
+# TPlan.RefPlanungsIntervalle value for monthly planning.
+MONTHLY_PLANNING_INTERVAL_ID = 1
 
-class TimeOfficePlanStatusId(IntEnum):
-    """Known TimeOffice RefStati values used around plan selection.
+# TPlan.RefStati value for the editable target roster used as planning input.
+TARGET_PLANNING_STATUS_ID = 20
 
-    These are source-system IDs from TimeOffice.
+# TDienste.RefDienstTypen value for normal work shifts.
+WORK_SHIFT_TYPE_ID = 1
 
-    TARGET_PLANNING is the currently used plan status for reading the editable
-    target roster that we want to repair/optimize.
+# TPersonalKontenJeMonat.RefKonten for planned monthly target hours.
+MONTHLY_TARGET_WORK_ACCOUNT_ID = 1
 
-    The other values are kept because they were already known in the inherited
-    implementation and make the meaning of TARGET_PLANNING reviewable. They are
-    not used by the current read pipeline.
-    """
+# TPersonalKontenJeMonat.RefKonten for current monthly actual hours.
+MONTHLY_ACTUAL_WORK_ACCOUNT_ID = 55
 
-    TARGET_PLANNING = 20
-    ACTUAL = 50
-    COMPLETED = 70
-    SETTLED = 80
+# TPlanungseinheiten.Prim values currently known to the project.
+STATION_77_ID = 77
+STATION_78_ID = 78
+STATION_79_ID = 79
+STATION_85_ID = 85
+STATION_239_ID = 239
+STATION_337_ID = 337
 
+# Known TimeOffice planning unit for the shared/jump pool.
+SHARED_POOL_408_ID = 408
 
-# TimeOffice TDienste.Prim values used by the reduced scheduling model.
-# Keep these source IDs local to TimeOffice facts.
+# TDienste.Prim values for the reduced reference shifts exposed to the solver.
+# These are the only TimeOffice shift IDs that should become canonical Shift.shift_id
+# values in the reduced SchedulingDataset.
 EARLY_F2_SHIFT_ID = 2939
 LATE_S2_SHIFT_ID = 2947
 NIGHT_N2_SHIFT_ID = 2953
 INTERMEDIATE_T75_SHIFT_ID = 2906
 MANAGEMENT_Z60_SHIFT_ID = 1406
 
-# Additional TimeOffice work shifts observed in roster rows.
-NIGHT_N5_SHIFT_ID = 2889
-NIGHT_N15_SHIFT_ID = 1692
-OTHER_T8X_SHIFT_ID = 2994
-OTHER_Z52_SHIFT_ID = 3066
-
 
 @dataclass(frozen=True, slots=True)
-class TimeOfficeShiftFact:
-    """Validated meaning of one known TimeOffice shift."""
+class TimeOfficeReferenceShiftFact:
+    """Domain meaning of one reduced reference shift.
 
-    source_shift_id: int
+    The mapping code verifies that the TimeOffice shift row identified by the
+    reference shift ID still has expected_code. Source-shift variants are mapped
+    separately by shift_code_overrides.
+    """
+
     expected_code: str
     kind: ShiftKind
     staffing_role: StaffingDemandRole
 
 
-IsoWeekday = int  # Monday=1 ... Sunday=7
-
-
-@dataclass(frozen=True, slots=True)
-class TimeOfficeDemandFact:
-    """Fallback TimeOffice demand fact.
-
-    This represents the same reduced information that should later come from
-    TimeOffice `TBenutzerBedarf*` tables.
-
-    If planning_unit_ids is None, the demand applies to all selected station-like
-    planning units.
-    """
-
-    source_shift_id: ShiftId
-    staff_level: StaffLevel
-    required_by_iso_weekday: Mapping[IsoWeekday, int]
-    planning_unit_ids: tuple[PlanningUnitId, ...] | None = None
+type WeekdayDemand = tuple[int, int, int, int, int, int, int]  # Mo, Di, Mi, Do, Fr, Sa, So
+type PlanningUnitDemandMatrix = Mapping[StaffLevel, Mapping[ShiftId, WeekdayDemand]]
 
 
 @dataclass(frozen=True, slots=True)
 class TimeOfficeFacts:
-    """Flat source assumptions for the TimeOffice adapter.
+    """Source assumptions and reduced-domain mappings for the TimeOffice adapter.
 
-    This object carries constants only. It must not contain behavior.
-    Repositories and validation code consume these facts for fetching, mapping,
-    and source-drift checks.
+    Facts contain adapter constants and source-to-domain mappings only. They do
+    not perform checks themselves; readers provide source rows and mapping code
+    uses these facts to fail loudly on unmapped or drifted source semantics.
     """
 
     monthly_planning_interval_id: int
     target_planning_status_id: int
 
-    planning_unit_kind_map: dict[int, PlanningUnitKind]
+    planning_unit_kind_by_id: Mapping[PlanningUnitId, PlanningUnitKind]
 
-    work_shift_type_ids: tuple[int, ...]
-    shift_facts_by_id: Mapping[int, TimeOfficeShiftFact]
+    work_shift_type_id: int
 
-    staff_level_by_profession_id_map: dict[int, StaffLevel]
-    demand_facts: tuple[TimeOfficeDemandFact, ...]
+    reference_shift_facts_by_id: Mapping[ShiftId, TimeOfficeReferenceShiftFact]
 
-    # Temporary project/problem assumptions. Not DB-backed.
-    capabilities_by_employee_id_map: dict[int, tuple[Capability, ...]]
+    # Non-reference source shift IDs normalized to reduced reference shifts.
+    # Missing source shift ID => fail loudly in mapping.
+    shift_id_overrides: Mapping[ShiftId, ShiftId]
+
+    staff_level_by_profession_code: Mapping[str, StaffLevel]
+
+    # Temporary fallback until demand is read from TimeOffice demand tables.
+    # Shape mirrors the future source concept: planning unit -> staff level -> shift -> weekday demand.
+    fallback_demand_by_planning_unit: Mapping[PlanningUnitId, PlanningUnitDemandMatrix]
+
+    # Temporary project/problem assumptions. Not DB-backed yet.
+    capabilities_by_employee_id: Mapping[int, tuple[Capability, ...]]
 
     availability_type_by_absence_code: Mapping[str, AvailabilityType]
     wish_kind_by_absence_code: Mapping[str, WishKind]
@@ -104,106 +100,166 @@ class TimeOfficeFacts:
     monthly_actual_work_account_id: int
 
 
-TIMEOFFICE_FACTS = TimeOfficeFacts(
-    monthly_planning_interval_id=1,  # Known TimeOffice RefPlanungsIntervalle value
-    target_planning_status_id=int(TimeOfficePlanStatusId.TARGET_PLANNING),
-    planning_unit_kind_map={
-        77: PlanningUnitKind.STATION,
-        78: PlanningUnitKind.STATION,
-        79: PlanningUnitKind.STATION,
-        85: PlanningUnitKind.STATION,
-        239: PlanningUnitKind.STATION,
-        337: PlanningUnitKind.STATION,
-        408: PlanningUnitKind.SHARED_POOL,
-    },
-    work_shift_type_ids=(1,),
-    shift_facts_by_id={
-        EARLY_F2_SHIFT_ID: TimeOfficeShiftFact(
-            source_shift_id=EARLY_F2_SHIFT_ID,
+REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = MappingProxyType(
+    {
+        EARLY_F2_SHIFT_ID: TimeOfficeReferenceShiftFact(
             expected_code="F2_",
             kind=ShiftKind.EARLY,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
-        LATE_S2_SHIFT_ID: TimeOfficeShiftFact(
-            source_shift_id=LATE_S2_SHIFT_ID,
+        LATE_S2_SHIFT_ID: TimeOfficeReferenceShiftFact(
             expected_code="S2_",
             kind=ShiftKind.LATE,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
-        NIGHT_N2_SHIFT_ID: TimeOfficeShiftFact(
-            source_shift_id=NIGHT_N2_SHIFT_ID,
+        NIGHT_N2_SHIFT_ID: TimeOfficeReferenceShiftFact(
             expected_code="N2_",
             kind=ShiftKind.NIGHT,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
-        INTERMEDIATE_T75_SHIFT_ID: TimeOfficeShiftFact(
-            source_shift_id=INTERMEDIATE_T75_SHIFT_ID,
+        INTERMEDIATE_T75_SHIFT_ID: TimeOfficeReferenceShiftFact(
             expected_code="T75_",
             kind=ShiftKind.INTERMEDIATE,
             staffing_role=StaffingDemandRole.OPTIONAL_COVERAGE,
         ),
-        MANAGEMENT_Z60_SHIFT_ID: TimeOfficeShiftFact(
-            source_shift_id=MANAGEMENT_Z60_SHIFT_ID,
+        MANAGEMENT_Z60_SHIFT_ID: TimeOfficeReferenceShiftFact(
             expected_code="Z60",
             kind=ShiftKind.MANAGEMENT,
             staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
         ),
-        NIGHT_N5_SHIFT_ID: TimeOfficeShiftFact(
-            source_shift_id=NIGHT_N5_SHIFT_ID,
-            expected_code="N5",
-            kind=ShiftKind.NIGHT,
-            staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
-        ),
-        NIGHT_N15_SHIFT_ID: TimeOfficeShiftFact(
-            source_shift_id=NIGHT_N15_SHIFT_ID,
-            expected_code="N15",
-            kind=ShiftKind.NIGHT,
-            staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
-        ),
-        OTHER_T8X_SHIFT_ID: TimeOfficeShiftFact(
-            source_shift_id=OTHER_T8X_SHIFT_ID,
-            expected_code="T8x",
-            kind=ShiftKind.OTHER,
-            staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
-        ),
-        OTHER_Z52_SHIFT_ID: TimeOfficeShiftFact(
-            source_shift_id=OTHER_Z52_SHIFT_ID,
-            expected_code="Z52",
-            kind=ShiftKind.OTHER,
-            staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
-        ),
-    },
-    staff_level_by_profession_id_map={
+    }
+)
+
+# Source shift variants observed in roster rows.
+# Reference shift codes must not be repeated here.
+SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
+    {
+        # Night variants normalized to canonical N2_ night shift.
+        1692: NIGHT_N2_SHIFT_ID,  # N15, partial night
+        3076: NIGHT_N2_SHIFT_ID,  # N5
+        2889: NIGHT_N2_SHIFT_ID,  # N5
+        1698: NIGHT_N2_SHIFT_ID,  # N5
+        2866: NIGHT_N2_SHIFT_ID,  # N5
+        # Day/intermediate variant normalized to canonical T75_ intermediate shift.
+        2994: INTERMEDIATE_T75_SHIFT_ID,  # T8x
+        # Short/day special variants normalized to canonical Z60 non-minimum work shift.
+        2957: MANAGEMENT_Z60_SHIFT_ID,  # Z52
+        2687: MANAGEMENT_Z60_SHIFT_ID,  # Z52
+        1403: MANAGEMENT_Z60_SHIFT_ID,  # Z52
+        3066: MANAGEMENT_Z60_SHIFT_ID,  # Z52
+    }
+)
+
+STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
+    {
         # Fachkraft
-        803: StaffLevel.PROFESSIONAL,  # Gesundheits- und Krankenpfleger/in
-        110: StaffLevel.PROFESSIONAL,  # Pflegefachkraft (Krankenpflege)
-        129: StaffLevel.PROFESSIONAL,  # Altenpfleger/in
-        651: StaffLevel.PROFESSIONAL,  # Pflegefachmann/-frau
-        736: StaffLevel.PROFESSIONAL,  # Krankenschwester/-pfleger
-        987: StaffLevel.PROFESSIONAL,  # Pflegefachkraft - Kinderkrankenpflege
-        # Hilfskraft
-        90: StaffLevel.ASSISTANT,  # Krankenpflegehelfer/in
-        124: StaffLevel.ASSISTANT,  # Medizinische/r Fachangestellte/r
-        326: StaffLevel.ASSISTANT,  # Helfer/in - stationäre Krankenpflege
-        334: StaffLevel.ASSISTANT,  # Pflegehelfer/in - stationäre Pflege
-        793: StaffLevel.ASSISTANT,  # Stationshilfe
-        1245: StaffLevel.ASSISTANT,  # Bundesfreiwilligendienst
-        # Azubi / Ausbildung
-        835: StaffLevel.TRAINEE,  # A-Pflegeassistent/in
-        837: StaffLevel.TRAINEE,  # A-Pflegefachkraft (Krankenpflege)
-        1478: StaffLevel.TRAINEE,  # A-Pflegefachkraft (Altenpflege)
-    },
-    capabilities_by_employee_id_map={
-        # Not DB-backed yet.
-        # Problem/legacy assumption: FWB employees for weekday early rounds.
-        791: (Capability.ROUNDS,),  # Branz, Janett
-        2963: (Capability.ROUNDS,),  # Hoots, Renilde
-        3868: (Capability.ROUNDS,),  # Vanfleet, Eike
-        # Problem assumption: night-watch employees.
-        925: (Capability.NIGHT_WATCH,),  # Farniok, Lina
-        6681: (Capability.NIGHT_WATCH,),  # Labelle, Saskia
-        928: (Capability.NIGHT_WATCH,),  # Wunderlich, Daniele
-    },
+        "81302-003": StaffLevel.PROFESSIONAL,  # Gesundheits- und Kinderkrankenpfleger/in
+        "81302-005": StaffLevel.PROFESSIONAL,  # Gesundheits- und Krankenpfleger/in
+        "81302-007": StaffLevel.PROFESSIONAL,  # Kinderkrankenschwester/-pfleger
+        "81302-008": StaffLevel.PROFESSIONAL,  # Krankenschwester/-pfleger
+        "81302-009": StaffLevel.PROFESSIONAL,  # Krankenschwester/-pfleger - Nachtwache
+        "81302-016": StaffLevel.PROFESSIONAL,  # Pflegefachkraft - Kinderkrankenpflege
+        "81302-018": StaffLevel.PROFESSIONAL,  # Pflegefachkraft Krankenpflege
+        "81302-028": StaffLevel.PROFESSIONAL,  # Pflegefachmann/-frau
+        "81313-059": StaffLevel.PROFESSIONAL,  # Fachkrankenpfleger/in - Notfallpflege
+        "81393-011": StaffLevel.PROFESSIONAL,  # Stationsleiter/in - Pflegedienst
+        "82102-002": StaffLevel.PROFESSIONAL,  # Altenpfleger/in
+        "EX-81302-028": StaffLevel.PROFESSIONAL,  # EX-Pflegefachmann/-frau
+        # Legacy classified this as Fachkraft.
+        "63302-045": StaffLevel.PROFESSIONAL,  # Servicekraft
+        # Hilfskraft / support
+        "81102-001": StaffLevel.ASSISTANT,  # Arzthelfer/in
+        "81102-004": StaffLevel.ASSISTANT,  # Medizinische/r Fachangestellte/r
+        "81301-002": StaffLevel.ASSISTANT,  # Helfer/in - stationäre Krankenpflege
+        "81301-006": StaffLevel.ASSISTANT,  # Krankenpflegehelfer/in, 1-jährige Ausbildung
+        "81301-010": StaffLevel.ASSISTANT,  # Pflegehelfer/in ohne 1-jährige Ausbildung
+        "81301-014": StaffLevel.ASSISTANT,  # Schwesterhelfer/in
+        "81301-018": StaffLevel.ASSISTANT,  # Stationshilfe
+        "81302-014": StaffLevel.ASSISTANT,  # Pflegeassistent/in
+        "BFD": StaffLevel.ASSISTANT,  # Bundesfreiwilligendienst
+        # Legacy classified this as Hilfskraft.
+        "Pra": StaffLevel.ASSISTANT,  # Praktikant/-in
+        # Ausbildung / Praktikum
+        "A-31342-005": StaffLevel.TRAINEE,  # A-Notfallsanitäter
+        "A-81302-007": StaffLevel.TRAINEE,  # A-Kinderkrankenschwester/-pfleger
+        "A-81302-008": StaffLevel.TRAINEE,  # A-Krankenschwester/-pfleger
+        "A-81302-014": StaffLevel.TRAINEE,  # A-Pflegeassistent/in
+        "A-81302-016": StaffLevel.TRAINEE,  # A-Pflegefachkraft Kinderkrankenpflege
+        "A-81302-018": StaffLevel.TRAINEE,  # A-Pflegefachkraft Krankenpflege
+        "A-81302-019": StaffLevel.TRAINEE,  # A-Pflegefachkraft Altenpflege
+    }
+)
+
+DEFAULT_STATION_DEMAND: PlanningUnitDemandMatrix = MappingProxyType(
+    {
+        # Weekday tuple order: Mo, Di, Mi, Do, Fr, Sa, So.
+        StaffLevel.PROFESSIONAL: MappingProxyType(
+            {
+                EARLY_F2_SHIFT_ID: (3, 3, 4, 3, 3, 2, 2),
+                LATE_S2_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
+                NIGHT_N2_SHIFT_ID: (2, 2, 2, 2, 2, 1, 1),
+            }
+        ),
+        StaffLevel.ASSISTANT: MappingProxyType(
+            {
+                EARLY_F2_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
+                LATE_S2_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
+                NIGHT_N2_SHIFT_ID: (0, 0, 0, 0, 0, 1, 1),
+            }
+        ),
+        StaffLevel.TRAINEE: MappingProxyType(
+            {
+                EARLY_F2_SHIFT_ID: (1, 1, 1, 1, 1, 1, 1),
+                LATE_S2_SHIFT_ID: (1, 1, 1, 1, 1, 1, 1),
+                NIGHT_N2_SHIFT_ID: (0, 0, 0, 0, 0, 0, 0),
+            }
+        ),
+    }
+)
+
+
+TIMEOFFICE_FACTS = TimeOfficeFacts(
+    monthly_planning_interval_id=MONTHLY_PLANNING_INTERVAL_ID,
+    target_planning_status_id=TARGET_PLANNING_STATUS_ID,
+    planning_unit_kind_by_id=MappingProxyType(
+        {
+            STATION_77_ID: PlanningUnitKind.STATION,
+            STATION_78_ID: PlanningUnitKind.STATION,
+            STATION_79_ID: PlanningUnitKind.STATION,
+            STATION_85_ID: PlanningUnitKind.STATION,
+            STATION_239_ID: PlanningUnitKind.STATION,
+            STATION_337_ID: PlanningUnitKind.STATION,
+            SHARED_POOL_408_ID: PlanningUnitKind.SHARED_POOL,
+        }
+    ),
+    work_shift_type_id=WORK_SHIFT_TYPE_ID,
+    reference_shift_facts_by_id=REFERENCE_SHIFT_FACTS_BY_ID,
+    shift_id_overrides=SHIFT_ID_OVERRIDES,
+    staff_level_by_profession_code=STAFF_LEVEL_BY_PROFESSION_CODE,
+    fallback_demand_by_planning_unit=MappingProxyType(
+        {
+            STATION_77_ID: DEFAULT_STATION_DEMAND,
+            STATION_78_ID: DEFAULT_STATION_DEMAND,
+            STATION_79_ID: DEFAULT_STATION_DEMAND,
+            STATION_85_ID: DEFAULT_STATION_DEMAND,
+            STATION_239_ID: DEFAULT_STATION_DEMAND,
+            STATION_337_ID: DEFAULT_STATION_DEMAND,
+            # Intentionally no demand for SHARED_POOL_408_ID.
+        }
+    ),
+    capabilities_by_employee_id=MappingProxyType(
+        {
+            # Not DB-backed yet.
+            # Problem/legacy assumption: FWB employees for weekday early rounds.
+            791: (Capability.ROUNDS,),  # Branz, Janett
+            2963: (Capability.ROUNDS,),  # Hoots, Renilde
+            3868: (Capability.ROUNDS,),  # Vanfleet, Eike
+            # Problem assumption: night-watch employees.
+            925: (Capability.NIGHT_WATCH,),  # Farniok, Lina
+            6681: (Capability.NIGHT_WATCH,),  # Labelle, Saskia
+            928: (Capability.NIGHT_WATCH,),  # Wunderlich, Daniele
+        }
+    ),
     availability_type_by_absence_code=MappingProxyType(
         {
             "U": AvailabilityType.VACATION,
@@ -222,146 +278,6 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
             "FR": WishKind.FREE_DAY,
         }
     ),
-    monthly_target_work_account_id=1,
-    monthly_actual_work_account_id=55,
-    demand_facts=(
-        # Fachkraft
-        TimeOfficeDemandFact(
-            source_shift_id=EARLY_F2_SHIFT_ID,
-            staff_level=StaffLevel.PROFESSIONAL,
-            required_by_iso_weekday=MappingProxyType(
-                {
-                    1: 3,  # Mo
-                    2: 3,  # Di
-                    3: 4,  # Mi
-                    4: 3,  # Do
-                    5: 3,  # Fr
-                    6: 2,  # Sa
-                    7: 2,  # So
-                }
-            ),
-        ),
-        TimeOfficeDemandFact(
-            source_shift_id=LATE_S2_SHIFT_ID,
-            staff_level=StaffLevel.PROFESSIONAL,
-            required_by_iso_weekday=MappingProxyType(
-                {
-                    1: 2,  # Mo
-                    2: 2,  # Di
-                    3: 2,  # Mi
-                    4: 2,  # Do
-                    5: 2,  # Fr
-                    6: 2,  # Sa
-                    7: 2,  # So
-                }
-            ),
-        ),
-        TimeOfficeDemandFact(
-            source_shift_id=NIGHT_N2_SHIFT_ID,
-            staff_level=StaffLevel.PROFESSIONAL,
-            required_by_iso_weekday=MappingProxyType(
-                {
-                    1: 2,  # Mo
-                    2: 2,  # Di
-                    3: 2,  # Mi
-                    4: 2,  # Do
-                    5: 2,  # Fr
-                    6: 1,  # Sa
-                    7: 1,  # So
-                }
-            ),
-        ),
-        # Hilfskraft
-        TimeOfficeDemandFact(
-            source_shift_id=EARLY_F2_SHIFT_ID,
-            staff_level=StaffLevel.ASSISTANT,
-            required_by_iso_weekday=MappingProxyType(
-                {
-                    1: 2,  # Mo
-                    2: 2,  # Di
-                    3: 2,  # Mi
-                    4: 2,  # Do
-                    5: 2,  # Fr
-                    6: 2,  # Sa
-                    7: 2,  # So
-                }
-            ),
-        ),
-        TimeOfficeDemandFact(
-            source_shift_id=LATE_S2_SHIFT_ID,
-            staff_level=StaffLevel.ASSISTANT,
-            required_by_iso_weekday=MappingProxyType(
-                {
-                    1: 2,  # Mo
-                    2: 2,  # Di
-                    3: 2,  # Mi
-                    4: 2,  # Do
-                    5: 2,  # Fr
-                    6: 2,  # Sa
-                    7: 2,  # So
-                }
-            ),
-        ),
-        TimeOfficeDemandFact(
-            source_shift_id=NIGHT_N2_SHIFT_ID,
-            staff_level=StaffLevel.ASSISTANT,
-            required_by_iso_weekday=MappingProxyType(
-                {
-                    1: 0,  # Mo
-                    2: 0,  # Di
-                    3: 0,  # Mi
-                    4: 0,  # Do
-                    5: 0,  # Fr
-                    6: 1,  # Sa
-                    7: 1,  # So
-                }
-            ),
-        ),
-        # Azubi
-        TimeOfficeDemandFact(
-            source_shift_id=EARLY_F2_SHIFT_ID,
-            staff_level=StaffLevel.TRAINEE,
-            required_by_iso_weekday=MappingProxyType(
-                {
-                    1: 1,  # Mo
-                    2: 1,  # Di
-                    3: 1,  # Mi
-                    4: 1,  # Do
-                    5: 1,  # Fr
-                    6: 1,  # Sa
-                    7: 1,  # So
-                }
-            ),
-        ),
-        TimeOfficeDemandFact(
-            source_shift_id=LATE_S2_SHIFT_ID,
-            staff_level=StaffLevel.TRAINEE,
-            required_by_iso_weekday=MappingProxyType(
-                {
-                    1: 1,  # Mo
-                    2: 1,  # Di
-                    3: 1,  # Mi
-                    4: 1,  # Do
-                    5: 1,  # Fr
-                    6: 1,  # Sa
-                    7: 1,  # So
-                }
-            ),
-        ),
-        TimeOfficeDemandFact(
-            source_shift_id=NIGHT_N2_SHIFT_ID,
-            staff_level=StaffLevel.TRAINEE,
-            required_by_iso_weekday=MappingProxyType(
-                {
-                    1: 0,  # Mo
-                    2: 0,  # Di
-                    3: 0,  # Mi
-                    4: 0,  # Do
-                    5: 0,  # Fr
-                    6: 0,  # Sa
-                    7: 0,  # So
-                }
-            ),
-        ),
-    ),
+    monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,
+    monthly_actual_work_account_id=MONTHLY_ACTUAL_WORK_ACCOUNT_ID,
 )

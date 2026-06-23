@@ -5,7 +5,7 @@ from scheduling.domain.dataset import PlanningMonth, SchedulingDataset
 from scheduling.domain.demand import DemandRequirement
 from scheduling.domain.employee import Capability, Employee, EmployeeId, StaffLevel
 from scheduling.domain.monthly_work_account import MonthlyWorkAccount
-from scheduling.domain.plan import Plan, PlanId, PlanParticipant
+from scheduling.domain.plan import Plan, PlanId
 from scheduling.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitKind, PlanningUnitMembership
 from scheduling.domain.shift import Shift, ShiftId, ShiftKind, StaffingDemandRole
 from scheduling.domain.sunday_work_history import EmployeeSundayWorkHistory
@@ -21,7 +21,6 @@ __all__ = [
     "PlanningMonth",
     "Plan",
     "PlanId",
-    "PlanParticipant",
     "PlanningUnit",
     "PlanningUnitId",
     "PlanningUnitKind",

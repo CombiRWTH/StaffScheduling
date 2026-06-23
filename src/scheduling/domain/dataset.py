@@ -9,7 +9,7 @@ from scheduling.domain.availability import Availability
 from scheduling.domain.demand import DemandRequirement
 from scheduling.domain.employee import Employee
 from scheduling.domain.monthly_work_account import MonthlyWorkAccount
-from scheduling.domain.plan import Plan, PlanParticipant
+from scheduling.domain.plan import Plan
 from scheduling.domain.planning_unit import PlanningUnit, PlanningUnitMembership
 from scheduling.domain.shift import Shift
 from scheduling.domain.sunday_work_history import EmployeeSundayWorkHistory
@@ -55,7 +55,6 @@ class SchedulingDataset(SchedulingBaseModel):
     demand_requirements: tuple[DemandRequirement, ...] = ()
 
     employees: tuple[Employee, ...] = ()
-    plan_participants: tuple[PlanParticipant, ...] = ()
     planning_unit_memberships: tuple[PlanningUnitMembership, ...] = ()
     sunday_work_history: tuple[EmployeeSundayWorkHistory, ...] = ()
     wishes: tuple[Wish, ...] = ()

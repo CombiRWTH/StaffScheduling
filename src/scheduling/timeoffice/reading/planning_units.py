@@ -3,12 +3,12 @@ from typing import Self
 from pydantic import model_validator
 from sqlalchemy import Connection, bindparam, text
 
-from scheduling.domain import Plan, PlanningMonth, PlanningUnit, PlanningUnitKind, SchedulingBaseModel
+from scheduling.domain import PlanningMonth
 from scheduling.timeoffice.facts import TimeOfficeFacts
-from scheduling.timeoffice.repositories.types import SourceInt, TimeOfficeSourceRow
+from scheduling.timeoffice.reading.types import SourceInt, TimeOfficeSourceRow
 
 
-class _TimeOfficePlanningUnitRow(TimeOfficeSourceRow):
+class TimeOfficePlanningUnitRow(TimeOfficeSourceRow):
     planning_unit_id: SourceInt
     plan_id: SourceInt
     plan_planning_unit_id: SourceInt
@@ -26,50 +26,22 @@ class _TimeOfficePlanningUnitRow(TimeOfficeSourceRow):
         return self
 
 
-class PlanningUnitRepositoryResult(SchedulingBaseModel):
-    planning_units: tuple[PlanningUnit, ...]
-    plans: tuple[Plan, ...]
-
-
-class TimeOfficePlanningUnitRepository:
-    """Reads selected TimeOffice planning units and their concrete plans."""
+class TimeOfficePlanningUnitReader:
+    """Reads selected TimeOffice planning-unit and target-plan source rows."""
 
     def __init__(self, *, facts: TimeOfficeFacts) -> None:
         self._facts = facts
 
-    def fetch(
+    def read_rows(
         self,
         *,
         connection: Connection,
         selected_planning_unit_ids: tuple[int, ...],
         planning_month: PlanningMonth,
-    ) -> PlanningUnitRepositoryResult:
+    ) -> tuple[TimeOfficePlanningUnitRow, ...]:
         if not selected_planning_unit_ids:
-            return PlanningUnitRepositoryResult(planning_units=(), plans=())
+            return ()
 
-        rows = self._fetch_rows(
-            connection=connection,
-            selected_planning_unit_ids=selected_planning_unit_ids,
-            planning_month=planning_month,
-        )
-
-        self._validate_rows(
-            requested_ids=selected_planning_unit_ids,
-            rows=rows,
-        )
-
-        return PlanningUnitRepositoryResult(
-            planning_units=self._map_planning_units(rows),
-            plans=self._map_plans(rows),
-        )
-
-    def _fetch_rows(
-        self,
-        *,
-        connection: Connection,
-        selected_planning_unit_ids: tuple[int, ...],
-        planning_month: PlanningMonth,
-    ) -> tuple[_TimeOfficePlanningUnitRow, ...]:
         query = text(
             """
             SELECT
@@ -103,9 +75,17 @@ class TimeOfficePlanningUnitRepository:
             .all()
         )
 
-        return tuple(_TimeOfficePlanningUnitRow.model_validate(row) for row in raw_rows)
+        rows = tuple(TimeOfficePlanningUnitRow.model_validate(row) for row in raw_rows)
+        self._validate_requested_units(requested_ids=selected_planning_unit_ids, rows=rows)
 
-    def _validate_rows(self, *, requested_ids: tuple[int, ...], rows: tuple[_TimeOfficePlanningUnitRow, ...]) -> None:
+        return rows
+
+    def _validate_requested_units(
+        self,
+        *,
+        requested_ids: tuple[int, ...],
+        rows: tuple[TimeOfficePlanningUnitRow, ...],
+    ) -> None:
         requested = set(requested_ids)
         returned_ids = [row.planning_unit_id for row in rows]
 
@@ -113,39 +93,18 @@ class TimeOfficePlanningUnitRepository:
         if missing:
             raise ValueError(f"No selected TimeOffice target plan found for planning_unit_ids={missing}.")
 
-        duplicates = self._duplicate_values(returned_ids)
+        duplicates = _duplicate_values(returned_ids)
         if duplicates:
             raise ValueError(f"Multiple selected TimeOffice target plans found for planning_unit_ids={duplicates}.")
 
-    def _map_planning_units(self, rows: tuple[_TimeOfficePlanningUnitRow, ...]) -> tuple[PlanningUnit, ...]:
-        return tuple(
-            PlanningUnit(
-                planning_unit_id=row.planning_unit_id,
-                display_name=f"Planning Unit {row.planning_unit_id}",
-                kind=self._facts.planning_unit_kind_map.get(
-                    row.planning_unit_id,
-                    PlanningUnitKind.STATION,
-                ),
-            )
-            for row in rows
-        )
 
-    def _map_plans(self, rows: tuple[_TimeOfficePlanningUnitRow, ...]) -> tuple[Plan, ...]:
-        return tuple(
-            Plan(
-                plan_id=row.plan_id,
-                planning_unit_id=row.plan_planning_unit_id,
-            )
-            for row in rows
-        )
+def _duplicate_values(values: list[int]) -> list[int]:
+    seen: set[int] = set()
+    duplicates: set[int] = set()
 
-    def _duplicate_values(self, values: list[int]) -> list[int]:
-        seen: set[int] = set()
-        duplicates: set[int] = set()
+    for value in values:
+        if value in seen:
+            duplicates.add(value)
+        seen.add(value)
 
-        for value in values:
-            if value in seen:
-                duplicates.add(value)
-            seen.add(value)
-
-        return sorted(duplicates)
+    return sorted(duplicates)
