@@ -63,7 +63,7 @@ class MinStaffingConstraint(Constraint):
                             potential_working_staff.append(variable)
 
                         if min_staffing is not None:
-                            model.add(sum(potential_working_staff) == min_staffing)
+                            model.add(sum(potential_working_staff) >= min_staffing)
                         else:
                             model.add(sum(potential_working_staff) >= 0)
 

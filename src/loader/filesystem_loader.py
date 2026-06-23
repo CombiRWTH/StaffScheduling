@@ -75,7 +75,7 @@ class FSLoader(Loader):
         fs_employees_forbidden_shifts: dict[str, list[tuple[int, str]]] = {}
         fs_employees_vacation_days: dict[str, list[int]] = {}
         fs_employees_vacation_shifts: dict[str, list[tuple[int, str]]] = {}
-        fs_employees_planned_shifts: dict[str, list[tuple[int, str, str]]] = {}
+        fs_employees_planned_shifts: dict[str, list[tuple[int, str, int]]] = {}
         fs_employees_hidden_actual: dict[str, int] = {}
         shift_map = {shift.name: shift for shift in self.get_shifts()}
         for fs_employee in fs_employees_vacation:
@@ -184,6 +184,7 @@ class FSLoader(Loader):
                         surname=f"{level}{new_id}",
                         level=level,
                         type="hidden",
+                        preferred_station=None,
                     )
                 )
             last_id += num
@@ -209,7 +210,7 @@ class FSLoader(Loader):
 
     def get_stations(self) -> list[Station]:
         # todo
-        return [77, 88]
+        return [77, 85]
 
     def get_min_staffing(self) -> dict[str, dict[str, dict[str, int]]]:
         fs_min_staffing = self._load_json(self._get_file_path("minimal_number_of_staff"))
