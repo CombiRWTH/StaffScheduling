@@ -1,4 +1,4 @@
-from scheduling.domain import Plan, PlanningUnit, PlanningUnitKind
+from scheduling.domain import Plan, PlanningUnit, PlanningUnitType
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.reading.planning_units import TimeOfficePlanningUnitRow
 
@@ -10,7 +10,7 @@ def map_planning_units(
         PlanningUnit(
             planning_unit_id=row.planning_unit_id,
             display_name=f"Planning Unit {row.planning_unit_id}",
-            kind=_planning_unit_kind(row.planning_unit_id, facts=facts),
+            type=_planning_unit_type(row.planning_unit_id, facts=facts),
         )
         for row in rows
     )
@@ -26,10 +26,10 @@ def map_plans(rows: tuple[TimeOfficePlanningUnitRow, ...]) -> tuple[Plan, ...]:
     )
 
 
-def _planning_unit_kind(planning_unit_id: int, *, facts: TimeOfficeFacts) -> PlanningUnitKind:
-    kind = facts.planning_unit_kind_by_id.get(planning_unit_id)
+def _planning_unit_type(planning_unit_id: int, *, facts: TimeOfficeFacts) -> PlanningUnitType:
+    type = facts.planning_unit_type_by_id.get(planning_unit_id)
 
-    if kind is None:
-        raise ValueError(f"No PlanningUnitKind configured for TimeOffice planning_unit_id={planning_unit_id}.")
+    if type is None:
+        raise ValueError(f"No PlanningUnitType configured for TimeOffice planning_unit_id={planning_unit_id}.")
 
-    return kind
+    return type

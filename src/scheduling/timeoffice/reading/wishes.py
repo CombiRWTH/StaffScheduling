@@ -31,7 +31,7 @@ class TimeOfficeWishRow(TimeOfficeSourceRow):
     resolved_absence_name: CleanNullableText = None
 
     @model_validator(mode="after")
-    def validate_row_kind(self) -> Self:
+    def validate_row_type(self) -> Self:
         has_work_shift = self.work_shift_id is not None
         has_absence = self.global_absence_shift_id is not None or self.absence_shift_id is not None
 

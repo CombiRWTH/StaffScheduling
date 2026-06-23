@@ -97,7 +97,7 @@ def _map_reference_shift(
     return Shift(
         shift_id=shift_id,
         code=first_row.shift_code,
-        kind=shift_fact.kind,
+        type=shift_fact.type,
         staffing_role=shift_fact.staffing_role,
         start_minute=_minute_of_day(segments[0][0]),
         end_minute=_minute_of_day(segments[-1][1]),

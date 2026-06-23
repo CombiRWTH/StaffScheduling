@@ -6,10 +6,10 @@ from scheduling.domain.demand import DemandRequirement
 from scheduling.domain.employee import Capability, Employee, EmployeeId, StaffLevel
 from scheduling.domain.monthly_work_account import MonthlyWorkAccount
 from scheduling.domain.plan import Plan, PlanId
-from scheduling.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitKind, PlanningUnitMembership
-from scheduling.domain.shift import Shift, ShiftId, ShiftKind, StaffingDemandRole
+from scheduling.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitMembership, PlanningUnitType
+from scheduling.domain.shift import Shift, ShiftId, ShiftType, StaffingDemandRole
 from scheduling.domain.sunday_work_history import EmployeeSundayWorkHistory
-from scheduling.domain.wish import Wish, WishKind
+from scheduling.domain.wish import Wish, WishType
 
 __all__ = [
     "PositiveId",
@@ -23,7 +23,7 @@ __all__ = [
     "PlanId",
     "PlanningUnit",
     "PlanningUnitId",
-    "PlanningUnitKind",
+    "PlanningUnitType",
     "PlanningUnitMembership",
     "EmployeeId",
     "Employee",
@@ -35,11 +35,11 @@ __all__ = [
     "AvailabilityType",
     "Shift",
     "ShiftId",
-    "ShiftKind",
+    "ShiftType",
     "StaffingDemandRole",
     "DemandRequirement",
     "EmployeeSundayWorkHistory",
     "Wish",
-    "WishKind",
+    "WishType",
     "MonthlyWorkAccount",
 ]

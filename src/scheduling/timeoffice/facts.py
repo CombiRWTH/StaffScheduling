@@ -4,9 +4,9 @@ from types import MappingProxyType
 
 from scheduling.domain.availability import AvailabilityType
 from scheduling.domain.employee import Capability, StaffLevel
-from scheduling.domain.planning_unit import PlanningUnitId, PlanningUnitKind
-from scheduling.domain.shift import ShiftId, ShiftKind, StaffingDemandRole
-from scheduling.domain.wish import WishKind
+from scheduling.domain.planning_unit import PlanningUnitId, PlanningUnitType
+from scheduling.domain.shift import ShiftId, ShiftType, StaffingDemandRole
+from scheduling.domain.wish import WishType
 
 # TPlan.RefPlanungsIntervalle value for monthly planning.
 MONTHLY_PLANNING_INTERVAL_ID = 1
@@ -54,7 +54,7 @@ class TimeOfficeReferenceShiftFact:
     """
 
     expected_code: str
-    kind: ShiftKind
+    type: ShiftType
     staffing_role: StaffingDemandRole
 
 
@@ -74,7 +74,7 @@ class TimeOfficeFacts:
     monthly_planning_interval_id: int
     target_planning_status_id: int
 
-    planning_unit_kind_by_id: Mapping[PlanningUnitId, PlanningUnitKind]
+    planning_unit_type_by_id: Mapping[PlanningUnitId, PlanningUnitType]
 
     work_shift_type_id: int
 
@@ -94,7 +94,7 @@ class TimeOfficeFacts:
     capabilities_by_employee_id: Mapping[int, tuple[Capability, ...]]
 
     availability_type_by_absence_code: Mapping[str, AvailabilityType]
-    wish_kind_by_absence_code: Mapping[str, WishKind]
+    wish_type_by_absence_code: Mapping[str, WishType]
 
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
@@ -104,27 +104,27 @@ REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = Ma
     {
         EARLY_F2_SHIFT_ID: TimeOfficeReferenceShiftFact(
             expected_code="F2_",
-            kind=ShiftKind.EARLY,
+            type=ShiftType.EARLY,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         LATE_S2_SHIFT_ID: TimeOfficeReferenceShiftFact(
             expected_code="S2_",
-            kind=ShiftKind.LATE,
+            type=ShiftType.LATE,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         NIGHT_N2_SHIFT_ID: TimeOfficeReferenceShiftFact(
             expected_code="N2_",
-            kind=ShiftKind.NIGHT,
+            type=ShiftType.NIGHT,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         INTERMEDIATE_T75_SHIFT_ID: TimeOfficeReferenceShiftFact(
             expected_code="T75_",
-            kind=ShiftKind.INTERMEDIATE,
+            type=ShiftType.INTERMEDIATE,
             staffing_role=StaffingDemandRole.OPTIONAL_COVERAGE,
         ),
         MANAGEMENT_Z60_SHIFT_ID: TimeOfficeReferenceShiftFact(
             expected_code="Z60",
-            kind=ShiftKind.MANAGEMENT,
+            type=ShiftType.MANAGEMENT,
             staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
         ),
     }
@@ -190,7 +190,12 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
     }
 )
 
-DEFAULT_STATION_DEMAND: PlanningUnitDemandMatrix = MappingProxyType(
+# Minimal default while solver constraints are being migrated to SchedulingDataset.
+# Empty demand means: read/map/validate the station, but do not create artificial
+# fallback coverage requirements for it yet.
+DEFAULT_STATION_DEMAND: PlanningUnitDemandMatrix = MappingProxyType({})
+
+STATION_77_DEMAND: PlanningUnitDemandMatrix = MappingProxyType(
     {
         # Weekday tuple order: Mo, Di, Mi, Do, Fr, Sa, So.
         StaffLevel.PROFESSIONAL: MappingProxyType(
@@ -221,15 +226,15 @@ DEFAULT_STATION_DEMAND: PlanningUnitDemandMatrix = MappingProxyType(
 TIMEOFFICE_FACTS = TimeOfficeFacts(
     monthly_planning_interval_id=MONTHLY_PLANNING_INTERVAL_ID,
     target_planning_status_id=TARGET_PLANNING_STATUS_ID,
-    planning_unit_kind_by_id=MappingProxyType(
+    planning_unit_type_by_id=MappingProxyType(
         {
-            STATION_77_ID: PlanningUnitKind.STATION,
-            STATION_78_ID: PlanningUnitKind.STATION,
-            STATION_79_ID: PlanningUnitKind.STATION,
-            STATION_85_ID: PlanningUnitKind.STATION,
-            STATION_239_ID: PlanningUnitKind.STATION,
-            STATION_337_ID: PlanningUnitKind.STATION,
-            SHARED_POOL_408_ID: PlanningUnitKind.SHARED_POOL,
+            STATION_77_ID: PlanningUnitType.STATION,
+            STATION_78_ID: PlanningUnitType.STATION,
+            STATION_79_ID: PlanningUnitType.STATION,
+            STATION_85_ID: PlanningUnitType.STATION,
+            STATION_239_ID: PlanningUnitType.STATION,
+            STATION_337_ID: PlanningUnitType.STATION,
+            SHARED_POOL_408_ID: PlanningUnitType.SHARED_POOL,
         }
     ),
     work_shift_type_id=WORK_SHIFT_TYPE_ID,
@@ -238,7 +243,7 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     staff_level_by_profession_code=STAFF_LEVEL_BY_PROFESSION_CODE,
     fallback_demand_by_planning_unit=MappingProxyType(
         {
-            STATION_77_ID: DEFAULT_STATION_DEMAND,
+            STATION_77_ID: STATION_77_DEMAND,
             STATION_78_ID: DEFAULT_STATION_DEMAND,
             STATION_79_ID: DEFAULT_STATION_DEMAND,
             STATION_85_ID: DEFAULT_STATION_DEMAND,
@@ -273,9 +278,9 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
             "FI": AvailabilityType.UNAVAILABLE,
         }
     ),
-    wish_kind_by_absence_code=MappingProxyType(
+    wish_type_by_absence_code=MappingProxyType(
         {
-            "FR": WishKind.FREE_DAY,
+            "FR": WishType.FREE_DAY,
         }
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,

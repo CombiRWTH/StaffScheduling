@@ -6,12 +6,12 @@ from scheduling.domain import (
     EmployeeId,
     PlanningMonth,
     PlanningUnitId,
-    PlanningUnitKind,
+    PlanningUnitType,
     SchedulingDataset,
     ShiftId,
     StaffingDemandRole,
     StaffLevel,
-    WishKind,
+    WishType,
 )
 from scheduling.validation.context import DatasetValidationContext
 
@@ -155,7 +155,7 @@ def validate_demand_requirements(dataset: SchedulingDataset, context: DatasetVal
         if demand.planning_unit_id not in context.planning_unit_ids:
             raise ValueError(f"DemandRequirement references unknown planning_unit_id={demand.planning_unit_id}.")
 
-        if context.planning_unit_kind_by_id[demand.planning_unit_id] != PlanningUnitKind.STATION:
+        if context.planning_unit_type_by_id[demand.planning_unit_id] != PlanningUnitType.STATION:
             raise ValueError(
                 f"DemandRequirement must target a station planning unit: planning_unit_id={demand.planning_unit_id}."
             )
@@ -199,7 +199,7 @@ def validate_sunday_work_history(dataset: SchedulingDataset, context: DatasetVal
 
 
 def validate_wishes(dataset: SchedulingDataset, context: DatasetValidationContext) -> None:
-    seen: set[tuple[EmployeeId, PlanningUnitId, date, WishKind, ShiftId | None]] = set()
+    seen: set[tuple[EmployeeId, PlanningUnitId, date, WishType, ShiftId | None]] = set()
 
     for wish in dataset.wishes:
         if wish.employee_id not in context.employee_ids:
@@ -222,7 +222,7 @@ def validate_wishes(dataset: SchedulingDataset, context: DatasetValidationContex
             wish.employee_id,
             wish.planning_unit_id,
             wish.date,
-            wish.kind,
+            wish.type,
             wish.shift_id,
         )
         if key in seen:
@@ -231,7 +231,7 @@ def validate_wishes(dataset: SchedulingDataset, context: DatasetValidationContex
                 f"employee_id={wish.employee_id} "
                 f"planning_unit_id={wish.planning_unit_id} "
                 f"date={wish.date} "
-                f"kind={wish.kind} "
+                f"type={wish.type} "
                 f"shift_id={wish.shift_id}."
             )
 

@@ -5,12 +5,10 @@ from ortools.sat.python import cp_model
 
 from scheduling.domain import Assignment, AssignmentType, SchedulingDataset
 from scheduling.settings import Settings
-from scheduling.solver.cp_sat.constraints.employee_daily import add_one_assignment_per_employee_day_constraints
 from scheduling.solver.cp_sat.constraints.minimum_staffing import add_minimum_staffing_constraints
 from scheduling.solver.cp_sat.context import SolverContext, create_context
-from scheduling.solver.cp_sat.objectives.balance_generated_assignments import (
-    add_balance_generated_assignments_objective,
-)
+from scheduling.solver.cp_sat.inspection import CpSatInspection, inspect_cp_sat_model
+from scheduling.solver.cp_sat.objectives.balance_generated_assignments import add_balance_assignments_objective
 from scheduling.solver.cp_sat.variables import create_assignment_variables
 from scheduling.solver.models import Solution, SolutionStatus
 
@@ -19,12 +17,9 @@ logger = logging.getLogger(__name__)
 type ModelStepFunction = Callable[[SolverContext], None]
 
 
-CONSTRAINTS: tuple[ModelStepFunction, ...] = (
-    add_minimum_staffing_constraints,
-    add_one_assignment_per_employee_day_constraints,
-)
+CONSTRAINTS: tuple[ModelStepFunction, ...] = (add_minimum_staffing_constraints,)
 
-OBJECTIVES: tuple[ModelStepFunction, ...] = (add_balance_generated_assignments_objective,)
+OBJECTIVES: tuple[ModelStepFunction, ...] = (add_balance_assignments_objective,)
 
 
 class SolverService:
@@ -35,6 +30,19 @@ class SolverService:
 
     def solve(self, dataset: SchedulingDataset) -> Solution:
         ctx = self._build_model(dataset)
+        inspection = self._inspect_model(ctx)
+
+        if not inspection.is_valid:
+            diagnostics = (
+                *ctx.diagnostics,
+                f"CP-SAT model validation failed: {inspection.validation_error}",
+            )
+            return Solution(
+                status=SolutionStatus.MODEL_INVALID,
+                assignments=(),
+                diagnostics=diagnostics,
+            )
+
         solver = self._create_solver()
 
         logger.info(
@@ -93,20 +101,38 @@ class SolverService:
             add_objective(ctx)
 
         if ctx.objective_terms:
-            objective = sum(term.weight * term.expression for term in ctx.objective_terms)
-            ctx.model.minimize(objective)
+            ctx.model.minimize(sum(ctx.objective_terms))
         else:
             logger.debug("No solver objective terms registered.")
 
+        return ctx
+
+    def _inspect_model(self, ctx: SolverContext) -> CpSatInspection:
+        inspection = inspect_cp_sat_model(model=ctx.model)
+
         logger.info(
-            "Built CP-SAT model: variables=%s constraints=%s objective_terms=%s diagnostics=%s",
+            "Built CP-SAT model: assignment_variables=%s proto_variables=%s "
+            "proto_constraints=%s constraint_types=%s objective_terms=%s diagnostics=%s",
             len(ctx.assignment_variables),
-            len(CONSTRAINTS),
-            tuple(term.name for term in ctx.objective_terms),
+            inspection.proto_variable_count,
+            inspection.proto_constraint_count,
+            inspection.constraint_type_counts,
+            len(ctx.objective_terms),
             len(ctx.diagnostics),
         )
 
-        return ctx
+        if inspection.unnamed_constraint_count:
+            logger.warning(
+                "CP-SAT model contains unnamed constraints: unnamed_constraints=%s",
+                inspection.unnamed_constraint_count,
+            )
+
+        if not inspection.is_valid:
+            logger.error("CP-SAT model validation failed: %s", inspection.validation_error)
+
+        logger.debug("CP-SAT constraint names: names=%s", inspection.constraint_names)
+
+        return inspection
 
     def _create_solver(self) -> cp_model.CpSolver:
         solver = cp_model.CpSolver()

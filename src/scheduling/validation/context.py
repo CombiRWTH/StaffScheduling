@@ -2,7 +2,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from scheduling.domain import EmployeeId, PlanId, PlanningUnitId, PlanningUnitKind, SchedulingDataset, Shift, ShiftId
+from scheduling.domain import EmployeeId, PlanId, PlanningUnitId, PlanningUnitType, SchedulingDataset, Shift, ShiftId
 
 
 @dataclass(frozen=True, slots=True)
@@ -12,7 +12,7 @@ class DatasetValidationContext:
     plan_ids: frozenset[PlanId]
     shift_ids: frozenset[ShiftId]
 
-    planning_unit_kind_by_id: Mapping[PlanningUnitId, PlanningUnitKind]
+    planning_unit_type_by_id: Mapping[PlanningUnitId, PlanningUnitType]
     shifts_by_id: Mapping[ShiftId, Shift]
 
     @classmethod
@@ -39,8 +39,8 @@ class DatasetValidationContext:
             planning_unit_ids=planning_unit_ids,
             plan_ids=plan_ids,
             shift_ids=shift_ids,
-            planning_unit_kind_by_id=MappingProxyType(
-                {unit.planning_unit_id: unit.kind for unit in dataset.planning_units}
+            planning_unit_type_by_id=MappingProxyType(
+                {unit.planning_unit_id: unit.type for unit in dataset.planning_units}
             ),
             shifts_by_id=MappingProxyType({shift.shift_id: shift for shift in dataset.shifts}),
         )

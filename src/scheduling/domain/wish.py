@@ -10,9 +10,11 @@ from scheduling.domain.planning_unit import PlanningUnitId
 from scheduling.domain.shift import ShiftId
 
 
-class WishKind(StrEnum):
-    SHIFT = "shift"
+class WishType(StrEnum):
     FREE_DAY = "free_day"
+    FREE_SHIFT = "free_shift"
+    PREFERRED_DAY = "preferred_day"
+    PREFERRED_SHIFT = "preferred_shift"
 
 
 class Wish(SchedulingBaseModel):
@@ -20,15 +22,15 @@ class Wish(SchedulingBaseModel):
     planning_unit_id: PlanningUnitId
 
     date: Date
-    kind: WishKind
+    type: WishType
     shift_id: ShiftId | None = None
 
     @model_validator(mode="after")
     def validate_wish(self) -> Self:
-        if self.kind == WishKind.SHIFT and self.shift_id is None:
-            raise ValueError("SHIFT wish requires shift_id.")
+        if self.type in {WishType.FREE_SHIFT, WishType.PREFERRED_SHIFT} and self.shift_id is None:
+            raise ValueError(f"{self.type} wish requires shift_id.")
 
-        if self.kind == WishKind.FREE_DAY and self.shift_id is not None:
-            raise ValueError("FREE_DAY wish must not define shift_id.")
+        if self.type in {WishType.FREE_DAY, WishType.PREFERRED_DAY} and self.shift_id is not None:
+            raise ValueError(f"{self.type} wish must not define shift_id.")
 
         return self

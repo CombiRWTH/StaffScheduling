@@ -10,8 +10,8 @@ from scheduling.domain.employee import EmployeeId, StaffLevel
 PlanningUnitId = PositiveId
 
 
-class PlanningUnitKind(StrEnum):
-    """Kind of planning unit used by the scheduling pipeline.
+class PlanningUnitType(StrEnum):
+    """Type of planning unit used by the scheduling pipeline.
 
     STATION:
         Planning unit with staffing demand. The solver may assign employees
@@ -37,7 +37,7 @@ class PlanningUnit(SchedulingBaseModel):
 
     planning_unit_id: PlanningUnitId
     display_name: NonEmptyStr
-    kind: PlanningUnitKind
+    type: PlanningUnitType
 
 
 class PlanningUnitMembership(SchedulingBaseModel):

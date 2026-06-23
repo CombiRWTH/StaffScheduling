@@ -92,10 +92,10 @@ class TimeOfficeService:
         unknown_ids = sorted(
             planning_unit_id
             for planning_unit_id in normalized
-            if planning_unit_id not in self._facts.planning_unit_kind_by_id
+            if planning_unit_id not in self._facts.planning_unit_type_by_id
         )
         if unknown_ids:
-            known_ids = sorted(self._facts.planning_unit_kind_by_id)
+            known_ids = sorted(self._facts.planning_unit_type_by_id)
             raise ValueError(
                 f"Unknown TimeOffice planning_unit_ids requested: {unknown_ids}. Known planning_unit_ids={known_ids}."
             )

@@ -7,20 +7,13 @@ from scheduling.solver.cp_sat.index import SolverIndex, build_schedule_index
 from scheduling.solver.cp_sat.keys import AssignmentVariableKey
 
 
-@dataclass(frozen=True, slots=True)
-class ObjectiveTerm:
-    name: str
-    expression: cp_model.LinearExpr
-    weight: int
-
-
 @dataclass(slots=True)
 class SolverContext:
     dataset: SchedulingDataset
     index: SolverIndex
     model: cp_model.CpModel
     assignment_variables: dict[AssignmentVariableKey, cp_model.IntVar]
-    objective_terms: list[ObjectiveTerm]
+    objective_terms: list[cp_model.LinearExpr]
     diagnostics: list[str]
 
 
@@ -33,6 +26,20 @@ def create_context(dataset: SchedulingDataset) -> SolverContext:
         index=index,
         model=cp_model.CpModel(),
         assignment_variables={},
-        diagnostics=[],
         objective_terms=[],
+        diagnostics=[],
     )
+
+
+def add_objective_term(
+    ctx: SolverContext,
+    *,
+    name: str,
+    expression: cp_model.LinearExpr,
+    weight: int = 1,
+) -> None:
+    """Register one weighted objective term for minimization."""
+    if weight == 0:
+        return
+
+    ctx.objective_terms.append(expression * weight)

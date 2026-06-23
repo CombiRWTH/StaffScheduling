@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from scheduling.domain import DemandRequirement, PlanningMonth, PlanningUnit, PlanningUnitKind, StaffingDemandRole
+from scheduling.domain import DemandRequirement, PlanningMonth, PlanningUnit, PlanningUnitType, StaffingDemandRole
 from scheduling.domain.shift import ShiftId
 from scheduling.timeoffice.facts import PlanningUnitDemandMatrix, TimeOfficeFacts
 
@@ -14,7 +14,7 @@ def map_demand_requirements(
     requirements: list[DemandRequirement] = []
 
     selected_station_ids = sorted(
-        unit.planning_unit_id for unit in planning_units if unit.kind == PlanningUnitKind.STATION
+        unit.planning_unit_id for unit in planning_units if unit.type == PlanningUnitType.STATION
     )
 
     for planning_unit_id in selected_station_ids:

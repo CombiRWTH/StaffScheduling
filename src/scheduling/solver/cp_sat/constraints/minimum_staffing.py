@@ -7,7 +7,11 @@ from scheduling.solver.cp_sat.keys import AssignmentVariableKey, DemandKey
 
 
 def add_minimum_staffing_constraints(ctx: SolverContext) -> None:
-    """Cover minimum staffing requirements per planning unit, date, shift, and staff level."""
+    """Cover minimum staffing requirements from SchedulingDataset demand.
+
+    This is the primary dataset-driven hard constraint. It should remain part of
+    the final solver model.
+    """
     vars_by_demand = _group_vars_by_demand(ctx)
 
     for demand_key, required_count in ctx.index.required_count_by_demand_key.items():
@@ -35,7 +39,20 @@ def add_minimum_staffing_constraints(ctx: SolverContext) -> None:
                 )
             )
 
-        ctx.model.add(sum(variables) >= remaining_required)
+        constraint_name = _minimum_staffing_constraint_name(demand_key)
+        ctx.model.add(sum(variables) >= remaining_required).with_name(constraint_name)
+
+
+def _minimum_staffing_constraint_name(demand_key: DemandKey) -> str:
+    planning_unit_id, demand_date, shift_id, staff_level = demand_key
+
+    return (
+        "minimum_staffing"
+        f"__unit_{planning_unit_id}"
+        f"__date_{demand_date:%Y%m%d}"
+        f"__shift_{shift_id}"
+        f"__level_{staff_level.value}"
+    )
 
 
 def _group_vars_by_demand(

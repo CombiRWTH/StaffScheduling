@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 from scheduling.domain import (
     Assignment,
-    AssignmentType,
     Availability,
     DemandRequirement,
     Employee,
@@ -41,10 +40,7 @@ def build_schedule_index(dataset: SchedulingDataset) -> SolverIndex:
         assignments_by_employee_date=_group_assignments_by_employee_date(dataset.assignments),
         availability_by_employee_date=_group_availability_by_employee_date(dataset.availability),
         required_count_by_demand_key=_count_required_demand_by_key(dataset.demand_requirements),
-        fixed_planned_count_by_demand_key=_count_fixed_planned_assignments_by_demand_key(
-            assignments=dataset.assignments,
-            employees_by_id=employees_by_id,
-        ),
+        fixed_planned_count_by_demand_key=_ignore_fixed_planned_assignments(),
     )
 
 
@@ -98,27 +94,38 @@ def _count_required_demand_by_key(
     return dict(required)
 
 
-def _count_fixed_planned_assignments_by_demand_key(
-    *,
-    assignments: tuple[Assignment, ...],
-    employees_by_id: dict[EmployeeId, Employee],
-) -> dict[DemandKey, int]:
-    fixed: defaultdict[DemandKey, int] = defaultdict(int)
+def _ignore_fixed_planned_assignments() -> dict[DemandKey, int]:
+    """Ignore imported TimeOffice assignments during solver migration.
 
-    for assignment in assignments:
-        if assignment.assignment_type != AssignmentType.PLANNED:
-            continue
+    Temporary migration behavior:
+    existing assignments are still part of the imported SchedulingDataset, but
+    the CP-SAT model currently generates a fresh schedule and does not treat
+    imported assignments as fixed coverage.
+    """
+    return {}
 
-        if assignment.planning_unit_id is None:
-            continue
 
-        employee = employees_by_id[assignment.employee_id]
-        key = (
-            assignment.planning_unit_id,
-            assignment.date,
-            assignment.shift_id,
-            employee.staff_level,
-        )
-        fixed[key] += 1
+# def _count_fixed_planned_assignments_by_demand_key(
+#     *,
+#     assignments: tuple[Assignment, ...],
+#     employees_by_id: dict[EmployeeId, Employee],
+# ) -> dict[DemandKey, int]:
+#     fixed: defaultdict[DemandKey, int] = defaultdict(int)
 
-    return dict(fixed)
+#     for assignment in assignments:
+#         if assignment.assignment_type != AssignmentType.PLANNED:
+#             continue
+
+#         if assignment.planning_unit_id is None:
+#             continue
+
+#         employee = employees_by_id[assignment.employee_id]
+#         key = (
+#             assignment.planning_unit_id,
+#             assignment.date,
+#             assignment.shift_id,
+#             employee.staff_level,
+#         )
+#         fixed[key] += 1
+
+#     return dict(fixed)

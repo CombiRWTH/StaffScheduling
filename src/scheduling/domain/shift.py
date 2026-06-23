@@ -13,8 +13,8 @@ from scheduling.domain.core import (
 ShiftId = PositiveId
 
 
-class ShiftKind(StrEnum):
-    """Reduced shift kind used by scheduling rules.
+class ShiftType(StrEnum):
+    """Reduced shift type used by scheduling rules.
 
     This is not a full TimeOffice shift taxonomy. It only contains categories
     relevant for demand, rest rules, night rules, and project-specific work.
@@ -46,7 +46,7 @@ class Shift(SchedulingBaseModel):
     shift_id: ShiftId
     code: NonEmptyStr
 
-    kind: ShiftKind
+    type: ShiftType
     staffing_role: StaffingDemandRole
 
     start_minute: MinuteOfDay
