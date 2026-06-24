@@ -2,57 +2,17 @@ from datetime import datetime
 
 import click
 
-from legacy.src.db.import_main import main as inserter
-from legacy.src.loader import FSLoader
-from legacy.src.services.solve_service import execute_solve, execute_solve_multiple
-from legacy.src.web import App
-from src.scheduling.timeoffice.models import PlanningPeriod
-from src.scheduling.timeoffice.service import get_timeoffice_service
+from src.db.export_main import main as fetcher
+from src.db.import_main import main as inserter
+from src.loader import FSLoader
+from src.services.solve_service import execute_solve, execute_solve_multiple
+from src.web import App
 
 
 @click.group()
-@click.pass_context
-def cli(ctx: click.Context):
+def cli():
     """Staff Scheduling CLI"""
-
-
-@cli.command()
-@click.option(
-    "--station",
-    "stations",
-    multiple=True,
-    type=int,
-    required=True,
-    help="Planning unit/station to fetch. Can be passed multiple times.",
-)
-@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
-@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
-def fetch(
-    stations: tuple[int, ...],
-    start: datetime,
-    end: datetime,
-):
-    """Fetch TimeOffice data and update the local cache."""
-
-    timeoffice = get_timeoffice_service()
-    dataset = timeoffice.fetch_dataset(
-        selected_station_ids=stations,
-        period=PlanningPeriod(
-            start=start.date(),
-            end=end.date(),
-        ),
-    )
-
-    print(
-        "[timeoffice] dataset "
-        f"stations={len(dataset.stations)} "
-        f"pools={len(dataset.pools)} "
-        f"pool_memberships={len(dataset.pool_memberships)} "
-        f"employees={len(dataset.employees)} "
-        f"shifts={len(dataset.shifts)} "
-        f"assignments={len(dataset.assignments)} "
-        f"availability={len(dataset.availability)}"
-    )
+    pass
 
 
 @cli.command()
@@ -138,6 +98,19 @@ def plot(case: int, debug: bool):
     loader = FSLoader(case)
     app = App(loader=loader)
     app.run(debug=debug)
+
+
+@cli.command()
+@click.argument("unit", type=click.INT)
+@click.argument("start", type=click.DateTime(formats=["%d.%m.%Y"]))
+@click.argument("end", type=click.DateTime(formats=["%d.%m.%Y"]))
+def fetch(unit: int, start: datetime, end: datetime):
+    """
+    Fetch data from the DB and write Json Files
+    """
+    start_date = start.date()  # convert datetime.datetime to datetime.date
+    end_date = end.date()
+    fetcher(planning_unit=unit, from_date=start_date, till_date=end_date)
 
 
 @cli.command()

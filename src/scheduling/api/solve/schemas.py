@@ -4,7 +4,11 @@ from typing import Self
 from pydantic import Field, model_validator
 
 from scheduling.api.solve.job_models import SolveJobStatus
-from scheduling.domain import PlanningMonth, SchedulingBaseModel
+from scheduling.domain import PlanningMonth, PlanningUnit, SchedulingBaseModel
+
+
+class SolveOptions(SchedulingBaseModel):
+    planning_units: tuple[PlanningUnit, ...]
 
 
 class SolveRequest(SchedulingBaseModel):

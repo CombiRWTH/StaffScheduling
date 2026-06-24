@@ -1,7 +1,11 @@
 from enum import StrEnum
 
+from pydantic import Field
+
 from scheduling.domain import SchedulingBaseModel
 from scheduling.domain.assignment import Assignment
+from scheduling.solver.audit import AuditReport
+from scheduling.solver.diagnostics import SolverDiagnostic
 
 
 class SolutionStatus(StrEnum):
@@ -16,4 +20,5 @@ class SolutionStatus(StrEnum):
 class Solution(SchedulingBaseModel):
     status: SolutionStatus
     assignments: tuple[Assignment, ...] = ()
-    diagnostics: tuple[str, ...] = ()
+    diagnostics: tuple[SolverDiagnostic, ...] = ()
+    audit: AuditReport = Field(default_factory=AuditReport)

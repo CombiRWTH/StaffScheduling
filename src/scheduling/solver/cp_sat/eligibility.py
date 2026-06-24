@@ -4,7 +4,7 @@ from scheduling.domain.availability import AvailabilityType
 from scheduling.domain.employee import Employee, StaffLevel
 from scheduling.domain.planning_unit import PlanningUnitId
 from scheduling.domain.shift import ShiftId
-from scheduling.solver.cp_sat.index import SolverIndex
+from scheduling.solver.index import SolverIndex
 
 
 def eligible_staff_levels_for_assignment_slot(

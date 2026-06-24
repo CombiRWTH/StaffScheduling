@@ -94,6 +94,8 @@ class TimeOfficeFacts:
     capabilities_by_employee_id: Mapping[int, tuple[Capability, ...]]
 
     availability_type_by_absence_code: Mapping[str, AvailabilityType]
+    ignored_availability_absence_codes: frozenset[str]
+
     wish_type_by_absence_code: Mapping[str, WishType]
 
     monthly_target_work_account_id: int
@@ -269,13 +271,19 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
         {
             "U": AvailabilityType.VACATION,
             "ZU": AvailabilityType.VACATION,
-            "FR": AvailabilityType.FREE_DAY,
-            "AZV": AvailabilityType.FREE_DAY,
             # Conservative hard blockers until TimeOffice/domain semantics are confirmed.
             "SC": AvailabilityType.UNAVAILABLE,
             "EZ": AvailabilityType.UNAVAILABLE,
             "RE": AvailabilityType.UNAVAILABLE,
             "FI": AvailabilityType.UNAVAILABLE,
+        }
+    ),
+    ignored_availability_absence_codes=frozenset(
+        {
+            # Existing roster free/reduction markers.
+            # They must not block solve-from-scratch.
+            "FR",
+            "AZV",
         }
     ),
     wish_type_by_absence_code=MappingProxyType(

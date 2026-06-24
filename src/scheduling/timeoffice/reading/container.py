@@ -4,6 +4,7 @@ from sqlalchemy import Connection
 
 from scheduling.domain import PlanningMonth
 from scheduling.timeoffice.facts import TimeOfficeFacts
+from scheduling.timeoffice.reading.options import TimeOfficeOptionsReader
 from scheduling.timeoffice.reading.personnel import (
     TimeOfficeEmployeeRow,
     TimeOfficePersonnelReader,
@@ -13,10 +14,7 @@ from scheduling.timeoffice.reading.personnel import (
 from scheduling.timeoffice.reading.planning_units import TimeOfficePlanningUnitReader, TimeOfficePlanningUnitRow
 from scheduling.timeoffice.reading.roster import TimeOfficeRosterReader, TimeOfficeRosterRow
 from scheduling.timeoffice.reading.shifts import TimeOfficeShiftReader, TimeOfficeShiftRow
-from scheduling.timeoffice.reading.sunday_work import (
-    TimeOfficeSundayHistoryRow,
-    TimeOfficeSundayWorkHistoryReader,
-)
+from scheduling.timeoffice.reading.sunday_work import TimeOfficeSundayHistoryRow, TimeOfficeSundayWorkHistoryReader
 from scheduling.timeoffice.reading.wishes import TimeOfficeWishReader, TimeOfficeWishRow
 from scheduling.timeoffice.reading.work_accounts import (
     TimeOfficeMonthlyWorkAccountReader,
@@ -27,8 +25,6 @@ from scheduling.timeoffice.reading.work_accounts import (
 @dataclass(frozen=True, slots=True)
 class TimeOfficeSources:
     """TimeOffice source rows for one selected planning month."""
-
-    planning_month: PlanningMonth
 
     planning_unit_rows: tuple[TimeOfficePlanningUnitRow, ...]
 
@@ -47,6 +43,7 @@ class TimeOfficeSources:
 
 @dataclass(frozen=True, slots=True)
 class TimeOfficeReaders:
+    options: TimeOfficeOptionsReader
     planning_units: TimeOfficePlanningUnitReader
     personnel: TimeOfficePersonnelReader
     shifts: TimeOfficeShiftReader
@@ -58,6 +55,7 @@ class TimeOfficeReaders:
     @classmethod
     def create(cls, *, facts: TimeOfficeFacts) -> "TimeOfficeReaders":
         return cls(
+            options=TimeOfficeOptionsReader(facts=facts),
             planning_units=TimeOfficePlanningUnitReader(facts=facts),
             personnel=TimeOfficePersonnelReader(),
             shifts=TimeOfficeShiftReader(facts=facts),
@@ -133,7 +131,6 @@ class TimeOfficeReaders:
         )
 
         return TimeOfficeSources(
-            planning_month=planning_month,
             planning_unit_rows=planning_unit_rows,
             plan_personnel_rows=plan_personnel_rows,
             employee_rows=employee_rows,

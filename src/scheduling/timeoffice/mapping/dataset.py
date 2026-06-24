@@ -1,4 +1,4 @@
-from scheduling.domain import SchedulingDataset
+from scheduling.domain import PlanningMonth, SchedulingDataset
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.mapping.demand import map_demand_requirements
 from scheduling.timeoffice.mapping.personnel import map_employees, map_planning_unit_memberships
@@ -11,13 +11,18 @@ from scheduling.timeoffice.mapping.work_accounts import map_monthly_work_account
 from scheduling.timeoffice.reading.container import TimeOfficeSources
 
 
-def map_scheduling_dataset(*, sources: TimeOfficeSources, facts: TimeOfficeFacts) -> SchedulingDataset:
+def map_scheduling_dataset(
+    *,
+    sources: TimeOfficeSources,
+    facts: TimeOfficeFacts,
+    planning_month: PlanningMonth,
+) -> SchedulingDataset:
     planning_units = map_planning_units(sources.planning_unit_rows, facts=facts)
     plans = map_plans(sources.planning_unit_rows)
     shifts = map_shifts(sources.shift_rows, facts=facts)
 
     return SchedulingDataset(
-        planning_month=sources.planning_month,
+        planning_month=planning_month,
         planning_units=planning_units,
         plans=plans,
         employees=map_employees(sources.employee_rows, facts=facts),
@@ -37,7 +42,7 @@ def map_scheduling_dataset(*, sources: TimeOfficeSources, facts: TimeOfficeFacts
             facts=facts,
         ),
         demand_requirements=map_demand_requirements(
-            planning_month=sources.planning_month,
+            planning_month=planning_month,
             planning_units=planning_units,
             facts=facts,
         ),

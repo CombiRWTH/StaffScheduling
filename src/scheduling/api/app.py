@@ -11,6 +11,7 @@ from scheduling.api.solve.router import solve_router
 from scheduling.api.web.router import web_router
 from scheduling.logging import configure_logging
 from scheduling.settings import get_settings
+from scheduling.solver.cp_sat.builder import create_cp_sat_model_builder
 from scheduling.solver.service import SolverService
 from scheduling.timeoffice.database import create_db_engine
 from scheduling.timeoffice.facts import TIMEOFFICE_FACTS
@@ -29,6 +30,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     engine = create_db_engine(settings=settings)
     facts = TIMEOFFICE_FACTS
 
+    model_builder = create_cp_sat_model_builder()
+
     app.state.runtime = ApiRuntime(
         timeoffice_service=TimeOfficeService(
             facts=facts,
@@ -36,7 +39,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             readers=TimeOfficeReaders.create(facts=facts),
             solution_writer=TimeOfficeSolutionWriter(),
         ),
-        solver_service=SolverService(settings=settings),
+        solver_service=SolverService(
+            settings=settings,
+            model_builder=model_builder,
+        ),
         solve_job_store=InMemorySolveJobStore(),
         solve_lock=asyncio.Lock(),
     )
