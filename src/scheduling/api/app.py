@@ -52,6 +52,6 @@ app.include_router(solve_router)
 app.include_router(web_router)
 
 
-@app.get("/health")
+@app.get("/status")
 async def healthcheck():
     return {"status": "healthy"}
