@@ -26,7 +26,6 @@ class SolverIndex:
     assignments_by_employee_date: dict[EmployeeDateKey, list[Assignment]]
     availability_by_employee_date: dict[EmployeeDateKey, list[Availability]]
     required_count_by_demand_key: dict[DemandKey, int]
-    fixed_planned_count_by_demand_key: dict[DemandKey, int]
 
 
 def build_schedule_index(dataset: SchedulingDataset) -> SolverIndex:
@@ -40,7 +39,6 @@ def build_schedule_index(dataset: SchedulingDataset) -> SolverIndex:
         assignments_by_employee_date=_group_assignments_by_employee_date(dataset.assignments),
         availability_by_employee_date=_group_availability_by_employee_date(dataset.availability),
         required_count_by_demand_key=_count_required_demand_by_key(dataset.demand_requirements),
-        fixed_planned_count_by_demand_key=_ignore_fixed_planned_assignments(),
     )
 
 
@@ -92,40 +90,3 @@ def _count_required_demand_by_key(
         required[key] += demand.required_count
 
     return dict(required)
-
-
-def _ignore_fixed_planned_assignments() -> dict[DemandKey, int]:
-    """Ignore imported TimeOffice assignments during solver migration.
-
-    Temporary migration behavior:
-    existing assignments are still part of the imported SchedulingDataset, but
-    the CP-SAT model currently generates a fresh schedule and does not treat
-    imported assignments as fixed coverage.
-    """
-    return {}
-
-
-# def _count_fixed_planned_assignments_by_demand_key(
-#     *,
-#     assignments: tuple[Assignment, ...],
-#     employees_by_id: dict[EmployeeId, Employee],
-# ) -> dict[DemandKey, int]:
-#     fixed: defaultdict[DemandKey, int] = defaultdict(int)
-
-#     for assignment in assignments:
-#         if assignment.assignment_type != AssignmentType.PLANNED:
-#             continue
-
-#         if assignment.planning_unit_id is None:
-#             continue
-
-#         employee = employees_by_id[assignment.employee_id]
-#         key = (
-#             assignment.planning_unit_id,
-#             assignment.date,
-#             assignment.shift_id,
-#             employee.staff_level,
-#         )
-#         fixed[key] += 1
-
-#     return dict(fixed)

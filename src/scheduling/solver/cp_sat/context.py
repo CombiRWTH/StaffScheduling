@@ -3,8 +3,10 @@ from dataclasses import dataclass
 from ortools.sat.python import cp_model
 
 from scheduling.domain import SchedulingDataset
-from scheduling.solver.cp_sat.index import SolverIndex, build_schedule_index
+from scheduling.domain.assignment import Assignment
 from scheduling.solver.cp_sat.keys import AssignmentVariableKey
+from scheduling.solver.diagnostics import SolverDiagnostic
+from scheduling.solver.index import SolverIndex, build_schedule_index
 
 
 @dataclass(slots=True)
@@ -13,8 +15,7 @@ class SolverContext:
     index: SolverIndex
     model: cp_model.CpModel
     assignment_variables: dict[AssignmentVariableKey, cp_model.IntVar]
-    objective_terms: list[cp_model.LinearExpr]
-    diagnostics: list[str]
+    diagnostics: list[SolverDiagnostic]
 
 
 def create_context(dataset: SchedulingDataset) -> SolverContext:
@@ -26,14 +27,14 @@ def create_context(dataset: SchedulingDataset) -> SolverContext:
         index=index,
         model=cp_model.CpModel(),
         assignment_variables={},
-        objective_terms=[],
         diagnostics=[],
     )
 
 
-def add_objective_term(ctx: SolverContext, *, expression: cp_model.LinearExpr, weight: int = 1) -> None:
-    """Register one weighted objective term for minimization."""
-    if weight == 0:
-        return
+@dataclass(frozen=True, slots=True)
+class AuditContext:
+    """Post-solve context passed to constraints and objectives for audit."""
 
-    ctx.objective_terms.append(expression * weight)
+    dataset: SchedulingDataset
+    index: SolverIndex
+    assignments: tuple[Assignment, ...]

@@ -54,6 +54,34 @@ def map_assignments(
     return tuple(assignments)
 
 
+def map_availability(*, rows: tuple[TimeOfficeRosterRow, ...], facts: TimeOfficeFacts) -> tuple[Availability, ...]:
+    availability_items: list[Availability] = []
+
+    for row in rows:
+        if not _has_absence(row):
+            continue
+
+        availability_type = _availability_type_for_absence_code(
+            row.resolved_absence_code,
+            facts=facts,
+            employee_id=row.employee_id,
+            roster_date=row.roster_date,
+        )
+
+        if availability_type is None:
+            continue
+
+        availability_items.append(
+            Availability(
+                employee_id=row.employee_id,
+                date=row.roster_date.date(),
+                availability_type=availability_type,
+            )
+        )
+
+    return tuple(availability_items)
+
+
 def _assignment_key(assignment: Assignment) -> AssignmentKey:
     return (
         assignment.employee_id,
@@ -61,23 +89,6 @@ def _assignment_key(assignment: Assignment) -> AssignmentKey:
         assignment.shift_id,
         assignment.assignment_type,
         assignment.planning_unit_id,
-    )
-
-
-def map_availability(*, rows: tuple[TimeOfficeRosterRow, ...], facts: TimeOfficeFacts) -> tuple[Availability, ...]:
-    return tuple(
-        Availability(
-            employee_id=row.employee_id,
-            date=row.roster_date.date(),
-            availability_type=_availability_type_for_absence_code(
-                row.resolved_absence_code,
-                facts=facts,
-                employee_id=row.employee_id,
-                roster_date=row.roster_date,
-            ),
-        )
-        for row in rows
-        if _has_absence(row)
     )
 
 
@@ -104,7 +115,7 @@ def _availability_type_for_absence_code(
     facts: TimeOfficeFacts,
     employee_id: int,
     roster_date: datetime,
-) -> AvailabilityType:
+) -> AvailabilityType | None:
     if absence_code is None:
         raise ValueError(
             "Missing resolved absence code for TimeOffice roster row: "
@@ -113,11 +124,14 @@ def _availability_type_for_absence_code(
 
     availability_type = facts.availability_type_by_absence_code.get(absence_code)
 
-    if availability_type is None:
-        raise ValueError(
-            "Unmapped TimeOffice absence code for availability: "
-            f"employee_id={employee_id} roster_date={roster_date} "
-            f"absence_code={absence_code!r}."
-        )
+    if availability_type is not None:
+        return availability_type
 
-    return availability_type
+    if absence_code in facts.ignored_availability_absence_codes:
+        return None
+
+    raise ValueError(
+        "Unmapped TimeOffice absence code for availability: "
+        f"employee_id={employee_id} roster_date={roster_date} "
+        f"absence_code={absence_code!r}."
+    )

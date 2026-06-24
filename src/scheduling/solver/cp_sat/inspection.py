@@ -62,9 +62,7 @@ def _constraint_name(constraint: _NamedProto) -> str:
     return constraint.name or "<unnamed>"
 
 
-def _constraint_type_counts_from_model_stats(
-    model_stats: str,
-) -> dict[str, int]:
+def _constraint_type_counts_from_model_stats(model_stats: str) -> dict[str, int]:
     counts: dict[str, int] = {}
 
     for line in model_stats.splitlines():
