@@ -31,13 +31,7 @@ def create_context(dataset: SchedulingDataset) -> SolverContext:
     )
 
 
-def add_objective_term(
-    ctx: SolverContext,
-    *,
-    name: str,
-    expression: cp_model.LinearExpr,
-    weight: int = 1,
-) -> None:
+def add_objective_term(ctx: SolverContext, *, expression: cp_model.LinearExpr, weight: int = 1) -> None:
     """Register one weighted objective term for minimization."""
     if weight == 0:
         return

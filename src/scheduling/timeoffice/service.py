@@ -2,10 +2,12 @@ import logging
 
 from sqlalchemy import Engine
 
+from scheduling.api.solve.schemas import SolveOptions
 from scheduling.domain import PlanningMonth, SchedulingDataset
 from scheduling.solver.models import Solution
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.mapping import map_scheduling_dataset
+from scheduling.timeoffice.mapping.options import map_solve_options
 from scheduling.timeoffice.reading.container import TimeOfficeReaders
 from scheduling.timeoffice.writing.solution import TimeOfficeSolutionWriter
 from scheduling.validation import validate_scheduling_dataset
@@ -28,6 +30,21 @@ class TimeOfficeService:
         self._engine = engine
         self._readers = readers
         self._solution_writer = solution_writer
+
+    def get_solve_options(self) -> SolveOptions:
+        logger.info("Fetching TimeOffice solve options")
+
+        with self._engine.connect() as connection:
+            rows = self._readers.options.read_planning_unit_option_rows(connection=connection)
+
+        options = map_solve_options(rows=rows, facts=self._facts)
+
+        logger.info(
+            "Fetched TimeOffice solve options: planning_units=%s",
+            len(options.planning_units),
+        )
+
+        return options
 
     def fetch_dataset(
         self,
@@ -53,6 +70,7 @@ class TimeOfficeService:
         dataset = map_scheduling_dataset(
             sources=sources,
             facts=self._facts,
+            planning_month=planning_month,
         )
 
         validated_dataset = validate_scheduling_dataset(dataset)

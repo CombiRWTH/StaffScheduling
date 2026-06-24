@@ -34,9 +34,4 @@ def add_balance_assignments_objective(ctx: SolverContext) -> None:
         generated_counts,
     ).with_name("temporary_balance_generated_assignments__define_max_per_employee")
 
-    add_objective_term(
-        ctx,
-        name="temporary_balance_generated_assignments",
-        expression=max_generated_assignments,
-        weight=1,
-    )
+    add_objective_term(ctx, expression=max_generated_assignments, weight=1)

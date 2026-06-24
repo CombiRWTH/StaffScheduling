@@ -6,25 +6,27 @@ from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
-from scheduling.api.dependencies import (
-    get_solve_job_store,
-    get_solve_lock,
-    get_solver_service,
-    get_timeoffice_service,
-)
+from scheduling.api.dependencies import get_solve_job_store, get_solve_lock, get_solver_service, get_timeoffice_service
 from scheduling.api.solve.job_models import SolveCommand, SolveJob
 from scheduling.api.solve.job_store import InMemorySolveJobStore
-from scheduling.api.solve.schemas import SolveAcceptedResponse, SolveRequest
+from scheduling.api.solve.schemas import SolveAcceptedResponse, SolveOptions, SolveRequest
 from scheduling.solver.models import Solution
 from scheduling.solver.service import SolverService
 from scheduling.timeoffice.service import TimeOfficeService
 
 logger = logging.getLogger(__name__)
 
-solve_router = APIRouter()
+solve_router = APIRouter(prefix="/solve")
 
 
-@solve_router.post("/solve", status_code=status.HTTP_202_ACCEPTED)
+@solve_router.get("/options")
+def get_solve_options(
+    timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
+) -> SolveOptions:
+    return timeoffice.get_solve_options()
+
+
+@solve_router.post("/", status_code=status.HTTP_202_ACCEPTED)
 async def create_solve_task(
     request: SolveRequest,
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
@@ -119,7 +121,7 @@ async def create_solve_task(
     )
 
 
-@solve_router.get("/solve/jobs/{job_id}")
+@solve_router.get("/jobs/{job_id}")
 async def check_solve_task(
     job_id: uuid.UUID,
     job_store: Annotated[InMemorySolveJobStore, Depends(get_solve_job_store)],
