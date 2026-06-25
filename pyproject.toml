@@ -39,6 +39,7 @@ build-backend = "uv_build"
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["legacy"]
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "W", "I", "C4", "ISC", "PT", "Q", "UP"] # Plan to add 'N' and 'ANN' later
@@ -46,6 +47,7 @@ select = ["E", "F", "B", "W", "I", "C4", "ISC", "PT", "Q", "UP"] # Plan to add '
 [tool.pyright]
 typeCheckingMode = "strict"
 reportUnusedVariable = "warning"
+exclude = ["legacy"]
 
 [tool.pytest.ini_options]
 addopts = "-m 'not integration'"
