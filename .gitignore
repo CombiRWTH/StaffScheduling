@@ -57,6 +57,7 @@ logs/
 found_solutions/*.json
 processed_solutions/*
 
+.cache
 cases/*/
 !cases/case_catalog.md
 

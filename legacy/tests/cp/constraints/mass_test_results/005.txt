@@ -1,0 +1,63 @@
+
+|free_day_after_night_shift_phase_violations| = 0
+|hierarchy_of_intermediate_shifts_violations| = 0
+|max_one_shift_per_day_violations| = 0
+|min_rest_time_violations| = 0
+|min_staffing_violations| = 0
+|planned_shifts_violations| = 0
+|rounds_in_early_shifts_violations| = 0
+|target_working_time_violations| = 0
+|vaction_days_and_shifts_violations| = 0
+
+
+#######################################
+
+--------- |free_day_after_night_shift_phase_violations| = 0 -----------
+
+----------------------------------------------------
+
+--------- |hierarchy_of_intermediate_shifts_violations| = 0 -----------
+
+----------------------------------------------------
+
+--------- |max_one_shift_per_day_violations| = 0 -----------
+
+----------------------------------------------------
+
+--------- |min_rest_time_violations| = 0 -----------
+
+----------------------------------------------------
+
+--------- |min_staffing_violations| = 0 -----------
+
+----------------------------------------------------
+
+--------- |planned_shifts_violations| = 0 -----------
+
+----------------------------------------------------
+
+--------- |rounds_in_early_shifts_violations| = 0 -----------
+
+----------------------------------------------------
+
+--------- |target_working_time_violations| = 0 -----------
+
+----------------------------------------------------
+
+--------- |vaction_days_and_shifts_violations| = 0 -----------
+
+----------------------------------------------------
+
+#######################################
+
+
+
+|free_day_after_night_shift_phase_violations| = 0
+|hierarchy_of_intermediate_shifts_violations| = 0
+|max_one_shift_per_day_violations| = 0
+|min_rest_time_violations| = 0
+|min_staffing_violations| = 0
+|planned_shifts_violations| = 0
+|rounds_in_early_shifts_violations| = 0
+|target_working_time_violations| = 0
+|vaction_days_and_shifts_violations| = 0

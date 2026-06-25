@@ -1,0 +1,68 @@
+from typing import cast
+
+from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
+
+from legacy.src.day import Day
+from legacy.src.employee import Employee
+from legacy.src.shift import Shift
+
+from ..constants import MAX_DURATION_MINUTES
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
+from .objective import Objective
+
+
+class MinimizeOvertimeObjective(Objective):
+    @property
+    def KEY(self) -> str:
+        return "minimize-overtime"
+
+    def __init__(
+        self,
+        weight: float,
+        employees: list[Employee],
+        days: list[Day],
+        shifts: list[Shift],
+    ):
+        """
+        Initializes the objective to minimize overtime for employees.
+        Overtime is calculated as the difference between the total working time and the target working time.
+        """
+        super().__init__(weight, employees, days, shifts)
+
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr:
+        possible_overtime_absolute_variables: list[IntVar] = []
+
+        # we should have a more accurate estimation from the constraints in target_working_time.py
+        # with TOLERANCE_MORE and TOLERANCE_LESS. Or is this on purpose because of the hidden employees?
+        max_duration = MAX_DURATION_MINUTES
+
+        for employee in self._employees:
+            target_working_time = employee.get_available_working_time()
+            possible_working_time: list[LinearExpr] = []
+
+            for day in self._days:
+                for shift in self._shifts:
+                    variable = shift_assignment_variables[employee][day][shift]
+                    possible_working_time.append(variable * shift.duration)
+
+            possible_overtime_variable = model.new_int_var(
+                -max_duration, max_duration, f"overtime_e:{employee.get_key()}"
+            )
+
+            possible_overtime_absolute_variable = model.new_int_var(
+                0, max_duration, f"overtime_absolute_e:{employee.get_key()}"
+            )
+            model.add(possible_overtime_variable == sum(possible_working_time) - target_working_time)
+            model.add_abs_equality(
+                possible_overtime_absolute_variable,
+                possible_overtime_variable,
+            )
+
+            possible_overtime_absolute_variables.append(possible_overtime_absolute_variable)
+
+        return cast(LinearExpr, sum(possible_overtime_absolute_variables)) * self._weight

@@ -1,0 +1,158 @@
+{
+  "employees": [
+    {
+      "actual": 4620.0,
+      "firstname": "Sturmius",
+      "key": 5652,
+      "name": "Sherrard",
+      "target": 9240.0
+    },
+    {
+      "actual": 4620.0,
+      "firstname": "Liliane",
+      "key": 5656,
+      "name": "Bow",
+      "target": 9240.0
+    },
+    {
+      "actual": 4620.0,
+      "firstname": "Swantje",
+      "key": 5668,
+      "name": "Greer",
+      "target": 9240.0
+    },
+    {
+      "actual": 9200.0,
+      "firstname": "Augustin",
+      "key": 5920,
+      "name": "Carreras",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Annette",
+      "key": 6259,
+      "name": "Trovato",
+      "target": 8316.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Svetlana",
+      "key": 6316,
+      "name": "Montejano",
+      "target": 2.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Uschi",
+      "key": 6318,
+      "name": "Gamblin",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Heinz",
+      "key": 6475,
+      "name": "Binford",
+      "target": 2.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Edwin",
+      "key": 6616,
+      "name": "Avelar",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Christfri",
+      "key": 6677,
+      "name": "Fullerton",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Liebhardt",
+      "key": 6762,
+      "name": "Deshields",
+      "target": 9240.0
+    },
+    {
+      "actual": 6900.0,
+      "firstname": "Trude",
+      "key": 6836,
+      "name": "Valentino",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Annelene",
+      "key": 6928,
+      "name": "Izzo",
+      "target": 9360.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Annemargr",
+      "key": 7490,
+      "name": "Waldinger",
+      "target": 8323.0
+    },
+    {
+      "actual": 3220.0,
+      "firstname": "Ludger",
+      "key": 7603,
+      "name": "Roberson",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Sieghardt",
+      "key": 7741,
+      "name": "Tharp",
+      "target": 960.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Kilian",
+      "key": 7752,
+      "name": "Rodriques",
+      "target": 9240.0
+    },
+    {
+      "actual": 9240.0,
+      "firstname": "Julia",
+      "key": 7770,
+      "name": "Yeh",
+      "target": 9240.0
+    },
+    {
+      "actual": 9240.0,
+      "firstname": "Burkhild",
+      "key": 7796,
+      "name": "Hertzler",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Karena",
+      "key": 7835,
+      "name": "Driggers",
+      "target": 9240.0
+    },
+    {
+      "actual": 0.0,
+      "firstname": "Janett",
+      "key": 7877,
+      "name": "Staggs",
+      "target": 9240.0
+    },
+    {
+      "actual": 9200.0,
+      "firstname": "Irma",
+      "key": 7919,
+      "name": "Weathers",
+      "target": 9240.0
+    }
+  ]
+}

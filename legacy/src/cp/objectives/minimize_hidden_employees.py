@@ -1,0 +1,57 @@
+from typing import cast
+
+from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
+
+from legacy.src.day import Day
+from legacy.src.employee import Employee
+from legacy.src.shift import Shift
+
+from ..constants import MAX_DURATION_MINUTES
+from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
+from .objective import Objective
+
+
+class MinimizeHiddenEmployeesObjective(Objective):
+    @property
+    def KEY(self) -> str:
+        return "minimize-hidden-employees"
+
+    def __init__(
+        self,
+        weight: float,
+        employees: list[Employee],
+        days: list[Day],
+        shifts: list[Shift],
+    ):
+        """
+        Initializes the objective to minimize overtime for employees.
+        Overtime is calculated as the difference between the total working time and the target working time.
+        """
+        super().__init__(weight, employees, days, shifts)
+
+    def create(
+        self,
+        model: CpModel,
+        shift_assignment_variables: ShiftAssignmentVariables,
+        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
+    ) -> LinearExpr:
+        possible_hidden_employee_variables: list[IntVar] = []
+
+        max_duration = MAX_DURATION_MINUTES
+
+        for employee in self._employees:
+            if not employee.hidden:
+                continue
+
+            possible_working_time: list[LinearExpr] = []
+            for day in self._days:
+                for shift in self._shifts:
+                    variable = shift_assignment_variables[employee][day][shift]
+                    possible_working_time.append(variable * shift.duration)
+
+            possible_hidden_employee_variable = model.new_int_var(0, max_duration, f"hidden_e:{employee.get_key()}")
+
+            model.add(possible_hidden_employee_variable == sum(possible_working_time))
+            possible_hidden_employee_variables.append(possible_hidden_employee_variable)
+
+        return cast(LinearExpr, sum(possible_hidden_employee_variables)) * self._weight
