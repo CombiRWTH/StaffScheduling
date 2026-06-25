@@ -16,7 +16,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pre-commit>=4.6.0",
-    "pyright>=1.1.410",
+    "pyright>=1.1.411",
     "ruff>=0.15.17",
     "pytest>=9.1.0",
     "debugpy>=1.8.21",
@@ -47,7 +47,7 @@ select = ["E", "F", "B", "W", "I", "C4", "ISC", "PT", "Q", "UP"] # Plan to add '
 [tool.pyright]
 typeCheckingMode = "strict"
 reportUnusedVariable = "warning"
-exclude = ["legacy"]
+ignore = ["legacy"]
 
 [tool.pytest.ini_options]
 addopts = "-m 'not integration'"

@@ -37,5 +37,5 @@ def _employee_to_frontend(employee: Employee) -> dict[str, Any]:
 
 
 def _split_display_name(display_name: str) -> tuple[str, str]:
-    name, separator, firstname = display_name.partition(" ")
+    name, _separator, firstname = display_name.partition(" ")
     return name, firstname
