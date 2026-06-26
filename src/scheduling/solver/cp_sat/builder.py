@@ -11,11 +11,18 @@ from scheduling.solver.cp_sat.objective import Objective, WeightedPenalty, minim
 from scheduling.solver.cp_sat.objectives.temporary_balance_generated_assignments import (
     TemporaryBalanceGeneratedAssignments,
 )
+from scheduling.solver.cp_sat.objectives.minimize_overtime import MinimizeOvertime
+from scheduling.solver.cp_sat.objectives.not_too_many_consecutive_days import NotTooManyConsecutiveDays
+from scheduling.solver.cp_sat.objectives.preferred_block_length import PreferredBlockLength
+
 from scheduling.solver.cp_sat.variables import create_assignment_variables
 
 CP_SAT_CONSTRAINTS: tuple[Constraint, ...] = (MinimumStaffing(),)
 
-CP_SAT_OBJECTIVES: tuple[Objective, ...] = (TemporaryBalanceGeneratedAssignments(),)
+CP_SAT_OBJECTIVES: tuple[Objective, ...] = (TemporaryBalanceGeneratedAssignments(),
+                                            MinimizeOvertime(),
+                                            NotTooManyConsecutiveDays(),
+                                            PreferredBlockLength())
 
 
 @dataclass(frozen=True, slots=True)

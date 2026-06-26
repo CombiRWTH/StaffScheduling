@@ -7,7 +7,9 @@ from scheduling.solver.cp_sat.constraints.minimum_staffing import MinimumStaffin
 from scheduling.solver.cp_sat.objectives.temporary_balance_generated_assignments import (
     TemporaryBalanceGeneratedAssignments,
 )
-
+from scheduling.solver.cp_sat.objectives.minimize_overtime import MinimizeOvertime
+from scheduling.solver.cp_sat.objectives.not_too_many_consecutive_days import NotTooManyConsecutiveDays
+from scheduling.solver.cp_sat.objectives.preferred_block_length import PreferredBlockLength
 
 class ConstraintConfig(SchedulingBaseModel):
     enabled: bool
@@ -37,6 +39,18 @@ def create_base_solver_config() -> SolverConfig:
         },
         objectives={
             TemporaryBalanceGeneratedAssignments.id: ObjectiveConfig(
+                enabled=True,
+                weight=1,
+            ),
+            MinimizeOvertime.id: ObjectiveConfig(
+                enabled=True,
+                weight=100,
+            ),
+            NotTooManyConsecutiveDays.id: ObjectiveConfig(
+                enabled=True,
+                weight=1,
+            ),
+            PreferredBlockLength.id: ObjectiveConfig(
                 enabled=True,
                 weight=1,
             ),
