@@ -7,6 +7,7 @@ from ortools.sat.python import cp_model
 from scheduling.solver.audit import AuditFinding
 from scheduling.solver.cp_sat.context import AuditContext, SolverContext
 from scheduling.solver.cp_sat.objective import Penalty
+from scheduling.domain.shift import ShiftType
 
 
 class RotateShiftsForward:
@@ -14,6 +15,16 @@ class RotateShiftsForward:
     Adds a reward for each time an employee works forward rotating shifts and a 
     penalty for backwards rotating shifts
     """
+    FORWARD_ROTATIONS = (
+        (ShiftType("early"), ShiftType("late")),
+        (ShiftType("late"), ShiftType("night"))
+    )
+    BACKWARD_ROTATIONS = (
+        (ShiftType("late"), ShiftType("early")),
+        (ShiftType("night"), ShiftType("late")) 
+        #In the legacy version, they also penalize going from night -> early, which makes no sense in my eyes
+        #Also, they only consider a timeframe of 3 days per shift, I do not understand why
+    )
 
     id: ClassVar[str] = "rotate_shifts_forward"
 
@@ -28,7 +39,7 @@ class RotateShiftsForward:
         #First check which shifts every employee is assigned to
         days_by_employee: defaultdict[int, date] = defaultdict(list)
         for key, variable in ctx.assignment_variables.items():
-            employee_id, _, _, shift_id, _ = key
+            employee_id, _, date, shift_id, _ = key
             days_by_employee[employee_id].append((date, shift_id))
         
         #Find out how the shifts rotate for each employee
@@ -39,13 +50,29 @@ class RotateShiftsForward:
             days_by_employee[employee_id] = sorted(days_by_employee[employee_id])
 
             for i in range(len(days_by_employee[employee_id]) - 1):
-                shift_type_before = ctx.dataset.shifts
+                for shift in ctx.dataset.shifts:
+                    if shift.shift_id == days_by_employee[employee_id][i][1]:
+                        shift_type_before = shift.type
+                    if shift.shift_id == days_by_employee[employee_id][i+1][1]:  
+                        shift_type_after = shift.type
+                if (shift_type_before, shift_type_after) in self.FORWARD_ROTATIONS:
+                    num_forward_rotations += 1
+                elif (shift_type_before, shift_type_after) in self.BACKWARD_ROTATIONS:
+                    num_backward_rotations += 1
+                 
+        rotations = ctx.model.new_int_var(
+            -1000000,
+            1000000,
+            "rotations"
+        )
+
+        ctx.model.add(rotations == num_backward_rotations - num_forward_rotations).with_name("rotate_shifts_forward__rotations")
 
         return (
             Penalty(
                 objective_id=self.id,
-                name="total_preferred_blocks",
-                expression=total_preferred_blocks,
+                name="rotations",
+                expression=rotations,
             ),
         )
 
