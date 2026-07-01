@@ -9,7 +9,7 @@ from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.mapping import map_scheduling_dataset
 from scheduling.timeoffice.mapping.options import map_solve_options
 from scheduling.timeoffice.reading.container import TimeOfficeReaders
-from scheduling.timeoffice.writing.solution import TimeOfficeSolutionWriter
+from scheduling.timeoffice.writing.solution import LegacySolutionExportPaths, TimeOfficeSolutionWriter
 from scheduling.validation import validate_scheduling_dataset
 
 logger = logging.getLogger(__name__)
@@ -97,6 +97,19 @@ class TimeOfficeService:
 
     def write_solution_dry_run(self, solution: Solution) -> None:
         self._solution_writer.write_dry_run(solution)
+
+    def write_solution_legacy_format(
+        self,
+        *,
+        dataset: SchedulingDataset,
+        solution: Solution,
+        solution_name: str,
+    ) -> LegacySolutionExportPaths | None:
+        return self._solution_writer.write_legacy_format(
+            dataset=dataset,
+            solution=solution,
+            solution_name=solution_name,
+        )
 
     def _normalize_planning_unit_ids(
         self,
