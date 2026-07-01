@@ -106,7 +106,7 @@ def _group_weighted_vars(ctx: SolverContext) -> dict[int, list[cp_model.LinearEx
     shift_durations = {s.shift_id: (s.end_minute - s.start_minute) for s in ctx.dataset.shifts}
 
     for key, variable in ctx.assignment_variables.items():
-        employee_id, shift_id, _, _, _ = key
+        employee_id, _, _, shift_id, _ = key
 
         # Falls Schicht nicht in Dataset (sollte nicht passieren), Dauer 0
         duration = shift_durations.get(shift_id, 0)

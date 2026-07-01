@@ -8,6 +8,7 @@ from ortools.sat.python import cp_model
 from scheduling.solver.audit import AuditFinding, AuditSeverity
 from scheduling.solver.cp_sat.context import AuditContext, SolverContext
 from scheduling.solver.diagnostics import SolverDiagnostic
+from scheduling.solver.index import is_night_shift
 
 
 class FreeDayAfterNightShiftPhase:
@@ -62,7 +63,7 @@ class FreeDayAfterNightShiftPhase:
         actual_shifts = _group_actual_shifts(ctx)
 
         for (employee_id, date), shifts_today in actual_shifts.items():
-            if not any(_is_night_shift(ctx, shift_id) for shift_id in shifts_today):
+            if not any(is_night_shift(ctx.index.shifts_by_id[shift_id]) for shift_id in shifts_today):
                 continue
 
             tomorrow = date + datetime.timedelta(days=1)
@@ -71,7 +72,7 @@ class FreeDayAfterNightShiftPhase:
             if not shifts_tomorrow:
                 continue
 
-            if not any(_is_night_shift(ctx, shift_id) for shift_id in shifts_tomorrow):
+            if not any(is_night_shift(ctx.index.shifts_by_id[shift_id]) for shift_id in shifts_tomorrow):
                 findings.append(
                     AuditFinding(
                         code="free_day_after_night_shift_phase.violation",
@@ -95,17 +96,6 @@ def _constraint_name(employee_id: int, date_of_free_day: datetime.date) -> str:
     return f"free_day_after_night_shift__emp_{employee_id}__date_{date_of_free_day:%Y%m%d}"
 
 
-# FIX: shift_id ist nun konsequent als `int` deklariert
-def _is_night_shift(ctx: SolverContext | AuditContext, shift_id: int) -> bool:
-    """
-    Helper-Funktion zur Identifikation von Nachtschichten.
-    """
-    if hasattr(ctx, "is_night_shift"):
-        return ctx.is_night_shift(shift_id)  # type: ignore
-
-    return False
-
-
 def _group_vars(
     ctx: SolverContext,
 ) -> tuple[
@@ -119,7 +109,7 @@ def _group_vars(
 
         all_vars[(employee_id, assignment_date)].append(variable)
 
-        if _is_night_shift(ctx, shift_id):
+        if is_night_shift(ctx.index.shifts_by_id[shift_id]):
             night_vars[(employee_id, assignment_date)].append(variable)
 
     return dict(all_vars), dict(night_vars)

@@ -8,6 +8,7 @@ from ortools.sat.python import cp_model
 from scheduling.solver.audit import AuditFinding, AuditSeverity
 from scheduling.solver.cp_sat.context import AuditContext, SolverContext
 from scheduling.solver.diagnostics import SolverDiagnostic
+from scheduling.solver.index import is_early_shift, is_late_shift
 
 
 class MinimumRestTime:
@@ -86,18 +87,6 @@ def _constraint_name(employee_id: int, late_shift_date: datetime.date) -> str:
     return f"min_rest_time__emp_{employee_id}__date_{late_shift_date:%Y%m%d}"
 
 
-def _is_late_shift(ctx: SolverContext | AuditContext, shift_id: int) -> bool:
-    if hasattr(ctx, "is_late_shift"):
-        return ctx.is_late_shift(shift_id)  # type: ignore
-    return False
-
-
-def _is_early_shift(ctx: SolverContext | AuditContext, shift_id: int) -> bool:
-    if hasattr(ctx, "is_early_shift"):
-        return ctx.is_early_shift(shift_id)  # type: ignore
-    return False
-
-
 def _group_vars(
     ctx: SolverContext,
 ) -> tuple[
@@ -107,11 +96,11 @@ def _group_vars(
     early_vars: defaultdict[tuple[int, datetime.date], list[cp_model.IntVar]] = defaultdict(list)
 
     for key, variable in ctx.assignment_variables.items():
-        employee_id, shift_id, assignment_date, _, _ = key
+        employee_id, _, assignment_date, shift_id, _ = key
 
-        if _is_late_shift(ctx, shift_id):
+        if is_late_shift(ctx.index.shifts_by_id[shift_id]):
             late_vars[(employee_id, assignment_date)].append(variable)
-        elif _is_early_shift(ctx, shift_id):
+        elif is_early_shift(ctx.index.shifts_by_id[shift_id]):
             early_vars[(employee_id, assignment_date)].append(variable)
 
     return dict(late_vars), dict(early_vars)
@@ -126,9 +115,9 @@ def _group_actual_shifts(
     early_shifts: set[tuple[int, datetime.date]] = set()
 
     for assignment in ctx.assignments:
-        if _is_late_shift(ctx, assignment.shift_id):
+        if is_late_shift(ctx.index.shifts_by_id[assignment.shift_id]):
             late_shifts.add((assignment.employee_id, assignment.date))
-        elif _is_early_shift(ctx, assignment.shift_id):
+        elif is_early_shift(ctx.index.shifts_by_id[assignment.shift_id]):
             early_shifts.add((assignment.employee_id, assignment.date))
 
     return late_shifts, early_shifts

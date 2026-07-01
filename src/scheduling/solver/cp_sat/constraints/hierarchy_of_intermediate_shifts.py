@@ -8,6 +8,7 @@ from ortools.sat.python import cp_model
 from scheduling.solver.audit import AuditFinding, AuditSeverity
 from scheduling.solver.cp_sat.context import AuditContext, SolverContext
 from scheduling.solver.diagnostics import SolverDiagnostic
+from scheduling.solver.index import is_intermediate_shift
 
 
 class HierarchyOfIntermediateShifts:
@@ -132,14 +133,6 @@ class HierarchyOfIntermediateShifts:
 
 
 # --- Helper Functions ---
-
-
-def _is_intermediate_shift(ctx: SolverContext | AuditContext, shift_id: int) -> bool:
-    if hasattr(ctx, "is_intermediate_shift"):
-        return ctx.is_intermediate_shift(shift_id)  # type: ignore
-    return False
-
-
 def _group_vars(
     ctx: SolverContext,
 ) -> tuple[
@@ -151,9 +144,9 @@ def _group_vars(
     active_weeks: set[tuple[int, tuple[int, int]]] = set()
 
     for key, variable in ctx.assignment_variables.items():
-        _, shift_id, assignment_date, planning_unit_id, _ = key
+        _, planning_unit_id, assignment_date, shift_id, _ = key
 
-        if not _is_intermediate_shift(ctx, shift_id):
+        if not is_intermediate_shift(ctx.index.shifts_by_id[shift_id]):
             continue
 
         iso_year, iso_week = assignment_date.isocalendar()[:2]
@@ -177,7 +170,7 @@ def _group_actual_shifts(
 
         active_dates_by_unit[assignment.planning_unit_id].add(assignment.date)
 
-        if _is_intermediate_shift(ctx, assignment.shift_id):
+        if is_intermediate_shift(ctx.index.shifts_by_id[assignment.shift_id]):
             counts_by_day[(assignment.planning_unit_id, assignment.date)] += 1
 
     return dict(counts_by_day), dict(active_dates_by_unit)

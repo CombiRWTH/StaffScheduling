@@ -6,12 +6,13 @@ from typing import Any, ClassVar
 from scheduling.solver.audit import AuditFinding, AuditSeverity
 from scheduling.solver.cp_sat.context import AuditContext, SolverContext
 from scheduling.solver.diagnostics import SolverDiagnostic
+from scheduling.solver.index import is_night_shift
 
 # Angenommen, Ihre Enum/Models sind importierbar, andernfalls als Typ-Hinweise nutzen
 # from scheduling.domain.availability import Availability, AvailabilityType
 
 
-class EmployeeAvailabilities:
+class AvailabilitiesConstraint:
     """Ensure employees do not work on dates or shifts they are unavailable for.
 
     Also prevents night shifts from spilling over into full-day absences (e.g., vacations).
@@ -30,7 +31,7 @@ class EmployeeAvailabilities:
         blocked_days, allowed_shifts_for_day = _parse_availabilities(ctx)
 
         for key, variable in ctx.assignment_variables.items():
-            employee_id, shift_id, date, _, _ = key
+            employee_id, _, date, shift_id, _ = key
 
             # Regel 1: Voller Abwesenheitstag (Urlaub, Training, etc.)
             if (employee_id, date) in blocked_days:
@@ -48,7 +49,7 @@ class EmployeeAvailabilities:
                     continue
 
             # Regel 3: Spillover-Prävention (Nachtschicht vor einem vollen Abwesenheitstag)
-            if _is_night_shift(ctx, shift_id):
+            if is_night_shift(ctx.index.shifts_by_id[shift_id]):
                 tomorrow = date + datetime.timedelta(days=1)
                 if (employee_id, tomorrow) in blocked_days:
                     ctx.model.add(variable == 0).with_name(
@@ -107,7 +108,7 @@ class EmployeeAvailabilities:
                 )
 
             # Audit 3: Unzulässiger Spillover (Nachtschicht am Vortag)
-            elif _is_night_shift(ctx, shift_id):
+            elif is_night_shift(ctx.index.shifts_by_id[shift_id]):
                 tomorrow = date + datetime.timedelta(days=1)
                 if (emp_id, tomorrow) in blocked_days:
                     findings.append(
@@ -140,10 +141,7 @@ def _parse_availabilities(
 
     # Annahme: Availabilities sind Teil des Contexts oder Index
     # (Passen Sie den Attributnamen ctx.availabilities entsprechend Ihrer Struktur an)
-    availabilities = getattr(ctx, "availabilities", [])
-
-    # Alternativer Fallback, falls sie im Index liegen:
-    # availabilities = getattr(ctx.index, "availabilities", []) if hasattr(ctx, "index") else availabilities
+    availabilities = ctx.dataset.availability
 
     for avail in availabilities:
         # Hier nutzen wir das Enum als String, um Abhängigkeiten gering zu halten
@@ -154,10 +152,3 @@ def _parse_availabilities(
             blocked_days.add((avail.employee_id, avail.date))
 
     return blocked_days, dict(allowed_shifts)
-
-
-def _is_night_shift(ctx: SolverContext | AuditContext, shift_id: int) -> bool:
-    """Checks if the shift spills over into the next day."""
-    if hasattr(ctx, "is_night_shift"):
-        return ctx.is_night_shift(shift_id)  # type: ignore
-    return False

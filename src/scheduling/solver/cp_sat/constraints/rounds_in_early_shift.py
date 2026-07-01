@@ -5,9 +5,11 @@ from typing import Any, ClassVar
 
 from ortools.sat.python import cp_model
 
+from scheduling.domain.employee import Capability
 from scheduling.solver.audit import AuditFinding, AuditSeverity
 from scheduling.solver.cp_sat.context import AuditContext, SolverContext
 from scheduling.solver.diagnostics import DiagnosticSeverity, SolverDiagnostic
+from scheduling.solver.index import is_early_shift
 
 
 class RoundsInEarlyShift:
@@ -85,26 +87,12 @@ def _constraint_name(date: datetime.date) -> str:
     return f"rounds_in_early_shift__date_{date:%Y%m%d}"
 
 
-def _is_early_shift(ctx: SolverContext | AuditContext, shift_id: int) -> bool:
-    if hasattr(ctx, "is_early_shift"):
-        return ctx.is_early_shift(shift_id)  # type: ignore
-    return False
-
-
 def _is_qualified_for_rounds(ctx: SolverContext | AuditContext, employee_id: int) -> bool:
-    """
-    Überprüft, ob die Person für die Visite ('rounds') qualifiziert ist.
-    HINWEIS: Passen Sie die Zugriffslogik auf Ihren neuen `ctx.index` an.
-    """
-    # Variante A: Direkte Context-Methode
-    if hasattr(ctx, "is_qualified_for_rounds"):
-        return ctx.is_qualified_for_rounds(employee_id)  # type: ignore
+    # Direkter, performanter Zugriff über den Index
+    employee = ctx.index.employees_by_id.get(employee_id)
 
-    # Variante B: Zugriff über das Employee-Objekt im Index
-    if hasattr(ctx, "index") and hasattr(ctx.index, "employees_by_id"):
-        employee = ctx.index.employees_by_id.get(employee_id)
-        if employee and hasattr(employee, "qualified"):
-            return employee.capabilities(ROUNDS=True)  # type: ignore
+    if employee:
+        return Capability.ROUNDS in employee.capabilities
 
     return False
 
@@ -116,13 +104,13 @@ def _group_vars(
     active_weekdays: set[datetime.date] = set()
 
     for key, variable in ctx.assignment_variables.items():
-        employee_id, shift_id, assignment_date, _, _ = key
+        employee_id, _, assignment_date, shift_id, _ = key
 
         # .isoweekday() gibt 1 (Montag) bis 7 (Sonntag) zurück
         if assignment_date.isoweekday() <= 5:
             active_weekdays.add(assignment_date)
 
-            if _is_early_shift(ctx, shift_id) and _is_qualified_for_rounds(ctx, employee_id):
+            if is_early_shift(ctx.index.shifts_by_id[shift_id]) and _is_qualified_for_rounds(ctx, employee_id):
                 grouped[assignment_date].append(variable)
 
     return dict(grouped), active_weekdays
@@ -138,7 +126,9 @@ def _group_actual_shifts(
         if assignment.date.isoweekday() <= 5:
             active_weekdays.add(assignment.date)
 
-            if _is_early_shift(ctx, assignment.shift_id) and _is_qualified_for_rounds(ctx, assignment.employee_id):
+            if is_early_shift(ctx.index.shifts_by_id[assignment.shift_id]) and _is_qualified_for_rounds(
+                ctx, assignment.employee_id
+            ):
                 counts[assignment.date] += 1
 
     return dict(counts), active_weekdays
