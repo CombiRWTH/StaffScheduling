@@ -11,10 +11,10 @@ from scheduling.timeoffice.service import TimeOfficeService
 logger = logging.getLogger(__name__)
 
 
-web_router = APIRouter()
+employee_router = APIRouter()
 
 
-@web_router.get("/employees")
+@employee_router.get("/employees")
 async def get_employees(
     planning_unit: int,
     from_date: date,
