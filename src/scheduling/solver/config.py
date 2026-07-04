@@ -7,6 +7,10 @@ from scheduling.solver.cp_sat.constraints.minimum_staffing import MinimumStaffin
 from scheduling.solver.cp_sat.objectives.temporary_balance_generated_assignments import (
     TemporaryBalanceGeneratedAssignments,
 )
+from scheduling.solver.cp_sat.objectives.every_second_weekend_free import EverySecondWeekendFree
+from scheduling.solver.cp_sat.objectives.free_day_after_night_shift_phase import FreeDaysAfterNightShiftPhase
+from scheduling.solver.cp_sat.objectives.free_days_near_weekend import FreeDaysNearWeekend
+from scheduling.solver.cp_sat.objectives.minimize_consecutive_night_shifts import MinimizeConsecutiveNightShifts
 
 
 class ConstraintConfig(SchedulingBaseModel):
