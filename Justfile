@@ -2,7 +2,7 @@ IMAGE_NAME := "staff-scheduling-api"
 PORT := "8000"
 
 # Shared Docker args for dev commands
-DOCKER_DEV_ARGS := "--env-file .env -v $PWD/src:/app/src" + " -p " + PORT + ":8000"
+DOCKER_DEV_ARGS := "--env-file .env -v $PWD/src:/app/src -v $PWD/tests:/app/tests -v $PWD/found_solutions:/app/found_solutions -v $PWD/processed_solutions:/app/processed_solutions" + " -p " + PORT + ":8000"
 
 _default:
     just --list
@@ -57,3 +57,18 @@ docker-shell:
 
 health:
     curl http://localhost:{{PORT}}/health
+
+# Starts the container in the background and keeps it alive
+up:
+    docker run -d --name {{IMAGE_NAME}}-dev \
+        {{DOCKER_DEV_ARGS}} \
+        {{IMAGE_NAME}} \
+        tail -f /dev/null
+
+# Runs a command inside the running container
+exec *args:
+    docker exec -it {{IMAGE_NAME}}-dev uv run {{args}}
+
+# Stops the background container
+down:
+    docker stop {{IMAGE_NAME}}-dev && docker rm {{IMAGE_NAME}}-dev
