@@ -18,11 +18,11 @@ wishes_router = APIRouter()
 @wishes_router.get("/wishes-and-blocked")
 async def get_wishes_and_blocked(
     planning_unit: int,
-    month: int,
-    year: int,
+    from_date: date,
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
 ) -> dict[str, list[dict[str, Any]]]:
-    month = PlanningMonth(year=year, month=month)
+    from_date_year, from_date_month = from_date.year, from_date.month
+    month = PlanningMonth(year=from_date_year, month=from_date_month)
 
     dataset = timeoffice.fetch_dataset(
         planning_unit_ids=(planning_unit,),

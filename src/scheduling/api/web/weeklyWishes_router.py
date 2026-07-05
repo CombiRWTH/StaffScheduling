@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
@@ -17,11 +18,11 @@ weeklyWishes_router = APIRouter()
 @weeklyWishes_router.get("/global-wishes-and-blocked")
 async def get_global_wishes_and_blocked(
     planning_unit: int,
-    month: int,
-    year: int,
+    from_date: date,
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
 ) -> dict[str, list[dict[str, Any]]]:
-    planning_month = PlanningMonth(year=year, month=month)
+    from_date_year, from_date_month = from_date.year, from_date.month
+    planning_month = PlanningMonth(year=from_date_year, month=from_date_month)
 
     dataset = timeoffice.fetch_dataset(
         planning_unit_ids=(planning_unit,),
@@ -82,11 +83,11 @@ def _weekly_wish_shift_to_frontend(wish: WeeklyWish) -> str:
 @weeklyWishes_router.put("/global-wishes-and-blocked")
 async def put_global_wishes_and_blocked(
     planning_unit: int,
-    month: int,
-    year: int,
+    from_date: date,
     request: CreateWishesAndBlockedRequest,
 ) -> SuccessResponse:
-    planning_month = PlanningMonth(year=year, month=month)
+    from_date_year, from_date_month = from_date.year, from_date.month
+    planning_month = PlanningMonth(year=from_date_year, month=from_date_month)
 
     weekly_wishes = _weekly_wishes_request_to_domain(
         request=request.data,
