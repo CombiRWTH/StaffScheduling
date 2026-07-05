@@ -79,6 +79,7 @@ class TimeOfficeFacts:
     work_shift_type_id: int
 
     reference_shift_facts_by_id: Mapping[ShiftId, TimeOfficeReferenceShiftFact]
+    wish_absence_shift_id_by_type: Mapping[WishType, int]
 
     # Non-reference source shift IDs normalized to reduced reference shifts.
     # Missing source shift ID => fail loudly in mapping.
@@ -105,22 +106,22 @@ class TimeOfficeFacts:
 REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = MappingProxyType(
     {
         EARLY_F2_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="F",
+            expected_code="F2_",
             type=ShiftType.EARLY,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         LATE_S2_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="S",
+            expected_code="S2_",
             type=ShiftType.LATE,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         NIGHT_N2_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="N",
+            expected_code="N2_",
             type=ShiftType.NIGHT,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         INTERMEDIATE_T75_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="T",
+            expected_code="T75_",
             type=ShiftType.INTERMEDIATE,
             staffing_role=StaffingDemandRole.OPTIONAL_COVERAGE,
         ),
@@ -289,6 +290,11 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     wish_type_by_absence_code=MappingProxyType(
         {
             "FR": WishType.FREE_DAY,
+        }
+    ),
+    wish_absence_shift_id_by_type=MappingProxyType(
+        {
+            WishType.FREE_DAY: 1089,
         }
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,

@@ -9,6 +9,7 @@ from scheduling.api.dependencies import ApiRuntime
 from scheduling.api.solve.job_store import InMemorySolveJobStore
 from scheduling.api.solve.router import solve_router
 from scheduling.api.web.employee_router import employee_router
+from scheduling.api.web.weeklyWishes_router import weeklyWishes_router
 from scheduling.api.web.wishes_router import wishes_router
 from scheduling.logging import configure_logging
 from scheduling.settings import get_settings
@@ -19,6 +20,7 @@ from scheduling.timeoffice.facts import TIMEOFFICE_FACTS
 from scheduling.timeoffice.reading.container import TimeOfficeReaders
 from scheduling.timeoffice.service import TimeOfficeService
 from scheduling.timeoffice.writing.solution import TimeOfficeSolutionWriter
+from scheduling.timeoffice.writing.wishes import TimeOfficeWishWriter
 
 settings = get_settings()
 configure_logging(level=settings.log_level)
@@ -39,6 +41,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
             engine=engine,
             readers=TimeOfficeReaders.create(facts=facts),
             solution_writer=TimeOfficeSolutionWriter(),
+            wish_writer=TimeOfficeWishWriter(
+                target_planning_status_id=facts.target_planning_status_id,
+            ),
         ),
         solver_service=SolverService(
             settings=settings,
@@ -60,6 +65,7 @@ app.include_router(employee_router)
 # app.include_router(weights_router)
 # app.include_router(availability_router)
 app.include_router(wishes_router)
+app.include_router(weeklyWishes_router)
 
 
 @app.get("/status")

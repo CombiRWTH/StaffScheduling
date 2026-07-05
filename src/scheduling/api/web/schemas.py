@@ -33,8 +33,8 @@ class WishesAndBlockedDatabaseRequest(SchedulingBaseModel):
     employees: tuple[WishesAndBlockedEmployeeRequest, ...]
 
 
-class UpdateWishesAndBlockedRequest(SchedulingBaseModel):
-    data: WishesAndBlockedDatabaseRequest
+class CreateWishesAndBlockedRequest(SchedulingBaseModel):
+    data: WishesAndBlockedEmployeeRequest
 
 
 class SuccessResponse(SchedulingBaseModel):
