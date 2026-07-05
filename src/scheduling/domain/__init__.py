@@ -1,15 +1,16 @@
 from scheduling.domain.assignment import Assignment, AssignmentType
 from scheduling.domain.availability import Availability, AvailabilityType
 from scheduling.domain.core import MinuteOfDay, NonEmptyStr, NonNegativeInt, PositiveId, SchedulingBaseModel
-from scheduling.domain.dataset import PlanningMonth, SchedulingDataset
+from scheduling.domain.dataset import SchedulingDataset
 from scheduling.domain.demand import DemandRequirement
 from scheduling.domain.employee import Capability, Employee, EmployeeId, StaffLevel
 from scheduling.domain.monthly_work_account import MonthlyWorkAccount
 from scheduling.domain.plan import Plan, PlanId
+from scheduling.domain.planning_month import PlanningMonth
 from scheduling.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitMembership, PlanningUnitType
 from scheduling.domain.shift import Shift, ShiftId, ShiftType, StaffingDemandRole
 from scheduling.domain.sunday_work_history import EmployeeSundayWorkHistory
-from scheduling.domain.wish import Wish, WishType
+from scheduling.domain.wish import WeeklyWish, Wish, WishType
 
 __all__ = [
     "PositiveId",
@@ -41,5 +42,6 @@ __all__ = [
     "EmployeeSundayWorkHistory",
     "Wish",
     "WishType",
+    "WeeklyWish",
     "MonthlyWorkAccount",
 ]

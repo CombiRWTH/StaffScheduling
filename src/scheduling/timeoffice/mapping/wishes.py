@@ -1,9 +1,19 @@
+from calendar import monthrange
+from collections import defaultdict
+from dataclasses import dataclass
 from datetime import date as Date
+from datetime import timedelta
 
-from scheduling.domain import Shift, Wish, WishType
+from scheduling.domain import PlanningMonth, Shift, WeeklyWish, Wish, WishType
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.mapping.shifts import reference_shift_id_for_source_shift
 from scheduling.timeoffice.reading.wishes import TimeOfficeWishRow
+
+
+@dataclass(frozen=True, slots=True)
+class MappedWishes:
+    wishes: tuple[Wish, ...]
+    weekly_wishes: tuple[WeeklyWish, ...]
 
 
 def map_wishes(
@@ -11,7 +21,7 @@ def map_wishes(
     *,
     shifts: tuple[Shift, ...],
     facts: TimeOfficeFacts,
-) -> tuple[Wish, ...]:
+) -> MappedWishes:
     known_shift_ids = {shift.shift_id for shift in shifts}
 
     wishes = tuple(
@@ -23,7 +33,9 @@ def map_wishes(
         for row in rows
     )
 
-    return _deduplicate_wishes(wishes)
+    wishes = _deduplicate_wishes(wishes)
+
+    return _split_weekly_repeated_wishes(wishes)
 
 
 def _map_wish(
@@ -156,3 +168,106 @@ def _deduplicate_wishes(wishes: tuple[Wish, ...]) -> tuple[Wish, ...]:
             ),
         )
     )
+
+
+def _split_weekly_repeated_wishes(wishes: tuple[Wish, ...]) -> MappedWishes:
+    wishes_by_key: dict[tuple[int, int, WishType, int | None, int], list[Wish]] = defaultdict(list)
+
+    for wish in wishes:
+        key = (
+            wish.employee_id,
+            wish.planning_unit_id,
+            wish.type,
+            wish.shift_id,
+            wish.date.isoweekday(),  # 1=Mo, 7=So
+        )
+        wishes_by_key[key].append(wish)
+
+    normal_wishes: list[Wish] = []
+    weekly_wishes: list[WeeklyWish] = []
+
+    for grouped_wishes in wishes_by_key.values():
+        sorted_wishes = sorted(grouped_wishes, key=lambda wish: wish.date)
+        first_wish = sorted_wishes[0]
+
+        if _is_weekly_repeated_in_month(sorted_wishes):
+            weekly_wishes.append(
+                WeeklyWish(
+                    employee_id=first_wish.employee_id,
+                    planning_unit_id=first_wish.planning_unit_id,
+                    planning_month=PlanningMonth(
+                        year=first_wish.date.year,
+                        month=first_wish.date.month,
+                    ),
+                    weekday=first_wish.date.isoweekday(),
+                    type=first_wish.type,
+                    shift_id=first_wish.shift_id,
+                )
+            )
+        else:
+            normal_wishes.extend(sorted_wishes)
+
+    return MappedWishes(
+        wishes=_sort_wishes(tuple(normal_wishes)),
+        weekly_wishes=_sort_weekly_wishes(tuple(weekly_wishes)),
+    )
+
+
+def _sort_wishes(wishes: tuple[Wish, ...]) -> tuple[Wish, ...]:
+    return tuple(
+        sorted(
+            wishes,
+            key=lambda wish: (
+                wish.employee_id,
+                wish.planning_unit_id,
+                wish.date,
+                wish.type.value,
+                wish.shift_id or -1,
+            ),
+        )
+    )
+
+
+def _sort_weekly_wishes(weekly_wishes: tuple[WeeklyWish, ...]) -> tuple[WeeklyWish, ...]:
+    return tuple(
+        sorted(
+            weekly_wishes,
+            key=lambda wish: (
+                wish.employee_id,
+                wish.planning_unit_id,
+                wish.planning_month.year,
+                wish.planning_month.month,
+                wish.weekday,
+                wish.type.value,
+                wish.shift_id or -1,
+            ),
+        )
+    )
+
+
+def _is_weekly_repeated_in_month(wishes: list[Wish]) -> bool:
+    if len(wishes) < 2:
+        return False
+
+    dates = {wish.date for wish in wishes}
+    first_date = min(dates)
+
+    expected_dates = set(_same_weekday_dates_in_month(first_date))
+
+    return dates == expected_dates
+
+
+def _same_weekday_dates_in_month(first_date: Date) -> tuple[Date, ...]:
+    _, last_day = monthrange(first_date.year, first_date.month)
+    current = Date(first_date.year, first_date.month, 1)
+
+    while current.isoweekday() != first_date.isoweekday():
+        current += timedelta(days=1)
+
+    dates: list[Date] = []
+
+    while current.month == first_date.month and current.day <= last_day:
+        dates.append(current)
+        current += timedelta(days=7)
+
+    return tuple(dates)

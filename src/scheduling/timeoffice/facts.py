@@ -105,22 +105,22 @@ class TimeOfficeFacts:
 REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = MappingProxyType(
     {
         EARLY_F2_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="F2_",
+            expected_code="F",
             type=ShiftType.EARLY,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         LATE_S2_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="S2_",
+            expected_code="S",
             type=ShiftType.LATE,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         NIGHT_N2_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="N2_",
+            expected_code="N",
             type=ShiftType.NIGHT,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         INTERMEDIATE_T75_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="T75_",
+            expected_code="T",
             type=ShiftType.INTERMEDIATE,
             staffing_role=StaffingDemandRole.OPTIONAL_COVERAGE,
         ),

@@ -20,6 +20,7 @@ def map_scheduling_dataset(
     planning_units = map_planning_units(sources.planning_unit_rows, facts=facts)
     plans = map_plans(sources.planning_unit_rows)
     shifts = map_shifts(sources.shift_rows, facts=facts)
+    mapped_wishes = map_wishes(rows=sources.wish_rows, shifts=shifts, facts=facts)
 
     return SchedulingDataset(
         planning_month=planning_month,
@@ -47,10 +48,7 @@ def map_scheduling_dataset(
             facts=facts,
         ),
         sunday_work_history=map_sunday_work_history(sources.sunday_history_rows),
-        wishes=map_wishes(
-            rows=sources.wish_rows,
-            shifts=shifts,
-            facts=facts,
-        ),
+        wishes=mapped_wishes.wishes,
+        weekly_wishes=mapped_wishes.weekly_wishes,
         monthly_work_accounts=map_monthly_work_accounts(sources.monthly_work_account_rows),
     )
