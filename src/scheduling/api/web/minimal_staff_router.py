@@ -5,6 +5,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends
 
 from scheduling.api.dependencies import get_timeoffice_service
+from scheduling.api.web.schemas import SuccessResponse
 from scheduling.domain import PlanningMonth
 from scheduling.timeoffice.service import TimeOfficeService
 
@@ -91,3 +92,25 @@ def _generate_minimal_staff_requirements(dataset: Any) -> dict[str, dict[str, di
         }
 
     return output
+
+
+# TODO: minimal_staff put missing, unsure where in DB to write to
+@minimal_staff_router.put("/minimal-staff")
+async def put_minimal_staff(
+    planning_unit: int,
+    from_date: date,
+    request: dict[str, dict[str, int]],
+) -> dict[str, bool]:
+    month = PlanningMonth(year=from_date.year, month=from_date.month)
+    request_json = request.get("data", {})
+
+    logger.info(
+        "Received minimal staff update: planning_unit=%s planning_month=%s minimal_staff=%s",
+        planning_unit,
+        month.label,
+        request_json,
+    )
+
+    logger.info("Update availability in database")
+
+    return SuccessResponse()
