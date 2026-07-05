@@ -85,14 +85,18 @@ def _split_display_name(display_name: str) -> tuple[str, str]:
     return name, firstname
 
 
-@wishes_router.post("/wishes-and-blocked")
-async def create_wishes_and_blocked(
+@wishes_router.put("/wishes-and-blocked/{employee_id}")
+async def replace_wishes_and_blocked(
+    employee_id: int,
     planning_unit: int,
     month: int,
     year: int,
     request: CreateWishesAndBlockedRequest,
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
 ) -> SuccessResponse:
+    if request.data.key != employee_id:
+        raise ValueError("employee_id path parameter does not match request.data.key.")
+
     planning_month = PlanningMonth(year=year, month=month)
 
     wishes = _wishes_employee_request_to_domain(
@@ -101,10 +105,10 @@ async def create_wishes_and_blocked(
         planning_month=planning_month,
     )
 
-    timeoffice.create_wishes(
+    timeoffice.replace_wishes(
         planning_unit_id=planning_unit,
         planning_month=planning_month,
-        employee_id=request.data.key,
+        employee_id=employee_id,
         wishes=wishes,
     )
 
@@ -170,3 +174,22 @@ def _shift_id_from_frontend(shift_code: str) -> int:
             return shift_id
 
     raise ValueError(f"Unknown shift code from wishes frontend: {shift_code!r}.")
+
+
+@wishes_router.delete("/wishes-and-blocked/{employee_id}")
+async def delete_wishes_and_blocked(
+    employee_id: int,
+    planning_unit: int,
+    month: int,
+    year: int,
+    timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
+) -> SuccessResponse:
+    planning_month = PlanningMonth(year=year, month=month)
+
+    timeoffice.delete_employee_wishes(
+        planning_unit_id=planning_unit,
+        planning_month=planning_month,
+        employee_id=employee_id,
+    )
+
+    return SuccessResponse()

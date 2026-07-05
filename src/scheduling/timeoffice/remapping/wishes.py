@@ -13,7 +13,7 @@ class TimeOfficeWishWriteRow(SchedulingBaseModel):
     absence_shift_id: int | None = None
 
 
-PREFERRED_DAY_SHIFT_CODES = ("F", "S", "N")
+PREFERRED_DAY_SHIFT_CODES = ("F2_", "S2_", "N2_")
 
 
 def map_wishes_to_timeoffice_rows(
@@ -74,7 +74,16 @@ def _map_wish_to_timeoffice_rows(
         )
 
     if wish.type == WishType.FREE_SHIFT:
-        raise ValueError("FREE_SHIFT cannot be written to TimeOffice yet. ")
+        return (
+            TimeOfficeWishWriteRow(
+                employee_id=wish.employee_id,
+                planning_unit_id=wish.planning_unit_id,
+                plan_id=plan_id,
+                wish_date=wish.date,
+                work_shift_id=_require_shift_id(wish),
+                absence_shift_id=_absence_shift_id_for_wish_type(WishType.FREE_DAY, facts=facts),
+            ),
+        )
 
     raise ValueError(f"Unsupported wish type: {wish.type}")
 

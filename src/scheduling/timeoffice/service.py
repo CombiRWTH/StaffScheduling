@@ -136,7 +136,7 @@ class TimeOfficeService:
 
         return normalized
 
-    def create_wishes(
+    def replace_wishes(
         self,
         *,
         planning_unit_id: int,
@@ -145,10 +145,32 @@ class TimeOfficeService:
         wishes: tuple[Wish, ...],
     ) -> None:
         with self._engine.begin() as connection:
+            self._wish_writer.delete_employee_wishes(
+                connection=connection,
+                planning_unit_id=planning_unit_id,
+                planning_month=planning_month,
+                employee_id=employee_id,
+            )
+
             self._wish_writer.insert_wishes(
                 connection=connection,
                 planning_unit_id=planning_unit_id,
                 planning_month=planning_month,
                 wishes=wishes,
                 facts=self._facts,
+            )
+
+    def delete_employee_wishes(
+        self,
+        *,
+        planning_unit_id: int,
+        planning_month: PlanningMonth,
+        employee_id: int,
+    ) -> None:
+        with self._engine.begin() as connection:
+            self._wish_writer.delete_employee_wishes(
+                connection=connection,
+                planning_unit_id=planning_unit_id,
+                planning_month=planning_month,
+                employee_id=employee_id,
             )

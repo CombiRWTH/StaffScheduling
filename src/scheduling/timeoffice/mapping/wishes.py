@@ -46,6 +46,13 @@ def _map_wish(
     known_shift_ids: set[int],
     facts: TimeOfficeFacts,
 ) -> Wish:
+    if row.work_shift_id is not None and _has_absence(row):
+        return _map_free_shift_wish(
+            row=row,
+            known_shift_ids=known_shift_ids,
+            facts=facts,
+        )
+
     if row.work_shift_id is not None:
         return _map_preferred_shift_wish(
             row=row,
@@ -54,6 +61,40 @@ def _map_wish(
         )
 
     return _map_absence_wish(row=row, facts=facts)
+
+
+def _has_absence(row: TimeOfficeWishRow) -> bool:
+    return row.global_absence_shift_id is not None or row.absence_shift_id is not None
+
+
+def _map_free_shift_wish(
+    *,
+    row: TimeOfficeWishRow,
+    known_shift_ids: set[int],
+    facts: TimeOfficeFacts,
+) -> Wish:
+    reference_shift_id = reference_shift_id_for_source_shift(
+        source_shift_id=row.work_shift_id,
+        source_shift_code=row.work_shift_code,
+        facts=facts,
+        context=f"TimeOffice free-shift wish employee_id={row.employee_id} date={row.wish_date.date()}",
+    )
+
+    if reference_shift_id not in known_shift_ids:
+        raise ValueError(
+            "TimeOffice free-shift wish references shift that is not part "
+            "of the mapped SchedulingDataset: "
+            f"source_shift_id={row.work_shift_id} "
+            f"reference_shift_id={reference_shift_id}."
+        )
+
+    return Wish(
+        employee_id=row.employee_id,
+        planning_unit_id=row.planning_unit_id,
+        date=row.wish_date.date(),
+        type=WishType.FREE_SHIFT,
+        shift_id=reference_shift_id,
+    )
 
 
 def _map_preferred_shift_wish(

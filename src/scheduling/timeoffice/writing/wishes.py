@@ -245,3 +245,44 @@ class TimeOfficeWishWriter:
             )
 
         return int(row["profession_id"])
+
+    def delete_employee_wishes(
+        self,
+        *,
+        connection: Connection,
+        planning_unit_id: int,
+        planning_month: PlanningMonth,
+        employee_id: int,
+    ) -> None:
+        plan_id = self._find_target_plan_id(
+            connection=connection,
+            planning_unit_id=planning_unit_id,
+            planning_month=planning_month,
+        )
+
+        query = text(
+            """
+            DELETE FROM TPlanPersonalKommtGeht
+            WHERE RefPlan = :plan_id
+                AND RefPersonal = :employee_id
+                AND RefPlanungseinheiten = :planning_unit_id
+                AND CONVERT(date, Datum) BETWEEN :start AND :end
+                AND ISNULL(Wunschdienst, 0) <> 0
+                AND (
+                    RefDienste IS NOT NULL
+                    OR RefgAbw IS NOT NULL
+                    OR RefDienstAbw IS NOT NULL
+                )
+            """
+        )
+
+        connection.execute(
+            query,
+            {
+                "plan_id": plan_id,
+                "employee_id": employee_id,
+                "planning_unit_id": planning_unit_id,
+                "start": planning_month.start,
+                "end": planning_month.end,
+            },
+        )
