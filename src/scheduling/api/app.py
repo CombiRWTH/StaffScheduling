@@ -9,6 +9,7 @@ from scheduling.api.dependencies import ApiRuntime
 from scheduling.api.solve.job_store import InMemorySolveJobStore
 from scheduling.api.solve.router import solve_router
 from scheduling.api.web.employee_router import employee_router
+from scheduling.api.web.minimal_staff_router import minimal_staff_router
 from scheduling.api.web.weeklyWishes_router import weeklyWishes_router
 from scheduling.api.web.wishes_router import wishes_router
 from scheduling.logging import configure_logging
@@ -66,6 +67,7 @@ app.include_router(employee_router)
 # app.include_router(availability_router)
 app.include_router(wishes_router)
 app.include_router(weeklyWishes_router)
+app.include_router(minimal_staff_router)
 
 
 @app.get("/status")
