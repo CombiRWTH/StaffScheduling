@@ -1,6 +1,8 @@
+from calendar import monthrange
 from datetime import date as Date
+from datetime import timedelta
 
-from scheduling.domain import SchedulingBaseModel, Wish, WishType
+from scheduling.domain import PlanningMonth, SchedulingBaseModel, WeeklyWish, Wish, WishType
 from scheduling.timeoffice.facts import TimeOfficeFacts
 
 
@@ -110,3 +112,46 @@ def _absence_shift_id_for_wish_type(wish_type: WishType, *, facts: TimeOfficeFac
         raise ValueError(f"No TimeOffice absence shift configured for wish_type={wish_type}.")
 
     return absence_shift_id
+
+
+def expand_weekly_wishes_to_monthly_wishes(
+    weekly_wishes: tuple[WeeklyWish, ...],
+) -> tuple[Wish, ...]:
+    wishes: list[Wish] = []
+
+    for weekly_wish in weekly_wishes:
+        for wish_date in _dates_for_weekday(
+            planning_month=weekly_wish.planning_month,
+            weekday=weekly_wish.weekday,
+        ):
+            wishes.append(
+                Wish(
+                    employee_id=weekly_wish.employee_id,
+                    planning_unit_id=weekly_wish.planning_unit_id,
+                    date=wish_date,
+                    type=weekly_wish.type,
+                    shift_id=weekly_wish.shift_id,
+                )
+            )
+
+    return tuple(wishes)
+
+
+def _dates_for_weekday(
+    *,
+    planning_month: PlanningMonth,
+    weekday: int,
+) -> tuple[Date, ...]:
+    _, last_day = monthrange(planning_month.year, planning_month.month)
+    current = Date(planning_month.year, planning_month.month, 1)
+
+    while current.isoweekday() != weekday:
+        current += timedelta(days=1)
+
+    dates: list[Date] = []
+
+    while current.day <= last_day:
+        dates.append(current)
+        current += timedelta(days=7)
+
+    return tuple(dates)

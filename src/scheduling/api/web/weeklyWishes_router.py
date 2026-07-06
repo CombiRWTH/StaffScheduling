@@ -5,7 +5,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends
 
 from scheduling.api.dependencies import get_timeoffice_service
-from scheduling.api.web.schemas import CreateWishesAndBlockedRequest, SuccessResponse, WishesAndBlockedDatabaseRequest
+from scheduling.api.web.schemas import CreateWishesAndBlockedRequest, SuccessResponse, WishesAndBlockedEmployeeRequest
 from scheduling.domain import Employee, PlanningMonth, WeeklyWish, WishType
 from scheduling.timeoffice.facts import TIMEOFFICE_FACTS
 from scheduling.timeoffice.service import TimeOfficeService
@@ -80,87 +80,90 @@ def _weekly_wish_shift_to_frontend(wish: WeeklyWish) -> str:
     return shift_fact.expected_code
 
 
-@weeklyWishes_router.put("/global-wishes-and-blocked")
+@weeklyWishes_router.put("/global-wishes-and-blocked/{employee_id}")
 async def put_global_wishes_and_blocked(
+    employee_id: int,
     planning_unit: int,
     from_date: date,
     request: CreateWishesAndBlockedRequest,
+    timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
 ) -> SuccessResponse:
     from_date_year, from_date_month = from_date.year, from_date.month
     planning_month = PlanningMonth(year=from_date_year, month=from_date_month)
+    
+    if request.data.key != employee_id:
+        raise ValueError("employee_id path parameter does not match request.data.key.")
 
-    weekly_wishes = _weekly_wishes_request_to_domain(
-        request=request.data,
+
+    weekly_wishes = _weekly_wishes_employee_request_to_domain(
+        employee=request.data,
         planning_unit=planning_unit,
         planning_month=planning_month,
     )
 
-    logger.info(
-        "Received global wishes update: planning_unit=%s planning_month=%s weekly_wishes=%s",
-        planning_unit,
-        planning_month.label,
-        len(weekly_wishes),
+    timeoffice.replace_employee_weekly_wishes(
+        planning_unit_id=planning_unit,
+        planning_month=planning_month,
+        employee_id=employee_id,
+        weekly_wishes=weekly_wishes,
     )
-
-    # TODO: In Datenbank schreiben
 
     return SuccessResponse()
 
 
-def _weekly_wishes_request_to_domain(
+def _weekly_wishes_employee_request_to_domain(
     *,
-    request: WishesAndBlockedDatabaseRequest,
+    employee: WishesAndBlockedEmployeeRequest,
     planning_unit: int,
     planning_month: PlanningMonth,
 ) -> tuple[WeeklyWish, ...]:
     weekly_wishes: list[WeeklyWish] = []
 
-    for employee in request.employees:
-        for weekday in employee.wish_days:
-            weekly_wishes.append(
-                WeeklyWish(
-                    employee_id=employee.key,
-                    planning_unit_id=planning_unit,
-                    planning_month=planning_month,
-                    weekday=weekday,
-                    type=WishType.PREFERRED_DAY,
-                )
+    for weekday in employee.wish_days:
+        weekly_wishes.append(
+            WeeklyWish(
+                employee_id=employee.key,
+                planning_unit_id=planning_unit,
+                planning_month=planning_month,
+                weekday=weekday,
+                type=WishType.PREFERRED_DAY,
             )
+        )
 
-        for weekday, shift_code in employee.wish_shifts:
-            weekly_wishes.append(
-                WeeklyWish(
-                    employee_id=employee.key,
-                    planning_unit_id=planning_unit,
-                    planning_month=planning_month,
-                    weekday=weekday,
-                    type=WishType.PREFERRED_SHIFT,
-                    shift_id=_shift_id_from_frontend(shift_code),
-                )
+    for weekday, shift_code in employee.wish_shifts:
+        weekly_wishes.append(
+            WeeklyWish(
+                employee_id=employee.key,
+                planning_unit_id=planning_unit,
+                planning_month=planning_month,
+                weekday=weekday,
+                type=WishType.PREFERRED_SHIFT,
+                shift_id=_shift_id_from_frontend(shift_code),
             )
+        )
 
-        for weekday in employee.blocked_days:
-            weekly_wishes.append(
-                WeeklyWish(
-                    employee_id=employee.key,
-                    planning_unit_id=planning_unit,
-                    planning_month=planning_month,
-                    weekday=weekday,
-                    type=WishType.FREE_DAY,
-                )
+    for weekday in employee.blocked_days:
+        weekly_wishes.append(
+            WeeklyWish(
+                employee_id=employee.key,
+                planning_unit_id=planning_unit,
+                planning_month=planning_month,
+                weekday=weekday,
+                type=WishType.FREE_DAY,
             )
+        )
 
-        for weekday, shift_code in employee.blocked_shifts:
-            weekly_wishes.append(
-                WeeklyWish(
-                    employee_id=employee.key,
-                    planning_unit_id=planning_unit,
-                    planning_month=planning_month,
-                    weekday=weekday,
-                    type=WishType.FREE_SHIFT,
-                    shift_id=_shift_id_from_frontend(shift_code),
-                )
+    for weekday, shift_code in employee.blocked_shifts:
+        weekly_wishes.append(
+            WeeklyWish(
+                employee_id=employee.key,
+                planning_unit_id=planning_unit,
+                planning_month=planning_month,
+                weekday=weekday,
+                type=WishType.FREE_SHIFT,
+                shift_id=_shift_id_from_frontend(shift_code),
             )
+        )
 
     return tuple(weekly_wishes)
 
@@ -176,3 +179,22 @@ def _shift_id_from_frontend(shift_code: str) -> int:
             return shift_id
 
     raise ValueError(f"Unknown shift code from wishes frontend: {shift_code!r}.")
+
+
+@weeklyWishes_router.delete("/global-wishes-and-blocked/{employee_id}")
+async def delete_global_wishes_and_blocked(
+    employee_id: int,
+    planning_unit: int,
+    month: int,
+    year: int,
+    timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
+) -> SuccessResponse:
+    planning_month = PlanningMonth(year=year, month=month)
+
+    timeoffice.delete_employee_wishes(
+        planning_unit_id=planning_unit,
+        planning_month=planning_month,
+        employee_id=employee_id,
+    )
+
+    return SuccessResponse()
