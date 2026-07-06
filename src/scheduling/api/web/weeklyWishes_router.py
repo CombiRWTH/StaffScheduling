@@ -90,10 +90,9 @@ async def put_global_wishes_and_blocked(
 ) -> SuccessResponse:
     from_date_year, from_date_month = from_date.year, from_date.month
     planning_month = PlanningMonth(year=from_date_year, month=from_date_month)
-    
+
     if request.data.key != employee_id:
         raise ValueError("employee_id path parameter does not match request.data.key.")
-
 
     weekly_wishes = _weekly_wishes_employee_request_to_domain(
         employee=request.data,
@@ -185,11 +184,11 @@ def _shift_id_from_frontend(shift_code: str) -> int:
 async def delete_global_wishes_and_blocked(
     employee_id: int,
     planning_unit: int,
-    month: int,
-    year: int,
+    from_date: date,
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
 ) -> SuccessResponse:
-    planning_month = PlanningMonth(year=year, month=month)
+    from_date_year, from_date_month = from_date.year, from_date.month
+    planning_month = PlanningMonth(year=from_date_year, month=from_date_month)
 
     timeoffice.delete_employee_wishes(
         planning_unit_id=planning_unit,

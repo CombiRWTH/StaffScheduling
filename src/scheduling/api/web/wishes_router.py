@@ -89,15 +89,15 @@ def _split_display_name(display_name: str) -> tuple[str, str]:
 async def replace_wishes_and_blocked(
     employee_id: int,
     planning_unit: int,
-    month: int,
-    year: int,
+    from_date: date,
     request: CreateWishesAndBlockedRequest,
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
 ) -> SuccessResponse:
     if request.data.key != employee_id:
         raise ValueError("employee_id path parameter does not match request.data.key.")
 
-    planning_month = PlanningMonth(year=year, month=month)
+    from_date_year, from_date_month = from_date.year, from_date.month
+    planning_month = PlanningMonth(year=from_date_year, month=from_date_month)
 
     wishes = _wishes_employee_request_to_domain(
         employee=request.data,
@@ -180,11 +180,11 @@ def _shift_id_from_frontend(shift_code: str) -> int:
 async def delete_wishes_and_blocked(
     employee_id: int,
     planning_unit: int,
-    month: int,
-    year: int,
+    from_date: date,
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
 ) -> SuccessResponse:
-    planning_month = PlanningMonth(year=year, month=month)
+    from_date_year, from_date_month = from_date.year, from_date.month
+    planning_month = PlanningMonth(year=from_date_year, month=from_date_month)
 
     timeoffice.delete_employee_wishes(
         planning_unit_id=planning_unit,
