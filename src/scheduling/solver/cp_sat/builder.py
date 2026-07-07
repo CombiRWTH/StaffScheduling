@@ -23,7 +23,8 @@ CP_SAT_CONSTRAINTS: tuple[Constraint, ...] = (MinimumStaffing(),)
 CP_SAT_OBJECTIVES: tuple[Objective, ...] = (TemporaryBalanceGeneratedAssignments(),
                                             EverySecondWeekendFree(),
                                             FreeDaysAfterNightShiftPhase(),
-                                            MinimizeConsecutiveNightShifts())
+                                            MinimizeConsecutiveNightShifts(),
+                                            FreeDaysNearWeekend(),)
 
 
 @dataclass(frozen=True, slots=True)

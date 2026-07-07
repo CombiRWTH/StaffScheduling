@@ -12,8 +12,9 @@ from scheduling.solver.cp_sat.objective import Penalty
 
 class EverySecondWeekendFree:
     """
-    Adds a penalty if two consecutive weekends have the same status (both free or both worked).
-    A weekend is free only if both Saturday and Sunday are free.
+    Penalizes consecutive weekends with the same status (both worked or both free).
+    Encourages alternating free weekends. A weekend is only free if both Saturday
+    and Sunday are unassigned.
     """
 
     id: ClassVar[str] = "every_second_weekend_free"
@@ -22,6 +23,7 @@ class EverySecondWeekendFree:
         if not ctx.assignment_variables:
             return ()
 
+        # Collect all complete Saturday-Sunday pairs within the planning month
         weekends: list[tuple[date, date]] = []
         current = ctx.dataset.planning_month.start
         while current <= ctx.dataset.planning_month.end:
@@ -46,17 +48,31 @@ class EverySecondWeekendFree:
                 sat1, sun1 = weekends[i]
                 sat2, sun2 = weekends[i + 1]
 
+                w1_vars = vars_by_employee_date[(employee_id, sat1)] + vars_by_employee_date[(employee_id, sun1)]
+                w2_vars = vars_by_employee_date[(employee_id, sat2)] + vars_by_employee_date[(employee_id, sun2)]
+
+                # Skip if employee has no assignments on either weekend at all
+                if not w1_vars and not w2_vars:
+                    continue
+
                 w1_free = ctx.model.new_bool_var(f"esw_w1_free_e{employee_id}_i{i}")
                 w2_free = ctx.model.new_bool_var(f"esw_w2_free_e{employee_id}_i{i}")
 
-                w1_sum = cp_model.LinearExpr.sum(vars_by_employee_date[(employee_id, sat1)] + vars_by_employee_date[(employee_id, sun1)])
-                w2_sum = cp_model.LinearExpr.sum(vars_by_employee_date[(employee_id, sat2)] + vars_by_employee_date[(employee_id, sun2)])
+                # w1_free iff no assignment on Saturday or Sunday of weekend 1
+                if w1_vars:
+                    ctx.model.add(sum(w1_vars) == 0).only_enforce_if(w1_free)
+                    ctx.model.add(sum(w1_vars) >= 1).only_enforce_if(w1_free.Not())
+                else:
+                    ctx.model.add(w1_free == 1)
 
-                ctx.model.add(w1_sum == 0).only_enforce_if(w1_free)
-                ctx.model.add(w1_sum >= 1).only_enforce_if(w1_free.Not())
-                ctx.model.add(w2_sum == 0).only_enforce_if(w2_free)
-                ctx.model.add(w2_sum >= 1).only_enforce_if(w2_free.Not())
+                # w2_free iff no assignment on Saturday or Sunday of weekend 2
+                if w2_vars:
+                    ctx.model.add(sum(w2_vars) == 0).only_enforce_if(w2_free)
+                    ctx.model.add(sum(w2_vars) >= 1).only_enforce_if(w2_free.Not())
+                else:
+                    ctx.model.add(w2_free == 1)
 
+                # Penalize if both weekends have the same free/worked status
                 same_status = ctx.model.new_bool_var(f"esw_same_status_e{employee_id}_i{i}")
                 ctx.model.add(same_status == 1).only_enforce_if([w1_free, w2_free])
                 ctx.model.add(same_status == 1).only_enforce_if([w1_free.Not(), w2_free.Not()])
@@ -64,8 +80,11 @@ class EverySecondWeekendFree:
                 ctx.model.add(same_status == 0).only_enforce_if([w1_free.Not(), w2_free])
                 penalties.append(same_status)
 
+        if not penalties:
+            return ()
+
         total = ctx.model.new_int_var(0, len(penalties), "esw_total")
-        ctx.model.add(total == cp_model.LinearExpr.sum(penalties))
+        ctx.model.add(total == sum(penalties))
         return (Penalty(objective_id=self.id, name="total", expression=total),)
 
     def audit(self, ctx: AuditContext, params: Mapping[str, Any]) -> tuple[AuditFinding, ...]:

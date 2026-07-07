@@ -44,5 +44,9 @@ def create_base_solver_config() -> SolverConfig:
                 enabled=True,
                 weight=1,
             ),
+            EverySecondWeekendFree.id: ObjectiveConfig(enabled=True, weight=1),
+            FreeDaysAfterNightShiftPhase.id: ObjectiveConfig(enabled=True, weight=1),
+            FreeDaysNearWeekend.id: ObjectiveConfig(enabled=True, weight=1),
+            MinimizeConsecutiveNightShifts.id: ObjectiveConfig(enabled=True, weight=1),
         },
     )
