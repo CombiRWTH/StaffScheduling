@@ -11,6 +11,12 @@ from scheduling.solver.cp_sat.objective import Objective, WeightedPenalty, minim
 from scheduling.solver.cp_sat.objectives.temporary_balance_generated_assignments import (
     TemporaryBalanceGeneratedAssignments,
 )
+from scheduling.solver.cp_sat.objectives.minimize_overtime import MinimizeOvertime
+from scheduling.solver.cp_sat.objectives.not_too_many_consecutive_days import NotTooManyConsecutiveDays
+from scheduling.solver.cp_sat.objectives.preferred_block_length import PreferredBlockLength
+from scheduling.solver.cp_sat.objectives.rotate_shits_foward import RotateShiftsForward
+from scheduling.solver.cp_sat.objectives.prefer_own_planning_unit import PreferOwnPlanningUnit
+
 from scheduling.solver.cp_sat.objectives.every_second_weekend_free import EverySecondWeekendFree
 from scheduling.solver.cp_sat.objectives.free_day_after_night_shift_phase import FreeDaysAfterNightShiftPhase
 from scheduling.solver.cp_sat.objectives.free_days_near_weekend import FreeDaysNearWeekend
@@ -21,6 +27,11 @@ from scheduling.solver.cp_sat.variables import create_assignment_variables
 CP_SAT_CONSTRAINTS: tuple[Constraint, ...] = (MinimumStaffing(),)
 
 CP_SAT_OBJECTIVES: tuple[Objective, ...] = (TemporaryBalanceGeneratedAssignments(),
+                                            MinimizeOvertime(),
+                                            NotTooManyConsecutiveDays(),
+                                            PreferredBlockLength(),
+                                            RotateShiftsForward(),
+                                            PreferOwnPlanningUnit(),
                                             EverySecondWeekendFree(),
                                             FreeDaysAfterNightShiftPhase(),
                                             MinimizeConsecutiveNightShifts(),
