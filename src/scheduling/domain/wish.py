@@ -6,7 +6,6 @@ from pydantic import model_validator
 
 from scheduling.domain.core import SchedulingBaseModel
 from scheduling.domain.employee import EmployeeId
-from scheduling.domain.planning_month import PlanningMonth
 from scheduling.domain.planning_unit import PlanningUnitId
 from scheduling.domain.shift import ShiftId
 
@@ -35,15 +34,3 @@ class Wish(SchedulingBaseModel):
             raise ValueError(f"{self.type} wish must not define shift_id.")
 
         return self
-
-
-class WeeklyWish(SchedulingBaseModel):
-    employee_id: EmployeeId
-    planning_unit_id: PlanningUnitId
-    planning_month: PlanningMonth
-
-    weekday: int  # weekday: 1=Monday, 7=Sunday
-    type: WishType
-    shift_id: ShiftId | None = None
-
-    # TODO: Validator fehlt noch

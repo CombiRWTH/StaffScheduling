@@ -9,7 +9,7 @@ from scheduling.domain.planning_month import PlanningMonth
 from scheduling.domain.planning_unit import PlanningUnit, PlanningUnitMembership
 from scheduling.domain.shift import Shift
 from scheduling.domain.sunday_work_history import EmployeeSundayWorkHistory
-from scheduling.domain.wish import WeeklyWish, Wish
+from scheduling.domain.wish import Wish
 
 
 class SchedulingDataset(SchedulingBaseModel):
@@ -31,7 +31,6 @@ class SchedulingDataset(SchedulingBaseModel):
     planning_unit_memberships: tuple[PlanningUnitMembership, ...] = ()
     sunday_work_history: tuple[EmployeeSundayWorkHistory, ...] = ()
     wishes: tuple[Wish, ...] = ()
-    weekly_wishes: tuple[WeeklyWish, ...]
 
     assignments: tuple[Assignment, ...] = ()
     availability: tuple[Availability, ...] = ()

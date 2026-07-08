@@ -10,7 +10,7 @@ from scheduling.domain.planning_month import PlanningMonth
 from scheduling.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitMembership, PlanningUnitType
 from scheduling.domain.shift import Shift, ShiftId, ShiftType, StaffingDemandRole
 from scheduling.domain.sunday_work_history import EmployeeSundayWorkHistory
-from scheduling.domain.wish import WeeklyWish, Wish, WishType
+from scheduling.domain.wish import Wish, WishType
 
 __all__ = [
     "PositiveId",
@@ -42,6 +42,5 @@ __all__ = [
     "EmployeeSundayWorkHistory",
     "Wish",
     "WishType",
-    "WeeklyWish",
     "MonthlyWorkAccount",
 ]
