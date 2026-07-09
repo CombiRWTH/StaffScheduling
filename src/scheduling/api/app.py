@@ -10,7 +10,7 @@ from scheduling.api.solve.job_store import InMemorySolveJobStore
 from scheduling.api.solve.router import solve_router
 from scheduling.api.web.employee_router import employee_router
 from scheduling.api.web.minimal_staff_router import minimal_staff_router
-from scheduling.api.web.wishes_router import wishes_router
+from scheduling.api.web.wishes_availabilities_router import wishes_router
 from scheduling.logging import configure_logging
 from scheduling.settings import get_settings
 from scheduling.solver.cp_sat.builder import create_cp_sat_model_builder
