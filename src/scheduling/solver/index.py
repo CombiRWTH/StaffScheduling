@@ -12,6 +12,7 @@ from scheduling.domain import (
     SchedulingDataset,
     Shift,
     ShiftId,
+    ShiftType,
 )
 from scheduling.solver.cp_sat.keys import DemandKey, EmployeeDateKey
 
@@ -90,3 +91,19 @@ def _count_required_demand_by_key(
         required[key] += demand.required_count
 
     return dict(required)
+
+
+def is_night_shift(shift: Shift) -> bool:
+    return shift.type == ShiftType.NIGHT
+
+
+def is_early_shift(shift: Shift) -> bool:
+    return shift.type == ShiftType.EARLY
+
+
+def is_intermediate_shift(shift: Shift) -> bool:
+    return shift.type == ShiftType.INTERMEDIATE
+
+
+def is_late_shift(shift: Shift) -> bool:
+    return shift.type == ShiftType.LATE

@@ -5,7 +5,13 @@ from typing import Any
 from scheduling.domain import SchedulingDataset
 from scheduling.solver.config import SolverConfig, create_base_solver_config
 from scheduling.solver.cp_sat.constraint import Constraint
+from scheduling.solver.cp_sat.constraints.availabilities_constraint import AvailabilitiesConstraint
+from scheduling.solver.cp_sat.constraints.free_day_after_night_shift_phase import FreeDayAfterNightShiftPhase
+from scheduling.solver.cp_sat.constraints.hierarchy_of_intermediate_shifts import HierarchyOfIntermediateShifts
 from scheduling.solver.cp_sat.constraints.minimum_staffing import MinimumStaffing
+from scheduling.solver.cp_sat.constraints.one_assignment_per_day import OneAssignmentPerDay
+from scheduling.solver.cp_sat.constraints.rounds_in_early_shift import RoundsInEarlyShift
+from scheduling.solver.cp_sat.constraints.target_working_time import TargetWorkingTime
 from scheduling.solver.cp_sat.context import SolverContext, create_context
 from scheduling.solver.cp_sat.objective import Objective, WeightedPenalty, minimize_weighted_penalties
 from scheduling.solver.cp_sat.objectives.temporary_balance_generated_assignments import (
@@ -24,7 +30,15 @@ from scheduling.solver.cp_sat.objectives.minimize_consecutive_night_shifts impor
 
 from scheduling.solver.cp_sat.variables import create_assignment_variables
 
-CP_SAT_CONSTRAINTS: tuple[Constraint, ...] = (MinimumStaffing(),)
+CP_SAT_CONSTRAINTS: tuple[Constraint, ...] = (
+    MinimumStaffing(),
+    FreeDayAfterNightShiftPhase(),
+    RoundsInEarlyShift(),
+    AvailabilitiesConstraint(),
+    HierarchyOfIntermediateShifts(),
+    OneAssignmentPerDay(),
+    TargetWorkingTime(),
+)
 
 CP_SAT_OBJECTIVES: tuple[Objective, ...] = (TemporaryBalanceGeneratedAssignments(),
                                             MinimizeOvertime(),
