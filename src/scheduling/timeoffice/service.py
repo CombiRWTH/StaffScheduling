@@ -3,13 +3,14 @@ import logging
 from sqlalchemy import Engine
 
 from scheduling.api.solve.schemas import SolveOptions
-from scheduling.domain import PlanningMonth, SchedulingDataset
+from scheduling.domain import PlanningMonth, SchedulingDataset, Wish
 from scheduling.solver.models import Solution
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.mapping import map_scheduling_dataset
 from scheduling.timeoffice.mapping.options import map_solve_options
 from scheduling.timeoffice.reading.container import TimeOfficeReaders
 from scheduling.timeoffice.writing.solution import LegacySolutionExportPaths, TimeOfficeSolutionWriter
+from scheduling.timeoffice.writing.wishes import TimeOfficeWishWriter
 from scheduling.validation import validate_scheduling_dataset
 
 logger = logging.getLogger(__name__)
@@ -25,11 +26,13 @@ class TimeOfficeService:
         engine: Engine,
         readers: TimeOfficeReaders,
         solution_writer: TimeOfficeSolutionWriter,
+        wish_writer: TimeOfficeWishWriter,
     ) -> None:
         self._facts = facts
         self._engine = engine
         self._readers = readers
         self._solution_writer = solution_writer
+        self._wish_writer = wish_writer
 
     def get_solve_options(self) -> SolveOptions:
         logger.info("Fetching TimeOffice solve options")
@@ -132,3 +135,42 @@ class TimeOfficeService:
             )
 
         return normalized
+
+    def replace_wishes(
+        self,
+        *,
+        planning_unit_id: int,
+        planning_month: PlanningMonth,
+        employee_id: int,
+        wishes: tuple[Wish, ...],
+    ) -> None:
+        with self._engine.begin() as connection:
+            self._wish_writer.delete_employee_wishes(
+                connection=connection,
+                planning_unit_id=planning_unit_id,
+                planning_month=planning_month,
+                employee_id=employee_id,
+            )
+
+            self._wish_writer.insert_wishes(
+                connection=connection,
+                planning_unit_id=planning_unit_id,
+                planning_month=planning_month,
+                wishes=wishes,
+                facts=self._facts,
+            )
+
+    def delete_employee_wishes(
+        self,
+        *,
+        planning_unit_id: int,
+        planning_month: PlanningMonth,
+        employee_id: int,
+    ) -> None:
+        with self._engine.begin() as connection:
+            self._wish_writer.delete_employee_wishes(
+                connection=connection,
+                planning_unit_id=planning_unit_id,
+                planning_month=planning_month,
+                employee_id=employee_id,
+            )

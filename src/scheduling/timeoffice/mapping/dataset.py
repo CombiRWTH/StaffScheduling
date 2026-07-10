@@ -47,10 +47,6 @@ def map_scheduling_dataset(
             facts=facts,
         ),
         sunday_work_history=map_sunday_work_history(sources.sunday_history_rows),
-        wishes=map_wishes(
-            rows=sources.wish_rows,
-            shifts=shifts,
-            facts=facts,
-        ),
+        wishes=map_wishes(rows=sources.wish_rows, shifts=shifts, facts=facts),
         monthly_work_accounts=map_monthly_work_accounts(sources.monthly_work_account_rows),
     )

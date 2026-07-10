@@ -29,7 +29,7 @@ class TimeOfficeWishRow(TimeOfficeSourceRow):
     resolved_absence_shift_id: SourceNullableInt = None
     resolved_absence_code: CleanNullableText = None
     resolved_absence_name: CleanNullableText = None
-
+    """
     @model_validator(mode="after")
     def validate_row_type(self) -> Self:
         has_work_shift = self.work_shift_id is not None
@@ -49,7 +49,7 @@ class TimeOfficeWishRow(TimeOfficeSourceRow):
                 f"for employee_id={self.employee_id}, wish_date={self.wish_date}."
             )
 
-        return self
+        return self"""
 
     @model_validator(mode="after")
     def validate_absence_references(self) -> Self:
