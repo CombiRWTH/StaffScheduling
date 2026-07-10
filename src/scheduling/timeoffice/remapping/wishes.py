@@ -13,7 +13,7 @@ class TimeOfficeWishWriteRow(SchedulingBaseModel):
     absence_shift_id: int | None = None
 
 
-PREFERRED_DAY_SHIFT_CODES = ("F2_", "S2_", "N2_")
+PREFERRED_DAY_SHIFT_CODES = ("F", "S", "N")
 
 
 def map_wishes_to_timeoffice_rows(

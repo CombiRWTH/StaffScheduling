@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import date
 from typing import Annotated, Any
@@ -12,10 +13,10 @@ from scheduling.timeoffice.service import TimeOfficeService
 
 logger = logging.getLogger(__name__)
 
-wishes_router = APIRouter()
+wishes_and_availabilities_router = APIRouter()
 
 
-@wishes_router.get("/wishes-and-blocked")
+@wishes_and_availabilities_router.get("/wishes-and-blocked")
 async def get_wishes_and_blocked(
     planning_unit: int,
     from_date: date,
@@ -37,6 +38,18 @@ async def get_wishes_and_blocked(
         )
         for employee in dataset.employees
     ]
+    logger.warning(
+        "DEBUG wishes/availability response: %s",
+        json.dumps(
+            {
+                "employees": [
+                    employee_wish_block
+                    for employee_wish_block in employee_wishes_blocked
+                    if _has_any_wishes_or_availability(employee_wish_block)
+                ]
+            }
+        ),
+    )
 
     return {
         "employees": [
@@ -151,7 +164,7 @@ def _split_display_name(display_name: str) -> tuple[str, str]:
     return name, firstname
 
 
-@wishes_router.put("/wishes-and-blocked/{employee_id}")
+@wishes_and_availabilities_router.put("/wishes-and-blocked/{employee_id}")
 async def replace_wishes_and_blocked(
     employee_id: int,
     planning_unit: int,
@@ -243,7 +256,7 @@ def _shift_id_from_frontend(shift_code: str) -> int:
     raise ValueError(f"Unknown shift code from wishes frontend: {shift_code!r}.")
 
 
-@wishes_router.delete("/wishes-and-blocked/{employee_id}")
+@wishes_and_availabilities_router.delete("/wishes-and-blocked/{employee_id}")
 async def delete_wishes_and_blocked(
     employee_id: int,
     planning_unit: int,
