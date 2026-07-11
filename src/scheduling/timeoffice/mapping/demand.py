@@ -1,34 +1,52 @@
 from datetime import timedelta
 
-from scheduling.domain import DemandRequirement, PlanningMonth, PlanningUnit, PlanningUnitType, StaffingDemandRole
+from scheduling.domain import DemandRequirement, PlanningMonth, PlanningUnit, PlanningUnitType
+from scheduling.domain.employee import StaffLevel
 from scheduling.domain.shift import ShiftId
-from scheduling.timeoffice.facts import PlanningUnitDemandMatrix, TimeOfficeFacts
+from scheduling.timeoffice.facts import TimeOfficeFacts
+from scheduling.timeoffice.reading.demand import TimeOfficeDemandRow
+
+WEEKDAY_INDEX_BY_NAME = {
+    "Montag": 0,
+    "Dienstag": 1,
+    "Mittwoch": 2,
+    "Donnerstag": 3,
+    "Freitag": 4,
+    "Samstag": 5,
+    "Sonntag": 6,
+}
+
+STAFF_LEVEL_BY_FRONTEND_NAME = {
+    "Fachkraft": StaffLevel.PROFESSIONAL,
+    "Hilfskraft": StaffLevel.ASSISTANT,
+    "Azubi": StaffLevel.TRAINEE,
+}
+
+MINIMAL_STAFF_SHIFT_CODES = {"F", "S", "N", "Z"}
 
 
 def map_demand_requirements(
     *,
     planning_month: PlanningMonth,
     planning_units: tuple[PlanningUnit, ...],
+    rows: tuple[TimeOfficeDemandRow, ...],
     facts: TimeOfficeFacts,
 ) -> tuple[DemandRequirement, ...]:
+    selected_station_ids = {unit.planning_unit_id for unit in planning_units if unit.type == PlanningUnitType.STATION}
+
     requirements: list[DemandRequirement] = []
 
-    selected_station_ids = sorted(
-        unit.planning_unit_id for unit in planning_units if unit.type == PlanningUnitType.STATION
-    )
+    for row in rows:
+        if row.planning_unit_id not in selected_station_ids:
+            continue
 
-    for planning_unit_id in selected_station_ids:
-        demand_matrix = facts.fallback_demand_by_planning_unit.get(planning_unit_id)
-        if demand_matrix is None:
-            raise ValueError(
-                f"Missing fallback demand matrix for selected station planning_unit_id={planning_unit_id}."
-            )
+        if row.minimum_count <= 0:
+            continue
 
         requirements.extend(
-            _expand_planning_unit_demand(
-                planning_unit_id=planning_unit_id,
+            _expand_demand_row(
+                row=row,
                 planning_month=planning_month,
-                demand_matrix=demand_matrix,
                 facts=facts,
             )
         )
@@ -36,59 +54,63 @@ def map_demand_requirements(
     return tuple(requirements)
 
 
-def _expand_planning_unit_demand(
+def _expand_demand_row(
     *,
-    planning_unit_id: int,
+    row: TimeOfficeDemandRow,
     planning_month: PlanningMonth,
-    demand_matrix: PlanningUnitDemandMatrix,
     facts: TimeOfficeFacts,
 ) -> tuple[DemandRequirement, ...]:
+    weekday_index = _weekday_index_from_name(row.weekday_name)
+    staff_level = _staff_level_from_name(row.staff_level)
+    shift_id = _require_minimal_staffing_shift(row.shift_id, facts=facts)
+
     requirements: list[DemandRequirement] = []
 
     current_date = planning_month.start
     while current_date <= planning_month.end:
-        weekday_index = current_date.isoweekday() - 1
-
-        for staff_level, demand_by_shift_id in demand_matrix.items():
-            for shift_id, weekday_demand in demand_by_shift_id.items():
-                _validate_weekday_demand(shift_id=shift_id, weekday_demand=weekday_demand)
-
-                _require_minimum_staffing_reference_shift(shift_id=shift_id, facts=facts)
-
-                required_count = weekday_demand[weekday_index]
-                if required_count <= 0:
-                    continue
-
-                requirements.append(
-                    DemandRequirement(
-                        planning_unit_id=planning_unit_id,
-                        date=current_date,
-                        shift_id=shift_id,
-                        staff_level=staff_level,
-                        required_count=required_count,
-                    )
+        if current_date.isoweekday() - 1 == weekday_index:
+            requirements.append(
+                DemandRequirement(
+                    planning_unit_id=row.planning_unit_id,
+                    date=current_date,
+                    shift_id=shift_id,
+                    staff_level=staff_level,
+                    required_count=row.minimum_count,
                 )
+            )
 
         current_date += timedelta(days=1)
 
     return tuple(requirements)
 
 
-def _validate_weekday_demand(*, shift_id: ShiftId, weekday_demand: tuple[int, ...]) -> None:
-    if len(weekday_demand) != 7:
-        raise ValueError(
-            "Fallback demand weekday tuple must contain exactly seven values "
-            f"(Mo, Di, Mi, Do, Fr, Sa, So): shift_id={shift_id} values={weekday_demand}."
-        )
+def _weekday_index_from_name(weekday_name: str) -> int:
+    try:
+        return WEEKDAY_INDEX_BY_NAME[weekday_name]
+    except KeyError as exc:
+        raise ValueError(f"Unknown minimal staffing weekday_name={weekday_name!r}.") from exc
 
 
-def _require_minimum_staffing_reference_shift(*, shift_id: ShiftId, facts: TimeOfficeFacts) -> None:
+def _staff_level_from_name(staff_level: str) -> StaffLevel:
+    try:
+        return STAFF_LEVEL_BY_FRONTEND_NAME[staff_level]
+    except KeyError as exc:
+        raise ValueError(f"Unknown minimal staffing staff_level={staff_level!r}.") from exc
+
+
+def _require_minimal_staffing_shift(
+    shift_id: ShiftId,
+    *,
+    facts: TimeOfficeFacts,
+) -> ShiftId:
     shift_fact = facts.reference_shift_facts_by_id.get(shift_id)
     if shift_fact is None:
-        raise ValueError(f"Fallback demand references non-reference shift_id={shift_id}.")
+        raise ValueError(f"Minimal staffing references unknown reference shift_id={shift_id}.")
 
-    if shift_fact.staffing_role != StaffingDemandRole.REQUIRED_MINIMUM:
+    if shift_fact.expected_code not in MINIMAL_STAFF_SHIFT_CODES:
         raise ValueError(
-            "Fallback demand must reference REQUIRED_MINIMUM shifts only: "
-            f"shift_id={shift_id} staffing_role={shift_fact.staffing_role}."
+            "Minimal staffing references unsupported shift: "
+            f"shift_id={shift_id}, expected_code={shift_fact.expected_code!r}."
         )
+
+    return shift_id

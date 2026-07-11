@@ -44,6 +44,7 @@ def map_scheduling_dataset(
         demand_requirements=map_demand_requirements(
             planning_month=planning_month,
             planning_units=planning_units,
+            rows=sources.demand_rows,
             facts=facts,
         ),
         sunday_work_history=map_sunday_work_history(sources.sunday_history_rows),

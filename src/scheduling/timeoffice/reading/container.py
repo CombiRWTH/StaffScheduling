@@ -4,6 +4,7 @@ from sqlalchemy import Connection
 
 from scheduling.domain import PlanningMonth
 from scheduling.timeoffice.facts import TimeOfficeFacts
+from scheduling.timeoffice.reading.demand import TimeOfficeDemandReader, TimeOfficeDemandRow
 from scheduling.timeoffice.reading.options import TimeOfficeOptionsReader
 from scheduling.timeoffice.reading.personnel import (
     TimeOfficeEmployeeRow,
@@ -37,6 +38,7 @@ class TimeOfficeSources:
     shift_rows: tuple[TimeOfficeShiftRow, ...]
     roster_rows: tuple[TimeOfficeRosterRow, ...]
     wish_rows: tuple[TimeOfficeWishRow, ...]
+    demand_rows: tuple[TimeOfficeDemandRow, ...]
     sunday_history_rows: tuple[TimeOfficeSundayHistoryRow, ...]
     monthly_work_account_rows: tuple[TimeOfficeMonthlyWorkAccountRow, ...]
 
@@ -51,6 +53,7 @@ class TimeOfficeReaders:
     wishes: TimeOfficeWishReader
     sunday_work_history: TimeOfficeSundayWorkHistoryReader
     monthly_work_accounts: TimeOfficeMonthlyWorkAccountReader
+    demand: TimeOfficeDemandReader
 
     @classmethod
     def create(cls, *, facts: TimeOfficeFacts) -> "TimeOfficeReaders":
@@ -63,6 +66,7 @@ class TimeOfficeReaders:
             wishes=TimeOfficeWishReader(),
             sunday_work_history=TimeOfficeSundayWorkHistoryReader(),
             monthly_work_accounts=TimeOfficeMonthlyWorkAccountReader(facts=facts),
+            demand=TimeOfficeDemandReader(),
         )
 
     def read_sources(
@@ -130,6 +134,11 @@ class TimeOfficeReaders:
             planning_month=planning_month,
         )
 
+        demand_rows = self.demand.read_minimal_staffing(
+            connection=connection,
+            planning_unit_ids=planning_unit_ids,
+        )
+
         return TimeOfficeSources(
             planning_unit_rows=planning_unit_rows,
             plan_personnel_rows=plan_personnel_rows,
@@ -140,6 +149,7 @@ class TimeOfficeReaders:
             wish_rows=wish_rows,
             sunday_history_rows=sunday_history_rows,
             monthly_work_account_rows=monthly_work_account_rows,
+            demand_rows=demand_rows,
         )
 
 
