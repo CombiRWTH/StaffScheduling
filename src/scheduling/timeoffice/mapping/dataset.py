@@ -1,6 +1,7 @@
 from scheduling.domain import PlanningMonth, SchedulingDataset
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.mapping.demand import map_demand_requirements
+from scheduling.timeoffice.mapping.objective_weights import map_objective_weights
 from scheduling.timeoffice.mapping.personnel import map_employees, map_planning_unit_memberships
 from scheduling.timeoffice.mapping.planning import map_planning_units, map_plans
 from scheduling.timeoffice.mapping.roster import map_assignments, map_availability
@@ -50,4 +51,8 @@ def map_scheduling_dataset(
         sunday_work_history=map_sunday_work_history(sources.sunday_history_rows),
         wishes=map_wishes(rows=sources.wish_rows, shifts=shifts, facts=facts),
         monthly_work_accounts=map_monthly_work_accounts(sources.monthly_work_account_rows),
+        objective_weights=map_objective_weights(
+            planning_units=planning_units,
+            rows=sources.objective_weight_rows,
+        ),
     )

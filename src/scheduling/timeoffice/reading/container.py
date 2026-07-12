@@ -5,6 +5,7 @@ from sqlalchemy import Connection
 from scheduling.domain import PlanningMonth
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.reading.demand import TimeOfficeDemandReader, TimeOfficeDemandRow
+from scheduling.timeoffice.reading.objective_weights import TimeOfficeObjectiveWeightRow, TimeOfficeWeightsReader
 from scheduling.timeoffice.reading.options import TimeOfficeOptionsReader
 from scheduling.timeoffice.reading.personnel import (
     TimeOfficeEmployeeRow,
@@ -41,6 +42,7 @@ class TimeOfficeSources:
     demand_rows: tuple[TimeOfficeDemandRow, ...]
     sunday_history_rows: tuple[TimeOfficeSundayHistoryRow, ...]
     monthly_work_account_rows: tuple[TimeOfficeMonthlyWorkAccountRow, ...]
+    objective_weight_rows: tuple[TimeOfficeObjectiveWeightRow, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,6 +56,7 @@ class TimeOfficeReaders:
     sunday_work_history: TimeOfficeSundayWorkHistoryReader
     monthly_work_accounts: TimeOfficeMonthlyWorkAccountReader
     demand: TimeOfficeDemandReader
+    weights: TimeOfficeWeightsReader
 
     @classmethod
     def create(cls, *, facts: TimeOfficeFacts) -> "TimeOfficeReaders":
@@ -67,6 +70,7 @@ class TimeOfficeReaders:
             sunday_work_history=TimeOfficeSundayWorkHistoryReader(),
             monthly_work_accounts=TimeOfficeMonthlyWorkAccountReader(facts=facts),
             demand=TimeOfficeDemandReader(),
+            weights=TimeOfficeWeightsReader(),
         )
 
     def read_sources(
@@ -139,6 +143,11 @@ class TimeOfficeReaders:
             planning_unit_ids=planning_unit_ids,
         )
 
+        objective_weight_rows = self.weights.read_rows(
+            connection=connection,
+            planning_unit_ids=planning_unit_ids,
+        )
+
         return TimeOfficeSources(
             planning_unit_rows=planning_unit_rows,
             plan_personnel_rows=plan_personnel_rows,
@@ -150,6 +159,7 @@ class TimeOfficeReaders:
             sunday_history_rows=sunday_history_rows,
             monthly_work_account_rows=monthly_work_account_rows,
             demand_rows=demand_rows,
+            objective_weight_rows=objective_weight_rows,
         )
 
 

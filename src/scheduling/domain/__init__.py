@@ -5,6 +5,7 @@ from scheduling.domain.dataset import SchedulingDataset
 from scheduling.domain.demand import DemandRequirement
 from scheduling.domain.employee import Capability, Employee, EmployeeId, StaffLevel
 from scheduling.domain.monthly_work_account import MonthlyWorkAccount
+from scheduling.domain.objective_weights import SolverObjectiveWeights
 from scheduling.domain.plan import Plan, PlanId
 from scheduling.domain.planning_month import PlanningMonth
 from scheduling.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitMembership, PlanningUnitType
@@ -43,4 +44,5 @@ __all__ = [
     "Wish",
     "WishType",
     "MonthlyWorkAccount",
+    "SolverObjectiveWeights",
 ]

@@ -3,12 +3,14 @@ import logging
 from sqlalchemy import Engine
 
 from scheduling.api.solve.schemas import SolveOptions
-from scheduling.domain import PlanningMonth, SchedulingDataset, Wish
+from scheduling.domain import DemandRequirement, PlanningMonth, SchedulingDataset, SolverObjectiveWeights, Wish
 from scheduling.solver.models import Solution
 from scheduling.timeoffice.facts import TimeOfficeFacts
 from scheduling.timeoffice.mapping import map_scheduling_dataset
 from scheduling.timeoffice.mapping.options import map_solve_options
 from scheduling.timeoffice.reading.container import TimeOfficeReaders
+from scheduling.timeoffice.writing.demand import TimeOfficeDemandWriter
+from scheduling.timeoffice.writing.objective_weights import TimeOfficeWeightsWriter
 from scheduling.timeoffice.writing.solution import LegacySolutionExportPaths, TimeOfficeSolutionWriter
 from scheduling.timeoffice.writing.wishes import TimeOfficeWishWriter
 from scheduling.validation import validate_scheduling_dataset
@@ -27,12 +29,16 @@ class TimeOfficeService:
         readers: TimeOfficeReaders,
         solution_writer: TimeOfficeSolutionWriter,
         wish_writer: TimeOfficeWishWriter,
+        demand_writer: TimeOfficeDemandWriter,
+        objective_weights_writer: TimeOfficeWeightsWriter,
     ) -> None:
         self._facts = facts
         self._engine = engine
         self._readers = readers
         self._solution_writer = solution_writer
         self._wish_writer = wish_writer
+        self._demand_writer = demand_writer
+        self._objective_weights_writer = objective_weights_writer
 
     def get_solve_options(self) -> SolveOptions:
         logger.info("Fetching TimeOffice solve options")
@@ -173,4 +179,30 @@ class TimeOfficeService:
                 planning_unit_id=planning_unit_id,
                 planning_month=planning_month,
                 employee_id=employee_id,
+            )
+
+    def replace_minimal_staffing(
+        self,
+        *,
+        planning_unit_id: int,
+        demand_requirements: tuple[DemandRequirement, ...],
+    ) -> None:
+        with self._engine.begin() as connection:
+            self._demand_writer.replace_minimal_staffing(
+                connection=connection,
+                planning_unit_id=planning_unit_id,
+                demand_requirements=demand_requirements,
+            )
+
+    def replace_objective_weights(
+        self,
+        *,
+        planning_unit_id: int,
+        objective_weights: SolverObjectiveWeights,
+    ) -> None:
+        with self._engine.begin() as connection:
+            self._objective_weights_writer.replace_objective_weights(
+                connection=connection,
+                planning_unit_id=planning_unit_id,
+                objective_weights=objective_weights,
             )

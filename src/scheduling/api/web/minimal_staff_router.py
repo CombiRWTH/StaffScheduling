@@ -1,11 +1,11 @@
 import logging
-from datetime import date
+from datetime import date, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
 from scheduling.api.dependencies import get_timeoffice_service
-from scheduling.api.web.schemas import SuccessResponse
+from scheduling.api.web.schemas import SuccessResponse, UpdateMinimalStaffRequest
 from scheduling.domain import DemandRequirement, PlanningMonth, StaffLevel
 from scheduling.timeoffice.facts import TIMEOFFICE_FACTS
 from scheduling.timeoffice.service import TimeOfficeService
@@ -16,16 +16,6 @@ logger = logging.getLogger(__name__)
 minimal_staff_router = APIRouter()
 
 DAYS_OF_WEEK = ("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So")
-
-WEEKDAY_NAME_BY_FRONTEND_DAY = {
-    "Mo": "Montag",
-    "Di": "Dienstag",
-    "Mi": "Mittwoch",
-    "Do": "Donnerstag",
-    "Fr": "Freitag",
-    "Sa": "Samstag",
-    "So": "Sonntag",
-}
 
 FRONTEND_STAFF_LEVEL_BY_DOMAIN = {
     StaffLevel.TRAINEE: "Azubi",
@@ -42,6 +32,16 @@ DOMAIN_STAFF_LEVEL_BY_FRONTEND = {
 FRONTEND_STAFF_LEVELS = ("Azubi", "Fachkraft", "Hilfskraft")
 
 FRONTEND_SHIFT_CODES = ("F", "S", "N", "Z")
+
+WEEKDAY_TO_ID = {
+    "Mo": 1,
+    "Di": 2,
+    "Mi": 3,
+    "Do": 4,
+    "Fr": 5,
+    "Sa": 6,
+    "So": 7,
+}
 
 
 @minimal_staff_router.get("/minimal-staff")
@@ -94,23 +94,92 @@ def _shift_code_from_shift_id(shift_id: int) -> str:
     return shift_fact.expected_code
 
 
-# TODO: minimal_staff put missing, unsure where in DB to write to
 @minimal_staff_router.put("/minimal-staff")
 async def put_minimal_staff(
     planning_unit: int,
     from_date: date,
-    request: dict[str, dict[str, int]],
-) -> dict[str, bool]:
-    month = PlanningMonth(year=from_date.year, month=from_date.month)
-    request_json = request.get("data", {})
+    request: UpdateMinimalStaffRequest,
+    timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
+) -> SuccessResponse:
+    planning_month = PlanningMonth(year=from_date.year, month=from_date.month)
 
-    logger.info(
-        "Received minimal staff update: planning_unit=%s planning_month=%s minimal_staff=%s",
-        planning_unit,
-        month.label,
-        request_json,
+    demand_requirements = _minimal_staff_request_to_domain(
+        planning_unit=planning_unit,
+        planning_month=planning_month,
+        minimal_staff=request.data,
     )
 
-    logger.info("Update availability in database")
+    timeoffice.replace_minimal_staffing(
+        planning_unit_id=planning_unit,
+        demand_requirements=demand_requirements,
+    )
 
     return SuccessResponse()
+
+
+def _minimal_staff_request_to_domain(
+    *,
+    planning_unit: int,
+    planning_month: PlanningMonth,
+    minimal_staff: dict[str, dict[str, dict[str, int]]],
+) -> tuple[DemandRequirement, ...]:
+    requirements: list[DemandRequirement] = []
+
+    for frontend_staff_level, demand_by_day in minimal_staff.items():
+        staff_level = DOMAIN_STAFF_LEVEL_BY_FRONTEND[frontend_staff_level]
+
+        for frontend_day, demand_by_shift in demand_by_day.items():
+            weekday_iso = WEEKDAY_TO_ID[frontend_day]
+
+            for shift_code, minimum_count in demand_by_shift.items():
+                if minimum_count < 0:
+                    raise ValueError("Minimal staff count must be >=0")
+
+                if minimum_count == 0:
+                    continue
+
+                shift_id = _shift_id_from_shift_code(shift_code)
+
+                for requirement_date in _dates_for_weekday(
+                    planning_month=planning_month,
+                    weekday_iso=weekday_iso,
+                ):
+                    requirements.append(
+                        DemandRequirement(
+                            planning_unit_id=planning_unit,
+                            date=requirement_date,
+                            shift_id=shift_id,
+                            staff_level=staff_level,
+                            required_count=minimum_count,
+                        )
+                    )
+
+    return tuple(requirements)
+
+
+def _shift_id_from_shift_code(shift_code: str) -> int:
+    if shift_code not in FRONTEND_SHIFT_CODES:
+        raise ValueError(f"Shift Code is not defined in frontend: shift_code={shift_code}.")
+
+    for shift_id, shift_fact in TIMEOFFICE_FACTS.reference_shift_facts_by_id.items():
+        if shift_fact.expected_code == shift_code:
+            return shift_id
+
+    raise ValueError(f"Unknown shift_code={shift_code}.")
+
+
+def _dates_for_weekday(
+    *,
+    planning_month: PlanningMonth,
+    weekday_iso: int,
+) -> tuple[date, ...]:
+    dates: list[date] = []
+
+    current_date = planning_month.start
+    while current_date <= planning_month.end:
+        if current_date.isoweekday() == weekday_iso:
+            dates.append(current_date)
+
+        current_date += timedelta(days=1)
+
+    return tuple(dates)

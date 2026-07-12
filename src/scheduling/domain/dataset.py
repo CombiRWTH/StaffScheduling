@@ -4,6 +4,7 @@ from scheduling.domain.availability import Availability
 from scheduling.domain.demand import DemandRequirement
 from scheduling.domain.employee import Employee
 from scheduling.domain.monthly_work_account import MonthlyWorkAccount
+from scheduling.domain.objective_weights import SolverObjectiveWeights
 from scheduling.domain.plan import Plan
 from scheduling.domain.planning_month import PlanningMonth
 from scheduling.domain.planning_unit import PlanningUnit, PlanningUnitMembership
@@ -36,3 +37,4 @@ class SchedulingDataset(SchedulingBaseModel):
     availability: tuple[Availability, ...] = ()
 
     monthly_work_accounts: tuple[MonthlyWorkAccount, ...] = ()
+    objective_weights: tuple[SolverObjectiveWeights, ...] = ()
