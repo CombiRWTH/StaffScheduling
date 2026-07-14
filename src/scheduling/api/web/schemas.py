@@ -7,10 +7,15 @@ class WishesAndBlockedEmployeeRequest(SchedulingBaseModel):
     key: int
     firstname: str | None = None
     name: str | None = None
-    wish_days: tuple[int, ...] = Field(default_factory=tuple)
-    wish_shifts: tuple[tuple[int, str], ...] = Field(default_factory=tuple)
+
     blocked_days: tuple[int, ...] = Field(default_factory=tuple)
     blocked_shifts: tuple[tuple[int, str], ...] = Field(default_factory=tuple)
+
+    wish_days: tuple[int, ...] = Field(default_factory=tuple)
+    wish_shifts: tuple[tuple[int, str], ...] = Field(default_factory=tuple)
+
+    work_days: tuple[int, ...] = Field(default_factory=tuple)
+    work_shifts: tuple[tuple[int, str], ...] = Field(default_factory=tuple)
 
 
 class WishesAndBlockedDatabaseRequest(SchedulingBaseModel):

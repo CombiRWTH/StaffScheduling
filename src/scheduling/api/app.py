@@ -22,6 +22,7 @@ from scheduling.timeoffice.reading.container import TimeOfficeReaders
 from scheduling.timeoffice.service import TimeOfficeService
 from scheduling.timeoffice.writing.demand import TimeOfficeDemandWriter
 from scheduling.timeoffice.writing.objective_weights import TimeOfficeWeightsWriter
+from scheduling.timeoffice.writing.roster import TimeOfficeAvailabilityWriter
 from scheduling.timeoffice.writing.solution import TimeOfficeSolutionWriter
 from scheduling.timeoffice.writing.wishes import TimeOfficeWishWriter
 
@@ -49,6 +50,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
             ),
             demand_writer=TimeOfficeDemandWriter(),
             objective_weights_writer=TimeOfficeWeightsWriter(),
+            availability_writer=TimeOfficeAvailabilityWriter(),
         ),
         solver_service=SolverService(
             settings=settings,

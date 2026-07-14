@@ -101,6 +101,8 @@ class TimeOfficeFacts:
 
     wish_type_by_absence_code: Mapping[str, WishType]
 
+    availability_absence_shift_id_by_type: Mapping[AvailabilityType, int]
+
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
 
@@ -275,6 +277,11 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
             "RE": AvailabilityType.UNAVAILABLE,  # Reha
             "FI": AvailabilityType.UNAVAILABLE,  # Freistellung
             "AZV": AvailabilityType.UNAVAILABLE,  # Arbeitszeitverkürzung - vermutlich unavailable
+        }
+    ),
+    availability_absence_shift_id_by_type=MappingProxyType(
+        {
+            AvailabilityType.UNAVAILABLE: 2738,  # TODO: Mapped momentan auf SC. Durch richtigen Code ersetzen
         }
     ),
     ignored_availability_absence_codes=frozenset(

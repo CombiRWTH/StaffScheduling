@@ -175,22 +175,26 @@ async def replace_wishes_and_blocked(
     if request.data.key != employee_id:
         raise ValueError("employee_id path parameter does not match request.data.key.")
 
-    from_date_year, from_date_month = from_date.year, from_date.month
-    planning_month = PlanningMonth(year=from_date_year, month=from_date_month)
+    planning_month = PlanningMonth(year=from_date.year, month=from_date.month)
 
     wishes = _wishes_employee_request_to_domain(
         employee=request.data,
         planning_unit=planning_unit,
         planning_month=planning_month,
     )
-    print(wishes)
-    """
-    timeoffice.replace_wishes(
+
+    availabilities = _availability_employee_request_to_domain(
+        employee=request.data,
+        planning_month=planning_month,
+    )
+
+    timeoffice.replace_employee_wishes_and_availability(
         planning_unit_id=planning_unit,
         planning_month=planning_month,
         employee_id=employee_id,
         wishes=wishes,
-    )"""
+        availabilities=availabilities,
+    )
 
     return SuccessResponse()
 
@@ -209,32 +213,11 @@ def _wishes_employee_request_to_domain(
                 employee_id=employee.key,
                 planning_unit_id=planning_unit,
                 date=date(planning_month.year, planning_month.month, day),
-                type=WishType.PREFERRED_DAY,
-            )
-        )
-
-    for day, shift_code in employee.wish_shifts:
-        wishes.append(
-            Wish(
-                employee_id=employee.key,
-                planning_unit_id=planning_unit,
-                date=date(planning_month.year, planning_month.month, day),
-                type=WishType.PREFERRED_SHIFT,
-                shift_id=_shift_id_from_frontend(shift_code),
-            )
-        )
-
-    for day in employee.blocked_days:
-        wishes.append(
-            Wish(
-                employee_id=employee.key,
-                planning_unit_id=planning_unit,
-                date=date(planning_month.year, planning_month.month, day),
                 type=WishType.FREE_DAY,
             )
         )
 
-    for day, shift_code in employee.blocked_shifts:
+    for day, shift_code in employee.wish_shifts:
         wishes.append(
             Wish(
                 employee_id=employee.key,
@@ -245,7 +228,65 @@ def _wishes_employee_request_to_domain(
             )
         )
 
+    for day in employee.work_days:
+        wishes.append(
+            Wish(
+                employee_id=employee.key,
+                planning_unit_id=planning_unit,
+                date=date(planning_month.year, planning_month.month, day),
+                type=WishType.PREFERRED_DAY,
+            )
+        )
+
+    for day, shift_code in employee.work_shifts:
+        wishes.append(
+            Wish(
+                employee_id=employee.key,
+                planning_unit_id=planning_unit,
+                date=date(planning_month.year, planning_month.month, day),
+                type=WishType.PREFERRED_SHIFT,
+                shift_id=_shift_id_from_frontend(shift_code),
+            )
+        )
+
     return tuple(wishes)
+
+
+def _availability_employee_request_to_domain(
+    *,
+    employee: WishesAndBlockedEmployeeRequest,
+    planning_month: PlanningMonth,
+) -> tuple[Availability, ...]:
+    availabilities: list[Availability] = []
+
+    blocked_shift_days = {day for day, _shift_code in employee.blocked_shifts}
+
+    # Wichtig: Wenn ein Tag auch in blocked_shifts vorkommt, ist blocked_days nur die UI-Markierung
+    # und darf nicht zusätzlich als ganztägiger Block geschrieben werden
+    for day in employee.blocked_days:
+        if day in blocked_shift_days:
+            continue
+
+        availabilities.append(
+            Availability(
+                employee_id=employee.key,
+                date=date(planning_month.year, planning_month.month, day),
+                availability_type=AvailabilityType.UNAVAILABLE,
+                shift_ids=None,
+            )
+        )
+
+    for day, shift_code in employee.blocked_shifts:
+        availabilities.append(
+            Availability(
+                employee_id=employee.key,
+                date=date(planning_month.year, planning_month.month, day),
+                availability_type=AvailabilityType.UNAVAILABLE,
+                shift_ids=(_shift_id_from_frontend(shift_code),),
+            )
+        )
+
+    return tuple(availabilities)
 
 
 def _shift_id_from_frontend(shift_code: str) -> int:
@@ -266,7 +307,7 @@ async def delete_wishes_and_blocked(
     from_date_year, from_date_month = from_date.year, from_date.month
     planning_month = PlanningMonth(year=from_date_year, month=from_date_month)
 
-    timeoffice.delete_employee_wishes(
+    timeoffice.delete_employee_wishes_and_availability(
         planning_unit_id=planning_unit,
         planning_month=planning_month,
         employee_id=employee_id,
