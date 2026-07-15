@@ -10,6 +10,7 @@ from scheduling.api.solve.job_store import InMemorySolveJobStore
 from scheduling.api.solve.router import solve_router
 from scheduling.api.web.employee_router import employee_router
 from scheduling.api.web.minimal_staff_router import minimal_staff_router
+from scheduling.api.web.schedule_router import schedule_router
 from scheduling.api.web.weights_router import weights_router
 from scheduling.api.web.wishes_availabilities_router import wishes_and_availabilities_router
 from scheduling.logging import configure_logging
@@ -67,11 +68,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 
 app = FastAPI(title="Staff Scheduling API", lifespan=lifespan)
-app.include_router(solve_router)
 app.include_router(employee_router)
 app.include_router(weights_router)
 app.include_router(wishes_and_availabilities_router)
 app.include_router(minimal_staff_router)
+app.include_router(schedule_router)
+app.include_router(solve_router)
 
 
 @app.get("/status")
