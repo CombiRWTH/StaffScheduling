@@ -19,7 +19,6 @@ from scheduling.solver.cp_sat.context import create_context
 from scheduling.solver.cp_sat.objectives.every_second_weekend_free import EverySecondWeekendFree
 from scheduling.solver.cp_sat.variables import create_assignment_variables
 
-
 # --- Shared test data ---
 
 PLANNING_UNIT = PlanningUnit(
@@ -106,7 +105,7 @@ def test_no_penalty_when_weekends_alternate() -> None:
     # Every consecutive pair alternates → no same-status penalty expected.
     # November 2024 weekends: (2,3), (9,10), (16,17), (23,24)
     worked_weekends = {date(2024, 11, 2), date(2024, 11, 3), date(2024, 11, 16), date(2024, 11, 17)}
-    free_weekends = {date(2024, 11, 9), date(2024, 11, 10), date(2024, 11, 23), date(2024, 11, 24)}
+    # free_weekends = {date(2024, 11, 9), date(2024, 11, 10), date(2024, 11, 23), date(2024, 11, 24)}
 
     dataset = _dataset()
     ctx = create_context(dataset=dataset)

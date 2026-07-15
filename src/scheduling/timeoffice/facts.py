@@ -102,6 +102,9 @@ class TimeOfficeFacts:
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
 
+    target_working_time_tolerance_less: int
+    target_working_time_tolerance_more: int
+
 
 REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = MappingProxyType(
     {
@@ -192,7 +195,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "A-81302-016": StaffLevel.TRAINEE,  # A-Pflegefachkraft Kinderkrankenpflege
         "A-81302-018": StaffLevel.TRAINEE,  # A-Pflegefachkraft Krankenpflege
         "A-81302-019": StaffLevel.TRAINEE,  # A-Pflegefachkraft Altenpflege
-        # "-": StaffLevel.TRAINEE,#Später herausfinden was das für eine Profession ist
+        "-": StaffLevel.TRAINEE,  # Später herausfinden was das für eine Profession ist
     }
 )
 
@@ -302,4 +305,6 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,
     monthly_actual_work_account_id=MONTHLY_ACTUAL_WORK_ACCOUNT_ID,
+    target_working_time_tolerance_less=500,
+    target_working_time_tolerance_more=500,
 )

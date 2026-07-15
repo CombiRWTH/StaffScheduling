@@ -71,7 +71,7 @@ def test_higher_reward_when_friday_and_saturday_both_free() -> None:
     ctx_both = create_context(dataset=dataset)
     create_assignment_variables(ctx_both)
 
-    for (_employee_id, _unit, d, _shift, _level), var in ctx_both.assignment_variables.items():
+    for (_employee_id, _unit, _d, _shift, _level), var in ctx_both.assignment_variables.items():
         ctx_both.model.add(var == 0)  # all days free
 
     penalties_both = FreeDaysNearWeekend().add_to_model(ctx_both, params={})
@@ -111,7 +111,7 @@ def test_no_reward_when_all_days_worked() -> None:
     ctx = create_context(dataset=dataset)
     create_assignment_variables(ctx)
 
-    for (_employee_id, _unit, d, _shift, _level), var in ctx.assignment_variables.items():
+    for (_employee_id, _unit, _d, _shift, _level), var in ctx.assignment_variables.items():
         ctx.model.add(var == 1)  # all days worked
 
     penalties = FreeDaysNearWeekend().add_to_model(ctx, params={})

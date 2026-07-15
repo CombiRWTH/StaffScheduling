@@ -1,8 +1,5 @@
-from collections import defaultdict
 from collections.abc import Mapping
 from typing import Any, ClassVar
-
-from ortools.sat.python import cp_model
 
 from scheduling.solver.audit import AuditFinding
 from scheduling.solver.cp_sat.context import AuditContext, SolverContext
@@ -26,16 +23,11 @@ class MinimizeOvertime:
 
         overtime: int = 0
         for account in ctx.dataset.monthly_work_accounts:
-            employee_id = account.employee_id
             target_minutes = account.target_minutes
-            actual_minutes = actual_minutes
-            overtime += max(0, actual_minutes - target_minutes)
+            actual_worked = account.actual_minutes or 0
+            overtime += max(0, actual_worked - target_minutes)
 
-        total_overtime = ctx.model.new_int_var(
-            0,
-            overtime,
-            "minimize_overtime__total_overtime"
-        )
+        total_overtime = ctx.model.new_int_var(0, overtime, "minimize_overtime__total_overtime")
 
         ctx.model.add(total_overtime == overtime).with_name("minimize_overtime__define_total_overtime")
 

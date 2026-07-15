@@ -7,6 +7,7 @@ from ortools.sat.python import cp_model
 from scheduling.solver.audit import AuditFinding, AuditSeverity
 from scheduling.solver.cp_sat.context import AuditContext, SolverContext
 from scheduling.solver.diagnostics import SolverDiagnostic
+from scheduling.timeoffice import facts
 
 
 class TargetWorkingTime:
@@ -21,8 +22,8 @@ class TargetWorkingTime:
         params: Mapping[str, Any],
     ) -> tuple[SolverDiagnostic, ...]:
         # Parameter aus params mit Fallbacks
-        tolerance_less = int(params.get("tolerance_less", 0))
-        tolerance_more = int(params.get("tolerance_more", 0))
+        tolerance_less = facts.TIMEOFFICE_FACTS.target_working_time_tolerance_less
+        tolerance_more = facts.TIMEOFFICE_FACTS.target_working_time_tolerance_more
 
         # Mapping von employee_id auf MonthlyWorkAccount
         accounts = {acc.employee_id: acc for acc in ctx.dataset.monthly_work_accounts}
@@ -56,8 +57,8 @@ class TargetWorkingTime:
         ctx: AuditContext,
         params: Mapping[str, Any],
     ) -> tuple[AuditFinding, ...]:
-        tolerance_less = int(params.get("tolerance_less", 0))
-        tolerance_more = int(params.get("tolerance_more", 0))
+        tolerance_less = facts.TIMEOFFICE_FACTS.target_working_time_tolerance_less
+        tolerance_more = facts.TIMEOFFICE_FACTS.target_working_time_tolerance_more
 
         findings: list[AuditFinding] = []
         accounts = {acc.employee_id: acc for acc in ctx.dataset.monthly_work_accounts}

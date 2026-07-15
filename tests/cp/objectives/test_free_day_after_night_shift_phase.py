@@ -82,11 +82,11 @@ def test_penalty_when_working_on_day_after_next() -> None:
 
     for (_employee_id, _unit, d, shift_id, _level), var in ctx.assignment_variables.items():
         if d == date(2024, 11, 1) and shift_id == NIGHT_SHIFT.shift_id:
-            ctx.model.add(var == 1)   # night shift on day 1
+            ctx.model.add(var == 1)  # night shift on day 1
         elif d == date(2024, 11, 2):
-            ctx.model.add(var == 0)   # free on day 2
+            ctx.model.add(var == 0)  # free on day 2
         elif d == date(2024, 11, 3) and shift_id == EARLY_SHIFT.shift_id:
-            ctx.model.add(var == 1)   # working on day 3
+            ctx.model.add(var == 1)  # working on day 3
         else:
             ctx.model.add(var == 0)
 
@@ -111,9 +111,9 @@ def test_no_penalty_when_two_free_days_after_night() -> None:
 
     for (_employee_id, _unit, d, shift_id, _level), var in ctx.assignment_variables.items():
         if d == date(2024, 11, 1) and shift_id == NIGHT_SHIFT.shift_id:
-            ctx.model.add(var == 1)   # night shift on day 1
+            ctx.model.add(var == 1)  # night shift on day 1
         else:
-            ctx.model.add(var == 0)   # free on all other days
+            ctx.model.add(var == 0)  # free on all other days
 
     penalties = FreeDaysAfterNightShiftPhase().add_to_model(ctx, params={})
     assert penalties

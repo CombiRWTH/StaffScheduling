@@ -74,12 +74,14 @@ class MinimizeConsecutiveNightShifts:
             if phase_vars:
                 total = ctx.model.new_int_var(0, len(phase_vars), f"mcns_total_l{phase_length}")
                 ctx.model.add(total == sum(phase_vars))
-                result.append(Penalty(
-                    objective_id=self.id,
-                    name=f"total_l{phase_length}",
-                    expression=total,
-                    multiplier=phase_length,  # longer phases cost more
-                ))
+                result.append(
+                    Penalty(
+                        objective_id=self.id,
+                        name=f"total_l{phase_length}",
+                        expression=total,
+                        multiplier=phase_length,  # longer phases cost more
+                    )
+                )
 
         return tuple(result)
 
