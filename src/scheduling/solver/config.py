@@ -10,18 +10,19 @@ from scheduling.solver.cp_sat.constraints.minimum_staffing import MinimumStaffin
 from scheduling.solver.cp_sat.constraints.one_assignment_per_day import OneAssignmentPerDay
 from scheduling.solver.cp_sat.constraints.rounds_in_early_shift import RoundsInEarlyShift
 from scheduling.solver.cp_sat.constraints.target_working_time import TargetWorkingTime
-from scheduling.solver.cp_sat.objectives.temporary_balance_generated_assignments import (
-    TemporaryBalanceGeneratedAssignments,
-)
-from scheduling.solver.cp_sat.objectives.minimize_overtime import MinimizeOvertime
-from scheduling.solver.cp_sat.objectives.not_too_many_consecutive_days import NotTooManyConsecutiveDays
-from scheduling.solver.cp_sat.objectives.preferred_block_length import PreferredBlockLength
-from scheduling.solver.cp_sat.objectives.rotate_shits_foward import RotateShiftsForward
-from scheduling.solver.cp_sat.objectives.prefer_own_planning_unit import PreferOwnPlanningUnit
 from scheduling.solver.cp_sat.objectives.every_second_weekend_free import EverySecondWeekendFree
+from scheduling.solver.cp_sat.objectives.fair_preferences import FairPreferencesObjective
 from scheduling.solver.cp_sat.objectives.free_day_after_night_shift_phase import FreeDaysAfterNightShiftPhase
 from scheduling.solver.cp_sat.objectives.free_days_near_weekend import FreeDaysNearWeekend
 from scheduling.solver.cp_sat.objectives.minimize_consecutive_night_shifts import MinimizeConsecutiveNightShifts
+from scheduling.solver.cp_sat.objectives.minimize_overtime import MinimizeOvertime
+from scheduling.solver.cp_sat.objectives.not_too_many_consecutive_days import NotTooManyConsecutiveDays
+from scheduling.solver.cp_sat.objectives.prefer_own_planning_unit import PreferOwnPlanningUnit
+from scheduling.solver.cp_sat.objectives.preferred_block_length import PreferredBlockLength
+from scheduling.solver.cp_sat.objectives.rotate_shits_foward import RotateShiftsForward
+from scheduling.solver.cp_sat.objectives.temporary_balance_generated_assignments import (
+    TemporaryBalanceGeneratedAssignments,
+)
 
 
 class ConstraintConfig(SchedulingBaseModel):
@@ -81,21 +82,13 @@ def create_base_solver_config() -> SolverConfig:
                 enabled=True,
                 weight=1,
             ),
-            EverySecondWeekendFree.id: ObjectiveConfig(
+            EverySecondWeekendFree.id: ObjectiveConfig(enabled=True, weight=1),
+            FairPreferencesObjective.id: ObjectiveConfig(
                 enabled=True,
-                  weight=1
-                  ),
-            FreeDaysAfterNightShiftPhase.id: ObjectiveConfig(
-                enabled=True, 
-                weight=1
-                ),
-            FreeDaysNearWeekend.id: ObjectiveConfig(
-                enabled=True, 
-                weight=1
-                ),
-            MinimizeConsecutiveNightShifts.id: ObjectiveConfig(
-                enabled=True,
-                weight=1
-                ),
+                weight=1,
+            ),
+            FreeDaysAfterNightShiftPhase.id: ObjectiveConfig(enabled=True, weight=1),
+            FreeDaysNearWeekend.id: ObjectiveConfig(enabled=True, weight=1),
+            MinimizeConsecutiveNightShifts.id: ObjectiveConfig(enabled=True, weight=1),
         },
     )
