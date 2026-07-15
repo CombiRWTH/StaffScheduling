@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from ortools.sat.python import cp_model
 
+from scheduling.domain.monthly_work_account import MonthlyWorkAccount
 from scheduling.solver.audit import AuditFinding, AuditSeverity
 from scheduling.solver.cp_sat.context import AuditContext, SolverContext
 from scheduling.solver.diagnostics import SolverDiagnostic
@@ -34,7 +35,11 @@ class TargetWorkingTime:
         for employee_id, expressions in exprs_by_employee.items():
             account = accounts.get(employee_id)
             if not account:
-                continue
+                account = MonthlyWorkAccount(
+                    employee_id=employee_id, target_minutes=9600, actual_minutes=0
+                )  # dummy fallback, should not happen
+                tolerance_less = 10000  # dummy fallback, should not happen
+                tolerance_more = 10000  # dummy fallback, should not happen
 
             # Zielvorgabe: Target minus bereits geleistete Zeit
             actual_worked = account.actual_minutes or 0
