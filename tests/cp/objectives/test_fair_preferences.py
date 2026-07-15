@@ -134,3 +134,47 @@ def test_fulfilled_free_wishes_and_preferred_work_wishes_have_no_penalty() -> No
     )
 
     assert _penalty_for(wishes, {(wish_date, LATE_SHIFT.shift_id)}) == 0
+
+
+@pytest.mark.integration
+def test_preferred_day_counts_as_three_strikes_and_preferred_shift_as_one() -> None:
+    wish_date = date(2024, 11, 4)
+    preferred_day = Wish(
+        employee_id=EMPLOYEE.employee_id,
+        planning_unit_id=PLANNING_UNIT.planning_unit_id,
+        date=wish_date,
+        type=WishType.PREFERRED_DAY,
+    )
+    preferred_shift = Wish(
+        employee_id=EMPLOYEE.employee_id,
+        planning_unit_id=PLANNING_UNIT.planning_unit_id,
+        date=wish_date,
+        type=WishType.PREFERRED_SHIFT,
+        shift_id=EARLY_SHIFT.shift_id,
+    )
+
+    assert _penalty_for((preferred_shift,), {(wish_date, LATE_SHIFT.shift_id)}) == 1
+    assert _penalty_for((preferred_day,), set()) == 36
+
+
+@pytest.mark.integration
+def test_free_and_preferred_wishes_use_separate_strike_buckets() -> None:
+    wish_date = date(2024, 11, 4)
+    wishes = (
+        Wish(
+            employee_id=EMPLOYEE.employee_id,
+            planning_unit_id=PLANNING_UNIT.planning_unit_id,
+            date=wish_date,
+            type=WishType.FREE_SHIFT,
+            shift_id=EARLY_SHIFT.shift_id,
+        ),
+        Wish(
+            employee_id=EMPLOYEE.employee_id,
+            planning_unit_id=PLANNING_UNIT.planning_unit_id,
+            date=wish_date,
+            type=WishType.PREFERRED_SHIFT,
+            shift_id=LATE_SHIFT.shift_id,
+        ),
+    )
+
+    assert _penalty_for(wishes, {(wish_date, EARLY_SHIFT.shift_id)}) == 2

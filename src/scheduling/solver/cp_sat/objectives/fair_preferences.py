@@ -12,7 +12,7 @@ from scheduling.solver.cp_sat.objective import Penalty
 
 
 class FairPreferencesObjective:
-    """Penalize repeatedly violating the same employee's free-time wishes."""
+    """Penalize repeatedly violating the same employee's free and preferred wishes."""
 
     id: ClassVar[str] = "fair_preferences"
 
@@ -27,13 +27,45 @@ class FairPreferencesObjective:
             variables_by_employee_date[(employee_id, assignment_date)].append(variable)
             variables_by_employee_date_shift[(employee_id, assignment_date, shift_id)].append(variable)
 
+        free_wish_violations = self._free_wish_violations(
+            ctx,
+            variables_by_employee_date=variables_by_employee_date,
+            variables_by_employee_date_shift=variables_by_employee_date_shift,
+        )
+        preferred_wish_violations = self._preferred_wish_violations(
+            ctx,
+            variables_by_employee_date=variables_by_employee_date,
+            variables_by_employee_date_shift=variables_by_employee_date_shift,
+        )
+
+        free_wish_penalties = self._bucketed_penalties(
+            ctx,
+            free_wish_violations,
+            wish_group="free",
+        )
+        preferred_wish_penalties = self._bucketed_penalties(
+            ctx,
+            preferred_wish_violations,
+            wish_group="preferred",
+        )
+        return free_wish_penalties + preferred_wish_penalties
+
+    def _free_wish_violations(
+        self,
+        ctx: SolverContext,
+        *,
+        variables_by_employee_date: Mapping[tuple[int, date], list[cp_model.IntVar]],
+        variables_by_employee_date_shift: Mapping[tuple[int, date, int], list[cp_model.IntVar]],
+    ) -> dict[int, list[tuple[cp_model.IntVar, int]]]:
         violations_by_employee: defaultdict[int, list[tuple[cp_model.IntVar, int]]] = defaultdict(list)
         for wish_index, wish in enumerate(ctx.dataset.wishes):
             if wish.type == WishType.FREE_DAY:
-                assignment_variables = variables_by_employee_date[(wish.employee_id, wish.date)]
+                assignment_variables = variables_by_employee_date.get((wish.employee_id, wish.date), [])
                 strike_count = 3
             elif wish.type == WishType.FREE_SHIFT and wish.shift_id is not None:
-                assignment_variables = variables_by_employee_date_shift[(wish.employee_id, wish.date, wish.shift_id)]
+                assignment_variables = variables_by_employee_date_shift.get(
+                    (wish.employee_id, wish.date, wish.shift_id), []
+                )
                 strike_count = 1
             else:
                 continue
@@ -41,17 +73,56 @@ class FairPreferencesObjective:
             if not assignment_variables:
                 continue
 
-            violation = ctx.model.new_bool_var(f"fair_preferences__wish_{wish_index}__violated")
+            violation = ctx.model.new_bool_var(f"fair_preferences__free_wish_{wish_index}__violated")
             ctx.model.add(sum(assignment_variables) >= 1).only_enforce_if(violation)
             ctx.model.add(sum(assignment_variables) == 0).only_enforce_if(violation.Not())
             violations_by_employee[wish.employee_id].append((violation, strike_count))
 
+        return violations_by_employee
+
+    def _preferred_wish_violations(
+        self,
+        ctx: SolverContext,
+        *,
+        variables_by_employee_date: Mapping[tuple[int, date], list[cp_model.IntVar]],
+        variables_by_employee_date_shift: Mapping[tuple[int, date, int], list[cp_model.IntVar]],
+    ) -> dict[int, list[tuple[cp_model.IntVar, int]]]:
+        violations_by_employee: defaultdict[int, list[tuple[cp_model.IntVar, int]]] = defaultdict(list)
+        for wish_index, wish in enumerate(ctx.dataset.wishes):
+            if wish.type == WishType.PREFERRED_DAY:
+                assignment_variables = variables_by_employee_date.get((wish.employee_id, wish.date), [])
+                strike_count = 3
+            elif wish.type == WishType.PREFERRED_SHIFT and wish.shift_id is not None:
+                assignment_variables = variables_by_employee_date_shift.get(
+                    (wish.employee_id, wish.date, wish.shift_id), []
+                )
+                strike_count = 1
+            else:
+                continue
+
+            if not assignment_variables:
+                continue
+
+            violation = ctx.model.new_bool_var(f"fair_preferences__preferred_wish_{wish_index}__violated")
+            ctx.model.add(sum(assignment_variables) == 0).only_enforce_if(violation)
+            ctx.model.add(sum(assignment_variables) >= 1).only_enforce_if(violation.Not())
+            violations_by_employee[wish.employee_id].append((violation, strike_count))
+
+        return violations_by_employee
+
+    def _bucketed_penalties(
+        self,
+        ctx: SolverContext,
+        violations_by_employee: Mapping[int, list[tuple[cp_model.IntVar, int]]],
+        *,
+        wish_group: str,
+    ) -> tuple[Penalty, ...]:
         penalties: list[Penalty] = []
         for employee_id, violations in violations_by_employee.items():
             max_strikes = sum(strike_count for _violation, strike_count in violations)
             total_strikes = sum(violation * strike_count for violation, strike_count in violations)
             tier_variables = [
-                ctx.model.new_bool_var(f"fair_preferences__employee_{employee_id}__tier_{tier}")
+                ctx.model.new_bool_var(f"fair_preferences__{wish_group}__employee_{employee_id}__tier_{tier}")
                 for tier in range(1, max_strikes + 1)
             ]
             ctx.model.add(sum(tier_variables) == total_strikes)
@@ -59,9 +130,9 @@ class FairPreferencesObjective:
             penalties.append(
                 Penalty(
                     objective_id=self.id,
-                    name=f"employee_{employee_id}",
-                    expression=sum(
-                        tier**3 * tier_variable for tier, tier_variable in enumerate(tier_variables, start=1)
+                    name=f"employee_{employee_id}__{wish_group}_wishes",
+                    expression=cp_model.LinearExpr.sum(
+                        [tier**3 * tier_variable for tier, tier_variable in enumerate(tier_variables, start=1)]
                     ),
                 )
             )
