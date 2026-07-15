@@ -109,7 +109,7 @@ def _group_weighted_vars(ctx: SolverContext) -> dict[int, list[cp_model.LinearEx
     exprs: defaultdict[int, list[cp_model.LinearExpr]] = defaultdict(list)
 
     # Mapping für schnellen Zugriff auf Schichtdauern
-    shift_durations = {s.shift_id: (s.end_minute - s.start_minute) for s in ctx.dataset.shifts}
+    shift_durations = {s.shift_id: s.net_work_minutes for s in ctx.dataset.shifts}
 
     for key, variable in ctx.assignment_variables.items():
         employee_id, _, _, shift_id, _ = key
@@ -123,7 +123,7 @@ def _group_weighted_vars(ctx: SolverContext) -> dict[int, list[cp_model.LinearEx
 
 def _group_actual_durations(ctx: AuditContext) -> dict[int, int]:
     durations: defaultdict[int, int] = defaultdict(int)
-    shift_durations = {s.shift_id: (s.end_minute - s.start_minute) for s in ctx.dataset.shifts}
+    shift_durations = {s.shift_id: s.net_work_minutes for s in ctx.dataset.shifts}
 
     for assignment in ctx.assignments:
         # Pydantic Modelle garantieren die Existenz
