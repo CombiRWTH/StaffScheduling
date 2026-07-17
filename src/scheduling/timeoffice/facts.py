@@ -189,6 +189,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "A-81302-016": StaffLevel.TRAINEE,  # A-Pflegefachkraft Kinderkrankenpflege
         "A-81302-018": StaffLevel.TRAINEE,  # A-Pflegefachkraft Krankenpflege
         "A-81302-019": StaffLevel.TRAINEE,  # A-Pflegefachkraft Altenpflege
+        "-": StaffLevel.TRAINEE,  # Schauen was für eine Profession das ist
     }
 )
 

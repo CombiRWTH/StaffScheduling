@@ -1,4 +1,4 @@
-from sqlalchemy import Connection, bindparam, text
+from sqlalchemy import Connection, text
 
 from scheduling.domain.core import SchedulingBaseModel
 
@@ -16,7 +16,7 @@ class TimeOfficeWeightsReader:
         connection: Connection,
         planning_unit_ids: tuple[int, ...],
     ) -> tuple[TimeOfficeObjectiveWeightRow, ...]:
-        self._ensure_objective_weights_table_exists(connection=connection)
+        '''self._ensure_objective_weights_table_exists(connection=connection)
 
         if not planning_unit_ids:
             return ()
@@ -44,7 +44,8 @@ class TimeOfficeWeightsReader:
                 weight=int(row["weight"]),
             )
             for row in rows
-        )
+        )'''
+        return ()
 
     def _ensure_objective_weights_table_exists(self, *, connection: Connection) -> None:
         query = text(

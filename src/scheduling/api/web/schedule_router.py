@@ -1,6 +1,6 @@
 import logging
 from datetime import date
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 
@@ -20,5 +20,5 @@ async def get_schedule(
     planning_unit: int,
     from_date: date,
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
-) -> dict[str, list[dict[str, any]]]:
+) -> dict[str, list[dict[str, Any]]]:
     pass

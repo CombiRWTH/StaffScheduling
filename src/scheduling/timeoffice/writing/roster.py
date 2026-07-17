@@ -9,8 +9,6 @@ from scheduling.timeoffice.remapping.roster import (
     map_availabilities_to_timeoffice_rows,
 )
 
-WEB_AVAILABILITY_INFO = "StaffSchedulingWebAvailability"
-
 
 class TimeOfficeAvailabilityWriter:
     def replace_employee_availability(
@@ -29,7 +27,7 @@ class TimeOfficeAvailabilityWriter:
             planning_month=planning_month,
         )
 
-        self._delete_web_availability_rows(
+        self._delete_employee_availability_rows(
             connection=connection,
             planning_unit_id=planning_unit_id,
             planning_month=planning_month,
@@ -46,10 +44,24 @@ class TimeOfficeAvailabilityWriter:
         self._insert_rows(
             connection=connection,
             rows=rows,
-            facts=facts,
         )
 
-    def _delete_web_availability_rows(
+    def delete_employee_availability(
+        self,
+        *,
+        connection: Connection,
+        planning_unit_id: int,
+        planning_month: PlanningMonth,
+        employee_id: int,
+    ) -> None:
+        self._delete_employee_availability_rows(
+            connection=connection,
+            planning_unit_id=planning_unit_id,
+            planning_month=planning_month,
+            employee_id=employee_id,
+        )
+
+    def _delete_employee_availability_rows(
         self,
         *,
         connection: Connection,
@@ -63,7 +75,13 @@ class TimeOfficeAvailabilityWriter:
             WHERE RefPersonal = :employee_id
               AND RefPlanungseinheiten = :planning_unit_id
               AND CONVERT(date, Datum) BETWEEN :start AND :end
-              AND Info = :info
+              AND ISNULL(Wunschdienst, 0) = 0
+              AND (
+                  RefgAbw IS NOT NULL
+                  OR RefDienstAbw IS NOT NULL
+                  OR BereitVon IS NOT NULL
+                  OR BereitBis IS NOT NULL
+              )
             """
         )
 
@@ -74,7 +92,6 @@ class TimeOfficeAvailabilityWriter:
                 "planning_unit_id": planning_unit_id,
                 "start": planning_month.start,
                 "end": planning_month.end,
-                "info": WEB_AVAILABILITY_INFO,
             },
         )
 
@@ -83,7 +100,6 @@ class TimeOfficeAvailabilityWriter:
         *,
         connection: Connection,
         rows: tuple[TimeOfficeAvailabilityWriteRow, ...],
-        facts: TimeOfficeFacts,
     ) -> None:
         if not rows:
             return
@@ -104,7 +120,6 @@ class TimeOfficeAvailabilityWriter:
                 BisZeit,
                 RefDienstAbw,
                 Minuten,
-                Info,
                 RefEinsatzArten,
                 Wunschdienst,
                 BereitVon,
@@ -124,7 +139,6 @@ class TimeOfficeAvailabilityWriter:
                 NULL,
                 :absence_shift_id,
                 0,
-                :info,
                 NULL,
                 0,
                 NULL,
@@ -138,7 +152,6 @@ class TimeOfficeAvailabilityWriter:
             self._insert_parameters(
                 connection=connection,
                 rows=rows,
-                facts=facts,
             ),
         )
 
@@ -147,9 +160,10 @@ class TimeOfficeAvailabilityWriter:
         *,
         connection: Connection,
         rows: tuple[TimeOfficeAvailabilityWriteRow, ...],
-        facts: TimeOfficeFacts,
     ) -> list[dict[str, object]]:
         next_sequence_by_key: dict[tuple[int, int, Date], int] = {}
+        profession_id_by_key: dict[tuple[int, int], int] = {}
+        status_id_by_key: dict[tuple[int, int, int], int] = {}
 
         parameters: list[dict[str, object]] = []
 
@@ -171,22 +185,43 @@ class TimeOfficeAvailabilityWriter:
             sequence_number = next_sequence_by_key[sequence_key]
             next_sequence_by_key[sequence_key] += 1
 
+            profession_key = (
+                row.employee_id,
+                row.planning_unit_id,
+            )
+
+            if profession_key not in profession_id_by_key:
+                profession_id_by_key[profession_key] = self._find_profession_id(
+                    connection=connection,
+                    employee_id=row.employee_id,
+                    planning_unit_id=row.planning_unit_id,
+                )
+
+            status_key = (
+                row.plan_id,
+                row.employee_id,
+                row.planning_unit_id,
+            )
+
+            if status_key not in status_id_by_key:
+                status_id_by_key[status_key] = self._find_status_id_for_plan(
+                    connection=connection,
+                    plan_id=row.plan_id,
+                    employee_id=row.employee_id,
+                    planning_unit_id=row.planning_unit_id,
+                )
+
             parameters.append(
                 {
                     "plan_id": row.plan_id,
                     "employee_id": row.employee_id,
                     "availability_date": row.availability_date,
-                    "status_id": facts.target_planning_status_id,
+                    "status_id": status_id_by_key[status_key],
                     "sequence_number": sequence_number,
                     "work_shift_id": row.work_shift_id,
-                    "profession_id": self._find_profession_id(
-                        connection=connection,
-                        employee_id=row.employee_id,
-                        planning_unit_id=row.planning_unit_id,
-                    ),
+                    "profession_id": profession_id_by_key[profession_key],
                     "planning_unit_id": row.planning_unit_id,
                     "absence_shift_id": row.absence_shift_id,
-                    "info": WEB_AVAILABILITY_INFO,
                 }
             )
 
@@ -306,17 +341,46 @@ class TimeOfficeAvailabilityWriter:
 
         return int(row["profession_id"])
 
-    def delete_employee_availability(
+    def _find_status_id_for_plan(
         self,
         *,
         connection: Connection,
-        planning_unit_id: int,
-        planning_month: PlanningMonth,
+        plan_id: int,
         employee_id: int,
-    ) -> None:
-        self._delete_web_availability_rows(
-            connection=connection,
-            planning_unit_id=planning_unit_id,
-            planning_month=planning_month,
-            employee_id=employee_id,
+        planning_unit_id: int,
+    ) -> int:
+        query = text(
+            """
+            SELECT TOP 1
+                pkg.RefStati AS status_id,
+                COUNT(*) AS usage_count
+            FROM TPlanPersonalKommtGeht pkg
+            WHERE pkg.RefPlan = :plan_id
+              AND pkg.RefPersonal = :employee_id
+              AND pkg.RefPlanungseinheiten = :planning_unit_id
+              AND pkg.RefStati IS NOT NULL
+            GROUP BY pkg.RefStati
+            ORDER BY usage_count DESC
+            """
         )
+
+        row = (
+            connection.execute(
+                query,
+                {
+                    "plan_id": plan_id,
+                    "employee_id": employee_id,
+                    "planning_unit_id": planning_unit_id,
+                },
+            )
+            .mappings()
+            .first()
+        )
+
+        if row is None:
+            raise ValueError(
+                f"No RefStati found for plan_id={plan_id}, employee_id={employee_id}, "
+                f"planning_unit_id={planning_unit_id}."
+            )
+
+        return int(row["status_id"])
