@@ -21,4 +21,4 @@ async def get_schedule(
     from_date: date,
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
 ) -> dict[str, list[dict[str, Any]]]:
-    pass
+    return {"schedules": []}
