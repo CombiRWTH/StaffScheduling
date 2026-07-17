@@ -12,7 +12,11 @@ from scheduling.timeoffice.database import create_db_engine
 from scheduling.timeoffice.facts import TIMEOFFICE_FACTS
 from scheduling.timeoffice.reading.container import TimeOfficeReaders
 from scheduling.timeoffice.service import TimeOfficeService
+from scheduling.timeoffice.writing.demand import TimeOfficeDemandWriter
+from scheduling.timeoffice.writing.objective_weights import TimeOfficeWeightsWriter
+from scheduling.timeoffice.writing.roster import TimeOfficeAvailabilityWriter
 from scheduling.timeoffice.writing.solution import TimeOfficeSolutionWriter
+from scheduling.timeoffice.writing.wishes import TimeOfficeWishWriter
 
 
 def _parse_date(value: str) -> date:
@@ -47,6 +51,12 @@ def _solve(
         engine=engine,
         readers=TimeOfficeReaders.create(facts=facts),
         solution_writer=TimeOfficeSolutionWriter(),
+        wish_writer=TimeOfficeWishWriter(
+            target_planning_status_id=facts.target_planning_status_id,
+        ),
+        demand_writer=TimeOfficeDemandWriter(),
+        objective_weights_writer=TimeOfficeWeightsWriter(),
+        availability_writer=TimeOfficeAvailabilityWriter(),
     )
     solver = SolverService(
         settings=settings,
