@@ -77,8 +77,20 @@ async def create_solve_task(
         logger.info("Solving scheduling dataset for solve job: job_id=%s", job.job_id)
         solution = solver.solve(dataset)
 
-        logger.info("Running TimeOffice writeback dry-run for solve job: job_id=%s", job.job_id)
-        timeoffice.write_solution_dry_run(solution)
+        start_date = command.planning_month.start.isoformat()
+        end_date = command.planning_month.end.isoformat()
+        for unit in command.planning_unit_ids:
+            solution_name = f"solution_{unit}_{start_date}-{end_date}_wdefault"
+            logger.info(
+                "Writing legacy solution for solve job: job_id=%s solution_name=%s",
+                job.job_id,
+                solution_name,
+            )
+            timeoffice.write_solution_legacy_format(
+                dataset=dataset,
+                solution=solution,
+                solution_name=solution_name,
+            )
 
         return solution
 
