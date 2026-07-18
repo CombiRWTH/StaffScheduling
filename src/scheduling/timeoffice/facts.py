@@ -100,6 +100,7 @@ class TimeOfficeFacts:
     ignored_availability_absence_codes: frozenset[str]
 
     wish_type_by_absence_code: Mapping[str, WishType]
+    wish_absence_shift_id_by_type: Mapping[WishType, int]
 
     availability_absence_shift_id_by_type: Mapping[AvailabilityType, int]
 
@@ -295,6 +296,11 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     wish_type_by_absence_code=MappingProxyType(
         {
             "FR": WishType.FREE_DAY,
+        }
+    ),
+    wish_absence_shift_id_by_type=MappingProxyType(
+        {
+            WishType.FREE_DAY: 1089,
         }
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,

@@ -16,7 +16,7 @@ from scheduling.domain import (
     StaffLevel,
 )
 from scheduling.solver.models import Solution, SolutionStatus
-from scheduling.timeoffice.facts import EARLY_F2_SHIFT_ID, LATE_S2_SHIFT_ID
+from scheduling.timeoffice.facts import EARLY_SHIFT_ID, LATE_SHIFT_ID
 from scheduling.timeoffice.writing.solution import TimeOfficeSolutionWriter, build_legacy_solution_data
 
 
@@ -29,7 +29,7 @@ def test_build_legacy_solution_data_uses_dense_legacy_variable_format() -> None:
                 employee_id=102,
                 planning_unit_id=77,
                 date=date(2024, 11, 2),
-                shift_id=LATE_S2_SHIFT_ID,
+                shift_id=LATE_SHIFT_ID,
                 assignment_type=AssignmentType.GENERATED,
             ),
         ),
@@ -46,7 +46,7 @@ def test_build_legacy_solution_data_uses_dense_legacy_variable_format() -> None:
     assert data["variables"]["e:101_d:2024-11-01"] == 1
     assert data["variables"]["e:101_d:2024-11-02"] == 0
     assert data["variables"]["e:102_d:2024-11-02"] == 1
-    assert f"(102, '2024-11-02', {LATE_S2_SHIFT_ID})" not in data["variables"]
+    assert f"(102, '2024-11-02', {LATE_SHIFT_ID})" not in data["variables"]
 
 
 def test_write_legacy_format_writes_legacy_solution_json(tmp_path: Path) -> None:
@@ -109,8 +109,8 @@ def _dataset() -> SchedulingDataset:
         plans=(),
         shifts=(
             Shift(
-                shift_id=EARLY_F2_SHIFT_ID,
-                code="F2_",
+                shift_id=EARLY_SHIFT_ID,
+                code="F",
                 type=ShiftType.EARLY,
                 staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
                 start_minute=360,
@@ -118,8 +118,8 @@ def _dataset() -> SchedulingDataset:
                 net_work_minutes=460,
             ),
             Shift(
-                shift_id=LATE_S2_SHIFT_ID,
-                code="S2_",
+                shift_id=LATE_SHIFT_ID,
+                code="S",
                 type=ShiftType.LATE,
                 staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
                 start_minute=805,
@@ -144,7 +144,7 @@ def _dataset() -> SchedulingDataset:
                 employee_id=101,
                 planning_unit_id=77,
                 date=date(2024, 11, 1),
-                shift_id=EARLY_F2_SHIFT_ID,
+                shift_id=EARLY_SHIFT_ID,
                 assignment_type=AssignmentType.PLANNED,
             ),
         ),
