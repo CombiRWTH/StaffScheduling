@@ -37,11 +37,14 @@ SHARED_POOL_408_ID = 408
 # TDienste.Prim values for the reduced reference shifts exposed to the solver.
 # These are the only TimeOffice shift IDs that should become canonical Shift.shift_id
 # values in the reduced SchedulingDataset.
-EARLY_F2_SHIFT_ID = 2939
-LATE_S2_SHIFT_ID = 2947
-NIGHT_N2_SHIFT_ID = 2953
-INTERMEDIATE_T75_SHIFT_ID = 2906
-MANAGEMENT_Z60_SHIFT_ID = 1406
+# There are 2 Prim for the Early Shift: 1113 and 3000
+EARLY_SHIFT_ID = 1113
+# There are 3 Prim for the Late Shift: 1605, 2011, and 3002
+LATE_SHIFT_ID = 1605
+# There are 3 Prim for the Night Shift: 1690, 2449, and 3001
+NIGHT_SHIFT_ID = 1690
+# Ist die Intermediate Shift T(1410) oder Z(1453)?
+INTERMEDIATE_SHIFT_ID = 1453
 
 
 @dataclass(frozen=True, slots=True)
@@ -97,6 +100,9 @@ class TimeOfficeFacts:
     ignored_availability_absence_codes: frozenset[str]
 
     wish_type_by_absence_code: Mapping[str, WishType]
+    wish_absence_shift_id_by_type: Mapping[WishType, int]
+
+    availability_absence_shift_id_by_type: Mapping[AvailabilityType, int]
 
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
@@ -104,30 +110,25 @@ class TimeOfficeFacts:
 
 REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = MappingProxyType(
     {
-        EARLY_F2_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="F2_",
+        EARLY_SHIFT_ID: TimeOfficeReferenceShiftFact(
+            expected_code="F",
             type=ShiftType.EARLY,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
-        LATE_S2_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="S2_",
+        LATE_SHIFT_ID: TimeOfficeReferenceShiftFact(
+            expected_code="S",
             type=ShiftType.LATE,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
-        NIGHT_N2_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="N2_",
+        NIGHT_SHIFT_ID: TimeOfficeReferenceShiftFact(
+            expected_code="N",
             type=ShiftType.NIGHT,
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
-        INTERMEDIATE_T75_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="T75_",
+        INTERMEDIATE_SHIFT_ID: TimeOfficeReferenceShiftFact(
+            expected_code="Z",
             type=ShiftType.INTERMEDIATE,
             staffing_role=StaffingDemandRole.OPTIONAL_COVERAGE,
-        ),
-        MANAGEMENT_Z60_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="Z60",
-            type=ShiftType.MANAGEMENT,
-            staffing_role=StaffingDemandRole.NON_MINIMUM_WORK,
         ),
     }
 )
@@ -137,18 +138,18 @@ REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = Ma
 SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
     {
         # Night variants normalized to canonical N2_ night shift.
-        1692: NIGHT_N2_SHIFT_ID,  # N15, partial night
-        3076: NIGHT_N2_SHIFT_ID,  # N5
-        2889: NIGHT_N2_SHIFT_ID,  # N5
-        1698: NIGHT_N2_SHIFT_ID,  # N5
-        2866: NIGHT_N2_SHIFT_ID,  # N5
+        2939: EARLY_SHIFT_ID,  # F2_
+        2947: LATE_SHIFT_ID,  # S2_
+        2953: NIGHT_SHIFT_ID,  # N2_
+        2906: INTERMEDIATE_SHIFT_ID,  # T72_
+        1692: NIGHT_SHIFT_ID,  # N15, partial night
+        3076: NIGHT_SHIFT_ID,  # N5
+        2889: NIGHT_SHIFT_ID,  # N5
+        1698: NIGHT_SHIFT_ID,  # N5
+        2866: NIGHT_SHIFT_ID,  # N5
         # Day/intermediate variant normalized to canonical T75_ intermediate shift.
-        2994: INTERMEDIATE_T75_SHIFT_ID,  # T8x
-        # Short/day special variants normalized to canonical Z60 non-minimum work shift.
-        2957: MANAGEMENT_Z60_SHIFT_ID,  # Z52
-        2687: MANAGEMENT_Z60_SHIFT_ID,  # Z52
-        1403: MANAGEMENT_Z60_SHIFT_ID,  # Z52
-        3066: MANAGEMENT_Z60_SHIFT_ID,  # Z52
+        2994: INTERMEDIATE_SHIFT_ID,  # T8x
+        3066: INTERMEDIATE_SHIFT_ID,  # Z52
     }
 )
 
@@ -189,6 +190,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "A-81302-016": StaffLevel.TRAINEE,  # A-Pflegefachkraft Kinderkrankenpflege
         "A-81302-018": StaffLevel.TRAINEE,  # A-Pflegefachkraft Krankenpflege
         "A-81302-019": StaffLevel.TRAINEE,  # A-Pflegefachkraft Altenpflege
+        "-": StaffLevel.TRAINEE,  # Schauen was für eine Profession das ist
     }
 )
 
@@ -202,23 +204,23 @@ STATION_77_DEMAND: PlanningUnitDemandMatrix = MappingProxyType(
         # Weekday tuple order: Mo, Di, Mi, Do, Fr, Sa, So.
         StaffLevel.PROFESSIONAL: MappingProxyType(
             {
-                EARLY_F2_SHIFT_ID: (3, 3, 4, 3, 3, 2, 2),
-                LATE_S2_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
-                NIGHT_N2_SHIFT_ID: (2, 2, 2, 2, 2, 1, 1),
+                EARLY_SHIFT_ID: (3, 3, 4, 3, 3, 2, 2),
+                LATE_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
+                NIGHT_SHIFT_ID: (2, 2, 2, 2, 2, 1, 1),
             }
         ),
         StaffLevel.ASSISTANT: MappingProxyType(
             {
-                EARLY_F2_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
-                LATE_S2_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
-                NIGHT_N2_SHIFT_ID: (0, 0, 0, 0, 0, 1, 1),
+                EARLY_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
+                LATE_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
+                NIGHT_SHIFT_ID: (0, 0, 0, 0, 0, 1, 1),
             }
         ),
         StaffLevel.TRAINEE: MappingProxyType(
             {
-                EARLY_F2_SHIFT_ID: (1, 1, 1, 1, 1, 1, 1),
-                LATE_S2_SHIFT_ID: (1, 1, 1, 1, 1, 1, 1),
-                NIGHT_N2_SHIFT_ID: (0, 0, 0, 0, 0, 0, 0),
+                EARLY_SHIFT_ID: (1, 1, 1, 1, 1, 1, 1),
+                LATE_SHIFT_ID: (1, 1, 1, 1, 1, 1, 1),
+                NIGHT_SHIFT_ID: (0, 0, 0, 0, 0, 0, 0),
             }
         ),
     }
@@ -269,26 +271,36 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     ),
     availability_type_by_absence_code=MappingProxyType(
         {
-            "U": AvailabilityType.VACATION,
-            "ZU": AvailabilityType.VACATION,
+            "U": AvailabilityType.VACATION,  # Urlaub
+            "ZU": AvailabilityType.VACATION,  # Zustatzurlaub
             # Conservative hard blockers until TimeOffice/domain semantics are confirmed.
-            "SC": AvailabilityType.UNAVAILABLE,
-            "EZ": AvailabilityType.UNAVAILABLE,
-            "RE": AvailabilityType.UNAVAILABLE,
-            "FI": AvailabilityType.UNAVAILABLE,
+            "SC": AvailabilityType.UNAVAILABLE,  # Schulung
+            "EZ": AvailabilityType.UNAVAILABLE,  # Elternzeit
+            "RE": AvailabilityType.UNAVAILABLE,  # Reha
+            "FI": AvailabilityType.UNAVAILABLE,  # Freistellung
+            "AZV": AvailabilityType.UNAVAILABLE,  # Arbeitszeitverkürzung - vermutlich unavailable
+        }
+    ),
+    availability_absence_shift_id_by_type=MappingProxyType(
+        {
+            AvailabilityType.UNAVAILABLE: 2738,  # TODO: Mapped momentan auf SC. Durch richtigen Code ersetzen
         }
     ),
     ignored_availability_absence_codes=frozenset(
         {
             # Existing roster free/reduction markers.
             # They must not block solve-from-scratch.
-            "FR",
-            "AZV",
+            "FR",  # geplanter Freier Tag - Soll der als Urlaub oder unavailable gehändelt werden
         }
     ),
     wish_type_by_absence_code=MappingProxyType(
         {
             "FR": WishType.FREE_DAY,
+        }
+    ),
+    wish_absence_shift_id_by_type=MappingProxyType(
+        {
+            WishType.FREE_DAY: 1089,
         }
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,

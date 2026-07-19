@@ -11,21 +11,19 @@ from scheduling.domain.dataset import SchedulingDataset
 from scheduling.domain.shift import ShiftId
 from scheduling.solver.models import Solution, SolutionStatus
 from scheduling.timeoffice.facts import (
-    EARLY_F2_SHIFT_ID,
-    INTERMEDIATE_T75_SHIFT_ID,
-    LATE_S2_SHIFT_ID,
-    MANAGEMENT_Z60_SHIFT_ID,
-    NIGHT_N2_SHIFT_ID,
+    EARLY_SHIFT_ID,
+    INTERMEDIATE_SHIFT_ID,
+    LATE_SHIFT_ID,
+    NIGHT_SHIFT_ID,
 )
 
 logger = logging.getLogger(__name__)
 
 LEGACY_SHIFT_ID_BY_REFERENCE_SHIFT_ID: dict[ShiftId, int] = {
-    EARLY_F2_SHIFT_ID: 0,
-    INTERMEDIATE_T75_SHIFT_ID: 1,
-    LATE_S2_SHIFT_ID: 2,
-    NIGHT_N2_SHIFT_ID: 3,
-    MANAGEMENT_Z60_SHIFT_ID: 4,
+    EARLY_SHIFT_ID: 0,
+    INTERMEDIATE_SHIFT_ID: 1,
+    LATE_SHIFT_ID: 2,
+    NIGHT_SHIFT_ID: 3,
 }
 
 LEGACY_SHIFTS: tuple[dict[str, Any], ...] = (
