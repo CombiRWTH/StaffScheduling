@@ -152,14 +152,9 @@ SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
         1698: NIGHT_SHIFT_ID,  # N5
         2866: NIGHT_SHIFT_ID,  # N5
         # Day/intermediate variant normalized to canonical T75_ intermediate shift.
-        2994: INTERMEDIATE_T75_SHIFT_ID,  # T8x
-        1234: INTERMEDIATE_T75_SHIFT_ID,
-        1356: INTERMEDIATE_T75_SHIFT_ID,
-        # Short/day special variants normalized to canonical Z60 non-minimum work shift.
-        2957: MANAGEMENT_Z60_SHIFT_ID,  # Z52
-        2687: MANAGEMENT_Z60_SHIFT_ID,  # Z52
-        1403: MANAGEMENT_Z60_SHIFT_ID,  # Z52
-        3066: MANAGEMENT_Z60_SHIFT_ID,  # Z52
+        2994: INTERMEDIATE_SHIFT_ID,  # T8x
+        1234: INTERMEDIATE_SHIFT_ID,
+        1356: INTERMEDIATE_SHIFT_ID,
     }
 )
 
