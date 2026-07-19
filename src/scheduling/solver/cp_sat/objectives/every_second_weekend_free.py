@@ -12,80 +12,121 @@ from scheduling.solver.cp_sat.objective import Penalty
 
 class EverySecondWeekendFree:
     """
-    Penalizes consecutive weekends with the same status (both worked or both free).
-    Encourages alternating free weekends. A weekend is only free if both Saturday
-    and Sunday are unassigned.
+    Penalize consecutive weekends with the same status.
+
+    A weekend is considered free only when the employee is not assigned on
+    either Saturday or Sunday. Alternating worked and free weekends is therefore
+    preferred.
     """
 
     id: ClassVar[str] = "every_second_weekend_free"
 
-    def add_to_model(self, ctx: SolverContext, params: Mapping[str, Any]) -> tuple[Penalty, ...]:
+    def add_to_model(
+        self,
+        ctx: SolverContext,
+        params: Mapping[str, Any],
+    ) -> tuple[Penalty, ...]:
         if not ctx.assignment_variables:
             return ()
 
-        # Collect all complete Saturday-Sunday pairs within the planning month
-        weekends: list[tuple[date, date]] = []
-        current = ctx.dataset.planning_month.start
-        while current <= ctx.dataset.planning_month.end:
-            if current.isoweekday() == 6:
-                sunday = current + timedelta(days=1)
-                if sunday <= ctx.dataset.planning_month.end:
-                    weekends.append((current, sunday))
-            current += timedelta(days=1)
-
+        weekends = self._complete_weekends(ctx)
         if len(weekends) < 2:
             return ()
 
-        vars_by_employee_date: defaultdict[tuple[int, date], list[cp_model.IntVar]] = defaultdict(list)
-        for (employee_id, _unit, d, _shift, _level), var in ctx.assignment_variables.items():
-            vars_by_employee_date[(employee_id, d)].append(var)
+        assignment_variables_by_employee_and_date: defaultdict[
+            tuple[int, date],
+            list[cp_model.IntVar],
+        ] = defaultdict(list)
 
-        employee_ids = {key[0] for key in ctx.assignment_variables}
-        penalties: list[cp_model.IntVar] = []
+        for (
+            employee_id,
+            _planning_unit_id,
+            assignment_date,
+            _shift_id,
+            _qualification_level,
+        ), variable in ctx.assignment_variables.items():
+            assignment_variables_by_employee_and_date[(employee_id, assignment_date)].append(variable)
+
+        employee_ids = sorted(
+            {employee_id for employee_id, _planning_unit_id, _date, _shift_id, _level in ctx.assignment_variables}
+        )
+
+        same_status_variables: list[cp_model.IntVar] = []
 
         for employee_id in employee_ids:
-            for i in range(len(weekends) - 1):
-                sat1, sun1 = weekends[i]
-                sat2, sun2 = weekends[i + 1]
+            weekend_free_variables: list[cp_model.IntVar] = []
 
-                w1_vars = vars_by_employee_date[(employee_id, sat1)] + vars_by_employee_date[(employee_id, sun1)]
-                w2_vars = vars_by_employee_date[(employee_id, sat2)] + vars_by_employee_date[(employee_id, sun2)]
+            for weekend_index, (saturday, sunday) in enumerate(weekends):
+                weekend_assignment_variables = (
+                    assignment_variables_by_employee_and_date[(employee_id, saturday)]
+                    + assignment_variables_by_employee_and_date[(employee_id, sunday)]
+                )
 
-                # Skip if employee has no assignments on either weekend at all
-                if not w1_vars and not w2_vars:
-                    continue
+                weekend_worked = ctx.model.new_bool_var(f"esw_worked_e{employee_id}_w{weekend_index}")
 
-                w1_free = ctx.model.new_bool_var(f"esw_w1_free_e{employee_id}_i{i}")
-                w2_free = ctx.model.new_bool_var(f"esw_w2_free_e{employee_id}_i{i}")
-
-                # w1_free iff no assignment on Saturday or Sunday of weekend 1
-                if w1_vars:
-                    ctx.model.add(sum(w1_vars) == 0).only_enforce_if(w1_free)
-                    ctx.model.add(sum(w1_vars) >= 1).only_enforce_if(w1_free.Not())
+                if weekend_assignment_variables:
+                    ctx.model.add_max_equality(
+                        weekend_worked,
+                        weekend_assignment_variables,
+                    )
                 else:
-                    ctx.model.add(w1_free == 1)
+                    ctx.model.add(weekend_worked == 0)
 
-                # w2_free iff no assignment on Saturday or Sunday of weekend 2
-                if w2_vars:
-                    ctx.model.add(sum(w2_vars) == 0).only_enforce_if(w2_free)
-                    ctx.model.add(sum(w2_vars) >= 1).only_enforce_if(w2_free.Not())
-                else:
-                    ctx.model.add(w2_free == 1)
+                weekend_free = ctx.model.new_bool_var(f"esw_free_e{employee_id}_w{weekend_index}")
+                ctx.model.add(weekend_free + weekend_worked == 1)
 
-                # Penalize if both weekends have the same free/worked status
-                same_status = ctx.model.new_bool_var(f"esw_same_status_e{employee_id}_i{i}")
-                ctx.model.add(same_status == 1).only_enforce_if([w1_free, w2_free])
-                ctx.model.add(same_status == 1).only_enforce_if([w1_free.Not(), w2_free.Not()])
-                ctx.model.add(same_status == 0).only_enforce_if([w1_free, w2_free.Not()])
-                ctx.model.add(same_status == 0).only_enforce_if([w1_free.Not(), w2_free])
-                penalties.append(same_status)
+                weekend_free_variables.append(weekend_free)
 
-        if not penalties:
+            for weekend_index in range(len(weekend_free_variables) - 1):
+                current_weekend_free = weekend_free_variables[weekend_index]
+                next_weekend_free = weekend_free_variables[weekend_index + 1]
+
+                different_status = ctx.model.new_bool_var(f"esw_different_e{employee_id}_w{weekend_index}")
+                ctx.model.add_abs_equality(
+                    different_status,
+                    current_weekend_free - next_weekend_free,
+                )
+
+                same_status = ctx.model.new_bool_var(f"esw_same_e{employee_id}_w{weekend_index}")
+                ctx.model.add(same_status + different_status == 1)
+
+                same_status_variables.append(same_status)
+
+        if not same_status_variables:
             return ()
 
-        total = ctx.model.new_int_var(0, len(penalties), "esw_total")
-        ctx.model.add(total == sum(penalties))
-        return (Penalty(objective_id=self.id, name="total", expression=total),)
+        total = ctx.model.new_int_var(
+            0,
+            len(same_status_variables),
+            "esw_total",
+        )
+        ctx.model.add(total == sum(same_status_variables))
+
+        return (
+            Penalty(
+                objective_id=self.id,
+                name="total",
+                expression=total,
+            ),
+        )
+
+    @staticmethod
+    def _complete_weekends(ctx: SolverContext) -> tuple[tuple[date, date], ...]:
+        weekends: list[tuple[date, date]] = []
+
+        current_date = ctx.dataset.planning_month.start
+        end_date = ctx.dataset.planning_month.end
+
+        while current_date <= end_date:
+            if current_date.isoweekday() == 6:
+                sunday = current_date + timedelta(days=1)
+
+                if sunday <= end_date:
+                    weekends.append((current_date, sunday))
+
+            current_date += timedelta(days=1)
+
+        return tuple(weekends)
 
     def audit(self, ctx: AuditContext, params: Mapping[str, Any]) -> tuple[AuditFinding, ...]:
         return ()

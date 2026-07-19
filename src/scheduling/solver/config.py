@@ -17,7 +17,6 @@ from scheduling.solver.cp_sat.objectives.free_days_near_weekend import FreeDaysN
 from scheduling.solver.cp_sat.objectives.minimize_consecutive_night_shifts import MinimizeConsecutiveNightShifts
 from scheduling.solver.cp_sat.objectives.minimize_overtime import MinimizeOvertime
 from scheduling.solver.cp_sat.objectives.not_too_many_consecutive_days import NotTooManyConsecutiveDays
-from scheduling.solver.cp_sat.objectives.prefer_own_planning_unit import PreferOwnPlanningUnit
 from scheduling.solver.cp_sat.objectives.preferred_block_length import PreferredBlockLength
 from scheduling.solver.cp_sat.objectives.rotate_shits_foward import RotateShiftsForward
 from scheduling.solver.cp_sat.objectives.temporary_balance_generated_assignments import (
@@ -75,10 +74,6 @@ def create_base_solver_config() -> SolverConfig:
                 weight=1,
             ),
             RotateShiftsForward.id: ObjectiveConfig(
-                enabled=True,
-                weight=1,
-            ),
-            PreferOwnPlanningUnit.id: ObjectiveConfig(
                 enabled=True,
                 weight=1,
             ),

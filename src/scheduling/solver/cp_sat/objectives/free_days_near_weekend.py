@@ -1,5 +1,5 @@
 from collections import defaultdict
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import date, timedelta
 from typing import Any, ClassVar
 
@@ -9,83 +9,170 @@ from scheduling.solver.audit import AuditFinding
 from scheduling.solver.cp_sat.context import AuditContext, SolverContext
 from scheduling.solver.cp_sat.objective import Penalty
 
-# Fridays (5) and Mondays (1) are the days adjacent to weekends
+type EmployeeDateKey = tuple[int, date]
+
 _NEAR_WEEKEND_DAYS = frozenset({1, 5})
 
 
 class FreeDaysNearWeekend:
-    """
-    Rewards employees for being free on Fridays and Mondays (days adjacent to weekends).
-    An additional bonus is given if the neighboring weekend day is also free,
-    effectively rewarding a three-day weekend stretch.
+    """Reward free days adjacent to weekends.
 
-    Weights: free near-weekend day = 1, free adjacent weekend day = 1,
-             both free (bonus) = 4.
-    Since this is a reward, the penalty is returned with multiplier=-1.
+    Friday is paired with Saturday.
+    Monday is paired with Sunday.
+
+    Reward:
+    - free Friday or Monday: 1
+    - free adjacent weekend day: 1
+    - both days free: additional 4
+
+    The resulting expression is returned with multiplier -1 because the central
+    objective minimizes penalties.
     """
 
     id: ClassVar[str] = "free_days_near_weekend"
 
     def add_to_model(self, ctx: SolverContext, params: Mapping[str, Any]) -> tuple[Penalty, ...]:
+        del params
+
         if not ctx.assignment_variables:
             return ()
 
-        vars_by_employee_date: defaultdict[tuple[int, date], list[cp_model.IntVar]] = defaultdict(list)
-        for (employee_id, _unit, d, _shift, _level), var in ctx.assignment_variables.items():
-            vars_by_employee_date[(employee_id, d)].append(var)
+        variables_by_employee_date: defaultdict[
+            EmployeeDateKey,
+            list[cp_model.IntVar],
+        ] = defaultdict(list)
 
-        planning_dates_set = {key[2] for key in ctx.assignment_variables}
-        employee_ids = {key[0] for key in ctx.assignment_variables}
+        for (
+            employee_id,
+            _planning_unit_id,
+            assignment_date,
+            _shift_id,
+            _staff_level,
+        ), variable in ctx.assignment_variables.items():
+            variables_by_employee_date[(employee_id, assignment_date)].append(variable)
 
-        free_today_vars: list[cp_model.IntVar] = []
-        free_adjacent_vars: list[cp_model.IntVar] = []
-        free_both_vars: list[cp_model.IntVar] = []
+        planning_dates = self._planning_dates(ctx)
+        planning_date_set = set(planning_dates)
+
+        employee_ids = sorted(
+            {
+                employee_id
+                for (
+                    employee_id,
+                    _planning_unit_id,
+                    _assignment_date,
+                    _shift_id,
+                    _staff_level,
+                ) in ctx.assignment_variables
+            }
+        )
+
+        free_near_weekend_variables: list[cp_model.IntVar] = []
+        free_adjacent_variables: list[cp_model.IntVar] = []
+        free_both_variables: list[cp_model.IntVar] = []
 
         for employee_id in employee_ids:
-            for d in sorted(planning_dates_set):
-                if d.isoweekday() not in _NEAR_WEEKEND_DAYS:
+            for current_date in planning_dates:
+                if current_date.isoweekday() not in _NEAR_WEEKEND_DAYS:
                     continue
 
-                today_vars = vars_by_employee_date[(employee_id, d)]
+                adjacent_date = self._adjacent_weekend_date(current_date)
 
-                # Reward: near-weekend day (Friday/Monday) is free
-                free_today = ctx.model.new_bool_var(f"fdnw_free_today_e{employee_id}_d{d}")
-                if today_vars:
-                    ctx.model.add(sum(today_vars) == 0).only_enforce_if(free_today)
-                    ctx.model.add(sum(today_vars) >= 1).only_enforce_if(free_today.Not())
-                else:
-                    ctx.model.add(free_today == 1)
-                free_today_vars.append(free_today)
-
-                # Adjacent weekend day: Saturday for Friday, Sunday for Monday
-                adjacent = d + timedelta(days=1) if d.isoweekday() == 5 else d - timedelta(days=1)
-                if adjacent not in planning_dates_set:
+                if adjacent_date not in planning_date_set:
                     continue
 
-                adjacent_vars = vars_by_employee_date[(employee_id, adjacent)]
+                free_near_weekend = self._free_variable(
+                    ctx,
+                    variables_by_employee_date.get(
+                        (employee_id, current_date),
+                        [],
+                    ),
+                    name=(f"fdnw__free_near_e{employee_id}__d{current_date}"),
+                )
 
-                # Reward: the neighboring weekend day is also free
-                free_adj = ctx.model.new_bool_var(f"fdnw_free_adj_e{employee_id}_d{d}")
-                if adjacent_vars:
-                    ctx.model.add(sum(adjacent_vars) == 0).only_enforce_if(free_adj)
-                    ctx.model.add(sum(adjacent_vars) >= 1).only_enforce_if(free_adj.Not())
-                else:
-                    ctx.model.add(free_adj == 1)
-                free_adjacent_vars.append(free_adj)
+                free_adjacent = self._free_variable(
+                    ctx,
+                    variables_by_employee_date.get(
+                        (employee_id, adjacent_date),
+                        [],
+                    ),
+                    name=(f"fdnw__free_adjacent_e{employee_id}__d{current_date}"),
+                )
 
-                # Bonus reward: both the near-weekend day and adjacent weekend day are free
-                free_both = ctx.model.new_bool_var(f"fdnw_free_both_e{employee_id}_d{d}")
-                ctx.model.add_bool_and([free_today, free_adj]).only_enforce_if(free_both)
-                ctx.model.add_bool_or([free_today.Not(), free_adj.Not()]).only_enforce_if(free_both.Not())
-                free_both_vars.append(free_both)
+                free_both = ctx.model.new_bool_var(f"fdnw__free_both_e{employee_id}__d{current_date}")
 
-        if not free_today_vars:
+                ctx.model.add_min_equality(
+                    free_both,
+                    [free_near_weekend, free_adjacent],
+                )
+
+                free_near_weekend_variables.append(free_near_weekend)
+                free_adjacent_variables.append(free_adjacent)
+                free_both_variables.append(free_both)
+
+        if not free_near_weekend_variables:
             return ()
 
-        max_total = len(free_today_vars) + len(free_adjacent_vars) + 4 * len(free_both_vars)
-        total = ctx.model.new_int_var(0, max_total, "fdnw_total")
-        ctx.model.add(total == sum(free_today_vars) + sum(free_adjacent_vars) + 4 * sum(free_both_vars))
-        return (Penalty(objective_id=self.id, name="total", expression=total, multiplier=-1),)
+        maximum_reward = len(free_near_weekend_variables) + len(free_adjacent_variables) + 4 * len(free_both_variables)
+
+        total_reward = ctx.model.new_int_var(
+            0,
+            maximum_reward,
+            "fdnw__total_reward",
+        )
+
+        ctx.model.add(
+            total_reward
+            == sum(free_near_weekend_variables) + sum(free_adjacent_variables) + 4 * sum(free_both_variables)
+        )
+
+        return (
+            Penalty(
+                objective_id=self.id,
+                name="total_reward",
+                expression=total_reward,
+                multiplier=-1,
+            ),
+        )
+
+    @staticmethod
+    def _free_variable(
+        ctx: SolverContext, assignment_variables: Sequence[cp_model.IntVar], *, name: str
+    ) -> cp_model.IntVar:
+        worked = ctx.model.new_bool_var(f"{name}__worked")
+
+        if assignment_variables:
+            ctx.model.add_max_equality(
+                worked,
+                list(assignment_variables),
+            )
+        else:
+            ctx.model.add(worked == 0)
+
+        free = ctx.model.new_bool_var(name)
+        ctx.model.add(free + worked == 1)
+
+        return free
+
+    @staticmethod
+    def _adjacent_weekend_date(near_weekend_date: date) -> date:
+        if near_weekend_date.isoweekday() == 5:
+            return near_weekend_date + timedelta(days=1)
+
+        return near_weekend_date - timedelta(days=1)
+
+    @staticmethod
+    def _planning_dates(ctx: SolverContext) -> tuple[date, ...]:
+        dates: list[date] = []
+
+        current_date = ctx.dataset.planning_month.start
+        end_date = ctx.dataset.planning_month.end
+
+        while current_date <= end_date:
+            dates.append(current_date)
+            current_date += timedelta(days=1)
+
+        return tuple(dates)
 
     def audit(self, ctx: AuditContext, params: Mapping[str, Any]) -> tuple[AuditFinding, ...]:
         return ()
