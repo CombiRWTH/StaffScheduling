@@ -10,6 +10,8 @@ from scheduling.api.solve.job_store import InMemorySolveJobStore
 from scheduling.api.solve.router import solve_router
 from scheduling.api.web.employee_router import employee_router
 from scheduling.api.web.minimal_staff_router import minimal_staff_router
+from scheduling.api.web.schedule_router import schedule_router
+from scheduling.api.web.weights_router import weights_router
 from scheduling.api.web.wishes_availabilities_router import wishes_and_availabilities_router
 from scheduling.logging import configure_logging
 from scheduling.settings import get_settings
@@ -19,6 +21,9 @@ from scheduling.timeoffice.database import create_db_engine
 from scheduling.timeoffice.facts import TIMEOFFICE_FACTS
 from scheduling.timeoffice.reading.container import TimeOfficeReaders
 from scheduling.timeoffice.service import TimeOfficeService
+from scheduling.timeoffice.writing.demand import TimeOfficeDemandWriter
+from scheduling.timeoffice.writing.objective_weights import TimeOfficeWeightsWriter
+from scheduling.timeoffice.writing.roster import TimeOfficeAvailabilityWriter
 from scheduling.timeoffice.writing.solution import TimeOfficeSolutionWriter
 from scheduling.timeoffice.writing.wishes import TimeOfficeWishWriter
 
@@ -44,6 +49,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
             wish_writer=TimeOfficeWishWriter(
                 target_planning_status_id=facts.target_planning_status_id,
             ),
+            demand_writer=TimeOfficeDemandWriter(),
+            objective_weights_writer=TimeOfficeWeightsWriter(),
+            availability_writer=TimeOfficeAvailabilityWriter(),
         ),
         solver_service=SolverService(
             settings=settings,
@@ -60,11 +68,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 
 app = FastAPI(title="Staff Scheduling API", lifespan=lifespan)
-app.include_router(solve_router)
 app.include_router(employee_router)
-# app.include_router(weights_router)
+app.include_router(weights_router)
 app.include_router(wishes_and_availabilities_router)
 app.include_router(minimal_staff_router)
+app.include_router(schedule_router)
+app.include_router(solve_router)
 
 
 @app.get("/status")

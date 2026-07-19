@@ -286,3 +286,28 @@ class TimeOfficeWishWriter:
                 "end": planning_month.end,
             },
         )
+
+    def replace_employee_wishes(
+        self,
+        *,
+        connection: Connection,
+        planning_unit_id: int,
+        planning_month: PlanningMonth,
+        employee_id: int,
+        wishes: tuple[Wish, ...],
+        facts: TimeOfficeFacts,
+    ) -> None:
+        self.delete_employee_wishes(
+            connection=connection,
+            planning_unit_id=planning_unit_id,
+            planning_month=planning_month,
+            employee_id=employee_id,
+        )
+
+        self.insert_wishes(
+            connection=connection,
+            planning_unit_id=planning_unit_id,
+            planning_month=planning_month,
+            wishes=wishes,
+            facts=facts,
+        )
