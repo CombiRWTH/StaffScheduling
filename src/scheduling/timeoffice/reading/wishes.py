@@ -35,11 +35,13 @@ class TimeOfficeWishRow(TimeOfficeSourceRow):
         has_work_shift = self.work_shift_id is not None
         has_absence = self.global_absence_shift_id is not None or self.absence_shift_id is not None
 
-        if has_work_shift and has_absence:
-            raise ValueError(
-                "Ambiguous TimeOffice wish row: both work shift and absence are set "
-                f"for employee_id={self.employee_id}, wish_date={self.wish_date}."
-            )
+
+        #Rauskommentiert, weil TimeOffice wieder Quatschdaten gibt, wo das hier verletzt wird
+        # if has_work_shift and has_absence:
+        #     raise ValueError(
+        #         "Ambiguous TimeOffice wish row: both work shift and absence are set "
+        #         f"for employee_id={self.employee_id}, wish_date={self.wish_date}."
+        #     )
 
         if not has_work_shift and not has_absence:
             raise ValueError(

@@ -5,17 +5,51 @@ from typing import Any
 from scheduling.domain import SchedulingDataset
 from scheduling.solver.config import SolverConfig, create_base_solver_config
 from scheduling.solver.cp_sat.constraint import Constraint
+from scheduling.solver.cp_sat.constraints.availabilities_constraint import AvailabilitiesConstraint
+from scheduling.solver.cp_sat.constraints.free_day_after_night_shift_phase import FreeDayAfterNightShiftPhase
+from scheduling.solver.cp_sat.constraints.hierarchy_of_intermediate_shifts import HierarchyOfIntermediateShifts
 from scheduling.solver.cp_sat.constraints.minimum_staffing import MinimumStaffing
+from scheduling.solver.cp_sat.constraints.one_assignment_per_day import OneAssignmentPerDay
+from scheduling.solver.cp_sat.constraints.rounds_in_early_shift import RoundsInEarlyShift
+from scheduling.solver.cp_sat.constraints.target_working_time import TargetWorkingTime
 from scheduling.solver.cp_sat.context import SolverContext, create_context
 from scheduling.solver.cp_sat.objective import Objective, WeightedPenalty, minimize_weighted_penalties
+from scheduling.solver.cp_sat.objectives.every_second_weekend_free import EverySecondWeekendFree
+from scheduling.solver.cp_sat.objectives.fair_preferences import FairPreferencesObjective
+from scheduling.solver.cp_sat.objectives.free_day_after_night_shift_phase import FreeDaysAfterNightShiftPhase
+from scheduling.solver.cp_sat.objectives.free_days_near_weekend import FreeDaysNearWeekend
+from scheduling.solver.cp_sat.objectives.minimize_consecutive_night_shifts import MinimizeConsecutiveNightShifts
+from scheduling.solver.cp_sat.objectives.minimize_overtime import MinimizeOvertime
+from scheduling.solver.cp_sat.objectives.not_too_many_consecutive_days import NotTooManyConsecutiveDays
+from scheduling.solver.cp_sat.objectives.preferred_block_length import PreferredBlockLength
+from scheduling.solver.cp_sat.objectives.rotate_shits_foward import RotateShiftsForward
 from scheduling.solver.cp_sat.objectives.temporary_balance_generated_assignments import (
     TemporaryBalanceGeneratedAssignments,
 )
 from scheduling.solver.cp_sat.variables import create_assignment_variables
 
-CP_SAT_CONSTRAINTS: tuple[Constraint, ...] = (MinimumStaffing(),)
+CP_SAT_CONSTRAINTS: tuple[Constraint, ...] = (
+    MinimumStaffing(),
+    FreeDayAfterNightShiftPhase(),
+    RoundsInEarlyShift(),
+    AvailabilitiesConstraint(),
+    HierarchyOfIntermediateShifts(),
+    OneAssignmentPerDay(),
+    TargetWorkingTime(),
+)
 
-CP_SAT_OBJECTIVES: tuple[Objective, ...] = (TemporaryBalanceGeneratedAssignments(),)
+CP_SAT_OBJECTIVES: tuple[Objective, ...] = (
+    TemporaryBalanceGeneratedAssignments(),
+    MinimizeOvertime(),
+    NotTooManyConsecutiveDays(),
+    PreferredBlockLength(),
+    RotateShiftsForward(),
+    EverySecondWeekendFree(),
+    FairPreferencesObjective(),
+    FreeDaysAfterNightShiftPhase(),
+    MinimizeConsecutiveNightShifts(),
+    FreeDaysNearWeekend(),
+)
 
 
 @dataclass(frozen=True, slots=True)

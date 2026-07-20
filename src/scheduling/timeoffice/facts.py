@@ -82,6 +82,7 @@ class TimeOfficeFacts:
     work_shift_type_id: int
 
     reference_shift_facts_by_id: Mapping[ShiftId, TimeOfficeReferenceShiftFact]
+    wish_absence_shift_id_by_type: Mapping[WishType, int]
 
     # Non-reference source shift IDs normalized to reduced reference shifts.
     # Missing source shift ID => fail loudly in mapping.
@@ -106,6 +107,9 @@ class TimeOfficeFacts:
 
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
+
+    target_working_time_tolerance_less: int
+    target_working_time_tolerance_more: int
 
 
 REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = MappingProxyType(
@@ -149,7 +153,8 @@ SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
         2866: NIGHT_SHIFT_ID,  # N5
         # Day/intermediate variant normalized to canonical T75_ intermediate shift.
         2994: INTERMEDIATE_SHIFT_ID,  # T8x
-        3066: INTERMEDIATE_SHIFT_ID,  # Z52
+        1234: INTERMEDIATE_SHIFT_ID,
+        1356: INTERMEDIATE_SHIFT_ID,
     }
 )
 
@@ -190,7 +195,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "A-81302-016": StaffLevel.TRAINEE,  # A-Pflegefachkraft Kinderkrankenpflege
         "A-81302-018": StaffLevel.TRAINEE,  # A-Pflegefachkraft Krankenpflege
         "A-81302-019": StaffLevel.TRAINEE,  # A-Pflegefachkraft Altenpflege
-        "-": StaffLevel.TRAINEE,  # Schauen was für eine Profession das ist
+        "-": StaffLevel.TRAINEE,  # Später herausfinden was das für eine Profession ist
     }
 )
 
@@ -305,4 +310,6 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,
     monthly_actual_work_account_id=MONTHLY_ACTUAL_WORK_ACCOUNT_ID,
+    target_working_time_tolerance_less=500,
+    target_working_time_tolerance_more=500,
 )
