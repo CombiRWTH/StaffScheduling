@@ -1,136 +1,166 @@
-# Adding a New Objective to the Shift Scheduling System
+# How to Add a New Objective
 
-This guide explains how to create and integrate a new objective into the shift scheduling system.
+This guide explains how to create and register a new **soft optimization objective** in the CP-SAT solver.
+
+---
 
 ## Overview
 
-Objectives define what the solver should optimize when generating shift plans. They can minimize undesirable outcomes (like overtime) or maximize desirable ones (like employee satisfaction). Multiple objectives can be combined with different weights to balance competing goals.
+Unlike hard constraints (which must be 100% satisfied), **objectives represent preferences, ergonomic recommendations, or fairness goals**.
+
+Objectives do not make a schedule infeasible. Instead, they define **penalties** for undesirable patterns (e.g. working weekends, backward shift rotations, or unfulfilled wishes). The solver minimizes the weighted sum of all penalties:
+
+$$\text{minimize} \sum_i w_i \cdot P_i$$
+
+Where $w_i$ is the user-configured weight multiplier, and $P_i$ is the penalty expression.
+
+Every objective must conform to the **[`Objective`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/objective.py)** protocol:
+
+```python
+class Objective(Protocol):
+    id: ClassVar[str]
+
+    def add_to_model(
+        self,
+        ctx: SolverContext,
+        params: Mapping[str, Any],
+    ) -> tuple[Penalty, ...]: ...
+
+    def audit(
+        self,
+        ctx: AuditContext,
+        params: Mapping[str, Any],
+    ) -> tuple[AuditFinding, ...]: ...
+```
+
+---
+
+## The `Penalty` Dataclass
+
+When implementing `add_to_model`, your objective returns a tuple of **`Penalty`** instances:
+
+```python
+@dataclass(frozen=True, slots=True)
+class Penalty:
+    objective_id: str             # Matches self.id
+    name: str                     # Descriptive name (e.g. "weekend_shift_penalty")
+    expression: cp_model.LinearExpr  # IntVar, BoolVar, or linear sum to minimize
+    multiplier: int = 1           # Internal scaling multiplier
+```
+
+!!! important "Weight Separation"
+    Objectives **never** apply the global user weight directly. The model builder in [`builder.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/builder.py) retrieves user weights centrally from `ctx.dataset.objective_weights` and multiplies them automatically.
+
+---
 
 ## Step 1: Create the Objective Class
 
-Create a new Python file in the `cp/objectives/` directory:
+Create a new file under [`src/scheduling/solver/cp_sat/objectives/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/objectives/), for example `minimize_weekend_shifts.py`:
 
 ```python
-# cp/objectives/your_new_objective.py
-from ortools.sat.python.cp_model import CpModel, IntVar, LinearExpr
+from collections.abc import Mapping
+from typing import Any, ClassVar
 
-from src.day import Day
-from src.employee import Employee
-from src.shift import Shift
+from ortools.sat.python import cp_model
 
-from ..variables import EmployeeWorksOnDayVariables, ShiftAssignmentVariables
-from .objective import Objective
+from scheduling.solver.audit import AuditFinding, AuditSeverity
+from scheduling.solver.cp_sat.context import AuditContext, SolverContext
+from scheduling.solver.cp_sat.objective import Penalty
 
 
-class YourNewObjective(Objective):
-    @property
-    def KEY(self) -> str:
-        """
-        Returns a unique identifier of this class
-        """
-        return "a legacy artifact which usually carries the same name as the constraint."
+class MinimizeWeekendShifts:
+    """Penalize assigning employees to shifts on Saturdays and Sundays."""
 
-    def __init__(
-        self,
-        weight: float,
-        employees: list[Employee],
-        days: list[Day],
-        shifts: list[Shift],
- ):
-        """
-        Initialize your objective with the necessary data.
+    id: ClassVar[str] = "minimize_weekend_shifts"
 
-        Args:
-        weight: Multiplier for this objective's contribution to the total objective
-        employees: List of all employees
-        days: List of dates in the planning period
-        shifts: List of available shifts
-        """
-        super().__init__(weight, employees, days, shifts)
-        # Add any additional initialization here
+    def add_to_model(
+        self,
+        ctx: SolverContext,
+        params: Mapping[str, Any],
+    ) -> tuple[Penalty, ...]:
+        del params
 
-    def create(
-        self,
-        model: CpModel,
-        shift_assignment_variables: ShiftAssignmentVariables,
-        employee_works_on_day_variables: EmployeeWorksOnDayVariables,
- ) -> LinearExpr:
-        """
-        Define the objective logic using OR-Tools.
-        This method is called during model creation.
+        weekend_vars: list[cp_model.IntVar] = []
 
-        Returns:
-        linear expression = The objective term to be optimized
-        """
-        # Your objective implementation here
-        # Must return an expression that will be minimized
-        pass
+        # Find all assignment variables scheduled on Saturdays (weekday 5) or Sundays (weekday 6)
+        for (_emp_id, _unit_id, assignment_date, _shift_id, _role), var in ctx.assignment_variables.items():
+            if assignment_date.weekday() in (5, 6):
+                weekend_vars.append(var)
+
+        if not weekend_vars:
+            return ()
+
+        # Sum of all weekend shifts worked
+        total_weekend_shifts = sum(weekend_vars)
+
+        return (
+            Penalty(
+                objective_id=self.id,
+                name="total_weekend_shifts",
+                expression=total_weekend_shifts,
+                multiplier=1,
+            ),
+        )
+
+    def audit(
+        self,
+        ctx: AuditContext,
+        params: Mapping[str, Any],
+    ) -> tuple[AuditFinding, ...]:
+        del params
+
+        # Count weekend shifts in the generated roster
+        total_weekend_assignments = sum(
+            1 for a in ctx.solution.assignments if a.date.weekday() in (5, 6)
+        )
+
+        return (
+            AuditFinding(
+                code="weekend_shifts.count",
+                severity=AuditSeverity.INFO,
+                source_id=self.id,
+                message=f"Total weekend shifts scheduled: {total_weekend_assignments}.",
+            ),
+        )
 ```
 
-## Step 2: Implement the Objective Logic
+---
 
-The `create` method is where you define your objective using OR-Tools CP-SAT API. The returned expression will be **minimized** by the solver:
+## Step 2: Register the Objective in the Builder
 
-```python
-# an example objective, which encourages free days after a night shift phase
-def create(
-    self,
-    model: CpModel,
-    shift_assignment_variables: ShiftAssignmentVariables,
-    employee_works_on_day_variables: EmployeeWorksOnDayVariables,
-) -> LinearExpr:
-    penalties: list[IntVar] = []
-
-    for employee in self._employees:
-        for day in self._days[:-2]:
-            night_var = shift_assignment_variables[employee][day][self._shifts[Shift.NIGHT]]
-            next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=1)]
-            after_next_day_var = employee_works_on_day_variables[employee][day + timedelta(days=2)]
-            penalty_var = model.new_bool_var(f"free_days_after_night_{employee.get_key()}_{day}")
-
-            model.add(penalty_var == 1).only_enforce_if([night_var, next_day_var.Not(), after_next_day_var])
-            model.add(penalty_var == 0).only_enforce_if(night_var.Not())
-
-            penalties.append(penalty_var)
-
-    return cast(LinearExpr, sum(penalties) * self.weight)
-```
-
-## Step 3: Export the Objective
-
-Add your objective to the `__init__.py` files:
+Add your objective to `CP_SAT_OBJECTIVES` in [`src/scheduling/solver/cp_sat/builder.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/builder.py):
 
 ```python
-# cp/objectives/__init__.py
-from .your_new_objective import YourNewObjective as YourNewObjective
-```
+from scheduling.solver.cp_sat.objectives.minimize_weekend_shifts import MinimizeWeekendShifts
 
-```python
-# cp/__init__.py
-from .objectives import (
-    # ... existing imports ...
-    YourNewObjective as YourNewObjective
+CP_SAT_OBJECTIVES: tuple[Objective, ...] = (
+    TemporaryBalanceGeneratedAssignments(),
+    MinimizeOvertime(),
+    NotTooManyConsecutiveDays(),
+    PreferredBlockLength(),
+    RotateShiftsForward(),
+    EverySecondWeekendFree(),
+    FairPreferencesObjective(),
+    FreeDaysAfterNightShiftPhase(),
+    MinimizeConsecutiveNightShifts(),
+    FreeDaysNearWeekend(),
+    MinimizeWeekendShifts(),  # <-- Register new objective here
 )
 ```
 
-## Step 4: Register in solve.py
+---
 
-Add your objective to the main solver script:
+## Step 3: Configure Weights
 
-```python
-# solve.py
-from cp import (
-    # ... existing imports ...
-    YourNewObjective,
-)
+To control how heavily CP-SAT penalizes this objective relative to other goals:
 
-def main():
-    # ...
-
-    constraints = [
-        # ... existing constraints ...
-        YourNewObjective(1.0, employees=employees, days=days, shifts=shifts),
-    ]
-
-    # ...
-```
+1. **Via the Web Interface (StaffSchedulingWeb):** Adjust the weight slider under the **Weights** configuration page.
+2. **Via the REST API:** Update the weight through `PUT /weights`.
+3. **Via Offline JSON Cases:** Add the objective key to `cases/{case_id}/{MM_YYYY}/weights.json`:
+   ```json
+   {
+       "minimize_weekend_shifts": 3,
+       "wishes": 4,
+       "overtime": 2
+   }
+   ```

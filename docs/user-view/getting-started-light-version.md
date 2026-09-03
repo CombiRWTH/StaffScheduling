@@ -3,9 +3,9 @@
 
 Before setting up the project, make sure the following tools are installed on your system:
 
-### 1. Install [Python 3.10+](https://www.python.org/downloads/)
+### 1. Install [Python 3.12+](https://www.python.org/downloads/)
 
-This project requires **Python 3.10 or higher**.
+This project requires **Python 3.12 or higher**.
 
 Open your terminal (Mac) or Command Prompt (Windows). Check whether and which version of python you have installed by running:
 

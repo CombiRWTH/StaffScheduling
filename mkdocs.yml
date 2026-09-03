@@ -29,6 +29,7 @@ nav:
       - Web Interface (StaffSchedulingWeb): developer-view/web-interface.md
       - Google's OR Tools and SAT-Solver: developer-view/ortools.md
       - Codebase Overview: developer-view/codebase-overview.md
+      - Domain Data Model: developer-view/domain-data-model.md
       - Getting-Started (Dev): developer-view/getting-started-dev.md
       - Conditions:
           - Constraints:

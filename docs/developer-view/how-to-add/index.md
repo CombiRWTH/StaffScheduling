@@ -1,35 +1,38 @@
-# Introduction
-This chapter provides step-by-step guides for extending the shift scheduling system with new components. The system is designed to be modular and extensible, allowing you to add custom logic for your specific scheduling requirements.
+# Extending the Solver (How-To Guides)
 
-## Overview
-The shift scheduling system has three main extensible components:
+This section provides step-by-step developer guides for extending the **Google OR-Tools CP-SAT** optimization engine with new business rules, goals, and decision variables.
 
-### Variables
-**Decision elements** that the solver can set when creating a schedule. Variables represent binary choices like "Does employee X work shift Y on day Z?"
+---
 
-### Constraints
-**Rules and requirements** that must be satisfied in any valid schedule. Constraints define what is allowed or forbidden, such as "An employee cannot work more than 8 hours per day".
+## The Three Extensible Components
 
-### Objectives
-**Goals to optimize** when multiple valid schedules exist. Objectives define what makes one schedule better than another, such as "Minimize overtime hours".
+The solver architecture is organized around three primary concepts:
 
-## When to Add Each Component
-### **[Adding Variables](./how-to-add-variable.md)**
+### 1. [Adding Variables](./how-to-add-variable.md)
+* **Decision Variables:** Represent choices the solver makes (e.g. `x[e, u, d, s, l] ∈ {0, 1}`).
+* **Intermediate / Helper Variables:** Defined inside constraints or objectives to model complex non-linear expressions (e.g., whether an employee worked on a given day, cumulative overtime minutes, or consecutive shift streak lengths).
 
-- You need to track new decision points in your scheduling problem
-- You want to introduce new types of assignments or allocations
-- You need intermediate calculations that other constraints or objectives will reference
+### 2. [Adding Constraints](./how-to-add-constraint.md)
+* **Hard Feasibility Rules:** Rules that **must** be satisfied in every generated schedule (e.g. maximum 1 shift per day, mandatory 11-hour rest time, minimum required staffing, monthly contracted hours).
+* Any schedule violating a hard constraint is rejected by CP-SAT as **infeasible**.
+* Conforms to the [`Constraint`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/constraint.py) protocol.
 
-### **[Adding Constraints](./how-to-add-constraint.md)**
+### 3. [Adding Objectives](./how-to-add-objective.md)
+* **Soft Optimization Goals:** Preferences and ergonomic guidelines that **should** be maximized or minimized (e.g. employee shift wishes, alternating weekends off, minimizing consecutive nights, clockwise shift rotation).
+* Evaluated into integer `Penalty` expressions and multiplied by user-configured weights from `/weights`.
+* Conforms to the [`Objective`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/objective.py) protocol.
 
-- You have new business rules or requirements that must be enforced
-- You need to ensure certain scheduling patterns are followed or avoided
-- You want to add compliance requirements or safety regulations
+---
 
-### **[Adding Objectives](./how-to-add-objective.md)**
+## When to Use Which Component?
 
-- You want to optimize for new criteria beyond existing goals
-- You need to balance competing priorities in your scheduling decisions
-- You want to improve specific aspects of schedule quality
+| Requirement | Use a Constraint | Use an Objective |
+|---|:---:|:---:|
+| Legal labor regulations (e.g. 11h rest period, max working hours) | ✅ | ❌ |
+| Hospital ward safety minimums (e.g. 2 professionals in early shift) | ✅ | ❌ |
+| Hard contracts (e.g. approved vacation days, employee cannot work nights) | ✅ | ❌ |
+| Individual nurse shift preferences and requested off-days | ❌ | ✅ |
+| Ergonomic shift patterns (e.g. avoiding 6 nights in a row, forward rotation) | ❌ | ✅ |
+| Fairness and equitable distribution of unpopular shifts | ❌ | ✅ |
 
-For more information about the overall system architecture, see the [Codebase Overview](../codebase-overview.md).
+For an overview of the solver model builder and execution lifecycle, see the [Codebase Overview](../codebase-overview.md) and [Google OR-Tools and CP-SAT Solver](../ortools.md).
