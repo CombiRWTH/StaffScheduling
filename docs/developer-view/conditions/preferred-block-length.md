@@ -2,13 +2,20 @@
 user-view/list-of-conditions.md:preferred-block-length
 --8<--
 
-### Implemented using Google's OR Tools
+### Implemented using Google's OR-Tools
 
-```python title="src/cp/objectives/rotate_shifts_forward.py"
-for length, var in [(len, cast(IntVar, var)) for (len, var) in block_length_vars]:
-    k: int = abs(length - self._target_block_length)
-    penalties.append(k * var)
-penalties.append(
-    abs((self._max_block_length + 1) - self._target_block_length) * unmatched_block,
-)
+```python title="src/scheduling/solver/cp_sat/objectives/preferred_block_length.py"
+# Penalize shift streaks that deviate from the optimal ergonomic block length (e.g. 3-4 days)
+for length, var in block_length_vars:
+    deviation = abs(length - target_block_length)
+    penalties.append(
+        Penalty(
+            objective_id=self.id,
+            name=f"block_length_deviation_{length}",
+            expression=var,
+            multiplier=deviation,
+        )
+    )
 ```
+
+Working single isolated shifts or overly long streaks causes circadian fatigue. This objective penalizes blocks that deviate from the station's target block length (e.g. 3–4 days of the same shift type).

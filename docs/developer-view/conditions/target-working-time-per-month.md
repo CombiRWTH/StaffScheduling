@@ -2,19 +2,16 @@
 user-view/list-of-conditions.md:target-working-time
 --8<--
 
-!!! Bug There are blocked days and vacation days. Since vacation days are paid they should count towards the monthly target working time. Blocked days on the other hand should NOT count towards the monthly target working time, but they do in the current implementation. This was introduced to be able to find feasible solutions, but this has to be corrected eventually. The corresponding issue can be found [here](https://github.com/CombiRWTH/StaffScheduling/issues/249).
+### Implemented using Google's OR-Tools
 
-!!! Bug exclusive shifts do not count towards the total working time of an employee, since most of our instances do not have a feasible solution if they do. The corresponding issue can be found [here](https://github.com/CombiRWTH/StaffScheduling/issues/294).
-
-### Implemented using Google's OR Tools
-
-```python title="src/cp/constraints/target_working_time.py"
-model.add(working_time_variable <= target_working_time + TOLERANCE_MORE)
-model.add(working_time_variable >= target_working_time - TOLERANCE_LESS)
+```python title="src/scheduling/solver/cp_sat/constraints/target_working_time.py"
+# Enforce that total generated working minutes fall within tolerance of monthly target
+ctx.model.add(total_working_minutes <= target_max).with_name(
+    f"target_time_upper_emp_{employee_id}"
+)
+ctx.model.add(total_working_minutes >= target_min).with_name(
+    f"target_time_lower_emp_{employee_id}"
+)
 ```
 
-For employee create a variable representing the total work time in minutes which we restrict to being in [`target_working_time - TOLERANCE_LESS`, `target_working_time + TOLERANCE_MORE`].
-
-!!! note
-
-    Please note that we made an exception for the employee "Milburn Loremarie", because her `target-actual` time does not match the availabe shifts. She only has three not forbidden / not blocked days on which we need to work 30+ hours, this does not add up.
+For each employee, the solver calculates the sum of worked shift minutes (`sum(shift.duration_minutes * var)`). This is bounded within `[target_min, target_max]` (typically within ±1 shift duration of the employee's contracted hours). Deviations from the exact target are additionally penalized by the [Minimize Overtime and Undertime](./minimize-overtime-and-undertime.md) objective.
