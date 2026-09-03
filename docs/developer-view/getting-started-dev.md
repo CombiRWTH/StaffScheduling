@@ -153,7 +153,7 @@ just debug
 
 ### 4. Running the Web Interface (StaffSchedulingWeb)
 
-The graphical user interface is developed in a companion repository: **[StaffSchedulingWeb](https://github.com/julian466.github.io/StaffSchedulingWeb/)**.
+The graphical user interface is developed in a companion repository: **[StaffSchedulingWeb](https://github.com/julian466/StaffSchedulingWeb)**.
 
 1. Start the backend API on port `8000` (`just run` or `uv run fastapi dev ...`).
 2. Clone and start the Next.js frontend:

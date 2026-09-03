@@ -1,5 +1,6 @@
 # Database Queries
-Overview of the queries used to retrieve the needed personal data from the database. All of these queries can be found within the `export_data.py`-file, each capsulated in a separate function for simplified expansion.
+
+Overview of the SQL queries used to retrieve data from the TimeOffice database. These queries were originally in a single `export_data.py` file and have since been refactored into modular readers in [`src/scheduling/timeoffice/reading/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/timeoffice/reading/) (e.g. `personnel.py`, `demand.py`, `wishes.py`, `roster.py`, `work_accounts.py`). The SQL shown here reflects the underlying logic used in those readers.
 
 ## Basic Plan Data
 

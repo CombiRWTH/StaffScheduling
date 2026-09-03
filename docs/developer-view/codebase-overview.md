@@ -88,12 +88,13 @@ StaffScheduling/
 │       │   └── service.py             # TimeOfficeService coordinator
 │       ├── solver/                    # Optimization engine
 │       │   ├── service.py             # SolverService coordinator
+│       │   ├── config.py              # SolverConfig & default constraint/objective settings
 │       │   ├── audit.py               # Post-solve constraint audit engine
 │       │   ├── diagnostics.py         # Diagnostic models
 │       │   ├── models.py              # Solution models & status codes
 │       │   └── cp_sat/                # Google OR-Tools CP-SAT implementation
 │       │       ├── builder.py         # Model assembly pipeline
-│       │       ├── context.py         # SolverContext & indexing
+│       │       ├── context.py         # SolverContext & AuditContext
 │       │       ├── variables.py       # Decision variable generation
 │       │       ├── constraint.py      # Constraint protocol
 │       │       ├── objective.py       # Objective protocol & penalty types
@@ -105,6 +106,11 @@ StaffScheduling/
 │       │   ├── dependencies.py        # Runtime dependency injection
 │       │   ├── solve/                 # Asynchronous solve job endpoints
 │       │   └── web/                   # Endpoints for StaffSchedulingWeb UI
+│       │       ├── employee_router.py
+│       │       ├── minimal_staff_router.py
+│       │       ├── schedule_router.py
+│       │       ├── weights_router.py
+│       │       └── wishes_availabilities_router.py
 │       ├── settings.py                # Environment & configuration settings
 │       └── logging.py                 # Centralized logging configuration
 ├── cases/                             # Offline test cases / JSON snapshots
@@ -161,8 +167,7 @@ Built on **Google OR-Tools CP-SAT**:
   * `one_assignment_per_day`: At most one shift per person per calendar day.
   * `minimum_staffing`: Required number of qualified staff per shift.
   * `availabilities_constraint`: Respects approved vacations, sick leave, and blocked shifts.
-  * `min_rest_time`: Mandatory 11-hour rest interval between consecutive shifts.
-  * `free_day_after_night_shift_phase`: Recovery day after a night shift streak.
+  * `free_day_after_night_shift_phase`: Enforces the mandatory recovery day after a night shift streak (also covers the 11-hour rest rule implicitly via shift time windows).
   * `target_working_time`: Bounded monthly contracted hours.
   * `rounds_in_early_shift`: Guarantees staff qualified for ward rounds (*Visiten*).
   * `hierarchy_of_intermediate_shifts`: Rules for auxiliary/intermediate shifts.

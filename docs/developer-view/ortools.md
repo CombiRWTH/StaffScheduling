@@ -117,6 +117,49 @@ SOLVER_LOG_SEARCH_PROGRESS=true
 
 ---
 
+## SolverConfig — Enabling, Disabling & Default Weights
+
+Between the `SchedulingDataset` and the individual constraint/objective classes sits a [`SolverConfig`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/config.py) layer managed by [`create_base_solver_config()`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/config.py). This is the single place where:
+
+* Constraints and objectives are **enabled or disabled** without changing model code.
+* **Default penalty weights** are configured for objectives.
+* Per-component `params` dictionaries can be passed to constraint/objective `add_to_model` calls.
+
+```python
+# src/scheduling/solver/config.py
+def create_base_solver_config() -> SolverConfig:
+    return SolverConfig(
+        constraints={
+            MinimumStaffing.id:              ConstraintConfig(enabled=True),
+            FreeDayAfterNightShiftPhase.id:  ConstraintConfig(enabled=True),
+            RoundsInEarlyShift.id:           ConstraintConfig(enabled=True),
+            AvailabilitiesConstraint.id:     ConstraintConfig(enabled=True),
+            HierarchyOfIntermediateShifts.id: ConstraintConfig(enabled=True),
+            OneAssignmentPerDay.id:          ConstraintConfig(enabled=True),
+            TargetWorkingTime.id:            ConstraintConfig(enabled=True),
+        },
+        objectives={
+            TemporaryBalanceGeneratedAssignments.id: ObjectiveConfig(enabled=True, weight=1),
+            MinimizeOvertime.id:                     ObjectiveConfig(enabled=True, weight=100),
+            NotTooManyConsecutiveDays.id:            ObjectiveConfig(enabled=True, weight=1),
+            PreferredBlockLength.id:                 ObjectiveConfig(enabled=True, weight=1),
+            RotateShiftsForward.id:                  ObjectiveConfig(enabled=True, weight=1),
+            EverySecondWeekendFree.id:               ObjectiveConfig(enabled=True, weight=1),
+            FairPreferencesObjective.id:             ObjectiveConfig(enabled=True, weight=1),
+            FreeDaysAfterNightShiftPhase.id:         ObjectiveConfig(enabled=True, weight=1),
+            FreeDaysNearWeekend.id:                  ObjectiveConfig(enabled=True, weight=1),
+            MinimizeConsecutiveNightShifts.id:       ObjectiveConfig(enabled=True, weight=1),
+        },
+    )
+```
+
+!!! important "Required constraints cannot be disabled"
+    Constraints marked `required: ClassVar[bool] = True` will raise a `ValueError` if you attempt to set `enabled=False` in the config. This prevents accidental removal of safety-critical rules.
+
+The `weight` in `ObjectiveConfig` is the **internal code-level default** and is separate from the user-facing weights stored in `SolverObjectiveWeights` (which come from TimeOffice or `weights.json`). The actual penalty multiplier applied is `config_weight × user_weight × penalty.multiplier`.
+
+---
+
 ## Visualizing Solver Progress (CP-SAT Log Analyzer)
 
 When `SOLVER_LOG_SEARCH_PROGRESS=true` is enabled, CP-SAT outputs search progress containing bound improvements, search worker statistics, and conflict counts:
