@@ -4,30 +4,41 @@ user-view/configuration/index.md:only-json-files-note
 
 ### Weights Configuration
 
-Weights control the relative importance of optimization objectives (for example overtime vs. wishes).
+Weights control the relative importance of soft optimization objectives. Since real-world hospital goals often compete with one another (for example, granting every employee wish versus keeping overtime strictly minimal), the solver uses these weights to prioritize trade-offs.
 
-Current behavior:
+#### Available Objective Weights
 
-- If present, weights are loaded from `cases/{case_id}/{MM_YYYY}/weights.json`.
-- If that file is missing, built-in defaults are used.
+| Key | Default Weight | Clinical Purpose |
+|---|:---:|---|
+| `wishes` | `3` | Fulfill employee shift wishes and preferred days off. |
+| `overtime` | `4` | Minimize deviations from monthly contracted working hours. |
+| `fairness` | `3` | Equitably distribute wishes and night shifts among all eligible nurses. |
+| `free_weekend` | `3` | Maximize complete free weekends (both Saturday and Sunday off). |
+| `second_weekend` | `1` | Enforce alternating weekends off (working at most every second weekend). |
+| `consecutive_nights` | `2` | Penalize prolonged streaks of consecutive night shifts. |
+| `after_night` | `3` | Ensure adequate recovery days following a night shift phase. |
+| `consecutive_days` | `1` | Avoid excessive consecutive working days without a rest day. |
+| `rotate` | `1` | Encourage forward, clockwise shift progression (Early $\rightarrow$ Late $\rightarrow$ Night). |
 
-Example file:
+#### Configuration in Practice
+
+* **Web Interface (StaffSchedulingWeb):** The preferred method is to adjust the weight sliders in the **Weights** section of the web interface. Changes are saved directly to the database via `PUT /weights`.
+* **Offline / Light Mode:** Weights are loaded from `cases/{case_id}/{MM_YYYY}/weights.json`. If this file is omitted, the built-in defaults shown above are used automatically.
+
+Example `weights.json`:
 
 ```json
 {
-    "free_weekend": 2,
-    "consecutive_nights": 2,
-    "hidden": 100,
-    "hidden_count": 1000000,
-    "overtime": 4,
-    "consecutive_days": 1,
-    "rotate": 1,
     "wishes": 3,
+    "overtime": 4,
+    "fairness": 3,
+    "free_weekend": 3,
+    "second_weekend": 1,
+    "consecutive_nights": 2,
     "after_night": 3,
-    "second_weekend": 1
+    "consecutive_days": 1,
+    "rotate": 1
 }
 ```
 
-Use larger values to prioritize an objective more strongly. Values can be `0` or fractional if desired.
-
-When using StaffSchedulingWeb, the preferred way is to adjust weights in the UI.
+Higher weight values prioritize an objective more aggressively during the CP-SAT optimization process. A weight of `0` effectively turns off penalties for that objective.

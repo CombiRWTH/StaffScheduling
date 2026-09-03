@@ -101,7 +101,7 @@ Therefore, at least one qualified employee needs to be assigned to an early shif
 # --8<-- [start:target-working-time]
 Each employee has an individual monthly work target.
 This target is considered a hard constraint because it must be met within a certain range.
-A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the [objective](#minimize-overtime-and-undertime) function to ensure minimal overtime/undertime.
+A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the soft objective function to ensure minimal overtime/undertime.
 Therefore, the total working time must fall within the range of all possible shift combinations and the target working time range.
 # --8<-- [end:target-working-time]
 
@@ -113,20 +113,21 @@ Vacation days must remain free, and the day before a vacation day no night shift
 
 
 # Objectives
-All the objectives are combined (added) to a total objective function
-that the minimum will be approximated from. Each objective has a weight by which one
-could change the importance of a specific objective. Those weights are set in `src/cp/solve.py` and should be always greater or equal to 1.0:
+All objectives are evaluated as penalties and combined into a weighted objective function that the solver minimizes. Each objective has a configurable weight multiplier to prioritize competing goals (configured via the web interface, the REST API, or `weights.json`):
 
-``` python
-objectives = [
-    FreeDaysNearWeekendObjective(10.0, employees, days),
-    MinimizeConsecutiveNightShiftsObjective(2.0, employees, days, shifts),
-    MinimizeHiddenEmployeesObjective(100.0, employees, days, shifts),
-    MinimizeOvertimeObjective(4.0, employees, days, shifts),
-    NotTooManyConsecutiveDaysObjective(MAX_CONSECUTIVE_DAYS, 1.0, employees, days),
-    RotateShiftsForwardObjective(1.0, employees, days, shifts),
-    EverySecondWeekendFreeObjective(1.0, employees, days, shifts),
-]
+```python
+CP_SAT_OBJECTIVES = (
+    TemporaryBalanceGeneratedAssignments(),
+    MinimizeOvertime(),
+    NotTooManyConsecutiveDays(),
+    PreferredBlockLength(),
+    RotateShiftsForward(),
+    EverySecondWeekendFree(),
+    FairPreferencesObjective(),
+    FreeDaysAfterNightShiftPhase(),
+    MinimizeConsecutiveNightShifts(),
+    FreeDaysNearWeekend(),
+)
 ```
 
 ## Navigation Links
@@ -134,12 +135,12 @@ objectives = [
 - [Free days after night shift phase](#free-days-after-night-shift-phase)
 - [Free days near weekend](#free-days-near-weekend)
 - [Maximize Wishes](#maximize-wishes)
-- [Minimize hidden employees](#minimize-hidden-employees)
+- [Balance generated assignments](#balance-generated-assignments)
 - [Minimize number of consecutive night shifts](#minimize-number-of-consecutive-night-shifts)
 - [Minimize overtime and undertime](#minimize-overtime-and-undertime)
 - [Not too many consecutive working days](#not-too-many-consecutive-working-days)
 - [Rotate shifts forwards](#rotate-shifts-forwards)
-- [Encourage preferred block length](#preferred-block-length)
+- [Preferred block length](#preferred-block-length)
 
 ## All Objectives
 
@@ -173,10 +174,10 @@ We try to grant as many wishes of the employees as possible. The employee can wi
 # --8<-- [end:maximize-wishes]
 
 
-### Minimize hidden employees/ Minimize hidden employee count
-# --8<-- [start:minimize-hidden-employees]
-Hidden employees are employees that have to be borrowed from a different hospital unit. Shifts should only be assigned to them if otherwise a valid solution cannot be found, e.g., if there is a shortage on skilled employees.
-# --8<-- [end:minimize-hidden-employees]
+### Balance generated assignments
+# --8<-- [start:balance-generated-assignments]
+Minimizes the maximum number of generated shifts assigned to any single employee, preventing the optimizer from disproportionately overburdening a subset of flexible staff.
+# --8<-- [end:balance-generated-assignments]
 
 
 ### Minimize number of consecutive night shifts [^4]
@@ -187,7 +188,7 @@ The aim is to minimize the length of night shift phases, defined as consecutive 
 
 ### Minimize overtime and undertime
 # --8<-- [start:min-over-and-undertime]
-The goal is to minimize both overtime and undertime to ensure a fair and equitable distribution of work among employees. Hard limits are established, as outlined in the section on [Target Working Time per Month](#target-working-time-per-month).
+The goal is to minimize both overtime and undertime to ensure a fair and equitable distribution of work among employees. Hard limits are established, as outlined in the section on Target Working Time per Month.
 # --8<-- [end:min-over-and-undertime]
 
 
@@ -203,7 +204,7 @@ The forward shift rotation constraint requires employees to transition from earl
 An employee's weekly schedule should progress from early shifts to late shifts and then to night shifts, not the other way around.
 # --8<-- [end:rotate-shifts-forwards]
 
-### Encourage preferred block length [^4]
+### Preferred block length [^4]
 # --8<-- [start:preferred-block-length]
 Similar to the objective that rewards forward rotating shifts, this objective is designed to create more employee friendly schedules. This is done by rewarding shift phases of the same shift that are close to the pre-defined optimal block length.
 # --8<-- [end:preferred-block-length]
