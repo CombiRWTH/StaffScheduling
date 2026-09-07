@@ -18,10 +18,10 @@ The Staff Scheduling system provides a RESTful HTTP interface built with **FastA
 | [`/employees`](#get-employees) | `GET` | Retrieve employees and qualification levels for a planning unit and month. |
 | [`/minimal-staff`](#minimal-staffing-demand-minimal-staff) | `GET`, `PUT` | View or update minimum staffing demand requirements in TimeOffice. |
 | [`/weights`](#objective-function-weights-weights) | `GET`, `PUT` | View or update penalty weights for CP-SAT soft objectives. |
-| [`/wishes-and-blocked`](#employee-wishes--availabilities-wishes-and-blocked) | `GET` | Retrieve employee shift wishes, preferred days, and absences/leaves. |
+| [`/wishes-and-blocked`](#employee-wishes-availabilities-wishes-and-blocked) | `GET` | Retrieve employee shift wishes, preferred days, and absences/leaves. |
 | [`/wishes-and-blocked/{employee_id}`](#put-wishes-and-blockedemployee_id) | `PUT`, `DELETE` | Replace or delete an employee's shift wishes and non-vacation blocked days. |
 | **Schedule Solutions (`/schedules`)** | | |
-| [`/schedules/metadata`](#metadata--discovery) | `GET`, `PUT` | List or update available generated schedules, timestamps, and active selection. |
+| [`/schedules/metadata`](#metadata-discovery) | `GET`, `PUT` | List or update available generated schedules, timestamps, and active selection. |
 | [`/schedules/{schedule_id}`](#solution-content) | `GET`, `PUT`, `DELETE` | Fetch, save, or delete a specific schedule solution. |
 | [`/schedules/last-inserted`](#timeoffice-active-marker-scheduleslast-inserted) | `GET`, `PUT`, `DELETE` | Get, set, or clear the marker for the schedule currently active in TimeOffice. |
 
@@ -37,7 +37,7 @@ You can run the API locally using `uv`:
 uv run fastapi dev src/scheduling/api/app.py --host 0.0.0.0 --port 8000
 ```
 
-Alternatively, if using the project's [`Justfile`](file:///c:/Users/jonas/Dev/StaffScheduling/Justfile) with Docker:
+Alternatively, if using the project's [`Justfile`](https://github.com/CombiRWTH/StaffScheduling/blob/main/Justfile) with Docker:
 
 ```bash
 # Run in development container

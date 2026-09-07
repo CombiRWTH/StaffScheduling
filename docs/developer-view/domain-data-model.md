@@ -1,6 +1,6 @@
 # Domain Data Model
 
-This page documents the canonical domain models used throughout the **Staff Scheduling** application. These models are defined in [`src/scheduling/domain/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/) and serve as the clean, framework-agnostic representation of all scheduling concepts.
+This page documents the canonical domain models used throughout the **Staff Scheduling** application. These models are defined in [`src/scheduling/domain/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/) and serve as the clean, framework-agnostic representation of all scheduling concepts.
 
 The domain layer is the **central contract** between the TimeOffice database adapter, the validation layer, and the CP-SAT solver. Neither the database schema nor the solver internals leak through these models.
 
@@ -8,7 +8,7 @@ The domain layer is the **central contract** between the TimeOffice database ada
 
 ## The Big Picture: `SchedulingDataset`
 
-Everything the solver needs is collected into a single [`SchedulingDataset`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/dataset.py) aggregate:
+Everything the solver needs is collected into a single [`SchedulingDataset`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/dataset.py) aggregate:
 
 ```python
 class SchedulingDataset(SchedulingBaseModel):
@@ -40,7 +40,7 @@ The `TimeOfficeService` constructs this from raw SQL rows, the `validate_schedul
 
 ### `PlanningMonth`
 
-**File:** [`planning_month.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/planning_month.py)
+**File:** [`planning_month.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/planning_month.py)
 
 Represents the calendar month being scheduled. The solver always works on full calendar months.
 
@@ -55,7 +55,7 @@ Provides computed properties `start` and `end` for the first and last date of th
 
 ### `PlanningUnit`
 
-**File:** [`planning_unit.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/planning_unit.py)
+**File:** [`planning_unit.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/planning_unit.py)
 
 Mirrors the TimeOffice concept *Planungseinheit* — an organizational unit that owns a staffing schedule.
 
@@ -69,7 +69,7 @@ Mirrors the TimeOffice concept *Planungseinheit* — an organizational unit that
 
 ### `PlanningUnitMembership`
 
-**File:** [`planning_unit.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/planning_unit.py)
+**File:** [`planning_unit.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/planning_unit.py)
 
 Records that an employee belongs to a planning unit for a date interval. Multiple membership records per employee are valid (e.g. part-time transfers).
 
@@ -87,7 +87,7 @@ Records that an employee belongs to a planning unit for a date interval. Multipl
 
 ### `Employee`
 
-**File:** [`employee.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/employee.py)
+**File:** [`employee.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/employee.py)
 
 Represents a schedulable member of staff. Intentionally does not expose raw TimeOffice profession IDs.
 
@@ -117,7 +117,7 @@ Represents a schedulable member of staff. Intentionally does not expose raw Time
 
 ### `Shift`
 
-**File:** [`shift.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/shift.py)
+**File:** [`shift.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/shift.py)
 
 Scheduling-relevant view of a TimeOffice shift entry. Raw shift catalog fields are not exposed.
 
@@ -150,13 +150,13 @@ Scheduling-relevant view of a TimeOffice shift entry. Raw shift catalog fields a
 | `OPTIONAL_COVERAGE` | Additional coverage beyond minimum; treated as intermediate shift |
 | `NON_MINIMUM_WORK` | Work that does not satisfy any staffing demand (e.g. planned training) |
 
-> **Note:** Variables are only created for shifts with `staffing_role != NON_MINIMUM_WORK`. This is enforced in [`variables.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/variables.py).
+> **Note:** Variables are only created for shifts with `staffing_role != NON_MINIMUM_WORK`. This is enforced in [`variables.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/variables.py).
 
 ---
 
 ### `DemandRequirement`
 
-**File:** [`demand.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/demand.py)
+**File:** [`demand.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/demand.py)
 
 Specifies the minimum required number of staff for one shift/date/qualification combination.
 
@@ -174,7 +174,7 @@ The `minimum_staffing` hard constraint uses these records to post `sum(assignmen
 
 ### `Availability`
 
-**File:** [`availability.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/availability.py)
+**File:** [`availability.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/availability.py)
 
 A hard restriction on an employee's availability for a specific date. **Not** a preference — preferences use `Wish`.
 
@@ -199,7 +199,7 @@ A hard restriction on an employee's availability for a specific date. **Not** a 
 
 ### `Wish`
 
-**File:** [`wish.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/wish.py)
+**File:** [`wish.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/wish.py)
 
 Represents a soft employee preference for a date. Wishes are maximized by the `fair_preferences` objective but do not make a schedule infeasible.
 
@@ -224,7 +224,7 @@ Represents a soft employee preference for a date. Wishes are maximized by the `f
 
 ### `Assignment`
 
-**File:** [`assignment.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/assignment.py)
+**File:** [`assignment.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/assignment.py)
 
 An existing TimeOffice assignment imported *before* the solver runs. These are not the solver's output — they are pre-existing data that constrain the solver.
 
@@ -248,7 +248,7 @@ An existing TimeOffice assignment imported *before* the solver runs. These are n
 
 ### `MonthlyWorkAccount`
 
-**File:** [`monthly_work_account.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/monthly_work_account.py)
+**File:** [`monthly_work_account.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/monthly_work_account.py)
 
 Tracks an employee's contracted target hours and any hours already recorded for the planning month.
 
@@ -264,7 +264,7 @@ Used by the `target_working_time` constraint and the `minimize_overtime` objecti
 
 ### `SolverObjectiveWeights`
 
-**File:** [`objective_weights.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/objective_weights.py)
+**File:** [`objective_weights.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/objective_weights.py)
 
 Per-planning-unit weight configuration for soft objectives. All fields default to sensible values via `SolverObjectiveWeights.default_for_planning_unit(id)`.
 

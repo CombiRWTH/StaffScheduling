@@ -1,9 +1,9 @@
 # Documentation - Developer View
-The developer view is a extension of the user view. It provides all necessary information to use our application, to understand how we used Google's OR Tools to solve the problem of automatic staff scheduling, to dive deep into the structure of the TimeOffice database and to get an overview of our codebase before you start contributing.
+The developer view is an extension of the user view. It provides all necessary information to use our application, to understand how we used Google's OR Tools to solve the problem of automatic staff scheduling, to dive deep into the structure of the TimeOffice database and to get an overview of our codebase before you start contributing.
 
 Get right into it:
 
-- Run it yourself: [Getting Started (Dev)](./getting-started-dev)
+- Run it yourself: [Getting Started (Dev)](./getting-started-dev.md)
 - Understand the problem: [Problem Definition](../user-view/problem-definition.md)
 - Deep Dive into TimeOffice database:
     - [connecting](./database-overview/database-connection.md)

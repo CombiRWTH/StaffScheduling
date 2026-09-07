@@ -32,11 +32,11 @@ Modern SAT solvers use **CDCL (Conflict-Driven Clause Learning)**:
 
 ## How CP-SAT is Structured in This Project
 
-In this repository, the solver architecture is strictly separated from the TimeOffice database and REST API, living inside [`src/scheduling/solver/cp_sat/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/).
+In this repository, the solver architecture is strictly separated from the TimeOffice database and REST API, living inside [`src/scheduling/solver/cp_sat/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/).
 
 ### 1. Decision Variables
 
-The primary decision variables represent shift assignments. They are created in [`src/scheduling/solver/cp_sat/variables.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/variables.py):
+The primary decision variables represent shift assignments. They are created in [`src/scheduling/solver/cp_sat/variables.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/variables.py):
 
 `x[e, u, d, s, l] ∈ {0, 1}`
 
@@ -60,8 +60,8 @@ The project strictly distinguishes between rules that **must** be obeyed versus 
 
 | Type | Base Protocol | Behavior | Examples |
 |---|---|---|---|
-| **Hard Constraints** | [`Constraint`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/constraint.py) | Added directly to `ctx.model.add(...)`. Any schedule violating them is rejected as **infeasible**. | • One shift per day per person<br>• Minimum required staffing per shift<br>• 11-hour rest interval between shifts<br>• Monthly contracted target hours<br>• Free day after a night shift block |
-| **Soft Objectives** | [`Objective`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/objective.py) | Evaluated into integer `Penalty` expressions and minimized as a weighted sum. | • Fulfill employee shift wishes<br>• Ensure alternating weekends off<br>• Minimize consecutive night shifts<br>• Forward clockwise shift rotation (F $\rightarrow$ S $\rightarrow$ N)<br>• Fair distribution of wishes |
+| **Hard Constraints** | [`Constraint`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/constraint.py) | Added directly to `ctx.model.add(...)`. Any schedule violating them is rejected as **infeasible**. | • One shift per day per person<br>• Minimum required staffing per shift<br>• 11-hour rest interval between shifts<br>• Monthly contracted target hours<br>• Free day after a night shift block |
+| **Soft Objectives** | [`Objective`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/objective.py) | Evaluated into integer `Penalty` expressions and minimized as a weighted sum. | • Fulfill employee shift wishes<br>• Ensure alternating weekends off<br>• Minimize consecutive night shifts<br>• Forward clockwise shift rotation (F $\rightarrow$ S $\rightarrow$ N)<br>• Fair distribution of wishes |
 
 The solver minimizes the global objective function:
 
@@ -73,7 +73,7 @@ Where `weight_i` is the multiplier configured in `/weights` and `Penalty_i` is t
 
 ### 3. The Model Build Pipeline
 
-The model builder in [`src/scheduling/solver/cp_sat/builder.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/builder.py) orchestrates the construction:
+The model builder in [`src/scheduling/solver/cp_sat/builder.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/builder.py) orchestrates the construction:
 
 ```mermaid
 flowchart TD
@@ -91,14 +91,14 @@ flowchart TD
 2. **Variable Creation:** `create_assignment_variables(ctx)` instantiates Boolean decision variables in the CP-SAT `CpModel`.
 3. **Hard Constraints:** Iterates over `CP_SAT_CONSTRAINTS` calling `constraint.add_to_model(ctx, params)`.
 4. **Soft Objectives:** Iterates over `CP_SAT_OBJECTIVES` calling `objective.add_to_model(ctx, params)` and registers the total weighted penalty via `model.minimize(...)`.
-5. **Inspection & Pre-Check:** [`inspect_cp_sat_model(ctx)`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/inspection.py) ensures no model variables are disconnected or malformed before launching the solver.
-6. **Post-Solve Audit:** [`AuditReport`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/audit.py) re-verifies that the resulting assignments satisfy all constraints independently.
+5. **Inspection & Pre-Check:** [`inspect_cp_sat_model(ctx)`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/inspection.py) ensures no model variables are disconnected or malformed before launching the solver.
+6. **Post-Solve Audit:** [`AuditReport`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/audit.py) re-verifies that the resulting assignments satisfy all constraints independently.
 
 ---
 
 ## Configuration & Solver Tuning
 
-Solver options are configured through environment variables or the `.env` file via [`Settings`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/settings.py):
+Solver options are configured through environment variables or the `.env` file via [`Settings`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/settings.py):
 
 | Setting | Default | Description |
 |---|---|---|
@@ -119,7 +119,7 @@ SOLVER_LOG_SEARCH_PROGRESS=true
 
 ## SolverConfig — Enabling, Disabling & Default Weights
 
-Between the `SchedulingDataset` and the individual constraint/objective classes sits a [`SolverConfig`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/config.py) layer managed by [`create_base_solver_config()`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/config.py). This is the single place where:
+Between the `SchedulingDataset` and the individual constraint/objective classes sits a [`SolverConfig`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/config.py) layer managed by [`create_base_solver_config()`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/config.py). This is the single place where:
 
 * Constraints and objectives are **enabled or disabled** without changing model code.
 * **Default penalty weights** are configured for objectives.

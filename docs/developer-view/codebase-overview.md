@@ -130,14 +130,14 @@ StaffScheduling/
 
 The domain layer defines the data structures used across the application:
 
-* **[`employee.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/employee.py):** Represents ward personnel, qualification levels (`StaffLevel.PROFESSIONAL`, `ASSISTANT`, `TRAINEE`), and station affiliations.
-* **[`shift.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/shift.py):** Canonical shift definitions (Early `F`, Late `S`, Night `N`, Intermediate `Z`), including durations, start/end times, and staffing roles.
-* **[`demand.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/demand.py):** Minimum required staffing counts per shift, weekday, and qualification level.
-* **[`availability.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/availability.py):** Employee unavailability (vacation days, sick leave, blocked shifts).
-* **[`wish.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/wish.py):** Employee preferences (desired shifts, preferred off-days).
-* **[`monthly_work_account.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/monthly_work_account.py):** Target working hours and cumulative overtime balances.
-* **[`dataset.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/dataset.py):** The central `SchedulingDataset` aggregate containing all domain data required to solve a planning month.
-* **[`plan.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/plan.py) & [`assignment.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/assignment.py):** Roster assignments associating an employee with a shift on a specific date.
+* **[`employee.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/employee.py):** Represents ward personnel, qualification levels (`StaffLevel.PROFESSIONAL`, `ASSISTANT`, `TRAINEE`), and station affiliations.
+* **[`shift.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/shift.py):** Canonical shift definitions (Early `F`, Late `S`, Night `N`, Intermediate `Z`), including durations, start/end times, and staffing roles.
+* **[`demand.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/demand.py):** Minimum required staffing counts per shift, weekday, and qualification level.
+* **[`availability.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/availability.py):** Employee unavailability (vacation days, sick leave, blocked shifts).
+* **[`wish.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/wish.py):** Employee preferences (desired shifts, preferred off-days).
+* **[`monthly_work_account.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/monthly_work_account.py):** Target working hours and cumulative overtime balances.
+* **[`dataset.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/dataset.py):** The central `SchedulingDataset` aggregate containing all domain data required to solve a planning month.
+* **[`plan.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/plan.py) & [`assignment.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/assignment.py):** Roster assignments associating an employee with a shift on a specific date.
 
 ---
 
@@ -145,11 +145,11 @@ The domain layer defines the data structures used across the application:
 
 Coordinates communication with the hospital's Microsoft SQL Server:
 
-* **[`facts.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/timeoffice/facts.py):** Static mappings of TimeOffice database primary keys (`TDienste.Prim`, station IDs, planning status codes).
-* **[`reading/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/timeoffice/reading/):** Specialized query readers (`roster.py`, `demand.py`, `wishes.py`, `personnel.py`, `work_accounts.py`, `options.py`).
-* **[`mapping/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/timeoffice/mapping/):** Transforms raw database rows into domain dataclasses and constructs the `SchedulingDataset`.
-* **[`writing/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/timeoffice/writing/):** Safely persists generated solutions, modified wishes, demand requirements, and availability back into TimeOffice.
-* **[`service.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/timeoffice/service.py):** `TimeOfficeService` acts as the single unified façade for all database operations.
+* **[`facts.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/facts.py):** Static mappings of TimeOffice database primary keys (`TDienste.Prim`, station IDs, planning status codes).
+* **[`reading/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/reading/):** Specialized query readers (`roster.py`, `demand.py`, `wishes.py`, `personnel.py`, `work_accounts.py`, `options.py`).
+* **[`mapping/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/mapping/):** Transforms raw database rows into domain dataclasses and constructs the `SchedulingDataset`.
+* **[`writing/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/writing/):** Safely persists generated solutions, modified wishes, demand requirements, and availability back into TimeOffice.
+* **[`service.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/service.py):** `TimeOfficeService` acts as the single unified façade for all database operations.
 
 ---
 
@@ -158,12 +158,12 @@ Coordinates communication with the hospital's Microsoft SQL Server:
 Built on **Google OR-Tools CP-SAT**:
 
 #### Service & Orchestration
-* **[`service.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/service.py):** `SolverService` builds the model, runs pre-solve model inspection, executes the CP-SAT search with configured timeout/workers, extracts shift assignments, and audits the result.
-* **[`audit.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/audit.py):** Evaluates solved schedules against all hard constraints and soft rules to produce an `AuditReport` with detailed findings.
+* **[`service.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/service.py):** `SolverService` builds the model, runs pre-solve model inspection, executes the CP-SAT search with configured timeout/workers, extracts shift assignments, and audits the result.
+* **[`audit.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/audit.py):** Evaluates solved schedules against all hard constraints and soft rules to produce an `AuditReport` with detailed findings.
 
 #### CP-SAT Model Assembly (`cp_sat/`)
-* **[`variables.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/variables.py):** Creates binary decision variables `x[e, u, d, s, l]` for every feasible assignment slot.
-* **Hard Constraints ([`cp_sat/constraints/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/constraints/)):**
+* **[`variables.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/variables.py):** Creates binary decision variables `x[e, u, d, s, l]` for every feasible assignment slot.
+* **Hard Constraints ([`cp_sat/constraints/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/constraints/)):**
   * `one_assignment_per_day`: At most one shift per person per calendar day.
   * `minimum_staffing`: Required number of qualified staff per shift.
   * `availabilities_constraint`: Respects approved vacations, sick leave, and blocked shifts.
@@ -171,7 +171,7 @@ Built on **Google OR-Tools CP-SAT**:
   * `target_working_time`: Bounded monthly contracted hours.
   * `rounds_in_early_shift`: Guarantees staff qualified for ward rounds (*Visiten*).
   * `hierarchy_of_intermediate_shifts`: Rules for auxiliary/intermediate shifts.
-* **Soft Objectives ([`cp_sat/objectives/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/objectives/)):**
+* **Soft Objectives ([`cp_sat/objectives/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/objectives/)):**
   * `fair_preferences`: Maximizes wish fulfillment and distributes preferences fairly.
   * `every_second_weekend_free`: Ensures alternating weekends off.
   * `minimize_overtime`: Minimizes deviations from contracted hours.
@@ -185,7 +185,7 @@ Built on **Google OR-Tools CP-SAT**:
 
 ### 4. Validation (`src/scheduling/validation/`)
 
-Before the optimization process begins, [`validate_scheduling_dataset`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/validation/dataset.py) performs comprehensive cross-model integrity checks on the `SchedulingDataset`:
+Before the optimization process begins, [`validate_scheduling_dataset`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/validation/dataset.py) performs comprehensive cross-model integrity checks on the `SchedulingDataset`:
 * Verifies planning month dates and calendar ranges.
 * Ensures shift IDs referenced in demand, wishes, and rosters exist in the dataset.
 * Validates employee station memberships and qualification mappings.
@@ -196,19 +196,19 @@ Before the optimization process begins, [`validate_scheduling_dataset`](file:///
 
 A **FastAPI** service designed to serve the **StaffSchedulingWeb** UI:
 
-* **Lifespan & Runtime ([`app.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/api/app.py)):** Manages database connection pool lifecycles and registers the `ApiRuntime`.
-* **Solver Route ([`solve/router.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/api/solve/router.py)):** Asynchronous background job queue with concurrency locking (`solve_lock`), job status querying (`/solve/jobs/{job_id}`), and available options (`/solve/options`).
-* **Web Endpoints ([`web/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/api/web/)):** REST routes for employee rosters, staffing demands, objective weights, employee preferences/leaves, and saved schedule solutions.
+* **Lifespan & Runtime ([`app.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/api/app.py)):** Manages database connection pool lifecycles and registers the `ApiRuntime`.
+* **Solver Route ([`solve/router.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/api/solve/router.py)):** Asynchronous background job queue with concurrency locking (`solve_lock`), job status querying (`/solve/jobs/{job_id}`), and available options (`/solve/options`).
+* **Web Endpoints ([`web/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/api/web/)):** REST routes for employee rosters, staffing demands, objective weights, employee preferences/leaves, and saved schedule solutions.
 
 ---
 
 ## Developer Tooling & CLI
 
-* **CLI Runner ([`src/main.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/main.py)):**
+* **CLI Runner ([`src/main.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/main.py)):**
   ```bash
   uv run staff-scheduling solve <unit_id> <start_date> <end_date>
   ```
-* **Development Tasks ([`Justfile`](file:///c:/Users/jonas/Dev/StaffScheduling/Justfile)):**
+* **Development Tasks ([`Justfile`](https://github.com/CombiRWTH/StaffScheduling/blob/main/Justfile)):**
   * `just run`: Launches the FastAPI development server in Docker.
   * `just debug`: Runs the API with `debugpy` attached on port 5678.
   * `just test`: Executes the pytest suite.

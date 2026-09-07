@@ -19,7 +19,7 @@ The backend connects to the hospital's Microsoft SQL Server database via `pyodbc
 * **macOS:** Install via Homebrew: `brew install msodbcsql18` (see [Microsoft Docs: macOS Installation](https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/install-microsoft-odbc-driver-sql-server-macos)).
 
 !!! tip "Alternative: Docker Development Container"
-    If you do not wish to install the ODBC driver natively, the project provides a [`Dockerfile`](file:///c:/Users/jonas/Dev/StaffScheduling/Dockerfile) and [`Justfile`](file:///c:/Users/jonas/Dev/StaffScheduling/Justfile) that bundle Python 3.12, the ODBC Driver, and all dependencies in a Linux container. See [Running via Docker](#3-running-via-docker) below.
+    If you do not wish to install the ODBC driver natively, the project provides a [`Dockerfile`](https://github.com/CombiRWTH/StaffScheduling/blob/main/Dockerfile) and [`Justfile`](https://github.com/CombiRWTH/StaffScheduling/blob/main/Justfile) that bundle Python 3.12, the ODBC Driver, and all dependencies in a Linux container. See [Running via Docker](#3-running-via-docker) below.
 
 ---
 
