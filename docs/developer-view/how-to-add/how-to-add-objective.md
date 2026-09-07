@@ -14,7 +14,7 @@ $$\text{minimize} \sum_i w_i \cdot P_i$$
 
 Where $w_i$ is the user-configured weight multiplier, and $P_i$ is the penalty expression.
 
-Every objective must conform to the **[`Objective`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/objective.py)** protocol:
+Every objective must conform to the **[`Objective`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/objective.py)** protocol:
 
 ```python
 class Objective(Protocol):
@@ -49,13 +49,13 @@ class Penalty:
 ```
 
 !!! important "Weight Separation"
-    Objectives **never** apply the global user weight directly. The model builder in [`builder.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/builder.py) retrieves user weights centrally from `ctx.dataset.objective_weights` and multiplies them automatically.
+    Objectives **never** apply the global user weight directly. The model builder in [`builder.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/builder.py) retrieves user weights centrally from `ctx.dataset.objective_weights` and multiplies them automatically.
 
 ---
 
 ## Step 1: Create the Objective Class
 
-Create a new file under [`src/scheduling/solver/cp_sat/objectives/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/objectives/), for example `minimize_weekend_shifts.py`:
+Create a new file under [`src/scheduling/solver/cp_sat/objectives/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/objectives/), for example `minimize_weekend_shifts.py`:
 
 ```python
 from collections.abc import Mapping
@@ -111,7 +111,7 @@ class MinimizeWeekendShifts:
 
         # Count weekend shifts in the generated roster
         total_weekend_assignments = sum(
-            1 for a in ctx.solution.assignments if a.date.weekday() in (5, 6)
+            1 for a in ctx.assignments if a.date.weekday() in (5, 6)
         )
 
         return (
@@ -128,7 +128,7 @@ class MinimizeWeekendShifts:
 
 ## Step 2: Register the Objective in the Builder
 
-Add your objective to `CP_SAT_OBJECTIVES` in [`src/scheduling/solver/cp_sat/builder.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/builder.py):
+Add your objective to `CP_SAT_OBJECTIVES` in [`src/scheduling/solver/cp_sat/builder.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/builder.py):
 
 ```python
 from scheduling.solver.cp_sat.objectives.minimize_weekend_shifts import MinimizeWeekendShifts

@@ -15,12 +15,12 @@ The solver architecture is organized around three primary concepts:
 ### 2. [Adding Constraints](./how-to-add-constraint.md)
 * **Hard Feasibility Rules:** Rules that **must** be satisfied in every generated schedule (e.g. maximum 1 shift per day, mandatory 11-hour rest time, minimum required staffing, monthly contracted hours).
 * Any schedule violating a hard constraint is rejected by CP-SAT as **infeasible**.
-* Conforms to the [`Constraint`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/constraint.py) protocol.
+* Conforms to the [`Constraint`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/constraint.py) protocol.
 
 ### 3. [Adding Objectives](./how-to-add-objective.md)
 * **Soft Optimization Goals:** Preferences and ergonomic guidelines that **should** be maximized or minimized (e.g. employee shift wishes, alternating weekends off, minimizing consecutive nights, clockwise shift rotation).
 * Evaluated into integer `Penalty` expressions and multiplied by user-configured weights from `/weights`.
-* Conforms to the [`Objective`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/objective.py) protocol.
+* Conforms to the [`Objective`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/objective.py) protocol.
 
 ---
 

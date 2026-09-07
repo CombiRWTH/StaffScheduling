@@ -8,7 +8,7 @@ This guide explains how to implement and register a new **hard constraint** in t
 
 A constraint enforces a non-negotiable rule that every valid schedule must satisfy (such as labor laws, hospital safety policies, or contracted limits). If a constraint cannot be satisfied, the solver marks the problem as **infeasible**.
 
-Every constraint must conform to the **[`Constraint`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/constraint.py)** typing protocol:
+Every constraint must conform to the **[`Constraint`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/constraint.py)** typing protocol:
 
 ```python
 class Constraint(Protocol):
@@ -35,7 +35,7 @@ class Constraint(Protocol):
 
 ## Step 1: Create the Constraint File
 
-Create a new file under [`src/scheduling/solver/cp_sat/constraints/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/constraints/), for example `max_shifts_per_week.py`:
+Create a new file under [`src/scheduling/solver/cp_sat/constraints/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/constraints/), for example `max_shifts_per_week.py`:
 
 ```python
 from collections import defaultdict
@@ -91,7 +91,7 @@ class MaxShiftsPerWeek:
 
         # Count actual assignments in the solved roster by employee and week
         counts_by_employee_week: defaultdict[tuple[int, int], int] = defaultdict(int)
-        for assignment in ctx.solution.assignments:
+        for assignment in ctx.assignments:
             week = assignment.date.isocalendar().week
             counts_by_employee_week[(assignment.employee_id, week)] += 1
 
@@ -121,7 +121,7 @@ When writing constraints, you interact with two context objects:
 ### `SolverContext` (During Model Building)
 * `ctx.model`: The OR-Tools `cp_model.CpModel` instance.
 * `ctx.assignment_variables`: Mapping of `AssignmentVariableKey` tuple `(employee_id, planning_unit_id, date, shift_id, staff_level)` to CP-SAT Boolean variables.
-* `ctx.dataset`: The canonical [`SchedulingDataset`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/domain/dataset.py) containing employees, shifts, demands, and calendar bounds.
+* `ctx.dataset`: The canonical [`SchedulingDataset`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/dataset.py) containing employees, shifts, demands, and calendar bounds.
 * `ctx.index`: Precomputed lookup indices (e.g. `ctx.index.shifts_by_id`, `ctx.index.dates`).
 
 ### `AuditContext` (Post-Solve Auditing)
@@ -132,7 +132,7 @@ When writing constraints, you interact with two context objects:
 
 ## Step 3: Register the Constraint in the Builder
 
-Open [`src/scheduling/solver/cp_sat/builder.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/builder.py) and add your constraint to `CP_SAT_CONSTRAINTS`:
+Open [`src/scheduling/solver/cp_sat/builder.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/builder.py) and add your constraint to `CP_SAT_CONSTRAINTS`:
 
 ```python
 from scheduling.solver.cp_sat.constraints.max_shifts_per_week import MaxShiftsPerWeek
@@ -153,14 +153,28 @@ CP_SAT_CONSTRAINTS: tuple[Constraint, ...] = (
 
 ## Step 4: Write Unit Tests
 
-Add tests under `tests/test_solver/` to verify both feasibility and audit reporting:
+Add unit tests under `tests/cp/constraints/` to verify constraint formulation and audit reporting using `create_context` or `AuditContext`:
 
 ```python
-def test_max_shifts_per_week_enforced(solver_service, sample_dataset):
-    solution = solver_service.solve(sample_dataset)
-    assert solution.status in (SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE)
+from scheduling.solver.cp_sat.context import AuditContext, create_context
+from scheduling.solver.cp_sat.variables import create_assignment_variables
+from scheduling.solver.index import build_schedule_index
 
-    # Ensure no audit violations were recorded
-    violations = [f for f in solution.audit_report.findings if f.source_id == "max_shifts_per_week"]
-    assert len(violations) == 0
+
+def test_max_shifts_per_week_add_to_model(sample_dataset):
+    ctx = create_context(dataset=sample_dataset)
+    create_assignment_variables(ctx)
+
+    diagnostics = MaxShiftsPerWeek().add_to_model(ctx, params={})
+    assert diagnostics == ()
+
+
+def test_max_shifts_per_week_audit_clean(sample_dataset, valid_assignments):
+    ctx = AuditContext(
+        dataset=sample_dataset,
+        index=build_schedule_index(sample_dataset),
+        assignments=valid_assignments,
+    )
+    findings = MaxShiftsPerWeek().audit(ctx, params={})
+    assert len(findings) == 0
 ```

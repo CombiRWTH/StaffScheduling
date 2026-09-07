@@ -1,6 +1,6 @@
 # Database Connection & TimeOffice Integration
 
-This guide explains how the application connects to the hospital's **TimeOffice Microsoft SQL Server** database, manages credentials via `.env`, and coordinates reads and writes through the [`src/scheduling/timeoffice/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/timeoffice/) integration package.
+This guide explains how the application connects to the hospital's **TimeOffice Microsoft SQL Server** database, manages credentials via `.env`, and coordinates reads and writes through the [`src/scheduling/timeoffice/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/) integration package.
 
 ---
 
@@ -65,7 +65,7 @@ DB_PASSWORD=your_password
 
 ### SQLAlchemy Engine Creation
 
-Database connectivity is managed in [`src/scheduling/timeoffice/database.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/timeoffice/database.py) using **SQLAlchemy** and **`pyodbc`**:
+Database connectivity is managed in [`src/scheduling/timeoffice/database.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/database.py) using **SQLAlchemy** and **`pyodbc`**:
 
 ```python
 from sqlalchemy import URL, Engine, create_engine
@@ -138,7 +138,7 @@ This separates SQL Server intricacies (like German column identifiers, status co
 
 ## Writing Solutions Back to TimeOffice
 
-When the solver finishes generating a schedule, [`TimeOfficeService.write_solution(...)`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/timeoffice/service.py) persists the resulting assignments into TimeOffice:
+When the solver finishes generating a schedule, [`TimeOfficeService.write_solution(...)`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/service.py) persists the resulting assignments into TimeOffice:
 
 1. **Target Planning Records (`TPlan`):** Inserts or updates the planning header for the given planning unit and month, marking the plan status as active.
 2. **Shift Raster (`TRaster`):** Writes individual shift entries (`TDienste.Prim`) for each employee and date slot.

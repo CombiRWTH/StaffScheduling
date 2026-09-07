@@ -10,7 +10,7 @@ In the Staff Scheduling solver, variables fall into two distinct categories:
 
 | Category | Defined In | Purpose |
 |---|---|---|
-| **Primary Assignment Variables** | [`src/scheduling/solver/cp_sat/variables.py`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/variables.py) | Represents the core roster decisions: whether an employee is assigned to a shift slot. |
+| **Primary Assignment Variables** | [`src/scheduling/solver/cp_sat/variables.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/variables.py) | Represents the core roster decisions: whether an employee is assigned to a shift slot. |
 | **Auxiliary / Helper Variables** | Inside individual constraints and objectives | Intermediate integer or Boolean variables used to linearize complex logic (e.g. streaks, overtime, day indicators). |
 
 ---
@@ -34,7 +34,7 @@ AssignmentVariableKey = tuple[
 ```
 
 ### Slot Pruning & Eligibility
-Variables are **not** created blindly for every combination of employee, date, and shift. In [`create_assignment_variables`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/solver/cp_sat/variables.py), the generator calls:
+Variables are **not** created blindly for every combination of employee, date, and shift. In [`create_assignment_variables`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/variables.py), the generator calls:
 
 ```python
 staff_levels = eligible_staff_levels_for_assignment_slot(

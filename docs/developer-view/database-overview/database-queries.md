@@ -1,6 +1,6 @@
 # Database Queries
 
-Overview of the SQL queries used to retrieve data from the TimeOffice database. These queries were originally in a single `export_data.py` file and have since been refactored into modular readers in [`src/scheduling/timeoffice/reading/`](file:///c:/Users/jonas/Dev/StaffScheduling/src/scheduling/timeoffice/reading/) (e.g. `personnel.py`, `demand.py`, `wishes.py`, `roster.py`, `work_accounts.py`). The SQL shown here reflects the underlying logic used in those readers.
+Overview of the SQL queries used to retrieve data from the TimeOffice database. These queries were originally in a single `export_data.py` file and have since been refactored into modular readers in [`src/scheduling/timeoffice/reading/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/reading/) (e.g. `personnel.py`, `demand.py`, `wishes.py`, `roster.py`, `work_accounts.py`). The SQL shown here reflects the underlying logic used in those readers.
 
 ## Basic Plan Data
 
@@ -16,7 +16,7 @@ WHERE RefPlanungseinheiten = {planning_unit}
     AND BisDat = CONVERT(date,'{till_date}',23)
 ```
 
-We use the entity `TPlan` to retrieve the `plan identification number` of a corresponding schedule. The ID is the numeric primay key `Prim` of the entity. It is unique by a given planning unit and a period of time.
+We use the entity `TPlan` to retrieve the `plan identification number` of a corresponding schedule. The ID is the numeric primary key `Prim` of the entity. It is unique by a given planning unit and a period of time.
 `RefPlanungseinheiten` is the reference to the underlying planning unit and stored in `TPlanungseinheiten`.
 To get a certain id `VonDat` needs to be the first day of a month and `BisDat` the last day of a month.
 The `CONVERT`-function uses the style code "23" that specifies the date format `yyyy-mm-dd`.
@@ -121,7 +121,7 @@ ORDER BY
     worked_sundays DESC
 ```
 
-We use the `TPersonalKontenjeTag` table to retrieve the number of worked sunday shifts for each employee for the last 12 months. The table stores daily entries and account types per employee. The `Inner Join` links this table with `TPersonal` to receive the employees' unique primary key `Prim`, as well as the surname `Name` and the first name `Vorname`. In the following the conditions are described:
+We use the `TPersonalKontenJeTag` table to retrieve the number of worked sunday shifts for each employee for the last 12 months. The table stores daily entries and account types per employee. The `Inner Join` links this table with `TPersonal` to receive the employees' unique primary key `Prim`, as well as the surname `Name` and the first name `Vorname`. In the following the conditions are described:
 - `pkt.RefKonten = 40`:  "40" is the account key for a sunday shift
 - `pkt.Datum BETWEEN {from_date} AND {till_date}`: defines the date range, in our case, of 12 months
 - `DATENAME(WEEKDAY, pkt.Datum) = 'Sonntag'`: filters the weekday, for this query it is `sunday`
