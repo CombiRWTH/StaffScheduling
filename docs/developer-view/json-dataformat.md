@@ -52,7 +52,6 @@ The following files are documented in detail in the User View configuration page
 - `general_settings.json`
 - `minimal_number_of_staff.json`
 - `wishes_and_blocked.json`
-- `weights.json` (optional, month-based; defaults are used if missing)
 
 ---
 

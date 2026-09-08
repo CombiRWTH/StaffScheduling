@@ -25,22 +25,24 @@ Weights control the relative importance of soft optimization objectives. Since r
 
 * **Web Interface (StaffSchedulingWeb):** The preferred method is to adjust the weight sliders in the **Weights** section of the web interface. Changes are sent via `PUT /weights` using the frontend keys above.
 * **REST API:** Direct API calls use the frontend key format in the request body (e.g. `{"data": {"wishes": 3, "overtime": 4, ...}}`).
-* **Offline / Light Mode:** Weights are loaded from `cases/{case_id}/{MM_YYYY}/weights.json` or `cases/{case_id}/weights.json`. If this file is omitted, the built-in defaults shown above are used automatically.
+* **Offline / Light Mode:** Case files contain no weight configuration. Weights are stored per planning unit in TimeOffice; when nothing is stored, the built-in defaults shown above are used automatically.
 
-Example `weights.json`:
+Full example of a `PUT /weights` request body (frontend keys, wrapped in `data`):
 
 ```json
 {
-    "wishes": 3,
-    "overtime": 4,
-    "fairness": 3,
-    "free_weekend": 3,
-    "second_weekend": 1,
-    "consecutive_nights": 2,
-    "after_night": 3,
-    "consecutive_days": 1,
-    "rotate": 1,
-    "hidden": 100
+    "data": {
+        "wishes": 3,
+        "overtime": 4,
+        "fairness": 3,
+        "free_weekend": 3,
+        "second_weekend": 1,
+        "consecutive_nights": 2,
+        "after_night": 3,
+        "consecutive_days": 1,
+        "rotate": 1,
+        "hidden": 100
+    }
 }
 ```
 

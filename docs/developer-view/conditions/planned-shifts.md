@@ -6,7 +6,7 @@ user-view/list-of-conditions.md:planned-shift
 
 Pre-planned shifts are assignments that already exist in TimeOffice before optimization begins (such as special project shifts or pre-booked duties).
 
-In the modern architecture, these assignments are ingested as domain `Assignment` objects with `source=AssignmentSource.PRE_PLANNED`:
+In the modern architecture, these assignments are ingested as domain `Assignment` objects with `assignment_type=AssignmentType.PLANNED` (see [`src/scheduling/domain/assignment.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/assignment.py)):
 
 1. **Dataset Ingestion:** Read from TimeOffice tables (`TPlan`, `TRaster`) into `ctx.dataset.assignments`.
 2. **Variable Space Enforcement:** In [`src/scheduling/solver/cp_sat/variables.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/variables.py), slots with pre-planned shifts are locked, preventing the CP-SAT solver from assigning conflicting generated shifts to the same employee on that day.

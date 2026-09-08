@@ -28,6 +28,7 @@ nav:
       - API: developer-view/api.md
       - Web Interface (StaffSchedulingWeb): developer-view/web-interface.md
       - Google's OR Tools and SAT-Solver: developer-view/ortools.md
+      - Mathematical Problem Definition: developer-view/mathematical-problem-definition.md
       - Codebase Overview: developer-view/codebase-overview.md
       - Domain Data Model: developer-view/domain-data-model.md
       - Getting-Started (Dev): developer-view/getting-started-dev.md
@@ -47,7 +48,7 @@ nav:
               - Free days after night shift phase: developer-view/conditions/free-days-after-night-shift-phase-objective.md
               - Free days near weekend: developer-view/conditions/free-days-near-weekend.md
               - Maximize Wishes: developer-view/conditions/maximize-wishes.md
-              - Minimize hidden employees: developer-view/conditions/minimize-hidden-employees.md
+              - Balance generated assignments: developer-view/conditions/temporary-balance-generated-assignments.md
               - Minimize number of consecutive night shifts: developer-view/conditions/minimize-number-of-consecutive-night-shifts.md
               - Minimize overtime and undertime: developer-view/conditions/minimize-overtime-and-undertime.md
               - Not too many consecutive working days: developer-view/conditions/not-too-many-consecutive-working-days.md
@@ -60,7 +61,7 @@ nav:
       - How-to-Add Guides:
           - How-to-Add Guides: developer-view/how-to-add/index.md
           - How to add a Constraint: developer-view/how-to-add/how-to-add-constraint.md
-          - How to add a Objective: developer-view/how-to-add/how-to-add-objective.md
+          - How to add an Objective: developer-view/how-to-add/how-to-add-objective.md
           - How to add a Variable: developer-view/how-to-add/how-to-add-variable.md
       - VM-Setup: developer-view/vm-setup.md
       - JSON Dataformats: developer-view/json-dataformat.md

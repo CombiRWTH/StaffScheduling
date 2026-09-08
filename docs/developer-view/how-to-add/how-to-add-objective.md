@@ -156,11 +156,5 @@ To control how heavily CP-SAT penalizes this objective relative to other goals:
 
 1. **Via the Web Interface (StaffSchedulingWeb):** Adjust the weight slider under the **Weights** configuration page.
 2. **Via the REST API:** Update the weight through `PUT /weights`.
-3. **Via Offline JSON Cases:** Add the objective key to `cases/{case_id}/{MM_YYYY}/weights.json`:
-   ```json
-   {
-       "minimize_weekend_shifts": 3,
-       "wishes": 4,
-       "overtime": 2
-   }
-   ```
+
+User weights are stored per planning unit in TimeOffice — the offline JSON cases contain no `weights.json`. When nothing is stored, the defaults from `SolverObjectiveWeights.default_for_planning_unit` in [`src/scheduling/domain/objective_weights.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/objective_weights.py) apply. Note that the built-in weight slots cover the existing objectives; to give your new objective its own user-adjustable weight, add a field to `SolverObjectiveWeights` and expose it through the weights API.

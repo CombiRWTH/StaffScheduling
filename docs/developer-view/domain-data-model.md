@@ -281,7 +281,7 @@ Per-planning-unit weight configuration for soft objectives. All fields default t
 | `shift_rotation` | `1` | `rotate_shifts_forward` |
 | `hidden_employee` | `100` | `temporary_balance_generated_assignments` |
 
-Weights are stored in TimeOffice and can be changed via `PUT /weights` or by editing `cases/{case_id}/{MM_YYYY}/weights.json`.
+Weights are stored per planning unit in TimeOffice and can be changed via `PUT /weights` (or the weight sliders in the web interface). If nothing is stored, `SolverObjectiveWeights.default_for_planning_unit` supplies the defaults.
 
 ---
 

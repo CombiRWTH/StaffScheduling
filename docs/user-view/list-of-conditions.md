@@ -114,7 +114,7 @@ Vacation days must remain free, and the day before a vacation day no night shift
 
 # Objectives
 
-All objectives are evaluated as penalties and combined into a weighted objective function that the solver minimizes. Each objective has a configurable weight multiplier to prioritize competing goals — these weights can be adjusted via the web interface, the REST API (`PUT /weights`), or a `weights.json` file in your case folder. See [Adapting Weights](../user-view/configuration/weights.md) for configuration details.
+All objectives are evaluated as penalties and combined into a weighted objective function that the solver minimizes. Each objective has a configurable weight multiplier to prioritize competing goals — these weights can be adjusted via the web interface or the REST API (`PUT /weights`). See [Adapting Weights](../user-view/configuration/weights.md) for configuration details.
 
 ## Navigation Links
 - [Every Second Weekend Free Objective](#every-second-weekend-free-objective)

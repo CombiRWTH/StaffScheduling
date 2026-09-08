@@ -156,7 +156,7 @@ def create_base_solver_config() -> SolverConfig:
 !!! important "Required constraints cannot be disabled"
     Constraints marked `required: ClassVar[bool] = True` will raise a `ValueError` if you attempt to set `enabled=False` in the config. This prevents accidental removal of safety-critical rules.
 
-The `weight` in `ObjectiveConfig` is the **internal code-level default** and is separate from the user-facing weights stored in `SolverObjectiveWeights` (which come from TimeOffice or `weights.json`). The actual penalty multiplier applied is `config_weight × user_weight × penalty.multiplier`.
+The `weight` in `ObjectiveConfig` is the **internal code-level default** and is separate from the user-facing weights stored in `SolverObjectiveWeights` (which come from TimeOffice, with defaults from `SolverObjectiveWeights.default_for_planning_unit` when nothing is stored). The actual penalty multiplier applied is `config_weight × user_weight × penalty.multiplier`.
 
 ---
 
