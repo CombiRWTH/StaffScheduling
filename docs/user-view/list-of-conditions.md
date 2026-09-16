@@ -120,7 +120,7 @@ All objectives are evaluated as penalties and combined into a weighted objective
 - [Every Second Weekend Free Objective](#every-second-weekend-free-objective)
 - [Free days after night shift phase](#free-days-after-night-shift-phase)
 - [Free days near weekend](#free-days-near-weekend)
-- [Maximize Wishes](#maximize-wishes)
+- [Fair preferences](#fair-preferences)
 - [Balance generated assignments](#balance-generated-assignments)
 - [Minimize number of consecutive night shifts](#minimize-number-of-consecutive-night-shifts)
 - [Minimize overtime and undertime](#minimize-overtime-and-undertime)
@@ -154,10 +154,10 @@ A schedule is found that increases the number of free days near weekends (Fri, S
 # --8<-- [end:free-days-near-weekend]
 
 
-### Maximize Wishes [^2]
-# --8<-- [start:maximize-wishes]
-We try to grant as many wishes of the employees as possible. The employee can wish for a free shift or a complete free day.
-# --8<-- [end:maximize-wishes]
+### Fair Preferences [^2]
+# --8<-- [start:fair-preferences]
+We try to grant as many wishes of the employees as possible. An employee can wish for a free day, a free shift, a preferred day, or a preferred shift. Repeated violations for the same employee are penalized increasingly, so that a small number of violations spread across many employees is preferred over many violations concentrated on a single employee.
+# --8<-- [end:fair-preferences]
 
 
 ### Balance generated assignments
