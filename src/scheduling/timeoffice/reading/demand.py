@@ -1,4 +1,4 @@
-from sqlalchemy import Connection, text
+from sqlalchemy import Connection, bindparam, text
 
 from scheduling.domain.core import SchedulingBaseModel
 
@@ -18,7 +18,6 @@ class TimeOfficeDemandReader:
         connection: Connection,
         planning_unit_ids: tuple[int, ...],
     ) -> tuple[TimeOfficeDemandRow, ...]:
-        '''
         self._ensure_minimal_staffing_table_exists(connection=connection)
 
         if not planning_unit_ids:
@@ -52,8 +51,6 @@ class TimeOfficeDemandReader:
             )
             for row in rows
         )
-        '''
-        return ()
 
     def _ensure_minimal_staffing_table_exists(self, *, connection: Connection) -> None:
         query = text(

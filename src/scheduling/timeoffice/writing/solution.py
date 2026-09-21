@@ -1,12 +1,14 @@
 import logging
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from json import dump
 from pathlib import Path
 from typing import Any
 
-from scheduling.domain import Assignment, AssignmentType, AvailabilityType, StaffLevel, WishType
+from sqlalchemy import Connection, bindparam, text
+
+from scheduling.domain import Assignment, AssignmentType, AvailabilityType, PlanningMonth, StaffLevel, WishType
 from scheduling.domain.dataset import SchedulingDataset
 from scheduling.domain.shift import ShiftId
 from scheduling.solver.models import Solution, SolutionStatus
@@ -15,6 +17,7 @@ from scheduling.timeoffice.facts import (
     INTERMEDIATE_SHIFT_ID,
     LATE_SHIFT_ID,
     NIGHT_SHIFT_ID,
+    TimeOfficeFacts,
 )
 
 logger = logging.getLogger(__name__)
@@ -49,6 +52,15 @@ LEGACY_SHIFTS: tuple[dict[str, Any], ...] = (
 class LegacySolutionExportPaths:
     solution_path: Path
     processed_solution_path: Path
+
+
+@dataclass(frozen=True, slots=True)
+class TimeOfficeShiftSegment:
+    time_source_shift_id: int
+    start_time: time
+    end_time: time
+    end_day_offset: int
+    minutes: int
 
 
 class TimeOfficeSolutionWriter:
@@ -113,6 +125,7 @@ class TimeOfficeSolutionWriter:
             solution_name=solution_name,
             solution_file_names=self._legacy_solution_file_names(current_solution_name=solution_name),
         )
+
         solution_output_path = (self._legacy_solution_dir / f"{solution_name}.json").resolve()
         solution_output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -148,6 +161,468 @@ class TimeOfficeSolutionWriter:
             solution_file_names.sort()
 
         return solution_file_names
+
+    def replace_solution_assignments(
+        self,
+        *,
+        connection: Connection,
+        dataset: SchedulingDataset,
+        solution: Solution,
+        facts: TimeOfficeFacts,
+    ) -> None:
+        if solution.status not in {SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE}:
+            logger.info(
+                "Skipping TimeOffice DB write because solution is not feasible: status=%s",
+                solution.status.value,
+            )
+            return
+
+        generated_assignments = _generated_assignments(solution)
+
+        logger.info(
+            "Replacing TimeOffice solution assignments: generated_assignments=%s",
+            len(generated_assignments),
+        )
+
+        self._delete_solution_rows(
+            connection=connection,
+            dataset=dataset,
+        )
+
+        if not generated_assignments:
+            logger.info("Deleted existing TimeOffice solution rows; no generated assignments to insert.")
+            return
+
+        time_source_shift_ids = tuple(
+            sorted(
+                {
+                    self._time_source_shift_id(
+                        reference_shift_id=assignment.shift_id,
+                        facts=facts,
+                    )
+                    for assignment in generated_assignments
+                }
+            )
+        )
+
+        shift_segments = self._read_shift_segments(
+            connection=connection,
+            time_source_shift_ids=time_source_shift_ids,
+        )
+
+        parameters = self._insert_parameters(
+            connection=connection,
+            assignments=generated_assignments,
+            shift_segments=shift_segments,
+            facts=facts,
+            planning_month=dataset.planning_month,
+        )
+
+        self._insert_solution_rows(
+            connection=connection,
+            parameters=parameters,
+        )
+
+        logger.info(
+            "Replaced TimeOffice solution assignments: assignments=%s inserted_rows=%s",
+            len(generated_assignments),
+            len(parameters),
+        )
+
+    def _delete_solution_rows(
+        self,
+        *,
+        connection: Connection,
+        dataset: SchedulingDataset,
+    ) -> None:
+        planning_unit_ids = tuple(sorted(planning_unit.planning_unit_id for planning_unit in dataset.planning_units))
+
+        if not planning_unit_ids:
+            return
+
+        query = text(
+            """
+                DELETE FROM TPlanPersonalKommtGeht
+                WHERE RefPlanungseinheiten IN :planning_unit_ids
+                  AND CONVERT(date, Datum) BETWEEN :start AND :end
+                  AND ISNULL(Wunschdienst, 0) = 0
+                  AND RefDienste IS NOT NULL
+                  AND RefgAbw IS NULL
+                  AND RefDienstAbw IS NULL
+                  AND BereitVon IS NULL
+                  AND BereitBis IS NULL
+                """
+        ).bindparams(bindparam("planning_unit_ids", expanding=True))
+
+        connection.execute(
+            query,
+            {
+                "planning_unit_ids": planning_unit_ids,
+                "start": dataset.planning_month.start,
+                "end": dataset.planning_month.end,
+            },
+        )
+
+    def _read_shift_segments(
+        self,
+        *,
+        connection: Connection,
+        time_source_shift_ids: tuple[int, ...],
+    ) -> dict[int, tuple[TimeOfficeShiftSegment, ...]]:
+        if not time_source_shift_ids:
+            return {}
+
+        query = text(
+            """
+                SELECT
+                    RefDienste AS time_source_shift_id,
+                    Kommt AS start_datetime,
+                    Geht AS end_datetime,
+                    Minuten AS minutes
+                FROM TDiensteSollzeiten
+                WHERE RefDienste IN :time_source_shift_ids
+                ORDER BY RefDienste, Kommt
+                """
+        ).bindparams(bindparam("time_source_shift_ids", expanding=True))
+
+        rows = (
+            connection.execute(
+                query,
+                {"time_source_shift_ids": time_source_shift_ids},
+            )
+            .mappings()
+            .all()
+        )
+
+        segments_by_shift_id: dict[int, list[TimeOfficeShiftSegment]] = {}
+
+        for row in rows:
+            time_source_shift_id = int(row["time_source_shift_id"])
+            start_datetime = row["start_datetime"]
+            end_datetime = row["end_datetime"]
+
+            if not isinstance(start_datetime, datetime):
+                raise ValueError(
+                    f"Unexpected Kommt value for time_source_shift_id={time_source_shift_id}: {start_datetime!r}"
+                )
+
+            if not isinstance(end_datetime, datetime):
+                raise ValueError(
+                    f"Unexpected Geht value for time_source_shift_id={time_source_shift_id}: {end_datetime!r}"
+                )
+
+            end_day_offset = (end_datetime.date() - start_datetime.date()).days
+
+            segments_by_shift_id.setdefault(time_source_shift_id, []).append(
+                TimeOfficeShiftSegment(
+                    time_source_shift_id=time_source_shift_id,
+                    start_time=start_datetime.time(),
+                    end_time=end_datetime.time(),
+                    end_day_offset=end_day_offset,
+                    minutes=int(row["minutes"]),
+                )
+            )
+
+        missing_shift_ids = sorted(set(time_source_shift_ids) - set(segments_by_shift_id))
+        if missing_shift_ids:
+            raise ValueError(f"No TDiensteSollzeiten found for time_source_shift_ids={missing_shift_ids}.")
+
+        return {shift_id: tuple(segments) for shift_id, segments in segments_by_shift_id.items()}
+
+    def _time_source_shift_id(
+        self,
+        *,
+        reference_shift_id: int,
+        facts: TimeOfficeFacts,
+    ) -> int:
+        time_source_shift_id = facts.time_source_shift_id_by_reference_shift_id.get(reference_shift_id)
+
+        if time_source_shift_id is None:
+            raise ValueError(f"No TimeOffice time-source shift configured for reference_shift_id={reference_shift_id}.")
+
+        return time_source_shift_id
+
+    def _insert_parameters(
+        self,
+        *,
+        connection: Connection,
+        assignments: tuple[Assignment, ...],
+        shift_segments: dict[int, tuple[TimeOfficeShiftSegment, ...]],
+        facts: TimeOfficeFacts,
+        planning_month: PlanningMonth,
+    ) -> list[dict[str, object]]:
+        plan_id_by_planning_unit_id: dict[int, int] = {}
+        status_id_by_plan_id: dict[int, int] = {}
+        sequence_number_by_key: dict[tuple[int, int, date], int] = {}
+        profession_id_by_employee_id: dict[int, int] = {}
+
+        parameters: list[dict[str, object]] = []
+
+        for assignment in assignments:
+            if assignment.planning_unit_id not in plan_id_by_planning_unit_id:
+                plan_id_by_planning_unit_id[assignment.planning_unit_id] = self._find_target_plan_id(
+                    connection=connection,
+                    planning_unit_id=assignment.planning_unit_id,
+                    planning_month=planning_month,
+                )
+
+            plan_id = plan_id_by_planning_unit_id[assignment.planning_unit_id]
+
+            if plan_id not in status_id_by_plan_id:
+                status_id_by_plan_id[plan_id] = self._find_plan_status_id(
+                    connection=connection,
+                    plan_id=plan_id,
+                )
+
+            if assignment.employee_id not in profession_id_by_employee_id:
+                profession_id_by_employee_id[assignment.employee_id] = self._find_profession_id(
+                    connection=connection,
+                    employee_id=assignment.employee_id,
+                )
+
+            time_source_shift_id = self._time_source_shift_id(
+                reference_shift_id=assignment.shift_id,
+                facts=facts,
+            )
+
+            segments = shift_segments.get(time_source_shift_id)
+            if segments is None:
+                raise ValueError(f"No shift segments found for time_source_shift_id={time_source_shift_id}.")
+
+            for segment in segments:
+                sequence_key = (
+                    plan_id,
+                    assignment.employee_id,
+                    assignment.date,
+                )
+
+                if sequence_key not in sequence_number_by_key:
+                    sequence_number_by_key[sequence_key] = self._next_sequence_number(
+                        connection=connection,
+                        plan_id=plan_id,
+                        employee_id=assignment.employee_id,
+                        date_value=assignment.date,
+                    )
+
+                sequence_number = sequence_number_by_key[sequence_key]
+                sequence_number_by_key[sequence_key] += 1
+
+                start_datetime = datetime.combine(
+                    assignment.date,
+                    segment.start_time,
+                )
+                end_datetime = datetime.combine(
+                    assignment.date + timedelta(days=segment.end_day_offset),
+                    segment.end_time,
+                )
+
+                if end_datetime <= start_datetime:
+                    end_datetime += timedelta(days=1)
+
+                parameters.append(
+                    {
+                        "plan_id": plan_id,
+                        "employee_id": assignment.employee_id,
+                        "assignment_date": assignment.date,
+                        "status_id": status_id_by_plan_id[plan_id],
+                        "sequence_number": sequence_number,
+                        "shift_id": assignment.shift_id,
+                        "profession_id": profession_id_by_employee_id[assignment.employee_id],
+                        "planning_unit_id": assignment.planning_unit_id,
+                        "start_datetime": start_datetime,
+                        "end_datetime": end_datetime,
+                        "minutes": segment.minutes,
+                    }
+                )
+
+        return parameters
+
+    def _insert_solution_rows(
+        self,
+        *,
+        connection: Connection,
+        parameters: list[dict[str, object]],
+    ) -> None:
+        if not parameters:
+            return
+
+        query = text(
+            """
+            INSERT INTO TPlanPersonalKommtGeht (
+                RefPlan,
+                RefPersonal,
+                Datum,
+                RefStati,
+                lfdNr,
+                RefgAbw,
+                RefDienste,
+                RefBerufe,
+                RefPlanungseinheiten,
+                VonZeit,
+                BisZeit,
+                RefDienstAbw,
+                Minuten,
+                Info,
+                RefEinsatzArten,
+                Wunschdienst,
+                BereitVon,
+                BereitBis
+            )
+            VALUES (
+                :plan_id,
+                :employee_id,
+                :assignment_date,
+                :status_id,
+                :sequence_number,
+                NULL,
+                :shift_id,
+                :profession_id,
+                :planning_unit_id,
+                :start_datetime,
+                :end_datetime,
+                NULL,
+                :minutes,
+                NULL,
+                NULL,
+                0,
+                NULL,
+                NULL
+            )
+            """
+        )
+
+        connection.execute(query, parameters)
+
+    def _find_target_plan_id(
+        self,
+        *,
+        connection: Connection,
+        planning_unit_id: int,
+        planning_month: PlanningMonth,
+    ) -> int:
+        query = text(
+            """
+            SELECT TOP 1
+                p.Prim AS plan_id
+            FROM TPlan p
+            WHERE p.RefPlanungseinheiten = :planning_unit_id
+              AND p.RefPlanungsIntervalle = 1
+              AND CONVERT(date, p.VonDat) = :start
+              AND CONVERT(date, p.BisDat) = :end
+            ORDER BY p.Prim DESC
+            """
+        )
+
+        row = (
+            connection.execute(
+                query,
+                {
+                    "planning_unit_id": planning_unit_id,
+                    "start": planning_month.start,
+                    "end": planning_month.end,
+                },
+            )
+            .mappings()
+            .first()
+        )
+
+        if row is None:
+            raise ValueError(
+                f"No TimeOffice plan found for planning_unit_id={planning_unit_id}, "
+                f"planning_month={planning_month.year}-{planning_month.month:02d}."
+            )
+
+        return int(row["plan_id"])
+
+    def _find_plan_status_id(
+        self,
+        *,
+        connection: Connection,
+        plan_id: int,
+    ) -> int:
+        query = text(
+            """
+            SELECT RefStati AS status_id
+            FROM TPlan
+            WHERE Prim = :plan_id
+            """
+        )
+
+        row = (
+            connection.execute(
+                query,
+                {"plan_id": plan_id},
+            )
+            .mappings()
+            .first()
+        )
+
+        if row is None:
+            raise ValueError(f"No TimeOffice plan status found for plan_id={plan_id}.")
+
+        return int(row["status_id"])
+
+    def _find_profession_id(
+        self,
+        *,
+        connection: Connection,
+        employee_id: int,
+    ) -> int:
+        query = text(
+            """
+            SELECT RefBerufe AS profession_id
+            FROM TPersonal
+            WHERE Prim = :employee_id
+              AND RefBerufe IS NOT NULL
+            """
+        )
+
+        row = (
+            connection.execute(
+                query,
+                {"employee_id": employee_id},
+            )
+            .mappings()
+            .first()
+        )
+
+        if row is None:
+            raise ValueError(f"No TimeOffice profession found for employee_id={employee_id}.")
+
+        return int(row["profession_id"])
+
+    def _next_sequence_number(
+        self,
+        *,
+        connection: Connection,
+        plan_id: int,
+        employee_id: int,
+        date_value: date,
+    ) -> int:
+        query = text(
+            """
+            SELECT COALESCE(MAX(pkg.lfdNr), 0) + 1 AS next_sequence_number
+            FROM TPlanPersonalKommtGeht pkg
+            WHERE pkg.RefPlan = :plan_id
+              AND pkg.RefPersonal = :employee_id
+              AND CONVERT(date, pkg.Datum) = :date_value
+            """
+        )
+
+        row = (
+            connection.execute(
+                query,
+                {
+                    "plan_id": plan_id,
+                    "employee_id": employee_id,
+                    "date_value": date_value,
+                },
+            )
+            .mappings()
+            .one()
+        )
+
+        return int(row["next_sequence_number"])
 
 
 def build_legacy_solution_data(*, dataset: SchedulingDataset, solution: Solution) -> dict[str, Any]:

@@ -227,3 +227,17 @@ class TimeOfficeService:
                 planning_unit_id=planning_unit_id,
                 objective_weights=objective_weights,
             )
+
+    def write_solution_to_db(
+        self,
+        *,
+        dataset: SchedulingDataset,
+        solution: Solution,
+    ) -> None:
+        with self._engine.begin() as connection:
+            self._solution_writer.replace_solution_assignments(
+                connection=connection,
+                dataset=dataset,
+                solution=solution,
+                facts=self._facts,
+            )

@@ -76,9 +76,15 @@ async def create_solve_task(
 
         logger.info("Solving scheduling dataset for solve job: job_id=%s", job.job_id)
         solution = solver.solve(dataset)
+        """
+        logger.info("Writing solution to TimeOffice DB: job_id=%s", job.job_id)
+        timeoffice.write_solution_to_db(
+            dataset=dataset,
+            solution=solution,
+        )"""
 
-        logger.info("Running TimeOffice writeback dry-run for solve job: job_id=%s", job.job_id)
-        timeoffice.write_solution_dry_run(solution)
+        # logger.info("Running TimeOffice writeback dry-run for solve job: job_id=%s", job.job_id)
+        # timeoffice.write_solution_dry_run(solution)
 
         return solution
 

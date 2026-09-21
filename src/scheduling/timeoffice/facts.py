@@ -44,7 +44,7 @@ LATE_SHIFT_ID = 1605
 # There are 3 Prim for the Night Shift: 1690, 2449, and 3001
 NIGHT_SHIFT_ID = 1690
 # Ist die Intermediate Shift T(1410) oder Z(1453)?
-INTERMEDIATE_SHIFT_ID = 1453
+INTERMEDIATE_SHIFT_ID = 1410
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,6 +82,8 @@ class TimeOfficeFacts:
     work_shift_type_id: int
 
     reference_shift_facts_by_id: Mapping[ShiftId, TimeOfficeReferenceShiftFact]
+    # Shift IDs used only to read TDiensteSollzeiten for VonZeit/BisZeit/Minuten
+    time_source_shift_id_by_reference_shift_id: Mapping[ShiftId, int]
 
     # Non-reference source shift IDs normalized to reduced reference shifts.
     # Missing source shift ID => fail loudly in mapping.
@@ -126,7 +128,7 @@ REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = Ma
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         INTERMEDIATE_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="Z",
+            expected_code="T",
             type=ShiftType.INTERMEDIATE,
             staffing_role=StaffingDemandRole.OPTIONAL_COVERAGE,
         ),
@@ -243,6 +245,14 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     ),
     work_shift_type_id=WORK_SHIFT_TYPE_ID,
     reference_shift_facts_by_id=REFERENCE_SHIFT_FACTS_BY_ID,
+    time_source_shift_id_by_reference_shift_id=MappingProxyType(
+        {
+            EARLY_SHIFT_ID: 2939,  # Für F2 -> Konnte keine Zeiten für F finden
+            LATE_SHIFT_ID: 2947,  # Für S2 -> Konnte keine Zeiten für S finden
+            NIGHT_SHIFT_ID: 2953,  # Für N2_ -> Konnte keine Zeiten für N finden
+            INTERMEDIATE_SHIFT_ID: 1274,  # Für T8 -> Konnte keine Zeiten für T finden
+        }
+    ),
     shift_id_overrides=SHIFT_ID_OVERRIDES,
     staff_level_by_profession_code=STAFF_LEVEL_BY_PROFESSION_CODE,
     fallback_demand_by_planning_unit=MappingProxyType(
