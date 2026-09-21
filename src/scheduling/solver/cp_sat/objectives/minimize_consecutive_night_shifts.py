@@ -1,5 +1,5 @@
 from collections import defaultdict
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import date, timedelta
 from typing import Any, ClassVar
 
@@ -15,15 +15,10 @@ class MinimizeConsecutiveNightShifts:
     """
     Penalize consecutive night-shift windows of lengths 2, 3, and 4.
 
-    Each phase length produces a separate penalty. Longer phases receive a
-    larger multiplier.
-
-    A window variable is one exactly when the employee works a night shift on
-    every calendar day in that window.
+    Each phase length produces a separate penalty.
     """
 
     id: ClassVar[str] = "minimize_consecutive_night_shifts"
-
     PHASE_LENGTHS: ClassVar[tuple[int, ...]] = (2, 3, 4)
 
     def add_to_model(self, ctx: SolverContext, params: Mapping[str, Any]) -> tuple[Penalty, ...]:
@@ -31,7 +26,6 @@ class MinimizeConsecutiveNightShifts:
             return ()
 
         night_shift_ids = {shift.shift_id for shift in ctx.dataset.shifts if shift.type == ShiftType.NIGHT}
-
         if not night_shift_ids:
             return ()
 
@@ -51,43 +45,35 @@ class MinimizeConsecutiveNightShifts:
                 night_assignment_variables[(employee_id, assignment_date)].append(variable)
 
         employee_ids = sorted(
-            {employee_id for employee_id, _planning_unit_id, _date, _shift_id, _level in ctx.assignment_variables}
+            {employee_id for employee_id, *_ in ctx.assignment_variables}
         )
-
         planning_dates = self._planning_dates(ctx)
 
-        night_worked_variables: dict[
-            tuple[int, date],
-            cp_model.IntVar,
-        ] = {}
+        #Map (employee, date) to a boolean "worked_night" variable
+        night_worked_variables: dict[tuple[int, date], cp_model.IntVar] = {}
 
         for employee_id in employee_ids:
             for planning_date in planning_dates:
-                assignment_variables = night_assignment_variables[(employee_id, planning_date)]
-
-                night_worked = ctx.model.new_bool_var(f"mcns_night_e{employee_id}_d{planning_date}")
-
-                if assignment_variables:
-                    ctx.model.add_max_equality(
-                        night_worked,
-                        assignment_variables,
-                    )
-                else:
-                    ctx.model.add(night_worked == 0)
-
-                night_worked_variables[(employee_id, planning_date)] = night_worked
+                assignment_vars = night_assignment_variables[(employee_id, planning_date)]
+                night_worked_variables[(employee_id, planning_date)] = self._get_worked_variable(
+                    ctx,
+                    assignment_vars,
+                    name=f"mcns_night_e{employee_id}_d{planning_date}",
+                )
 
         penalties: list[Penalty] = []
 
+        #Process windows for each phase length
         for phase_length in self.PHASE_LENGTHS:
+            if len(planning_dates) < phase_length:
+                continue
+
             phase_variables: list[cp_model.IntVar] = []
+            number_of_windows = len(planning_dates) - phase_length + 1
 
             for employee_id in employee_ids:
-                number_of_windows = len(planning_dates) - phase_length + 1
-
                 for start_index in range(number_of_windows):
                     window_dates = planning_dates[start_index : start_index + phase_length]
-
                     per_day_variables = [
                         night_worked_variables[(employee_id, window_date)] for window_date in window_dates
                     ]
@@ -96,40 +82,38 @@ class MinimizeConsecutiveNightShifts:
                         f"mcns_phase_e{employee_id}_d{window_dates[0]}_l{phase_length}"
                     )
 
-                    # For Boolean variables, their minimum is one exactly when
-                    # every variable is one.
-                    ctx.model.add_min_equality(
-                        phase_variable,
-                        per_day_variables,
-                    )
+                    # Native Boolean AND formulation
+                    ctx.model.add_bool_and(per_day_variables).only_enforce_if(phase_variable)
+                    ctx.model.add_bool_or([v.Not() for v in per_day_variables]).only_enforce_if(phase_variable.Not())
 
                     phase_variables.append(phase_variable)
 
-            if not phase_variables:
-                continue
-
-            total = ctx.model.new_int_var(
-                0,
-                len(phase_variables),
-                f"mcns_total_l{phase_length}",
-            )
-            ctx.model.add(total == sum(phase_variables))
-
-            penalties.append(
-                Penalty(
-                    objective_id=self.id,
-                    name=f"total_l{phase_length}",
-                    expression=total,
-                    multiplier=phase_length,
+            if phase_variables:
+                penalties.append(
+                    Penalty(
+                        objective_id=self.id,
+                        name=f"total_l{phase_length}",
+                        expression=cp_model.LinearExpr.sum(phase_variables),
+                        multiplier=phase_length,
+                    )
                 )
-            )
 
         return tuple(penalties)
 
     @staticmethod
+    def _get_worked_variable(
+        ctx: SolverContext, variables: Sequence[cp_model.IntVar], *, name: str
+    ) -> cp_model.IntVar:
+        worked = ctx.model.new_bool_var(name)
+        if variables:
+            ctx.model.add_max_equality(worked, list(variables))
+        else:
+            ctx.model.add(worked == 0)
+        return worked
+
+    @staticmethod
     def _planning_dates(ctx: SolverContext) -> tuple[date, ...]:
         dates: list[date] = []
-
         current_date = ctx.dataset.planning_month.start
         end_date = ctx.dataset.planning_month.end
 
