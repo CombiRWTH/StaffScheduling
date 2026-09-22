@@ -59,6 +59,7 @@ class TimeOfficeShiftSegment:
     time_source_shift_id: int
     start_time: time
     end_time: time
+    start_day_offset: int
     end_day_offset: int
     minutes: int
 
@@ -282,7 +283,7 @@ class TimeOfficeSolutionWriter:
                 FROM TDiensteSollzeiten
                 WHERE RefDienste IN :time_source_shift_ids
                 ORDER BY RefDienste, Kommt
-                """
+            """
         ).bindparams(bindparam("time_source_shift_ids", expanding=True))
 
         rows = (
@@ -294,7 +295,7 @@ class TimeOfficeSolutionWriter:
             .all()
         )
 
-        segments_by_shift_id: dict[int, list[TimeOfficeShiftSegment]] = {}
+        raw_segments_by_shift_id: dict[int, list[tuple[datetime, datetime, int]]] = {}
 
         for row in rows:
             time_source_shift_id = int(row["time_source_shift_id"])
@@ -311,23 +312,25 @@ class TimeOfficeSolutionWriter:
                     f"Unexpected Geht value for time_source_shift_id={time_source_shift_id}: {end_datetime!r}"
                 )
 
-            end_day_offset = (end_datetime.date() - start_datetime.date()).days
-
-            segments_by_shift_id.setdefault(time_source_shift_id, []).append(
-                TimeOfficeShiftSegment(
-                    time_source_shift_id=time_source_shift_id,
-                    start_time=start_datetime.time(),
-                    end_time=end_datetime.time(),
-                    end_day_offset=end_day_offset,
-                    minutes=int(row["minutes"]),
+            raw_segments_by_shift_id.setdefault(time_source_shift_id, []).append(
+                (
+                    start_datetime,
+                    end_datetime,
+                    int(row["minutes"]),
                 )
             )
 
-        missing_shift_ids = sorted(set(time_source_shift_ids) - set(segments_by_shift_id))
+        missing_shift_ids = sorted(set(time_source_shift_ids) - set(raw_segments_by_shift_id))
         if missing_shift_ids:
             raise ValueError(f"No TDiensteSollzeiten found for time_source_shift_ids={missing_shift_ids}.")
 
-        return {shift_id: tuple(segments) for shift_id, segments in segments_by_shift_id.items()}
+        return {
+            shift_id: _normalise_shift_segments(
+                time_source_shift_id=shift_id,
+                raw_segments=raw_segments,
+            )
+            for shift_id, raw_segments in raw_segments_by_shift_id.items()
+        }
 
     def _time_source_shift_id(
         self,
@@ -354,19 +357,26 @@ class TimeOfficeSolutionWriter:
         plan_id_by_planning_unit_id: dict[int, int] = {}
         status_id_by_plan_id: dict[int, int] = {}
         sequence_number_by_key: dict[tuple[int, int, date], int] = {}
-        profession_id_by_employee_id: dict[int, int] = {}
+        profession_id_by_key: dict[tuple[int, int, date], int] = {}
 
         parameters: list[dict[str, object]] = []
 
         for assignment in assignments:
-            if assignment.planning_unit_id not in plan_id_by_planning_unit_id:
-                plan_id_by_planning_unit_id[assignment.planning_unit_id] = self._find_target_plan_id(
+            planning_unit_id = assignment.planning_unit_id
+            if planning_unit_id is None:
+                raise ValueError(
+                    "Generated assignment has no planning_unit_id and cannot be written to TimeOffice: "
+                    f"employee_id={assignment.employee_id} date={assignment.date} shift_id={assignment.shift_id}."
+                )
+
+            if planning_unit_id not in plan_id_by_planning_unit_id:
+                plan_id_by_planning_unit_id[planning_unit_id] = self._find_target_plan_id(
                     connection=connection,
-                    planning_unit_id=assignment.planning_unit_id,
+                    planning_unit_id=planning_unit_id,
                     planning_month=planning_month,
                 )
 
-            plan_id = plan_id_by_planning_unit_id[assignment.planning_unit_id]
+            plan_id = plan_id_by_planning_unit_id[planning_unit_id]
 
             if plan_id not in status_id_by_plan_id:
                 status_id_by_plan_id[plan_id] = self._find_plan_status_id(
@@ -374,10 +384,13 @@ class TimeOfficeSolutionWriter:
                     plan_id=plan_id,
                 )
 
-            if assignment.employee_id not in profession_id_by_employee_id:
-                profession_id_by_employee_id[assignment.employee_id] = self._find_profession_id(
+            profession_key = (assignment.employee_id, planning_unit_id, assignment.date)
+            if profession_key not in profession_id_by_key:
+                profession_id_by_key[profession_key] = self._find_profession_id(
                     connection=connection,
                     employee_id=assignment.employee_id,
+                    planning_unit_id=planning_unit_id,
+                    date_value=assignment.date,
                 )
 
             time_source_shift_id = self._time_source_shift_id(
@@ -408,9 +421,10 @@ class TimeOfficeSolutionWriter:
                 sequence_number_by_key[sequence_key] += 1
 
                 start_datetime = datetime.combine(
-                    assignment.date,
+                    assignment.date + timedelta(days=segment.start_day_offset),
                     segment.start_time,
                 )
+
                 end_datetime = datetime.combine(
                     assignment.date + timedelta(days=segment.end_day_offset),
                     segment.end_time,
@@ -427,8 +441,8 @@ class TimeOfficeSolutionWriter:
                         "status_id": status_id_by_plan_id[plan_id],
                         "sequence_number": sequence_number,
                         "shift_id": assignment.shift_id,
-                        "profession_id": profession_id_by_employee_id[assignment.employee_id],
-                        "planning_unit_id": assignment.planning_unit_id,
+                        "profession_id": profession_id_by_key[profession_key],
+                        "planning_unit_id": planning_unit_id,
                         "start_datetime": start_datetime,
                         "end_datetime": end_datetime,
                         "minutes": segment.minutes,
@@ -567,8 +581,10 @@ class TimeOfficeSolutionWriter:
         *,
         connection: Connection,
         employee_id: int,
+        planning_unit_id: int,
+        date_value: date,
     ) -> int:
-        query = text(
+        personnel_query = text(
             """
             SELECT RefBerufe AS profession_id
             FROM TPersonal
@@ -577,19 +593,61 @@ class TimeOfficeSolutionWriter:
             """
         )
 
-        row = (
+        personnel_row = (
             connection.execute(
-                query,
+                personnel_query,
                 {"employee_id": employee_id},
             )
             .mappings()
             .first()
         )
 
-        if row is None:
-            raise ValueError(f"No TimeOffice profession found for employee_id={employee_id}.")
+        if personnel_row is not None:
+            return int(personnel_row["profession_id"])
 
-        return int(row["profession_id"])
+        membership_query = text(
+            """
+            SELECT TOP 1
+                pep.RefBerufe AS profession_id
+            FROM TPlanungseinheitenPersonal pep
+            WHERE pep.RefPersonal = :employee_id
+              AND pep.RefPlanungseinheiten = :planning_unit_id
+              AND pep.RefBerufe IS NOT NULL
+              AND ISNULL(pep.KeinEPlan, 0) = 0
+              AND CONVERT(date, pep.VonDat) <= :date_value
+              AND (
+                  pep.BisDat IS NULL
+                  OR CONVERT(date, pep.BisDat) >= :date_value
+              )
+            ORDER BY
+                ISNULL(pep.IstHeimat, 0) DESC,
+                pep.VonDat DESC,
+                pep.BisDat DESC
+            """
+        )
+
+        membership_row = (
+            connection.execute(
+                membership_query,
+                {
+                    "employee_id": employee_id,
+                    "planning_unit_id": planning_unit_id,
+                    "date_value": date_value,
+                },
+            )
+            .mappings()
+            .first()
+        )
+
+        if membership_row is not None:
+            return int(membership_row["profession_id"])
+
+        raise ValueError(
+            "No TimeOffice profession found for employee assignment: "
+            f"employee_id={employee_id} "
+            f"planning_unit_id={planning_unit_id} "
+            f"date={date_value}."
+        )
 
     def _next_sequence_number(
         self,
@@ -1009,3 +1067,36 @@ def _generated_assignments(solution: Solution) -> tuple[Assignment, ...]:
     return tuple(
         assignment for assignment in solution.assignments if assignment.assignment_type == AssignmentType.GENERATED
     )
+
+
+def _normalise_shift_segments(
+    *,
+    time_source_shift_id: int,
+    raw_segments: list[tuple[datetime, datetime, int]],
+) -> tuple[TimeOfficeShiftSegment, ...]:
+    base_date = min(start_datetime.date() for start_datetime, _, _ in raw_segments)
+
+    segments: list[TimeOfficeShiftSegment] = []
+
+    for start_datetime, end_datetime, minutes in sorted(
+        raw_segments,
+        key=lambda item: item[0],
+    ):
+        start_day_offset = (start_datetime.date() - base_date).days
+        end_day_offset = (end_datetime.date() - base_date).days
+
+        if end_datetime <= start_datetime:
+            end_day_offset += 1
+
+        segments.append(
+            TimeOfficeShiftSegment(
+                time_source_shift_id=time_source_shift_id,
+                start_time=start_datetime.time(),
+                end_time=end_datetime.time(),
+                start_day_offset=start_day_offset,
+                end_day_offset=end_day_offset,
+                minutes=minutes,
+            )
+        )
+
+    return tuple(segments)

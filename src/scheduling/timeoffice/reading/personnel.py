@@ -98,8 +98,8 @@ class TimeOfficePersonnelReader:
                 b.KurzBez AS membership_profession_code,
                 pep.VonDat AS valid_from,
                 pep.BisDat AS valid_until,
-                pep.IstHeimat AS is_home,
-                pep.IstVonErsatz AS is_replacement
+                CAST(ISNULL(pep.IstHeimat, 0) AS bit) AS is_home,
+                CAST(ISNULL(pep.IstVonErsatz, 0) AS bit) AS is_replacement
             FROM TPlanungseinheitenPersonal pep
             LEFT JOIN TBerufe b
                 ON b.Prim = pep.RefBerufe

@@ -1,11 +1,16 @@
 import logging
+import re
 from datetime import date
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 
 from scheduling.api.dependencies import get_timeoffice_service
+from scheduling.api.web.schemas import SuccessResponse
+from scheduling.domain import Assignment, AssignmentType, PlanningMonth
+from scheduling.solver.models import Solution, SolutionStatus
 from scheduling.timeoffice.service import TimeOfficeService
+from scheduling.timeoffice.writing.solution import LEGACY_SHIFT_ID_BY_REFERENCE_SHIFT_ID
 
 logger = logging.getLogger(__name__)
 
@@ -22,3 +27,97 @@ async def get_schedule(
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
 ) -> dict[str, list[dict[str, Any]]]:
     return {"schedules": []}
+
+
+@schedule_router.post("/schedules/write-to-timeoffice")
+async def write_schedule_to_timeoffice(
+    planning_unit: int,
+    from_date: date,
+    request: dict[str, Any],
+    timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
+) -> SuccessResponse:
+    planning_month = PlanningMonth(year=from_date.year, month=from_date.month)
+
+    dataset = timeoffice.fetch_dataset(
+        planning_unit_ids=(planning_unit,),
+        planning_month=planning_month,
+    )
+
+    solution = _frontend_schedule_to_domain_solution(
+        frontend_data=request["data"],
+        planning_unit_id=planning_unit,
+        planning_month=planning_month,
+    )
+
+    timeoffice.write_solution_to_db(
+        dataset=dataset,
+        solution=solution,
+    )
+
+    return SuccessResponse()
+
+
+LEGACY_ASSIGNMENT_VARIABLE_RE = re.compile(
+    r"^\((?P<employee_id>\d+), '(?P<date>\d{4}-\d{2}-\d{2})', (?P<legacy_shift_id>\d+)\)$"
+)
+
+REFERENCE_SHIFT_ID_BY_LEGACY_SHIFT_ID = {
+    legacy_shift_id: reference_shift_id
+    for reference_shift_id, legacy_shift_id in LEGACY_SHIFT_ID_BY_REFERENCE_SHIFT_ID.items()
+}
+
+
+def _frontend_schedule_to_domain_solution(
+    *,
+    frontend_data: dict[str, Any],
+    planning_unit_id: int,
+    planning_month: PlanningMonth,
+) -> Solution:
+    solution_data = _unwrap_frontend_solution(frontend_data)
+
+    variables = solution_data.get("variables")
+    if not isinstance(variables, dict):
+        raise ValueError("Frontend schedule solution does not contain a variables dict.")
+
+    assignments: list[Assignment] = []
+
+    for variable_key, value in variables.items():
+        if value != 1:
+            continue
+
+        match = LEGACY_ASSIGNMENT_VARIABLE_RE.match(variable_key)
+        if match is None:
+            continue
+
+        employee_id = int(match.group("employee_id"))
+        assignment_date = date.fromisoformat(match.group("date"))
+        legacy_shift_id = int(match.group("legacy_shift_id"))
+
+        reference_shift_id = REFERENCE_SHIFT_ID_BY_LEGACY_SHIFT_ID.get(legacy_shift_id)
+        if reference_shift_id is None:
+            continue
+
+        if not planning_month.start <= assignment_date <= planning_month.end:
+            continue
+
+        assignments.append(
+            Assignment(
+                employee_id=employee_id,
+                date=assignment_date,
+                shift_id=reference_shift_id,
+                assignment_type=AssignmentType.GENERATED,
+                planning_unit_id=planning_unit_id,
+            )
+        )
+
+    return Solution(
+        status=SolutionStatus.FEASIBLE,
+        assignments=tuple(assignments),
+    )
+
+
+def _unwrap_frontend_solution(frontend_data: dict[str, Any]) -> dict[str, Any]:
+    if "solution" in frontend_data and isinstance(frontend_data["solution"], dict):
+        return frontend_data["solution"]
+
+    return frontend_data

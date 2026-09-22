@@ -12,7 +12,7 @@ from scheduling.domain.wish import WishType
 MONTHLY_PLANNING_INTERVAL_ID = 1
 
 # TPlan.RefStati value for the editable target roster used as planning input.
-TARGET_PLANNING_STATUS_ID = 20
+TARGET_PLANNING_STATUS_ID = 80
 
 # TDienste.RefDienstTypen value for normal work shifts.
 WORK_SHIFT_TYPE_ID = 1
@@ -151,7 +151,20 @@ SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
         2866: NIGHT_SHIFT_ID,  # N5
         # Day/intermediate variant normalized to canonical T75_ intermediate shift.
         2994: INTERMEDIATE_SHIFT_ID,  # T8x
+        1452: INTERMEDIATE_SHIFT_ID,  # Z53
+        1274: INTERMEDIATE_SHIFT_ID,  # T8
+        1234: INTERMEDIATE_SHIFT_ID,  # T28
+        1406: INTERMEDIATE_SHIFT_ID,  # Z60
         3066: INTERMEDIATE_SHIFT_ID,  # Z52
+        3065: INTERMEDIATE_SHIFT_ID,  # Z7
+        3086: INTERMEDIATE_SHIFT_ID,  # RBLx
+        1198: INTERMEDIATE_SHIFT_ID,  # T1
+        2733: EARLY_SHIFT_ID,  # F34
+        2923: EARLY_SHIFT_ID,  # F1_
+        3263: INTERMEDIATE_SHIFT_ID,  # M15
+        2924: LATE_SHIFT_ID,  # S1_
+        2925: NIGHT_SHIFT_ID,  # N
+        1364: EARLY_SHIFT_ID,  # D29
     }
 )
 
@@ -193,6 +206,9 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "A-81302-018": StaffLevel.TRAINEE,  # A-Pflegefachkraft Krankenpflege
         "A-81302-019": StaffLevel.TRAINEE,  # A-Pflegefachkraft Altenpflege
         "-": StaffLevel.TRAINEE,  # Schauen was für eine Profession das ist
+        "81112-006": StaffLevel.PROFESSIONAL,  # Profession nachschauen
+        "82101-002": StaffLevel.ASSISTANT,  # Profession nachschauen
+        "81393-009": StaffLevel.PROFESSIONAL,  # Profession nachschauen
     }
 )
 
@@ -289,6 +305,10 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
             "RE": AvailabilityType.UNAVAILABLE,  # Reha
             "FI": AvailabilityType.UNAVAILABLE,  # Freistellung
             "AZV": AvailabilityType.UNAVAILABLE,  # Arbeitszeitverkürzung - vermutlich unavailable
+            "K": AvailabilityType.UNAVAILABLE,  # Vermutlich Krank
+            "TB": AvailabilityType.UNAVAILABLE,  # Ungeklärt
+            "SO": AvailabilityType.UNAVAILABLE,  # Ungeklärt
+            "KK": AvailabilityType.UNAVAILABLE,  # Krank
         }
     ),
     availability_absence_shift_id_by_type=MappingProxyType(
