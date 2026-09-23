@@ -46,7 +46,7 @@ To set up and run StaffSchedulingWeb alongside the solver backend:
 
 1. **Start the solver API** (this project):
     ```bash
-    uv run staff-scheduling-api
+    uv run fastapi dev src/scheduling/api/app.py --host 0.0.0.0 --port 8000
     ```
 
 2. **Clone and start the web application:**

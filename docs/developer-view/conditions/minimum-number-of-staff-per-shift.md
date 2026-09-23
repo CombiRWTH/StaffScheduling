@@ -2,14 +2,13 @@
 user-view/list-of-conditions.md:min-number-of-staff-per-shift
 --8<--
 
-### Implemented using Google's OR Tools
+### Implemented using Google's OR-Tools
 
-```python title="src/cp/constraints/min_staffing.py"
-if min_staffing is not None:
-    model.add(sum(potential_working_staff) == min_staffing)
-else:
-    model.add(sum(potential_working_staff) >= 0)
+```python title="src/scheduling/solver/cp_sat/constraints/minimum_staffing.py"
+# For each date, shift, and qualification level, enforce exact staffing demand
+ctx.model.add(sum(candidate_variables) == requirement.required_count).with_name(
+    _constraint_name(requirement)
+)
 ```
 
-For each day, shift required skill level ("Azubi", ...) we gather all eligible employees, get the minimum number of staff defined in `cases/{case_id}/{date}/minimal_number_of_staff.json` and collect all the corresponding variables (`potential_working_staff`).
-The sum of those (number of people working) needs be equal to the required number (`min_staffing`). If there is no required `min_staffing`, e.g. when there are additional special shifts (Z60), we dont restrict the solution space.
+For every planning date, shift, and required qualification role (`StaffLevel.PROFESSIONAL`, `ASSISTANT`, `TRAINEE`), the solver collects all eligible assignment variables and constrains their sum to equal `requirement.required_count`.

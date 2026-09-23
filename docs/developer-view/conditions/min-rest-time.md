@@ -2,12 +2,12 @@
 user-view/list-of-conditions.md:min-rest-time
 --8<--
 
-### Implemented using Google's OR Tools
+### Implemented using Google's OR-Tools
 
-```python title="src/cp/constraints/min_rest_time.py"
-late_today = shift_assignment_variables[employee][day][self._shifts[Shift.LATE]]
-early_tomorrow = shift_assignment_variables[employee][day + timedelta(1)][self._shifts[Shift.EARLY]]
-not_early_tomorrow = early_tomorrow.Not()
-model.add_implication(late_today, not_early_tomorrow)
+```python title="src/scheduling/solver/cp_sat/constraints/min_rest_time.py"
+# Prevent a Late shift today from being followed by an Early shift tomorrow (minimum 11-hour rest time)
+constraint = ctx.model.add(sum_late + sum_early <= 1)
+constraint.with_name(_constraint_name(employee_id, date))
 ```
-We did not implement a solution that can vary the minimum rest time, but we just do not allow an early shift following a late shift, because then the rest time would only be 9 hours. If `late_today` is true, then also `not_early_tomorrow` needs to be true.
+
+Under the German Working Hours Act (*Arbeitszeitgesetz*), employees must receive an uninterrupted rest period of at least 11 hours between shifts. In standard hospital shift rotations, working a Late shift (ending around 21:00 or 22:00) followed immediately by an Early shift (starting around 06:00) yields only an 8–9 hour rest interval. The constraint strictly forbids this transition: `sum(late_today) + sum(early_tomorrow) <= 1`.
