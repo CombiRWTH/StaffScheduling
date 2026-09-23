@@ -44,12 +44,10 @@ class MinimizeConsecutiveNightShifts:
             if shift_id in night_shift_ids:
                 night_assignment_variables[(employee_id, assignment_date)].append(variable)
 
-        employee_ids = sorted(
-            {employee_id for employee_id, *_ in ctx.assignment_variables}
-        )
+        employee_ids = sorted({employee_id for employee_id, *_ in ctx.assignment_variables})
         planning_dates = self._planning_dates(ctx)
 
-        #Map (employee, date) to a boolean "worked_night" variable
+        # Map (employee, date) to a boolean "worked_night" variable
         night_worked_variables: dict[tuple[int, date], cp_model.IntVar] = {}
 
         for employee_id in employee_ids:
@@ -63,7 +61,7 @@ class MinimizeConsecutiveNightShifts:
 
         penalties: list[Penalty] = []
 
-        #Process windows for each phase length
+        # Process windows for each phase length
         for phase_length in self.PHASE_LENGTHS:
             if len(planning_dates) < phase_length:
                 continue
@@ -101,9 +99,7 @@ class MinimizeConsecutiveNightShifts:
         return tuple(penalties)
 
     @staticmethod
-    def _get_worked_variable(
-        ctx: SolverContext, variables: Sequence[cp_model.IntVar], *, name: str
-    ) -> cp_model.IntVar:
+    def _get_worked_variable(ctx: SolverContext, variables: Sequence[cp_model.IntVar], *, name: str) -> cp_model.IntVar:
         worked = ctx.model.new_bool_var(name)
         if variables:
             ctx.model.add_max_equality(worked, list(variables))

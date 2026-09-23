@@ -158,9 +158,9 @@ SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
         2994: INTERMEDIATE_SHIFT_ID,  # T8x
         1234: INTERMEDIATE_SHIFT_ID,
         1356: INTERMEDIATE_SHIFT_ID,
-        3066: INTERMEDIATE_SHIFT_ID, #Z52 intermediate shift
-        1406: INTERMEDIATE_SHIFT_ID, #Z60 intermediate shift
-        1452: INTERMEDIATE_SHIFT_ID, #Z53 intermediate shift
+        3066: INTERMEDIATE_SHIFT_ID,  # Z52 intermediate shift
+        1406: INTERMEDIATE_SHIFT_ID,  # Z60 intermediate shift
+        1452: INTERMEDIATE_SHIFT_ID,  # Z53 intermediate shift
     }
 )
 

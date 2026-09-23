@@ -28,7 +28,7 @@ class NotTooManyConsecutiveDays:
         if not ctx.assignment_variables:
             return ()
 
-        #Group decision variables by (employee, date)
+        # Group decision variables by (employee, date)
         vars_by_employee_date: defaultdict[tuple[int, Date], list[cp_model.IntVar]] = defaultdict(list)
         for key, variable in ctx.assignment_variables.items():
             employee_id, _, assignment_date, _, _ = key
@@ -41,7 +41,7 @@ class NotTooManyConsecutiveDays:
         if len(planning_dates) < window_length:
             return ()
 
-        #Create boolean 'worked_day' variables for each (employee, date)
+        # Create boolean 'worked_day' variables for each (employee, date)
         worked_day_vars: dict[tuple[int, Date], cp_model.IntVar] = {}
         for employee_id in employee_ids:
             for current_date in planning_dates:
@@ -52,21 +52,17 @@ class NotTooManyConsecutiveDays:
                     name=f"ntmcd__worked_e{employee_id}_d{current_date}",
                 )
 
-        #Apply sliding-window penalties of length (MAX_CONSECUTIVE_DAYS + 1)
+        # Apply sliding-window penalties of length (MAX_CONSECUTIVE_DAYS + 1)
         penalties: list[cp_model.IntVar] = []
         number_of_windows = len(planning_dates) - window_length + 1
 
         for employee_id in employee_ids:
             for start_index in range(number_of_windows):
                 window_dates = planning_dates[start_index : start_index + window_length]
-                window_worked_vars = [
-                    worked_day_vars[(employee_id, w_date)] for w_date in window_dates
-                ]
+                window_worked_vars = [worked_day_vars[(employee_id, w_date)] for w_date in window_dates]
 
                 # Penalty triggers if employee works ALL days in the window
-                exceeded_var = ctx.model.new_bool_var(
-                    f"ntmcd__exceeded_e{employee_id}_d{window_dates[0]}"
-                )
+                exceeded_var = ctx.model.new_bool_var(f"ntmcd__exceeded_e{employee_id}_d{window_dates[0]}")
 
                 ctx.model.add_bool_and(window_worked_vars).only_enforce_if(exceeded_var)
                 ctx.model.add_bool_or([v.Not() for v in window_worked_vars]).only_enforce_if(exceeded_var.Not())
@@ -85,9 +81,7 @@ class NotTooManyConsecutiveDays:
         )
 
     @staticmethod
-    def _get_worked_variable(
-        ctx: SolverContext, variables: Sequence[cp_model.IntVar], *, name: str
-    ) -> cp_model.IntVar:
+    def _get_worked_variable(ctx: SolverContext, variables: Sequence[cp_model.IntVar], *, name: str) -> cp_model.IntVar:
         worked = ctx.model.new_bool_var(name)
         if variables:
             ctx.model.add_max_equality(worked, list(variables))

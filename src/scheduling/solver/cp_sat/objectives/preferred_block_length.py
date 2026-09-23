@@ -54,7 +54,7 @@ class PreferredBlockLength:
         for employee_id in employee_ids:
             for start_index in range(len(planning_dates) - self.PREFERRED_BLOCK_LENGTH + 1):
                 block_dates = planning_dates[start_index : start_index + self.PREFERRED_BLOCK_LENGTH]
-                
+
                 prev_date = block_dates[0] - timedelta(days=1)
                 next_date = block_dates[-1] + timedelta(days=1)
 
@@ -73,9 +73,7 @@ class PreferredBlockLength:
                 if next_date in planning_date_set:
                     literals.append(worked_day_vars[(employee_id, next_date)].Not())
 
-                block_var = ctx.model.new_bool_var(
-                    f"pbl__block_e{employee_id}_d{block_dates[0]}"
-                )
+                block_var = ctx.model.new_bool_var(f"pbl__block_e{employee_id}_d{block_dates[0]}")
 
                 # Enforce: block_var == 1 iff ALL literals are satisfied
                 ctx.model.add_bool_and(literals).only_enforce_if(block_var)
@@ -96,9 +94,7 @@ class PreferredBlockLength:
         )
 
     @staticmethod
-    def _get_worked_variable(
-        ctx: SolverContext, variables: Sequence[cp_model.IntVar], *, name: str
-    ) -> cp_model.IntVar:
+    def _get_worked_variable(ctx: SolverContext, variables: Sequence[cp_model.IntVar], *, name: str) -> cp_model.IntVar:
         worked = ctx.model.new_bool_var(name)
         if variables:
             ctx.model.add_max_equality(worked, list(variables))
