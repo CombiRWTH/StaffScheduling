@@ -66,7 +66,7 @@ class MinimizeConsecutiveNightShifts:
             if len(planning_dates) < phase_length:
                 continue
 
-            phase_variables: list[cp_model.IntVar] = []
+            phase_variables: list[cp_model.Literal] = []
             number_of_windows = len(planning_dates) - phase_length + 1
 
             for employee_id in employee_ids:
@@ -91,7 +91,7 @@ class MinimizeConsecutiveNightShifts:
                     Penalty(
                         objective_id=self.id,
                         name=f"total_l{phase_length}",
-                        expression=cp_model.LinearExpr.sum(phase_variables),
+                        expression=cp_model.LinearExpr.sum(phase_variables), # pyright: ignore[reportUnknownMemberType]
                         multiplier=phase_length,
                     )
                 )

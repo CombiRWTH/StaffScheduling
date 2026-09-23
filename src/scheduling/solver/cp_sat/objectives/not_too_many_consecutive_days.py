@@ -42,7 +42,7 @@ class NotTooManyConsecutiveDays:
             return ()
 
         # Create boolean 'worked_day' variables for each (employee, date)
-        worked_day_vars: dict[tuple[int, Date], cp_model.IntVar] = {}
+        worked_day_vars: dict[tuple[int, Date], cp_model.Literal] = {}
         for employee_id in employee_ids:
             for current_date in planning_dates:
                 day_vars = vars_by_employee_date.get((employee_id, current_date), [])
@@ -76,7 +76,7 @@ class NotTooManyConsecutiveDays:
             Penalty(
                 objective_id=self.id,
                 name="total_too_many_consecutive_days",
-                expression=cp_model.LinearExpr.sum(penalties),
+                expression=cp_model.LinearExpr.sum(penalties), # pyright: ignore[reportUnknownMemberType]
             ),
         )
 

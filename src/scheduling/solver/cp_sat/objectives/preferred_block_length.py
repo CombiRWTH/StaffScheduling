@@ -48,7 +48,7 @@ class PreferredBlockLength:
                     name=f"pbl__worked_e{employee_id}_d{current_date}",
                 )
 
-        block_variables: list[cp_model.IntVar] = []
+        block_variables: list[cp_model.Literal] = []
 
         # Detect exact blocks of 3 worked days flanked by days OFF (or boundary)
         for employee_id in employee_ids:
@@ -59,7 +59,7 @@ class PreferredBlockLength:
                 next_date = block_dates[-1] + timedelta(days=1)
 
                 # Conditions required for an EXACT 3-day block
-                literals: list[cp_model.IntVar] = []
+                literals: list[cp_model.Literal] = []
 
                 # Middle 3 days MUST be worked
                 for d in block_dates:
@@ -88,7 +88,7 @@ class PreferredBlockLength:
             Penalty(
                 objective_id=self.id,
                 name="total_preferred_blocks",
-                expression=cp_model.LinearExpr.sum(block_variables),
+                expression=cp_model.LinearExpr.sum(block_variables),  # pyright: ignore[reportUnknownMemberType]
                 multiplier=-1,  # Negative multiplier turns penalty minimization into reward maximization
             ),
         )
