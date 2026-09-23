@@ -66,7 +66,7 @@ class MinimizeConsecutiveNightShifts:
             if len(planning_dates) < phase_length:
                 continue
 
-            phase_variables: list[cp_model.Literal] = []
+            phase_variables: list[cp_model.IntVar] = []
             number_of_windows = len(planning_dates) - phase_length + 1
 
             for employee_id in employee_ids:
@@ -81,8 +81,8 @@ class MinimizeConsecutiveNightShifts:
                     )
 
                     # Native Boolean AND formulation
-                    ctx.model.add_bool_and(per_day_variables).only_enforce_if(phase_variable)
-                    ctx.model.add_bool_or([v.Not() for v in per_day_variables]).only_enforce_if(phase_variable.Not())
+                    ctx.model.add_bool_and(per_day_variables).only_enforce_if(phase_variable)  # pyright: ignore[reportUnknownMemberType]
+                    ctx.model.add_bool_or([v.Not() for v in per_day_variables]).only_enforce_if(phase_variable.Not())  # pyright: ignore[reportUnknownMemberType]
 
                     phase_variables.append(phase_variable)
 

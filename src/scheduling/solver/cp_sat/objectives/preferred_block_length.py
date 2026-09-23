@@ -48,7 +48,7 @@ class PreferredBlockLength:
                     name=f"pbl__worked_e{employee_id}_d{current_date}",
                 )
 
-        block_variables: list[cp_model.Literal] = []
+        block_variables: list[cp_model.IntVar] = []
 
         # Detect exact blocks of 3 worked days flanked by days OFF (or boundary)
         for employee_id in employee_ids:
@@ -59,7 +59,7 @@ class PreferredBlockLength:
                 next_date = block_dates[-1] + timedelta(days=1)
 
                 # Conditions required for an EXACT 3-day block
-                literals: list[cp_model.Literal] = []
+                literals: list[Any] = []
 
                 # Middle 3 days MUST be worked
                 for d in block_dates:
@@ -76,8 +76,8 @@ class PreferredBlockLength:
                 block_var = ctx.model.new_bool_var(f"pbl__block_e{employee_id}_d{block_dates[0]}")
 
                 # Enforce: block_var == 1 iff ALL literals are satisfied
-                ctx.model.add_bool_and(literals).only_enforce_if(block_var)
-                ctx.model.add_bool_or([lit.Not() for lit in literals]).only_enforce_if(block_var.Not())
+                ctx.model.add_bool_and(literals).only_enforce_if(block_var)  # pyright: ignore[reportUnknownMemberType]
+                ctx.model.add_bool_or([lit.Not() for lit in literals]).only_enforce_if(block_var.Not())  # pyright: ignore[reportUnknownMemberType]
 
                 block_variables.append(block_var)
 

@@ -42,7 +42,7 @@ class NotTooManyConsecutiveDays:
             return ()
 
         # Create boolean 'worked_day' variables for each (employee, date)
-        worked_day_vars: dict[tuple[int, Date], cp_model.Literal] = {}
+        worked_day_vars: dict[tuple[int, Date], cp_model.IntVar] = {}
         for employee_id in employee_ids:
             for current_date in planning_dates:
                 day_vars = vars_by_employee_date.get((employee_id, current_date), [])
@@ -64,8 +64,8 @@ class NotTooManyConsecutiveDays:
                 # Penalty triggers if employee works ALL days in the window
                 exceeded_var = ctx.model.new_bool_var(f"ntmcd__exceeded_e{employee_id}_d{window_dates[0]}")
 
-                ctx.model.add_bool_and(window_worked_vars).only_enforce_if(exceeded_var)
-                ctx.model.add_bool_or([v.Not() for v in window_worked_vars]).only_enforce_if(exceeded_var.Not())
+                ctx.model.add_bool_and(window_worked_vars).only_enforce_if(exceeded_var)  # pyright: ignore[reportUnknownMemberType]
+                ctx.model.add_bool_or([v.Not() for v in window_worked_vars]).only_enforce_if(exceeded_var.Not())  # pyright: ignore[reportUnknownMemberType]
 
                 penalties.append(exceeded_var)
 
