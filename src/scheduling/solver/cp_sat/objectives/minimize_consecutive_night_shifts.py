@@ -91,7 +91,7 @@ class MinimizeConsecutiveNightShifts:
                     Penalty(
                         objective_id=self.id,
                         name=f"total_l{phase_length}",
-                        expression=cp_model.LinearExpr.sum(phase_variables), # pyright: ignore[reportUnknownMemberType]
+                        expression=cp_model.LinearExpr.sum(phase_variables),  # pyright: ignore[reportUnknownMemberType]
                         multiplier=phase_length,
                     )
                 )

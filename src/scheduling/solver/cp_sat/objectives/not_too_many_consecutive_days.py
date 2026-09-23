@@ -76,7 +76,7 @@ class NotTooManyConsecutiveDays:
             Penalty(
                 objective_id=self.id,
                 name="total_too_many_consecutive_days",
-                expression=cp_model.LinearExpr.sum(penalties), # pyright: ignore[reportUnknownMemberType]
+                expression=cp_model.LinearExpr.sum(penalties),  # pyright: ignore[reportUnknownMemberType]
             ),
         )
 
