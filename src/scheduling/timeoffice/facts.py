@@ -144,7 +144,6 @@ SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
     {
         # Night variants normalized to canonical N2_ night shift.
         2939: EARLY_SHIFT_ID,  # F2_
-        2947: LATE_SHIFT_ID,  # S2_
         1125: EARLY_SHIFT_ID,  # F32
         1194: EARLY_SHIFT_ID,  # F95
         2947: LATE_SHIFT_ID,  # S2_
@@ -158,11 +157,8 @@ SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
         2866: NIGHT_SHIFT_ID,  # N5
         # Day/intermediate variant normalized to canonical T75_ intermediate shift.
         2994: INTERMEDIATE_SHIFT_ID,  # T8x
-        1452: INTERMEDIATE_SHIFT_ID,  # Z53
         1274: INTERMEDIATE_SHIFT_ID,  # T8
         1234: INTERMEDIATE_SHIFT_ID,  # T28
-        1406: INTERMEDIATE_SHIFT_ID,  # Z60
-        3066: INTERMEDIATE_SHIFT_ID,  # Z52
         3065: INTERMEDIATE_SHIFT_ID,  # Z7
         3086: INTERMEDIATE_SHIFT_ID,  # RBLx
         1198: INTERMEDIATE_SHIFT_ID,  # T1
@@ -172,7 +168,6 @@ SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
         2924: LATE_SHIFT_ID,  # S1_
         2925: NIGHT_SHIFT_ID,  # N
         1364: EARLY_SHIFT_ID,  # D29
-        1234: INTERMEDIATE_SHIFT_ID,
         1356: INTERMEDIATE_SHIFT_ID,
         3066: INTERMEDIATE_SHIFT_ID,  # Z52 intermediate shift
         1406: INTERMEDIATE_SHIFT_ID,  # Z60 intermediate shift
