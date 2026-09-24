@@ -1,7 +1,5 @@
 from datetime import datetime
-from typing import Self
 
-from pydantic import model_validator
 from sqlalchemy import Connection, bindparam, text
 
 from scheduling.domain import PlanningMonth
@@ -50,7 +48,7 @@ class TimeOfficeWishRow(TimeOfficeSourceRow):
             )
 
         return self"""
-
+    """
     @model_validator(mode="after")
     def validate_absence_references(self) -> Self:
         if (
@@ -64,7 +62,7 @@ class TimeOfficeWishRow(TimeOfficeSourceRow):
                 f"RefDienstAbw={self.absence_shift_id}."
             )
 
-        return self
+        return self"""
 
 
 class TimeOfficeWishReader:
@@ -102,9 +100,9 @@ class TimeOfficeWishReader:
                 absence_d.KurzBez AS absence_shift_code,
                 absence_d.Bezeichnung AS absence_shift_name,
 
-                COALESCE(pkg.RefgAbw, pkg.RefDienstAbw) AS resolved_absence_shift_id,
-                COALESCE(global_absence_d.KurzBez, absence_d.KurzBez) AS resolved_absence_code,
-                COALESCE(global_absence_d.Bezeichnung, absence_d.Bezeichnung) AS resolved_absence_name
+                COALESCE(pkg.RefDienstAbw, pkg.RefgAbw) AS resolved_absence_shift_id,
+                COALESCE(absence_d.KurzBez, global_absence_d.KurzBez) AS resolved_absence_code,
+                COALESCE(absence_d.Bezeichnung, global_absence_d.Bezeichnung) AS resolved_absence_name
             FROM TPlanPersonalKommtGeht pkg
             LEFT JOIN TDienste work_d
                 ON work_d.Prim = pkg.RefDienste

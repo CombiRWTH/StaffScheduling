@@ -1,5 +1,4 @@
 import logging
-from typing import Any
 
 from sqlalchemy import Engine
 
@@ -229,16 +228,16 @@ class TimeOfficeService:
                 objective_weights=objective_weights,
             )
 
-    def get_solution_data(
+    def write_solution_to_db(
         self,
         *,
-        planning_unit_id: int,
-        planning_month: PlanningMonth,
-        schedule_id: str,
-    ) -> dict[str, Any] | None:
-        """Retrieve processed solution data for a given schedule.
-
-        TODO: Implement actual database access to fetch the persisted solution.
-        For now this is a stub that returns None (no solution found).
-        """
-        return None
+        dataset: SchedulingDataset,
+        solution: Solution,
+    ) -> None:
+        with self._engine.begin() as connection:
+            self._solution_writer.replace_solution_assignments(
+                connection=connection,
+                dataset=dataset,
+                solution=solution,
+                facts=self._facts,
+            )

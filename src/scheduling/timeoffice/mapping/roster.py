@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from datetime import date, datetime
 
 from scheduling.domain import Assignment, AssignmentType, Availability, AvailabilityType
@@ -79,7 +80,7 @@ def map_availability(*, rows: tuple[TimeOfficeRosterRow, ...], facts: TimeOffice
             )
         )
 
-    return tuple(availability_items)
+    return _deduplicate_availability(availability_items)
 
 
 def _assignment_key(assignment: Assignment) -> AssignmentKey:
@@ -134,4 +135,35 @@ def _availability_type_for_absence_code(
         "Unmapped TimeOffice absence code for availability: "
         f"employee_id={employee_id} roster_date={roster_date} "
         f"absence_code={absence_code!r}."
+    )
+
+
+def _deduplicate_availability(
+    availability: Sequence[Availability],
+) -> tuple[Availability, ...]:
+    availability_by_key: dict[
+        tuple[int, date, AvailabilityType, tuple[int, ...] | None],
+        Availability,
+    ] = {}
+
+    for item in availability:
+        key = (
+            item.employee_id,
+            item.date,
+            item.availability_type,
+            tuple(sorted(item.shift_ids)) if item.shift_ids is not None else None,
+        )
+        availability_by_key.setdefault(key, item)
+
+    return tuple(
+        availability_by_key[key]
+        for key in sorted(
+            availability_by_key,
+            key=lambda item: (
+                item[0],
+                item[1],
+                item[2].value,
+                item[3] or (),
+            ),
+        )
     )

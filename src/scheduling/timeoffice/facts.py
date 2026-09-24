@@ -12,7 +12,7 @@ from scheduling.domain.wish import WishType
 MONTHLY_PLANNING_INTERVAL_ID = 1
 
 # TPlan.RefStati value for the editable target roster used as planning input.
-TARGET_PLANNING_STATUS_ID = 20
+TARGET_PLANNING_STATUS_ID = 80
 
 # TDienste.RefDienstTypen value for normal work shifts.
 WORK_SHIFT_TYPE_ID = 1
@@ -82,7 +82,8 @@ class TimeOfficeFacts:
     work_shift_type_id: int
 
     reference_shift_facts_by_id: Mapping[ShiftId, TimeOfficeReferenceShiftFact]
-    wish_absence_shift_id_by_type: Mapping[WishType, int]
+    # Shift IDs used only to read TDiensteSollzeiten for VonZeit/BisZeit/Minuten
+    time_source_shift_id_by_reference_shift_id: Mapping[ShiftId, int]
 
     # Non-reference source shift IDs normalized to reduced reference shifts.
     # Missing source shift ID => fail loudly in mapping.
@@ -130,7 +131,7 @@ REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = Ma
             staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
         ),
         INTERMEDIATE_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="Z",
+            expected_code="T",
             type=ShiftType.INTERMEDIATE,
             staffing_role=StaffingDemandRole.OPTIONAL_COVERAGE,
         ),
@@ -156,7 +157,17 @@ SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
         2866: NIGHT_SHIFT_ID,  # N5
         # Day/intermediate variant normalized to canonical T75_ intermediate shift.
         2994: INTERMEDIATE_SHIFT_ID,  # T8x
-        1234: INTERMEDIATE_SHIFT_ID,
+        1274: INTERMEDIATE_SHIFT_ID,  # T8
+        1234: INTERMEDIATE_SHIFT_ID,  # T28
+        3065: INTERMEDIATE_SHIFT_ID,  # Z7
+        3086: INTERMEDIATE_SHIFT_ID,  # RBLx
+        1198: INTERMEDIATE_SHIFT_ID,  # T1
+        2733: EARLY_SHIFT_ID,  # F34
+        2923: EARLY_SHIFT_ID,  # F1_
+        3263: INTERMEDIATE_SHIFT_ID,  # M15
+        2924: LATE_SHIFT_ID,  # S1_
+        2925: NIGHT_SHIFT_ID,  # N
+        1364: EARLY_SHIFT_ID,  # D29
         1356: INTERMEDIATE_SHIFT_ID,
         3066: INTERMEDIATE_SHIFT_ID,  # Z52 intermediate shift
         1406: INTERMEDIATE_SHIFT_ID,  # Z60 intermediate shift
@@ -254,6 +265,14 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     ),
     work_shift_type_id=WORK_SHIFT_TYPE_ID,
     reference_shift_facts_by_id=REFERENCE_SHIFT_FACTS_BY_ID,
+    time_source_shift_id_by_reference_shift_id=MappingProxyType(
+        {
+            EARLY_SHIFT_ID: 2939,  # Für F2 -> Konnte keine Zeiten für F finden
+            LATE_SHIFT_ID: 2947,  # Für S2 -> Konnte keine Zeiten für S finden
+            NIGHT_SHIFT_ID: 2953,  # Für N2_ -> Konnte keine Zeiten für N finden
+            INTERMEDIATE_SHIFT_ID: 1274,  # Für T8 -> Konnte keine Zeiten für T finden
+        }
+    ),
     shift_id_overrides=SHIFT_ID_OVERRIDES,
     staff_level_by_profession_code=STAFF_LEVEL_BY_PROFESSION_CODE,
     fallback_demand_by_planning_unit=MappingProxyType(
@@ -290,6 +309,10 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
             "RE": AvailabilityType.UNAVAILABLE,  # Reha
             "FI": AvailabilityType.UNAVAILABLE,  # Freistellung
             "AZV": AvailabilityType.UNAVAILABLE,  # Arbeitszeitverkürzung - vermutlich unavailable
+            "K": AvailabilityType.UNAVAILABLE,  # Vermutlich Krank
+            "TB": AvailabilityType.UNAVAILABLE,  # Ungeklärt
+            "SO": AvailabilityType.UNAVAILABLE,  # Ungeklärt
+            "KK": AvailabilityType.UNAVAILABLE,  # Krank
         }
     ),
     availability_absence_shift_id_by_type=MappingProxyType(
