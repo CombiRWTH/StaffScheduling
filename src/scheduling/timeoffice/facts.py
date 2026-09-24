@@ -44,7 +44,7 @@ LATE_SHIFT_ID = 1605
 # There are 3 Prim for the Night Shift: 1690, 2449, and 3001
 NIGHT_SHIFT_ID = 1690
 # Ist die Intermediate Shift T(1410) oder Z(1453)?
-INTERMEDIATE_SHIFT_ID = 1410
+INTERMEDIATE_SHIFT_ID = 1453
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,6 +109,9 @@ class TimeOfficeFacts:
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
 
+    target_working_time_tolerance_less: int
+    target_working_time_tolerance_more: int
+
 
 REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = MappingProxyType(
     {
@@ -142,6 +145,10 @@ SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
         # Night variants normalized to canonical N2_ night shift.
         2939: EARLY_SHIFT_ID,  # F2_
         2947: LATE_SHIFT_ID,  # S2_
+        1125: EARLY_SHIFT_ID,  # F32
+        1194: EARLY_SHIFT_ID,  # F95
+        2947: LATE_SHIFT_ID,  # S2_
+        2867: LATE_SHIFT_ID,  # S61
         2953: NIGHT_SHIFT_ID,  # N2_
         2906: INTERMEDIATE_SHIFT_ID,  # T72_
         1692: NIGHT_SHIFT_ID,  # N15, partial night
@@ -165,6 +172,11 @@ SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
         2924: LATE_SHIFT_ID,  # S1_
         2925: NIGHT_SHIFT_ID,  # N
         1364: EARLY_SHIFT_ID,  # D29
+        1234: INTERMEDIATE_SHIFT_ID,
+        1356: INTERMEDIATE_SHIFT_ID,
+        3066: INTERMEDIATE_SHIFT_ID,  # Z52 intermediate shift
+        1406: INTERMEDIATE_SHIFT_ID,  # Z60 intermediate shift
+        1452: INTERMEDIATE_SHIFT_ID,  # Z53 intermediate shift
     }
 )
 
@@ -205,10 +217,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "A-81302-016": StaffLevel.TRAINEE,  # A-Pflegefachkraft Kinderkrankenpflege
         "A-81302-018": StaffLevel.TRAINEE,  # A-Pflegefachkraft Krankenpflege
         "A-81302-019": StaffLevel.TRAINEE,  # A-Pflegefachkraft Altenpflege
-        "-": StaffLevel.TRAINEE,  # Schauen was für eine Profession das ist
-        "81112-006": StaffLevel.PROFESSIONAL,  # Profession nachschauen
-        "82101-002": StaffLevel.ASSISTANT,  # Profession nachschauen
-        "81393-009": StaffLevel.PROFESSIONAL,  # Profession nachschauen
+        "-": StaffLevel.TRAINEE,  # Später herausfinden was das für eine Profession ist
     }
 )
 
@@ -335,4 +344,6 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,
     monthly_actual_work_account_id=MONTHLY_ACTUAL_WORK_ACCOUNT_ID,
+    target_working_time_tolerance_less=500,
+    target_working_time_tolerance_more=500,
 )

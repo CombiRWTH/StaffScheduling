@@ -24,6 +24,7 @@ class MinimumStaffing:
         ctx: SolverContext,
         params: Mapping[str, Any],
     ) -> tuple[SolverDiagnostic, ...]:
+        del params
         diagnostics: list[SolverDiagnostic] = []
         vars_by_demand = _group_vars_by_demand(ctx)
 
