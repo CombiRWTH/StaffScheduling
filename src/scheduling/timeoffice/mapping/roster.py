@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from datetime import date, datetime
 
 from scheduling.domain import Assignment, AssignmentType, Availability, AvailabilityType
@@ -138,7 +139,7 @@ def _availability_type_for_absence_code(
 
 
 def _deduplicate_availability(
-    availability: tuple[Availability, ...],
+    availability: Sequence[Availability],
 ) -> tuple[Availability, ...]:
     availability_by_key: dict[
         tuple[int, date, AvailabilityType, tuple[int, ...] | None],

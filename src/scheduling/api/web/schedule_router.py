@@ -1,7 +1,7 @@
 import logging
 import re
 from datetime import date
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 from fastapi import APIRouter, Depends
 
@@ -75,9 +75,12 @@ def _frontend_schedule_to_domain_solution(
 ) -> Solution:
     solution_data = _unwrap_frontend_solution(frontend_data)
 
-    variables = solution_data.get("variables")
-    if not isinstance(variables, dict):
-        raise ValueError("Frontend schedule solution does not contain a variables dict.")
+
+    variables_data = solution_data.get("variables")
+    if not isinstance(variables_data, dict):
+         raise ValueError("Frontend schedule solution does not contain a variables dict.")
+
+    variables = cast(dict[str, Any], variables_data)
 
     assignments: list[Assignment] = []
 
@@ -117,7 +120,8 @@ def _frontend_schedule_to_domain_solution(
 
 
 def _unwrap_frontend_solution(frontend_data: dict[str, Any]) -> dict[str, Any]:
-    if "solution" in frontend_data and isinstance(frontend_data["solution"], dict):
-        return frontend_data["solution"]
+    solution = frontend_data.get("solution")
+    if isinstance(solution, dict):
+       return cast(dict[str, Any], solution)
 
     return frontend_data
