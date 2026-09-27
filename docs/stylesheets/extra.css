@@ -1,0 +1,26 @@
+/* Petrol & coral color scheme */
+
+:root {
+  --md-primary-fg-color: #005f73;
+  --md-primary-fg-color--light: #2b8a9f;
+  --md-primary-fg-color--dark: #00434f;
+  --md-accent-fg-color: #ee6c4d;
+  --md-typeset-a-color: #005f73;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #1d7f97;
+  --md-primary-fg-color--light: #005f73;
+  --md-primary-fg-color--dark: #2b8a9f;
+  --md-accent-fg-color: #ff8360;
+  --md-typeset-a-color: #55c1d9;
+}
+
+::selection {
+  background: rgba(238, 108, 77, 0.3);
+}
+
+/* coral signature line between header and navigation tabs */
+.md-header {
+  border-bottom: 2px solid #ee6c4d;
+}
