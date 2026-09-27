@@ -1,4 +1,19 @@
-# Staff Scheduling Documentation
+---
+title: Staff Scheduling
+---
+
+<div class="hero">
+
+<h1>Staff Scheduling</h1>
+
+<p>Automatic staff scheduling powered by constraint solving — from raw shift data to a fair, demand-fitting plan.</p>
+
+<p>
+<a class="md-button md-button--primary" href="user-view/">User View</a>
+<a class="md-button" href="developer-view/">Developer View</a>
+</p>
+
+</div>
 
 The Staff Scheduling documentation is organized into two main sections: the [**User View**](./user-view/index.md) and the [**Developer View**](./developer-view/index.md).
 

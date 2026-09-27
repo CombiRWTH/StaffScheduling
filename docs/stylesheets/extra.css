@@ -1,26 +1,144 @@
-/* Petrol & coral color scheme */
+/* Ink & paper editorial theme: warm near-black chrome on paper (FT-style), petrol for links only,
+   coral as the accent. Variables are overridden in scheme blocks (matching Material's own
+   selector pattern) so they win the cascade regardless of the palette set in mkdocs.yml. */
 
 :root {
-  --md-primary-fg-color: #005f73;
-  --md-primary-fg-color--light: #2b8a9f;
-  --md-primary-fg-color--dark: #00434f;
-  --md-accent-fg-color: #ee6c4d;
-  --md-typeset-a-color: #005f73;
+  --ink: #262220;
+  --ink-soft: #2e2a26;
+  --ink-deep: #16120f;
+  --coral: #ee6c4d;
+  --coral-bright: #ff8360;
+}
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: var(--ink);
+  --md-primary-fg-color--light: #4a443f;
+  --md-primary-fg-color--dark: var(--ink-deep);
+  --md-accent-fg-color: var(--coral);
+  --md-typeset-a-color: #006280; /* petrol — links only, never large surfaces */
+  --md-default-bg-color: #faf7f2; /* warm paper */
+  --md-footer-bg-color: var(--ink-deep);
+  --md-footer-bg-color--deep: #0e0c0a;
 }
 
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #1d7f97;
-  --md-primary-fg-color--light: #005f73;
-  --md-primary-fg-color--dark: #2b8a9f;
-  --md-accent-fg-color: #ff8360;
+  --md-primary-fg-color: #211d1a;
+  --md-primary-fg-color--light: #3a342f;
+  --md-primary-fg-color--dark: #141110;
+  --md-accent-fg-color: var(--coral-bright);
   --md-typeset-a-color: #55c1d9;
+  --md-default-bg-color: #1a1715; /* warm dark paper */
+  --md-footer-bg-color: #141110;
+  --md-footer-bg-color--deep: #0e0c0a;
 }
 
 ::selection {
   background: rgba(238, 108, 77, 0.3);
 }
 
-/* coral signature line between header and navigation tabs */
-.md-header {
-  border-bottom: 2px solid #ee6c4d;
+/* Coral hairline along the bottom edge of the ink tab band */
+.md-tabs {
+  box-shadow: inset 0 -3px 0 0 var(--coral);
+}
+
+/* Serif page titles with a coral tick */
+.md-typeset h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+}
+
+.md-typeset h1::after {
+  content: "";
+  display: block;
+  width: 3em;
+  height: 4px;
+  margin-top: 0.3em;
+  border-radius: 2px;
+  background: var(--coral);
+}
+
+/* Coral hover underline on content links */
+.md-typeset a:not(.md-button) {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s;
+}
+
+.md-typeset a:not(.md-button):hover {
+  text-decoration-color: var(--coral);
+}
+
+/* Bolder active sidebar entry */
+.md-nav__link--active {
+  font-weight: 600;
+}
+
+/* Coral-tinted inline code, softer-rounded code blocks */
+.md-typeset :not(pre) > code {
+  background: rgba(238, 108, 77, 0.1);
+}
+
+[data-md-color-scheme="slate"] .md-typeset :not(pre) > code {
+  background: rgba(255, 131, 96, 0.12);
+}
+
+.md-typeset pre {
+  border-radius: 8px;
+}
+
+/* Coral back-to-top button */
+.md-top {
+  background: var(--coral);
+  color: #fff;
+}
+
+.md-top:hover {
+  background: var(--coral-bright);
+}
+
+/* Landing hero: ink card on paper */
+.hero {
+  background: linear-gradient(120deg, var(--ink-soft), var(--ink-deep));
+  color: #faf7f2;
+  padding: 2.2em;
+  border-radius: 12px;
+  margin-bottom: 1.6em;
+}
+
+.hero h1 {
+  margin-top: 0;
+  color: #faf7f2;
+}
+
+.hero p:not(:last-child) {
+  color: rgba(250, 247, 242, 0.92);
+}
+
+.hero .md-button--primary {
+  background: #faf7f2;
+  border-color: #faf7f2;
+  color: var(--ink-deep);
+}
+
+.hero .md-button--primary:hover {
+  background: rgba(250, 247, 242, 0.85);
+  border-color: #faf7f2;
+  color: var(--ink-deep);
+}
+
+.hero .md-button:not(.md-button--primary) {
+  background: transparent;
+  border-color: rgba(250, 247, 242, 0.7);
+  color: #faf7f2;
+}
+
+.hero .md-button:not(.md-button--primary):hover {
+  background: rgba(250, 247, 242, 0.12);
+  border-color: #faf7f2;
+  color: #faf7f2;
+}
+
+[data-md-color-scheme="slate"] .hero {
+  border: 1px solid rgba(250, 247, 242, 0.12);
 }
