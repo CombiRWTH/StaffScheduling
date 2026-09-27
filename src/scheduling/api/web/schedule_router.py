@@ -122,9 +122,9 @@ def _get_metadata_legacy(planning_unit: int | None = None, from_date: date | Non
         try:
             with path.open(encoding="utf-8") as f:
                 file_data = json.load(f)
-                inner = file_data.get("solution", file_data) if isinstance(file_data, dict) else {}
+                inner = file_data.get("solution", file_data) if isinstance(file_data, dict) else {}  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
                 if isinstance(inner, dict):
-                    stats = inner.get("stats", {})
+                    stats = inner.get("stats", {})  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
         except Exception:
             pass
 
@@ -253,9 +253,9 @@ def _get_solution_legacy(schedule_id: str, planning_unit: int | None = None, fro
         data = json.load(f)
 
     if isinstance(data, dict) and "solution" in data:
-        return data
+        return data  # pyright: ignore[reportUnknownVariableType]
     else:
-        return {"solution": data}
+        return {"solution": data}  # pyright: ignore[reportUnknownVariableType]
 
 
 def _put_solution_legacy(schedule_id: str, data: Any) -> None:
