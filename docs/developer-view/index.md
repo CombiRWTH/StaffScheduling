@@ -1,5 +1,5 @@
-# Documentation - Developer View
-The developer view is an extension of the user view. It provides all necessary information to use our application, to understand how we used Google's OR Tools to solve the problem of automatic staff scheduling, to dive deep into the structure of the TimeOffice database and to get an overview of our codebase before you start contributing.
+# Documentation - Developer Guide
+The developer guide is an extension of the user guide. It provides all necessary information to use our application, to understand how we used Google's OR Tools to solve the problem of automatic staff scheduling, to dive deep into the structure of the TimeOffice database and to get an overview of our codebase before you start contributing.
 
 Get right into it:
 

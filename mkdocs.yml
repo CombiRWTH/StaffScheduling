@@ -6,8 +6,8 @@ repo_name: CombiRWTH/StaffScheduling
 
 nav:
   - Introduction: index.md
-  - User View:
-      - User View: user-view/index.md
+  - User Guide:
+      - User Guide: user-view/index.md
       - Problem Definition: user-view/problem-definition.md
       - List of Conditions: user-view/list-of-conditions.md
       - Getting Started (Light): user-view/getting-started-light-version.md
@@ -23,8 +23,8 @@ nav:
           - Blocking Shifts: user-view/configuration/blocked-shifts.md
           - Preplanning Shifts: user-view/configuration/planned-shifts.md
 
-  - Developer View:
-      - Developer View: developer-view/index.md
+  - Developer Guide:
+      - Developer Guide: developer-view/index.md
       - API: developer-view/api.md
       - Web Interface (StaffSchedulingWeb): developer-view/web-interface.md
       - Google's OR Tools and SAT-Solver: developer-view/ortools.md

@@ -4,20 +4,18 @@ title: Staff Scheduling
 
 <div class="hero">
 
-<h1>Staff Scheduling</h1>
-
-<p>Automatic staff scheduling powered by constraint solving — from raw shift data to a fair, demand-fitting plan.</p>
+<h1>Staff Scheduling Documentation</h1>
 
 <p>
-<a class="md-button md-button--primary" href="user-view/">User View</a>
-<a class="md-button" href="developer-view/">Developer View</a>
+<a class="md-button md-button--primary" href="user-view/">User Guide</a>
+<a class="md-button" href="developer-view/">Developer Guide</a>
 </p>
 
 </div>
 
-The Staff Scheduling documentation is organized into two main sections: the [**User View**](./user-view/index.md) and the [**Developer View**](./developer-view/index.md).
+The Staff Scheduling documentation is organized into two main sections: the [**User Guide**](./user-view/index.md) and the [**Developer Guide**](./developer-view/index.md).
 
-The [User View](./user-view/index.md) focuses on practical usage of the automatic staff scheduling system and limits technical depth where possible. The [Developer View](./developer-view/index.md) provides the technical background required for contribution and further development.
+The [User Guide](./user-view/index.md) focuses on practical usage of the automatic staff scheduling system and limits technical depth where possible. The [Developer Guide](./developer-view/index.md) provides the technical background required for contribution and further development.
 
 Both sections are designed to be complementary: user-focused guides can be used as entry points into technical details, and developer-focused guides can be paired with general conceptual material.
 

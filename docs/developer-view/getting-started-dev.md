@@ -1,4 +1,4 @@
-# Getting Started (Developer View)
+# Getting Started (Developer Guide)
 
 This guide walks you through setting up the local development environment for the **Staff Scheduling** project, configuring the TimeOffice database connection, running tests, and executing the solver and backend API.
 

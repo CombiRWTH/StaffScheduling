@@ -1,7 +1,7 @@
 # JSON Data Formats
 
 This page is the developer-oriented reference for JSON files used by the backend pipeline.
-For user-editable configuration, prefer the User View configuration pages:
+For user-editable configuration, prefer the User Guide configuration pages:
 
 - [Overview of Configurations](../user-view/configuration/index.md)
 - [Assemble Staff](../user-view/configuration/staff.md)
@@ -43,8 +43,8 @@ After a successful solve, results are written to:
 
 ---
 
-## Shared Config Files (see User View)
-The following files are documented in detail in the User View configuration pages and are only listed here for completeness:
+## Shared Config Files (see User Guide)
+The following files are documented in detail in the User Guide configuration pages and are only listed here for completeness:
 
 - `employees.json`
 - `employee_types.json`
