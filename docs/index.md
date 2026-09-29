@@ -4,7 +4,7 @@ title: Staff Scheduling
 
 <div class="hero">
 
-<h1>Staff Scheduling Documentation</h1>
+<h1>Staff Scheduling</h1>
 
 <p>
 <a class="md-button md-button--primary" href="user-view/">User Guide</a>
