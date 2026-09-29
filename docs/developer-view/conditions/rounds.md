@@ -2,15 +2,11 @@
 user-view/list-of-conditions.md:rounds
 --8<--
 
-### Implemented using Google's OR Tools
+### Implemented using Google's OR-Tools
 
-```python title="src/cp/constraints/rounds_in_early_shift.py"
-early_shift_variables = [
-    shift_assignment_variables[employee][day][self._shifts[Shift.EARLY]]
-    for employee in qualified_employees
-]
-
-model.add_at_least_one(early_shift_variables)
+```python title="src/scheduling/solver/cp_sat/constraints/rounds_in_early_shift.py"
+# For each weekday early shift, require at least one nurse qualified for rounds (Visiten)
+ctx.model.add(sum(vars_for_round) >= 1).with_name(_constraint_name(date))
 ```
 
-For each day we collect the early shift variables of all qualified employee (see `cases/{case_id}/{date}/general_settings.json`) and restrict the model to solution where at least one of them are true.
+On hospital wards, doctors' rounds (*Visiten*) occur during early shifts on weekdays. These rounds require a qualified nurse who knows the patients and station procedures. The constraint gathers the early shift variables of all nurses with round permissions and enforces that at least one of them is on duty: `sum(vars_for_round) >= 1`.

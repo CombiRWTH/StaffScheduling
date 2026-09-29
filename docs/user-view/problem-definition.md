@@ -1,7 +1,7 @@
 Efficient staff scheduling in hospitals is crucial for the optimal allocation of personnel resources and for ensuring that workflows run smoothly. This, in turn, directly affects the quality of patient care. Currently, duty rosters are often created manually, which is time-consuming and prone to inefficiencies. This complexity arises from the need to consider multiple constraints, such as staffing ratios and labor laws (e.g., working time regulations).
 
 ## Goal
-> Our objective is to streamline the creation of staff schedules by automating the process. This involves assigning five different types of shifts ('Early', 'Late', 'Night', 'Intermediate' and 'Special') across employees. Our solution aims to meet all specified conditions, ensuring that the resulting schedule is ready for implementation or requires only minor adjustments by trained personnel.
+> Our objective is to streamline the creation of staff schedules by automating the process. This involves assigning four primary shift types ('Early', 'Late', 'Night', 'Intermediate') across employees, plus handling pre-planned special shifts imported from TimeOffice. Our solution aims to meet all specified conditions, ensuring that the resulting schedule is ready for implementation or requires only minor adjustments by trained personnel.
 
 This goal was established in collaboration with Pradtke GmbH and St. Marien-Hospital Düren, who provided the necessary domain expertise.
 

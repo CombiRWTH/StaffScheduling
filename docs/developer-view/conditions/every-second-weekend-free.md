@@ -2,23 +2,24 @@
 user-view/list-of-conditions.md:every-second-weekend-free
 --8<--
 
-### Implemented using Google's OR Tools
+### Implemented using Google's OR-Tools
 
-```python title="src/cp/objectives/every_second_weekend_free.py"
+```python title="src/scheduling/solver/cp_sat/objectives/every_second_weekend_free.py"
+# A weekend is free only if both Saturday AND Sunday are free
+ctx.model.add(sat_var + sun_var == 0).only_enforce_if(weekend_free)
+ctx.model.add(sat_var + sun_var >= 1).only_enforce_if(weekend_free.Not())
 
-# Weekend is free only if both Saturday AND Sunday are free
-model.add(w1_sat_var + w1_sun_var == 0).only_enforce_if(w1_free)
-model.add(w1_sat_var + w1_sun_var >= 1).only_enforce_if(w1_free.Not())
+# Penalize consecutive weekends with the same working status (aiming for alternating pattern)
+ctx.model.add(same_status_penalty == 1).only_enforce_if([w1_free, w2_free])
+ctx.model.add(same_status_penalty == 1).only_enforce_if([w1_free.Not(), w2_free.Not()])
 
-model.add(w2_sat_var + w2_sun_var == 0).only_enforce_if(w2_free)
-model.add(w2_sat_var + w2_sun_var >= 1).only_enforce_if(w2_free.Not())
-same_status_penalty = model.new_bool_var(f"same_status_penalty_e:{employee.get_key()}_i:{i}")
-
-# Penalty = 1 if (w1_free AND w2_free) OR (NOT w1_free AND NOT w2_free)
-model.add(same_status_penalty == 1).only_enforce_if([w1_free, w2_free])
-model.add(same_status_penalty == 1).only_enforce_if([w1_free.Not(), w2_free.Not()])
-
-penalties.append(same_status_penalty)
+return (
+    Penalty(
+        objective_id=self.id,
+        name="every_second_weekend_free_penalty",
+        expression=sum(penalties),
+    ),
+)
 ```
 
-The code above is executed for each employee for each weekend.
+For each employee, the solver models whether each weekend is worked or free, and applies a penalty whenever two consecutive weekends have the same status, promoting a regular alternating rhythm.
