@@ -12,7 +12,7 @@ from scheduling.domain.wish import WishType
 MONTHLY_PLANNING_INTERVAL_ID = 1
 
 # TPlan.RefStati value for the editable target roster used as planning input.
-TARGET_PLANNING_STATUS_ID = 80
+TARGET_PLANNING_STATUS_ID = 20
 
 # TDienste.RefDienstTypen value for normal work shifts.
 WORK_SHIFT_TYPE_ID = 1
