@@ -2,18 +2,16 @@
 user-view/list-of-conditions.md:vacation-days-and-free-shifts
 --8<--
 
-### Implemented using Google's OR Tools
+### Implemented using Google's OR-Tools
 
-This might be one of the easiest constraints. If an employee is unavailable for a day or shift, the corresponding variables `EmployeeDayVariable` or `EmployeeDayShiftVariable` is set to `0` (not assigned).
+In the modern architecture, vacations, sick leaves, and blocked days are unified into the `AvailabilitiesConstraint`:
 
-```python title="src/cp/constraints/vacation_days_and_shifts.py"
-if employee.unavailable(day):
-    day_variable = employee_works_on_day_variables[employee][day]
-    model.add(day_variable == 0)
+```python title="src/scheduling/solver/cp_sat/constraints/availabilities_constraint.py"
+# For any date where an employee is marked unavailable, enforce 0 assignments
+for (employee_id, unavailable_date), variables in unavailable_variables.items():
+    ctx.model.add(sum(variables) == 0).with_name(
+        f"unavailable_emp_{employee_id}_{unavailable_date:%Y%m%d}"
+    )
 ```
 
-```python title="src/cp/constraints/vacation_days_and_shifts.py"
-if employee.unavailable(day, shift):
-    shift_variable = shift_assignment_variables[employee][day][shift]
-    model.add(shift_variable == 0)
-```
+If an employee has an approved vacation day, sickness, or a blocked day in TimeOffice (`Availability` domain model), the solver collects all assignment variables for that employee on that date and forces their sum to `0`.
