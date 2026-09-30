@@ -38,6 +38,7 @@ async def create_solve_task(
     command = SolveCommand(
         planning_unit_ids=request.planning_unit_ids,
         planning_month=request.planning_month(),
+        timeout=request.timeout,
     )
 
     if solve_lock.locked():
@@ -55,18 +56,20 @@ async def create_solve_task(
 
     job = job_store.create(command)
     logger.info(
-        "Solve job accepted: job_id=%s planning_units=%s planning_month=%s",
+        "Solve job accepted: job_id=%s planning_units=%s planning_month=%s timeout=%s",
         job.job_id,
         command.planning_unit_ids,
         command.planning_month.label,
+        command.timeout,
     )
 
     def kernel(command: SolveCommand) -> Solution:
         logger.info(
-            "Fetching scheduling dataset for solve job: job_id=%s planning_units=%s planning_month=%s",
+            "Fetching scheduling dataset for solve job: job_id=%s planning_units=%s planning_month=%s timeout=%s",
             job.job_id,
             command.planning_unit_ids,
             command.planning_month.label,
+            command.timeout,
         )
 
         dataset = timeoffice.fetch_dataset(
@@ -75,16 +78,22 @@ async def create_solve_task(
         )
 
         logger.info("Solving scheduling dataset for solve job: job_id=%s", job.job_id)
-        solution = solver.solve(dataset)
-        """
-        logger.info("Writing solution to TimeOffice DB: job_id=%s", job.job_id)
-        timeoffice.write_solution_to_db(
-            dataset=dataset,
-            solution=solution,
-        )"""
+        solution = solver.solve(dataset, timeout=command.timeout)
 
-        # logger.info("Running TimeOffice writeback dry-run for solve job: job_id=%s", job.job_id)
-        # timeoffice.write_solution_dry_run(solution)
+        start_date = command.planning_month.start.isoformat()
+        end_date = command.planning_month.end.isoformat()
+        for unit in command.planning_unit_ids:
+            solution_name = f"solution_{unit}_{start_date}-{end_date}_wdefault"
+            logger.info(
+                "Writing legacy solution for solve job: job_id=%s solution_name=%s",
+                job.job_id,
+                solution_name,
+            )
+            timeoffice.write_solution_legacy_format(
+                dataset=dataset,
+                solution=solution,
+                solution_name=solution_name,
+            )
 
         return solution
 

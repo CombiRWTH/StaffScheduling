@@ -9,6 +9,7 @@ from scheduling.solver.models import Solution
 class SolveCommand(SchedulingBaseModel):
     planning_unit_ids: tuple[int, ...]
     planning_month: PlanningMonth
+    timeout: int = 30  # default in seconds
 
 
 class SolveJobStatus(StrEnum):

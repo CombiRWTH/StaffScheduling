@@ -22,12 +22,12 @@ StaffSchedulingWeb is a [Next.js](https://nextjs.org/) application (App Router) 
 
 ### Architecture at a Glance
 
-```
-┌──────────────────────────────┐       HTTP / JSON         ┌──────────────────────────┐
-│   StaffSchedulingWeb         │  ◄──────────────────────► │   StaffScheduling API    │
-│   (Next.js Frontend)         │    /solve, /status, ...   │   (FastAPI Backend)      │
-│   Port 3000                  │                           │   Port 8000              │
-└──────────────────────────────┘                           └──────────────────────────┘
+```text
++--------------------------+        HTTP / JSON        +------------------------+
+|    StaffSchedulingWeb    | <-----------------------> |  StaffScheduling API   |
+|    (Next.js Frontend)    |   /solve, /status, ...    |   (FastAPI Backend)    |
+|        Port 3000         |                           |       Port 8000        |
++--------------------------+                           +------------------------+
 ```
 
 The frontend communicates exclusively through the REST endpoints documented in the [API section](./api.md). No direct database access is required from the web application — all database operations (fetch, insert, delete) are handled by the backend API.
@@ -46,7 +46,7 @@ To set up and run StaffSchedulingWeb alongside the solver backend:
 
 1. **Start the solver API** (this project):
     ```bash
-    uv run staff-scheduling-api
+    uv run fastapi dev src/scheduling/api/app.py --host 0.0.0.0 --port 8000
     ```
 
 2. **Clone and start the web application:**

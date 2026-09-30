@@ -6,8 +6,8 @@ repo_name: CombiRWTH/StaffScheduling
 
 nav:
   - Introduction: index.md
-  - User View:
-      - User View: user-view/index.md
+  - User Guide:
+      - User Guide: user-view/index.md
       - Problem Definition: user-view/problem-definition.md
       - List of Conditions: user-view/list-of-conditions.md
       - Getting Started (Light): user-view/getting-started-light-version.md
@@ -23,12 +23,14 @@ nav:
           - Blocking Shifts: user-view/configuration/blocked-shifts.md
           - Preplanning Shifts: user-view/configuration/planned-shifts.md
 
-  - Developer View:
-      - Developer View: developer-view/index.md
+  - Developer Guide:
+      - Developer Guide: developer-view/index.md
       - API: developer-view/api.md
       - Web Interface (StaffSchedulingWeb): developer-view/web-interface.md
       - Google's OR Tools and SAT-Solver: developer-view/ortools.md
+      - Mathematical Problem Definition: developer-view/mathematical-problem-definition.md
       - Codebase Overview: developer-view/codebase-overview.md
+      - Domain Data Model: developer-view/domain-data-model.md
       - Getting-Started (Dev): developer-view/getting-started-dev.md
       - Conditions:
           - Constraints:
@@ -45,8 +47,8 @@ nav:
               - Every second weekend free: developer-view/conditions/every-second-weekend-free.md
               - Free days after night shift phase: developer-view/conditions/free-days-after-night-shift-phase-objective.md
               - Free days near weekend: developer-view/conditions/free-days-near-weekend.md
-              - Maximize Wishes: developer-view/conditions/maximize-wishes.md
-              - Minimize hidden employees: developer-view/conditions/minimize-hidden-employees.md
+              - Fair Preferences: developer-view/conditions/fair-preferences.md
+              - Balance generated assignments: developer-view/conditions/temporary-balance-generated-assignments.md
               - Minimize number of consecutive night shifts: developer-view/conditions/minimize-number-of-consecutive-night-shifts.md
               - Minimize overtime and undertime: developer-view/conditions/minimize-overtime-and-undertime.md
               - Not too many consecutive working days: developer-view/conditions/not-too-many-consecutive-working-days.md
@@ -59,7 +61,7 @@ nav:
       - How-to-Add Guides:
           - How-to-Add Guides: developer-view/how-to-add/index.md
           - How to add a Constraint: developer-view/how-to-add/how-to-add-constraint.md
-          - How to add a Objective: developer-view/how-to-add/how-to-add-objective.md
+          - How to add an Objective: developer-view/how-to-add/how-to-add-objective.md
           - How to add a Variable: developer-view/how-to-add/how-to-add-variable.md
       - VM-Setup: developer-view/vm-setup.md
       - JSON Dataformats: developer-view/json-dataformat.md
@@ -68,12 +70,32 @@ nav:
 theme:
   name: material
   language: en
+  font: false
   features:
     - navigation.indexes
     - navigation.instant
     - navigation.sections
     - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
     - content.code.copy
+  palette:
+    - scheme: default
+      primary: teal
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: teal
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - abbr
@@ -84,36 +106,26 @@ markdown_extensions:
   - meta
   - md_in_html
   - toc:
+      baselevel: 2
       permalink: true
+      slugify: !!python/name:pymdownx.slugs.uslugify
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.betterem:
       smart_enable: all
   - pymdownx.blocks.caption
   - pymdownx.caret
+  - pymdownx.critic
   - pymdownx.details
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
-  - pymdownx.critic
-  - pymdownx.caret
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.mark
-  - pymdownx.tilde
-  - pymdownx.tabbed
-  - attr_list
-  - pymdownx.arithmatex:
-      generic: true
   - pymdownx.highlight:
       linenums: false
-  - pymdownx.superfences
   - pymdownx.inlinehilite
-  - pymdownx.details
-  - admonition
-  - toc:
-      baselevel: 2
-      permalink: true
-      slugify: !!python/name:pymdownx.slugs.uslugify
-  - meta
+  - pymdownx.snippets:
+      base_path: 'docs'
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -124,13 +136,6 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
-  - pymdownx.snippets:
-      base_path: 'docs'
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
 plugins:
   - include-markdown
   - search:
