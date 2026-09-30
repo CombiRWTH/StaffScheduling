@@ -57,6 +57,8 @@ async def get_minimal_staff(
         planning_month=month,
     )
 
+    print(_minimal_staff_to_frontend(dataset.demand_requirements))
+
     return _minimal_staff_to_frontend(dataset.demand_requirements)
 
 
