@@ -1,39 +1,28 @@
 # Staff Scheduling
 
-Staff Scheduling is a hospital staff scheduling application developed at RWTH Aachen University with St. Marien-Hospital Düren and Pradtke GmbH. A Next.js webapp provides planning views, while a FastAPI application reads TimeOffice data and generates schedules with Google OR-Tools CP-SAT.
+Hospital staff scheduling with a Next.js webapp, a FastAPI API and Google OR-Tools CP-SAT, developed at RWTH Aachen University with St. Marien-Hospital Düren and Pradtke GmbH. The API reads planning data from an external TimeOffice SQL Server.
 
-This repository contains one project:
+## Quickstart
 
-- `api/`: Python application, canonical domain, solver, TimeOffice adapter and tests.
-- `webapp/`: Next.js application.
-- `docs/`: shared user and developer documentation, built with MkDocs.
+Install [Docker with Compose](https://docs.docker.com/compose/install/) and start Docker. Download/clone this repository, then create `.secrets/db_password` in its root containing only the supplied test database password. The tracked `.env` contains the non-secret connection settings. Keep the password file private.
 
-## Install and start
-
-See the [installation guide](docs/source/installation.md) for prerequisites, configuration and troubleshooting.
+From the repository root:
 
 ```sh
-# Create ignored .secrets/db_password with the supplied test database password.
-just run
+docker compose up --build --wait
 ```
 
-Open <http://localhost:3000>. The API exposes interactive documentation at <http://localhost:8000/docs>.
+Open <http://localhost:3000>; API documentation is at <http://localhost:8000/docs>. No host Python, Node, pnpm or just is needed. Stop with `docker compose down`; inspect with `docker compose logs --follow`. See the [step-by-step quickstart](docs/source/quickstart.md) and [full installation guide](docs/source/installation.md).
 
-Startup requires Docker with Compose and just. One root Compose file provides native API and webapp hot reload on ports 8000 and 3000. Frozen Python and pnpm locks use verified runtime/tool pins. The imported UI still has legacy file and endpoint assumptions; see [integration limits](docs/source/webapp/solver-integration.md) before generating or publishing schedules. Historical case files have been removed; validated hand-in schedules remain pending.
+Health checks establish service liveness. Database operations need network/credentials, and the planning workflow has [known integration and solver limitations](docs/source/limitations.md). Independently accepted example schedules remain pending.
 
-## Development
+## Documentation and development
 
-Use `just run` for development through Compose. For IDE support, dependency maintenance and quality checks, install the pinned runtimes, uv and pnpm, then run `just install`.
+- [Using the app](docs/source/usage.md)
+- [Codebase overview](docs/source/development/overview.md)
+- [Checks and dependency maintenance](docs/source/development/quality.md)
+- [API](docs/source/reference/api.md), [domain](docs/source/reference/domain.md), [solver](docs/source/reference/solver.md), [TimeOffice](docs/source/reference/timeoffice.md)
 
-```sh
-just format-check
-just lint
-just quality
-just typecheck
-just test
-just docs-check
-```
+`api/`, `webapp/` and `docs/` have separate manifests/locks; `data/` holds ignored runtime files. Development services use Compose with hot reload. Optional native tools support IDEs and quality checks via `just install` and `just check`; follow the installation guide for their prerequisites.
 
-`just test` includes all offline solver/service integration tests. Only actual external-database tests use the separate `timeoffice` marker. See [code quality](docs/source/developer-view/code-quality.md) for the unified `just check` gate, compatibility exceptions and known failures.
-
-[Online documentation](https://combirwth.github.io/StaffScheduling/) is published from main. Run `just docs` to view the working documentation locally using uv and Python; its dependencies stay in `docs/`.
+[Online documentation](https://combirwth.github.io/StaffScheduling/) is published from main. `just docs` serves the local checkout at <http://localhost:8001>; `just docs-check` builds strictly using the independent docs environment.

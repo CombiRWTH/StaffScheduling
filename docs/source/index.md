@@ -1,14 +1,17 @@
 # Staff Scheduling
 
-Staff Scheduling combines a Next.js webapp, a FastAPI application and an OR-Tools CP-SAT solver in one repository. TimeOffice access is isolated in the Python adapter.
+Staff Scheduling supports hospital staff planning with a Next.js webapp, a FastAPI API and Google OR-Tools CP-SAT. It was developed at RWTH Aachen University with St. Marien-Hospital Düren and Pradtke GmbH. TimeOffice provides the employee, shift and planning data.
 
-Start with [installation and startup](installation.md), then choose:
+Start with the [quickstart](quickstart.md) to launch both services using Docker. The [installation guide](installation.md) covers prerequisites, configuration, network access and optional developer tools.
 
-- [User guide](user-view/index.md): the planning problem and configuration concepts.
-- [Webapp workflow](webapp/user-guide.md): the imported views and screenshots.
-- [Developer guide](developer-view/index.md): domain, API, database and solver references.
-- [Migration notes](developer-view/monorepo-migration.md): layout, provenance and verification limits.
+| You want to…                                   | Read                                                                                                                         |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Start the application                          | [Quickstart](quickstart.md)                                                                                                  |
+| Set up another machine or troubleshoot startup | [Installation](installation.md)                                                                                              |
+| Understand the planning screens                | [Using the app](usage.md)                                                                                                    |
+| Check what works and what remains unfinished   | [Current limitations](limitations.md)                                                                                        |
+| Find the relevant code                         | [Codebase overview](development/overview.md)                                                                                 |
+| Run checks or change dependencies              | [Code quality](development/quality.md)                                                                                       |
+| Understand backend contracts                   | [API](reference/api.md), [domain](reference/domain.md), [solver](reference/solver.md), [TimeOffice](reference/timeoffice.md) |
 
-The monorepo migration preserves the imported application's behavior. The [integration limits](webapp/solver-integration.md) identify legacy UI assumptions still requiring reconciliation. Historical examples do not substitute for independently validated schedules.
-
-[Historical documentation](collection-of-old-docs/index.md) records earlier implementations and is separate from current installation instructions.
+Both services can start before a database connection is established. Planning operations need the configured TimeOffice database. The application is undergoing integration work; [current limitations](limitations.md) distinguish service startup from verified scheduling and publication.
