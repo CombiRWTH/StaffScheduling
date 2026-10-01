@@ -1,10 +1,10 @@
 # Underlying Data Structures
 
-> This page describes the imported UI and its legacy file model. Views remain present during migration; API generation, progress, publication and shared-file assumptions have known gaps. See [integration limits](solver-integration.md). Screenshots depict the imported UI, not verified end-to-end behavior.
+> **Historical file-format reference:** this page describes the imported file model, not current persistence. The webapp's `infrastructure/persistence/lowdb/` adapters now call the API; they do not use LowDB or share these JSON files with the solver. Retained file-based planning views still have known API gaps. See [integration limits](solver-integration.md).
 
-This reference documents all JSON files used by the StaffScheduling system. Files are stored on disk
-and accessed by both the web application (via LowDB) and the Python solver. Understanding these
-structures is essential when debugging, migrating data, or contributing to the codebase.
+The schemas below document legacy JSON files from the imported implementation. They are useful when
+migrating the retained planning views, but do not describe a shared persistence layer in the current
+application. Confirm current API behavior in the API documentation before relying on these formats.
 
 ---
 

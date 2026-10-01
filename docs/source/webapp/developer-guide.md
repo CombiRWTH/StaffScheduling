@@ -1,6 +1,6 @@
 # Developer Guide
 
-> This page describes the imported UI and its legacy file model. Views remain present during migration; API generation, progress, publication and shared-file assumptions have known gaps. See [integration limits](solver-integration.md). Screenshots depict the imported UI, not verified end-to-end behavior.
+> **Legacy architecture reference:** this guide's LowDB, JSON file-I/O, repository and code examples describe the imported design and are not the current persistence implementation. The `infrastructure/persistence/lowdb/` adapters now call the API; they do not use the LowDB package or read/write those files. File-based planning views remain during migration and have known API gaps. See [integration limits](solver-integration.md). Screenshots depict the imported UI, not verified end-to-end behavior.
 
 This guide is intended for developers who will take over and extend the the webapp project.
 It explains the architectural decisions, the folder structure, the Dependency Injection mechanism,
