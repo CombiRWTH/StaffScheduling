@@ -95,43 +95,43 @@ def test_returns_no_penalties_without_assignment_variables() -> None:
     assert PreferredBlockLength().add_to_model(ctx, params={}) == ()
 
 
-def test_distance_from_preferred_length_is_a_penalty() -> None:
+def test_exact_three_day_block_is_a_reward() -> None:
     ctx = create_context(dataset=_dataset())
     create_assignment_variables(ctx)
 
     penalties = PreferredBlockLength().add_to_model(ctx, params={})
 
     assert len(penalties) == 1
-    assert penalties[0].multiplier == 1
+    assert penalties[0].multiplier == -1
 
 
 @pytest.mark.integration
-def test_no_penalty_for_preferred_three_day_block() -> None:
-    assert _penalty_for(_date_range(date(2024, 11, 1), 3)) == 0
+def test_reward_for_exact_three_day_block() -> None:
+    assert _penalty_for(_date_range(date(2024, 11, 1), 3)) == -1
 
 
 @pytest.mark.integration
-def test_penalty_for_block_shorter_than_preferred_length() -> None:
-    assert _penalty_for(_date_range(date(2024, 11, 1), 2)) == 1
+def test_no_reward_for_block_shorter_than_preferred_length() -> None:
+    assert _penalty_for(_date_range(date(2024, 11, 1), 2)) == 0
 
 
 @pytest.mark.integration
-def test_penalty_for_block_longer_than_preferred_length() -> None:
-    assert _penalty_for(_date_range(date(2024, 11, 1), 5)) == 2
+def test_no_reward_for_block_longer_than_preferred_length() -> None:
+    assert _penalty_for(_date_range(date(2024, 11, 1), 5)) == 0
 
 
 @pytest.mark.integration
-def test_penalties_are_summed_for_separated_blocks() -> None:
+def test_no_reward_for_blocks_without_exact_three_day_fit() -> None:
     worked_dates = _date_range(date(2024, 11, 1), 2) | _date_range(date(2024, 11, 4), 4)
 
-    assert _penalty_for(worked_dates) == 2
+    assert _penalty_for(worked_dates) == 0
 
 
 @pytest.mark.integration
-def test_block_ending_on_last_day_of_month_is_penalized() -> None:
-    assert _penalty_for(_date_range(date(2024, 11, 29), 2)) == 1
+def test_no_reward_for_short_block_at_end_of_month() -> None:
+    assert _penalty_for(_date_range(date(2024, 11, 29), 2)) == 0
 
 
 @pytest.mark.integration
-def test_blocks_longer_than_seven_days_use_catch_all_penalty() -> None:
-    assert _penalty_for(_date_range(date(2024, 11, 1), 8)) == 5
+def test_no_reward_for_long_consecutive_block() -> None:
+    assert _penalty_for(_date_range(date(2024, 11, 1), 8)) == 0
