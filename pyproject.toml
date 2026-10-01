@@ -53,7 +53,7 @@ reportUnusedVariable = "warning"
 ignore = ["legacy"]
 
 [tool.pytest.ini_options]
-addopts = "-m 'not integration'"
+testpaths = ["tests"]
 markers = [
     "integration: tests that run the solver or cross module boundaries"
 ]
