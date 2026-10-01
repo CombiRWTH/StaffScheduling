@@ -17,7 +17,11 @@ from app.domain import (
 )
 from app.solver.models import Solution, SolutionStatus
 from app.timeoffice.facts import EARLY_SHIFT_ID, LATE_SHIFT_ID
-from app.timeoffice.writing.solution import TimeOfficeSolutionWriter, build_legacy_solution_data
+from app.timeoffice.writing.solution import (
+    TimeOfficeSolutionWriter,
+    build_legacy_processed_solution_data,
+    build_legacy_solution_data,
+)
 
 
 def test_build_legacy_solution_data_uses_dense_legacy_variable_format() -> None:
@@ -47,6 +51,22 @@ def test_build_legacy_solution_data_uses_dense_legacy_variable_format() -> None:
     assert data["variables"]["e:101_d:2024-11-02"] == 0
     assert data["variables"]["e:102_d:2024-11-02"] == 1
     assert f"(102, '2024-11-02', {LATE_SHIFT_ID})" not in data["variables"]
+
+
+def test_processed_solution_keeps_mfa_distinct_from_assistants() -> None:
+    dataset = _dataset()
+    dataset = dataset.model_copy(
+        update={"employees": (dataset.employees[0].model_copy(update={"staff_level": StaffLevel.MFA}),)}
+    )
+
+    data = build_legacy_processed_solution_data(
+        dataset=dataset,
+        solution=Solution(status=SolutionStatus.FEASIBLE),
+        solution_name="solution",
+        solution_file_names=["solution"],
+    )
+
+    assert data["employees"][0]["level"] == "MFA"
 
 
 def test_write_legacy_format_writes_legacy_solution_json(tmp_path: Path) -> None:

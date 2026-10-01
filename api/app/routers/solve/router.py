@@ -9,7 +9,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from app.dependencies import get_solve_job_store, get_solve_lock, get_solver_service, get_timeoffice_service
 from app.routers.solve.job_models import SolveCommand, SolveJob
 from app.routers.solve.job_store import InMemorySolveJobStore
-from app.routers.solve.schemas import SolveAcceptedResponse, SolveOptions, SolveRequest
+from app.routers.solve.schemas import SolveAcceptedResponse, SolveRequest
 from app.solver.models import Solution
 from app.solver.service import SolverService
 from app.timeoffice.service import TimeOfficeService
@@ -17,13 +17,6 @@ from app.timeoffice.service import TimeOfficeService
 logger = logging.getLogger(__name__)
 
 solve_router = APIRouter(prefix="/solve")
-
-
-@solve_router.get("/options")
-def get_solve_options(
-    timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
-) -> SolveOptions:
-    return timeoffice.get_solve_options()
 
 
 @solve_router.post("/", status_code=status.HTTP_202_ACCEPTED)

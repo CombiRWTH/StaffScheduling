@@ -34,7 +34,7 @@ def test_liveness_survives_missing_database_config(monkeypatch: pytest.MonkeyPat
     with TestClient(app) as test_client:
         client = cast(httpx.Client, test_client)
         assert client.get("/status").json() == {"status": "healthy"}
-        response = client.get("/solve/options")
+        response = client.get("/planning/options", params={"year": 2026, "month": 1})
         assert response.status_code == 503
         assert response.json()["stage"] == "configuration"
         assert "db_password" in response.json()["detail"]

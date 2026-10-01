@@ -3,12 +3,8 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from app.domain import PlanningMonth, PlanningUnit, SchedulingBaseModel
+from app.domain import PlanningMonth, SchedulingBaseModel
 from app.routers.solve.job_models import SolveJobStatus
-
-
-class SolveOptions(SchedulingBaseModel):
-    planning_units: tuple[PlanningUnit, ...]
 
 
 class SolveRequest(SchedulingBaseModel):

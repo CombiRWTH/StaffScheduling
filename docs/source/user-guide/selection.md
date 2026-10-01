@@ -7,19 +7,19 @@ Return to the [documentation overview](index.md).
 ## Select month and planning units
 
 1. Start both services as described in [installation](../getting-started/installation.md), then open <http://localhost:3000>.
-2. Choose **Planungsmonat**, exactly one full calendar month. The station list is loaded from the backend for that month, using actual display names. A station requires exactly one configured monthly target plan; plan/status IDs stay inside the adapter.
-3. Select one or more **Stationen**, then open **Mitarbeiter**. The URL carries `month=YYYY-MM&stations=ID,ID`; the selection is retained across navigation. A pool is context, never a selectable demand destination.
-4. Use **Stationen aktualisieren** to reload options and the current page. On a month change, still-available stations remain selected; stations without a target in the new month are removed.
+2. In the planning selection beside the page title, choose the month and year, or step with the arrows. Planning always covers one full calendar month. The station list is loaded from the backend for that month, using actual display names. A station requires exactly one configured monthly target plan; plan/status IDs stay inside the adapter.
+3. Open the **Stationen** list and tick one or more stations; the button names the selection. Then open **Mitarbeiter**. The URL carries `month=YYYY-MM&stations=ID,ID`; the selection is retained across navigation. A pool is context, never a selectable demand destination.
+4. Use the refresh button (**Stationen aktualisieren**) to reload stations and the current page. On a month change, still-available stations remain selected; stations without a target in the new month are removed.
 
 Changing month/stations replaces the displayed inspection, including filters/details. While the next inspection loads, a loading message replaces the old table. No local case files or successful old-scope results substitute for unavailable source data. Employee inspection is independent of the retired workflow's case lock.
 
 ## Inspect employees and memberships
 
-The heading names the selected stations and inclusive month dates. **Pool-Kontext** names pools discovered from the dated home memberships of station-eligible employees. Their other pool employees are included for inspection, even if they have no membership permitting an assignment at the selected stations. No home relationship means no inferred pool association.
+The table heading names the month and selected stations. **Zugehöriger Pool** names pools discovered from the dated home memberships of station-eligible employees. Their other pool employees are included for inspection, even if they have no membership permitting an assignment at the selected stations. No home relationship means no inferred pool association.
 
-Each employee appears once by stable positive ID. Display names may change without changing identity. Search by name, ID, qualification or unit name; **Einheit** filters employees by membership. Open **Details** for all dated memberships, including home/replacement flags and membership qualifications. Professional, assistant, trainee and MFA remain distinct. Employee-level qualification does not override a different unit membership qualification.
+Each employee appears once by stable positive ID. Display names may change without changing identity. Search by name, ID, qualification or unit name; the unit filter limits employees by membership. Expand a row for all dated memberships, including home/replacement flags and membership qualifications. Professional, assistant, trainee and MFA remain distinct. Employee-level qualification does not override a different unit membership qualification.
 
-**Heimat: ja** identifies origin; a dated station membership identifies destination eligibility. Pool membership alone grants no station eligibility. Ambiguous or missing home origin for an active membership is an input error, not a guessed jumper classification. Special capabilities are absent from this inspection response.
+**Heimat** identifies origin; a dated station membership identifies destination eligibility. Pool membership alone grants no station eligibility. Ambiguous or missing home origin for an active membership is an input error, not a guessed jumper classification. Special capabilities are absent from this inspection response.
 
 ## Inspect existing work and availability
 
@@ -36,4 +36,4 @@ Connected prerequisites include read access to the configured TimeOffice tables 
 - Loading displays a status message. Incomplete targets, identities, memberships, account/credit/restriction evidence or duplicate source facts reject the complete inspection; no partial station table is displayed.
 - Backend/TimeOffice failures show a connection/setup message. Verify configuration, network/VPN, TLS and read permissions using [installation](../getting-started/installation.md#database-configuration), then refresh options/reopen the employee page. Errors expose no raw SQL rows or connection secrets.
 
-Recurring wishes/availability and all four template families remain discoverable as unsupported. Optimization is omitted from navigation. Saved library, monthly configuration, generation and review are not established by this slice.
+Monthly wishes and restrictions, minimum staffing, schedule generation and review, recurring wishes/availability and templates appear greyed out in the sidebar as not yet supported; they have no pages. Optimization is omitted.

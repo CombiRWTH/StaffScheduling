@@ -12,8 +12,7 @@ This reference describes inspected source definitions. Connected database behavi
 | `facts.py`                       | Reference identifiers, shift mappings and planning status assumptions                          |
 | `reading/`                       | SQL readers for units, personnel, shifts, rosters, demand, wishes, accounts and Sunday history |
 | `mapping/`                       | Source rows to canonical models/dataset                                                        |
-| `remapping/`                     | Remaining frontend compatibility translations                                                  |
-| `writing/`                       | Solution, wishes, availability, demand and objective-weight persistence; compatibility exports |
+| `writing/`                       | Solver compatibility JSON exports                                                              |
 | `service.py`                     | Small entry points that coordinate these operations                                            |
 
 ## Connection and schema
@@ -24,13 +23,13 @@ Follow [database configuration](../getting-started/installation.md#database-conf
 
 The adapter reads TimeOffice tables including `TPlanungseinheiten`, `TPlanungseinheitenPersonal`, `TPersonal`, `TPlan`, `TDienste`, `TPlanPersonalKommtGeht` and monthly/daily account tables. Actual SQL and join/filter rules are in the reader modules; this reference does not substitute a copied schema diagram for the database's current schema.
 
-Minimum staffing and objective weights use `dbo.StaffSchedulingMinimalStaffing` and `dbo.StaffSchedulingObjectiveWeights`. The current reader/writer implementations can create these tables if missing, so apparently read-oriented configuration operations may need DDL permissions and may change the database. Coordinate table provisioning and permissions before using connected planning operations.
+Minimum staffing and objective weights use `dbo.StaffSchedulingMinimalStaffing` and `dbo.StaffSchedulingObjectiveWeights`. The current readers can create these tables if missing, so apparently read-oriented configuration operations may need DDL permissions and may change the database. Coordinate table provisioning and permissions before using connected planning operations.
 
 ## Read and write boundaries
 
 `fetch_dataset` normalizes selected unit IDs, reads source data, maps it and validates the aggregate. TimeOffice reductions and fixed reference mappings remain adapter behavior and must be checked against the chosen dataset.
 
-Writes use `engine.begin()` transaction boundaries. The solution writer replaces generated assignments using `TPlanPersonalKommtGeht` and existing plan/personnel/shift context. Wishes, availability, minimum staffing and weights have separate writers. Transactions roll back on failure; independent input acceptance, exact publication/clear scope and connected write verification are still unfinished.
+The adapter currently performs no SQL writes. The former writers for generated assignments, wishes, availability, minimum staffing and weights were removed with their legacy API routes. Scoped publication/clear and monthly configuration writes return as canonical, transactional operations in later slices.
 
 Generation also writes compatibility JSON to the shared runtime data directory for feasible results. Those filesystem exports are separate from SQL publication and from the pending portable bundle contract. See [limitations](../validation/index.md) before treating a result as accepted or published.
 

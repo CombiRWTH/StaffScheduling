@@ -12,15 +12,13 @@ Image-built development Compose startup, actual Next-server/API HTTP connectivit
 
 ## Webapp integration
 
-Canonical month/station selection and complete read-only employee inspection use the backend directly, with controlled browser evidence. That path has no filesystem case fallback, name splitting or false Lowdb employee persistence. The remaining imported views retain file-based case discovery under `data/cases/`, compatibility-shaped repositories and several endpoint/schema assumptions. The runtime data directory starts empty. Repository names containing `lowdb` remain in code, but the LowDB dependency has been removed; several of those modules now call HTTP APIs.
-
-The backend does not supply the old `/fetch`, `/insert`, `/delete`, multi-solve or phase-progress contracts. The UI expects `/schedules/metadata`, whereas `GET /schedules` currently returns an empty placeholder list. Monthly configuration and schedule formats still need reconciliation. Recurring settings and all template families now display unsupported states; optimization is omitted from navigation. File-library operations and imported progress displays must not be treated as verified canonical features. Selection requires explicit prepared monthly credit/restriction evidence; no live table provisioning or inspection has been performed.
+The webapp was rebuilt as a plain Next.js App Router project. Only the home page and canonical month/station selection with complete read-only employee inspection are implemented, with controlled browser evidence. Monthly configuration, minimum staffing, generation, review/export/publication, recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. The previous imported views, their file-based case discovery and compatibility repositories were removed and are recoverable from the frozen frontend reference. The matching legacy-shaped API routes (weights, wishes/blocked periods, minimum staffing, schedules/publication and `/solve/options`) were removed as well. Selection requires explicit prepared monthly credit/restriction evidence; no live table provisioning or inspection has been performed.
 
 ## Solver and publication
 
 Jobs and the solve lock are process-local; use one API process. Jobs disappear on reload/restart. A completed job can contain an infeasible, unknown or invalid model result. Independent schedule acceptance, complete required policy correction, scoped publication/clear verification and coordinated six-month example files are pending.
 
-The current publication endpoint translates legacy variables and performs a transactional database write, but strengthened input/scope checks and connected acceptance are unfinished. A transaction alone does not prove the chosen roster is correct or safely scoped. Current compatibility JSON exports are not the final portable input/result/CSV bundle contract.
+No publication or other database write path exists: the legacy publication endpoint and all adapter writers were removed. Scoped, checked publication and clear are a later slice. Current compatibility JSON exports are not the final portable input/result/CSV bundle contract.
 
 ## Quality gates
 

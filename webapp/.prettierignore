@@ -5,3 +5,5 @@ build/
 next-env.d.ts
 pnpm-lock.yaml
 *.tsbuildinfo
+playwright-report/
+test-results/

@@ -1,5 +1,4 @@
-from app.domain.planning_unit import PlanningUnit, PlanningUnitType
-from app.routers.solve.schemas import SolveOptions
+from app.domain.planning_unit import PlanningUnit
 from app.timeoffice.facts import TimeOfficeFacts
 from app.timeoffice.reading.options import TimeOfficePlanningUnitOptionRow
 
@@ -22,8 +21,3 @@ def map_planning_units(
         for row in rows
         if row.planning_unit_id in facts.planning_unit_type_by_id and row.planning_unit_code is not None
     )
-
-
-def map_solve_options(*, rows: tuple[TimeOfficePlanningUnitOptionRow, ...], facts: TimeOfficeFacts) -> SolveOptions:
-    units = map_planning_units(rows=rows, facts=facts)
-    return SolveOptions(planning_units=tuple(unit for unit in units if unit.type == PlanningUnitType.STATION))

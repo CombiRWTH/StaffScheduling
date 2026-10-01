@@ -10,7 +10,7 @@ For staff administrators using the application: choose the month and units, insp
 
 The backend models a calendar month, planning units, dated staffing demand, employees and valid unit memberships. Availability is a hard restriction; wishes are preferences. Work accounts use minutes. The [domain reference](../architecture/domain.md) describes the source-defined contract.
 
-The imported UI still discovers cases in `data/cases/`. A fresh checkout has no case files. Its controls and compatibility formats are being reconciled with the backend; an empty selector is not proof that TimeOffice has no planning units.
+Only the home page and employee inspection are implemented. The sidebar lists every other planning area greyed out as not yet supported.
 
 ## Find an operation
 

@@ -44,7 +44,7 @@ with urlopen('http://localhost:8000/status', timeout=10) as response:
 with urlopen('http://webapp:3000/api/health', timeout=30) as response:
     assert json.load(response) == {'status': 'healthy', 'api': 'healthy'}
 try:
-    urlopen('http://localhost:8000/solve/options', timeout=15)
+    urlopen('http://localhost:8000/planning/options?year=2026&month=1', timeout=15)
 except HTTPError as error:
     assert error.code == 503
     body = json.load(error)

@@ -19,27 +19,22 @@ For developers and technical reviewers tracing responsibilities and data flow. T
 │   │   ├── main.py           # FastAPI construction and runtime lifespan
 │   │   ├── settings.py       # environment and secret loading
 │   │   ├── dependencies.py   # access to process-local services/jobs/lock
-│   │   ├── routers/          # HTTP DTOs, solve jobs and web compatibility
+│   │   ├── routers/          # solve job routes and DTOs
 │   │   ├── domain/           # canonical Pydantic scheduling models
-│   │   ├── employees/        # complete read-only scope/identity/evidence validation
+│   │   ├── employees/        # selection/employee routes and complete inspection validation
 │   │   ├── validation/       # dataset integrity checks
 │   │   ├── solver/           # CP-SAT building, execution and audit
-│   │   └── timeoffice/       # database reads, mappings and writes
+│   │   └── timeoffice/       # database reads, mappings and compatibility exports
 │   ├── tests/
 │   ├── pyproject.toml
 │   ├── uv.lock
 │   └── .python-version
 ├── webapp/
 │   ├── src/
-│   │   ├── app/              # Next App Router pages and handlers
-│   │   ├── features/         # planning screens/components/hooks
-│   │   ├── components/       # shared UI primitives
-│   │   ├── application/      # imported use cases and ports
-│   │   ├── entities/         # imported UI models and errors
-│   │   ├── controllers/      # server-action entry points
-│   │   ├── infrastructure/   # repositories and compatibility persistence
-│   │   ├── di/               # existing container/modules
-│   │   └── lib/              # API/configuration and shared helpers
+│   │   ├── app/              # App Router pages, route-local components, /api/health
+│   │   ├── components/       # shell, planning picker and ui/ primitives
+│   │   └── lib/              # server-only API fetches, response types, scope parsing
+│   ├── tests/browser/        # Playwright staff-admin flows
 │   ├── package.json
 │   ├── pnpm-lock.yaml
 │   └── pnpm-workspace.yaml   # single-package settings/build approvals
@@ -69,27 +64,27 @@ flowchart LR
     Result --> Export[Compatibility JSON files]
 ```
 
-Next.js server-side callers use `SOLVER_API_URL`; Compose sets it to `http://api:8000`. Browser traffic enters the webapp. `api/app/main.py` builds the SQLAlchemy engine, TimeOffice service, solver service, in-memory job store and one solve lock. Shutdown disposes the engine.
+Next.js server components call the API at `API_URL`; Compose sets it to `http://api:8000`. Browser traffic enters the webapp. `api/app/main.py` builds the SQLAlchemy engine, TimeOffice service, solver service, in-memory job store and one solve lock. Shutdown disposes the engine.
 
 `POST /solve/` accepts a month and units, reserves the lock and starts a background task. Database fetching, dataset validation, solver work and compatibility export run through a worker thread. Polling returns job execution state and the eventual solution. Database publication is separate from generation. The [API reference](api.md) describes the precise route boundaries.
 
 ## Where to make a change
 
-| Change                                  | Start here                                                                          |
-| --------------------------------------- | ----------------------------------------------------------------------------------- |
-| API request/response or job lifecycle   | `api/app/routers/`, `dependencies.py`, `main.py`                                    |
-| Scheduling concept or dataset integrity | `api/app/domain/`, `api/app/validation/`                                            |
-| Constraint/objective or solving         | `api/app/solver/cp_sat/`, `solver/config.py`, `solver/service.py`                   |
-| TimeOffice query, mapping or write      | `api/app/timeoffice/reading/`, `mapping/`, `writing/`, `service.py`                 |
-| Screen behavior                         | `webapp/src/app/`, its `features/` directory and actual use-case/repository callers |
-| API base URL or runtime file paths      | `webapp/src/lib/config/app-config.ts`                                               |
-| Runtime/dependency pins                 | service manifests/locks, Dockerfiles and consuming workflow/tool settings           |
-| Documentation                           | `docs/source/` and `docs/mkdocs.yml`                                                |
+| Change                                  | Start here                                                                |
+| --------------------------------------- | ------------------------------------------------------------------------- |
+| API request/response or job lifecycle   | `api/app/routers/`, `dependencies.py`, `main.py`                          |
+| Scheduling concept or dataset integrity | `api/app/domain/`, `api/app/validation/`                                  |
+| Constraint/objective or solving         | `api/app/solver/cp_sat/`, `solver/config.py`, `solver/service.py`         |
+| TimeOffice query or mapping             | `api/app/timeoffice/reading/`, `mapping/`, `service.py`                   |
+| Screen behavior                         | `webapp/src/app/<route>/` and shared `webapp/src/components/`             |
+| Webapp API calls and response types     | `webapp/src/lib/api.ts`, `webapp/src/lib/types.ts`                        |
+| Runtime/dependency pins                 | service manifests/locks, Dockerfiles and consuming workflow/tool settings |
+| Documentation                           | `docs/source/` and `docs/mkdocs.yml`                                      |
 
 Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. The [limitations](../validation/index.md) page records remaining compatibility work.
 
 ## Selection and inspection boundary
 
-`webapp/src/features/planning/` owns the server-only HTTP read and response schemas. The global selector uses month-specific options; `app/employees/` loads all selected stations together and renders a keyed Suspense loading boundary. Search/filter/details are interaction state, discarded when scope changes. Backend `employees/` validates completeness; the concrete TimeOffice adapter resolves target plans, reads membership/master/account/absence sources and prepared evidence. No employee DI forwarding chain, false Lowdb write or filesystem fallback remains in this path.
+The webapp follows plain App Router conventions. Pages are server components that read `month`/`stations` from `searchParams`, load data through `lib/api.ts` and pass it to small client components. `lib/scope.ts` validates the URL and loads the month's stations; stations unavailable in the month are dropped by a server redirect. The picker only changes the URL. `app/employees/` loads all selected stations together inside a Suspense boundary keyed by scope, so a new scope shows its loading state instead of the previous result. Search, filter and expanded details are local interaction state. Backend `employees/` validates completeness; the concrete TimeOffice adapter resolves target plans and reads membership/master/account/absence sources and prepared evidence. Only home and employee inspection are implemented; the sidebar shows every other area greyed out as not yet supported, without routes.
 
 The offline browser fixture substitutes SQL query results, while using the actual FastAPI routes, TimeOffice readers/mappers and Next.js pages. It is test infrastructure, never a production data fallback. [Testing](../development/testing.md#staff-admin-browser-flows) describes reproduction and limitations.

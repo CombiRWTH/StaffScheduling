@@ -1,7 +1,38 @@
+from collections.abc import Iterable
 from datetime import timedelta
+from typing import Protocol
 
 from app.domain import Availability, Employee, MonthlyWorkAccount, PlanningMonth, PlanningUnit, PlanningUnitMembership
 from app.employees.models import EmployeeInspection, EmployeeMonthEvidence, PlanningInspection
+
+
+class _ScopeMembership(Protocol):
+    @property
+    def employee_id(self) -> int: ...
+    @property
+    def planning_unit_id(self) -> int: ...
+    @property
+    def is_home(self) -> bool: ...
+
+
+def inspection_employee_ids(
+    *,
+    selected_station_ids: tuple[int, ...],
+    memberships: Iterable[_ScopeMembership],
+    shared_pool_ids: set[int],
+) -> set[int]:
+    """Select station members plus every member of a shared pool that one of them calls home.
+
+    A pool is origin context: its members are inspected without implying station eligibility.
+    """
+    memberships = tuple(memberships)
+    employee_ids = {row.employee_id for row in memberships if row.planning_unit_id in selected_station_ids}
+    associated_pool_ids = {
+        row.planning_unit_id
+        for row in memberships
+        if row.employee_id in employee_ids and row.is_home and row.planning_unit_id in shared_pool_ids
+    }
+    return employee_ids | {row.employee_id for row in memberships if row.planning_unit_id in associated_pool_ids}
 
 
 def build_inspection(

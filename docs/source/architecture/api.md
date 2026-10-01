@@ -6,28 +6,23 @@ The FastAPI application is `api/app/main.py`. With Compose running, open <http:/
 
 ## Routes
 
-Configuration routes use `planning_unit` and `from_date` query parameters; consult OpenAPI for exact bodies and responses.
+Consult OpenAPI for exact bodies and responses.
 
-| Route                               | Methods     | Current behavior                                                                               |
-| ----------------------------------- | ----------- | ---------------------------------------------------------------------------------------------- |
-| `/status`                           | GET         | Process liveness without a TimeOffice query                                                    |
-| `/planning/options`                 | GET         | Named stations with unique full-month targets                                                  |
-| `/employees`                        | GET         | Complete canonical combined month/station/pool inspection                                      |
-| `/weights`                          | GET, PUT    | Read/update objective weights                                                                  |
-| `/wishes-and-blocked`               | GET         | Read wishes and availability                                                                   |
-| `/wishes-and-blocked/{employee_id}` | PUT, DELETE | Replace/delete employee wishes and blocked periods                                             |
-| `/minimal-staff`                    | GET, PUT    | Read/update minimum staffing                                                                   |
-| `/schedules`                        | GET         | Empty placeholder list                                                                         |
-| `/schedules/write-to-timeoffice`    | POST        | Translate submitted legacy variables and write assignments; scope/acceptance hardening pending |
-| `/solve/options`                    | GET         | Read selectable planning units                                                                 |
-| `/solve/`                           | POST        | Accept a full-month solve job                                                                  |
-| `/solve/jobs/{job_id}`              | GET         | Poll process-local job execution and result                                                    |
+| Route                  | Methods | Current behavior                                          |
+| ---------------------- | ------- | --------------------------------------------------------- |
+| `/status`              | GET     | Process liveness without a TimeOffice query               |
+| `/planning/options`    | GET     | Named stations with unique full-month targets             |
+| `/employees`           | GET     | Complete canonical combined month/station/pool inspection |
+| `/solve/`              | POST    | Accept a full-month solve job                             |
+| `/solve/jobs/{job_id}` | GET     | Poll process-local job execution and result               |
+
+The former webapp-shaped routes for weights, wishes/blocked periods, minimum staffing, schedules/publication and `/solve/options` were removed: they translated canonical models into legacy UI formats. Their features return as canonical endpoints in later slices.
 
 Next's `GET /api/health` makes a server-side request to API `/status`: it returns healthy only for a valid API liveness response, or `503` if the API is unavailable. Database availability is separate. Direct TimeOffice failures return `503` with sanitized `detail`, `integration: timeoffice` and the failed `stage`; accepted background jobs still report failures through their job state. See the [read-only diagnostic](../getting-started/installation.md#database-configuration).
 
 ## Selection and employee reads
 
-`GET /planning/options?year=2026&month=1` returns the canonical `planning_month` (inclusive derived start/end) and named `planning_units` with station type. Only stations with a unique configured full-month target are offered. Empty options are distinct from a source failure. The existing `/solve/options` route remains for generation compatibility; the new selector does not use it.
+`GET /planning/options?year=2026&month=1` returns the canonical `planning_month` (inclusive derived start/end) and named `planning_units` with station type. Only stations with a unique configured full-month target are offered. Empty options are distinct from a source failure.
 
 `GET /employees?year=2026&month=1&planning_unit_ids=101&planning_unit_ids=102` accepts repeated positive station IDs and deduplicates them. The numbers here are illustrative, not connected target IDs. The response contains `selected_station_ids`, `planning_units` including relevant pool/home units, and deduplicated employees. Each employee has `employee_id`, `display_name`, `staff_level`, full dated `memberships`, `account`, `hard_restrictions` and `restrictions_source`. Accounts expose target/actual/credited minutes, dated `credit_details` and `evidence_source`. OpenAPI supplies the exact current schema. The retired `planning_unit`/`from_date` employee payload and split-name DTO are removed.
 

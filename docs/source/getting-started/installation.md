@@ -78,7 +78,7 @@ docker compose logs --follow
 docker compose down
 ```
 
-`data/` is shared by both services and initially contains only `.gitkeep`. Retained file-based screens use `data/cases/`; solver compatibility exports use `data/found_solutions/` and `data/processed_solutions/`. Prepare the two output directories before startup as shown above; `just run` does this too. Runtime files are ignored. The API maps them under `/project/data/`; the webapp maps the same root under `/data/`. Container shutdown preserves them. Exported compatibility files are not independently accepted hand-in schedules.
+`data/` is used by the API and initially contains only `.gitkeep`. Solver compatibility exports use `data/found_solutions/` and `data/processed_solutions/`. Prepare the two output directories before startup as shown above; `just run` does this too. Runtime files are ignored. The API maps them under `/project/data/`. Container shutdown preserves them. Exported compatibility files are not independently accepted hand-in schedules.
 
 Named volumes hold webapp dependencies and Next build output. Do not delete `data/` as a troubleshooting step. `docker compose down` is sufficient for ordinary shutdown.
 

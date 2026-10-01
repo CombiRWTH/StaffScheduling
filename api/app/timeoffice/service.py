@@ -3,38 +3,29 @@ import logging
 from sqlalchemy import Engine
 
 from app.domain import (
-    Availability,
-    DemandRequirement,
     PlanningMonth,
     PlanningUnitType,
     SchedulingDataset,
-    SolverObjectiveWeights,
-    Wish,
 )
-from app.employees.inspection import build_inspection
+from app.employees.inspection import build_inspection, inspection_employee_ids
 from app.employees.models import PlanningInspection, PlanningOptions
-from app.routers.solve.schemas import SolveOptions
 from app.solver.models import Solution
 from app.timeoffice.facts import TimeOfficeFacts
 from app.timeoffice.mapping import map_scheduling_dataset
-from app.timeoffice.mapping.options import map_planning_units, map_solve_options
+from app.timeoffice.mapping.options import map_planning_units
 from app.timeoffice.mapping.personnel import map_employees, map_planning_unit_memberships
 from app.timeoffice.mapping.roster import map_availability
 from app.timeoffice.mapping.work_accounts import map_monthly_work_accounts
 from app.timeoffice.reading.container import TimeOfficeReaders
 from app.timeoffice.reading.employee_evidence import read_employee_evidence
-from app.timeoffice.writing.demand import TimeOfficeDemandWriter
-from app.timeoffice.writing.objective_weights import TimeOfficeWeightsWriter
-from app.timeoffice.writing.roster import TimeOfficeAvailabilityWriter
 from app.timeoffice.writing.solution import LegacySolutionExportPaths, TimeOfficeSolutionWriter
-from app.timeoffice.writing.wishes import TimeOfficeWishWriter
 from app.validation import validate_scheduling_dataset
 
 logger = logging.getLogger(__name__)
 
 
 class TimeOfficeService:
-    """Application-facing service for TimeOffice reads and allowed writebacks."""
+    """Application-facing service for TimeOffice reads and solver compatibility exports."""
 
     def __init__(
         self,
@@ -43,34 +34,11 @@ class TimeOfficeService:
         engine: Engine,
         readers: TimeOfficeReaders,
         solution_writer: TimeOfficeSolutionWriter,
-        wish_writer: TimeOfficeWishWriter,
-        demand_writer: TimeOfficeDemandWriter,
-        objective_weights_writer: TimeOfficeWeightsWriter,
-        availability_writer: TimeOfficeAvailabilityWriter,
     ) -> None:
         self._facts = facts
         self._engine = engine
         self._readers = readers
         self._solution_writer = solution_writer
-        self._wish_writer = wish_writer
-        self._demand_writer = demand_writer
-        self._objective_weights_writer = objective_weights_writer
-        self._availability_writer = availability_writer
-
-    def get_solve_options(self) -> SolveOptions:
-        logger.info("Fetching TimeOffice solve options")
-
-        with self._engine.connect() as connection:
-            rows = self._readers.options.read_planning_unit_option_rows(connection=connection)
-
-        options = map_solve_options(rows=rows, facts=self._facts)
-
-        logger.info(
-            "Fetched TimeOffice solve options: planning_units=%s",
-            len(options.planning_units),
-        )
-
-        return options
 
     def get_planning_options(self, *, planning_month: PlanningMonth) -> PlanningOptions:
         """Return named station destinations with unique full-month targets, without provisioning.
@@ -124,15 +92,11 @@ class TimeOfficeService:
                 planning_unit_ids=tuple(unit.planning_unit_id for unit in units),
                 planning_month=planning_month,
             )
-            relevant_employee_ids = {row.employee_id for row in all_rows if row.planning_unit_id in selected}
-            pool_ids = {
-                row.planning_unit_id
-                for row in all_rows
-                if row.employee_id in relevant_employee_ids
-                and row.is_home
-                and self._facts.planning_unit_type_by_id[row.planning_unit_id] == PlanningUnitType.SHARED_POOL
-            }
-            relevant_employee_ids.update(row.employee_id for row in all_rows if row.planning_unit_id in pool_ids)
+            relevant_employee_ids = inspection_employee_ids(
+                selected_station_ids=selected,
+                memberships=all_rows,
+                shared_pool_ids={unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.SHARED_POOL},
+            )
             memberships = tuple(row for row in all_rows if row.employee_id in relevant_employee_ids)
             employee_ids = tuple(sorted(relevant_employee_ids))
             employees = map_employees(
@@ -227,9 +191,6 @@ class TimeOfficeService:
 
         return validated_dataset
 
-    def write_solution_dry_run(self, solution: Solution) -> None:
-        self._solution_writer.write_dry_run(solution)
-
     def write_solution_legacy_format(
         self,
         *,
@@ -264,93 +225,3 @@ class TimeOfficeService:
             )
 
         return normalized
-
-    def replace_employee_wishes_and_availability(
-        self,
-        *,
-        planning_unit_id: int,
-        planning_month: PlanningMonth,
-        employee_id: int,
-        wishes: tuple[Wish, ...],
-        availabilities: tuple[Availability, ...],
-    ) -> None:
-        with self._engine.begin() as connection:
-            self._wish_writer.replace_employee_wishes(
-                connection=connection,
-                planning_unit_id=planning_unit_id,
-                planning_month=planning_month,
-                employee_id=employee_id,
-                wishes=wishes,
-                facts=self._facts,
-            )
-
-            self._availability_writer.replace_employee_availability(
-                connection=connection,
-                planning_unit_id=planning_unit_id,
-                planning_month=planning_month,
-                employee_id=employee_id,
-                availabilities=availabilities,
-                facts=self._facts,
-            )
-
-    def delete_employee_wishes_and_availability(
-        self,
-        *,
-        planning_unit_id: int,
-        planning_month: PlanningMonth,
-        employee_id: int,
-    ) -> None:
-        with self._engine.begin() as connection:
-            self._wish_writer.delete_employee_wishes(
-                connection=connection,
-                planning_unit_id=planning_unit_id,
-                planning_month=planning_month,
-                employee_id=employee_id,
-            )
-
-            self._availability_writer.delete_employee_availability(
-                connection=connection,
-                planning_unit_id=planning_unit_id,
-                planning_month=planning_month,
-                employee_id=employee_id,
-            )
-
-    def replace_minimal_staffing(
-        self,
-        *,
-        planning_unit_id: int,
-        demand_requirements: tuple[DemandRequirement, ...],
-    ) -> None:
-        with self._engine.begin() as connection:
-            self._demand_writer.replace_minimal_staffing(
-                connection=connection,
-                planning_unit_id=planning_unit_id,
-                demand_requirements=demand_requirements,
-            )
-
-    def replace_objective_weights(
-        self,
-        *,
-        planning_unit_id: int,
-        objective_weights: SolverObjectiveWeights,
-    ) -> None:
-        with self._engine.begin() as connection:
-            self._objective_weights_writer.replace_objective_weights(
-                connection=connection,
-                planning_unit_id=planning_unit_id,
-                objective_weights=objective_weights,
-            )
-
-    def write_solution_to_db(
-        self,
-        *,
-        dataset: SchedulingDataset,
-        solution: Solution,
-    ) -> None:
-        with self._engine.begin() as connection:
-            self._solution_writer.replace_solution_assignments(
-                connection=connection,
-                dataset=dataset,
-                solution=solution,
-                facts=self._facts,
-            )

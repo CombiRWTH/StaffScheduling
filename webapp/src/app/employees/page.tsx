@@ -1,45 +1,54 @@
 import { Suspense } from "react";
-import LoadingEmployees from "./loading";
-import { monthParams, readPlanningApi } from "@/features/planning/api";
-import { PlanningInspectionSchema } from "@/features/planning/models";
-import { EmployeesPageClient } from "./employees-page-client";
+import { AlertCircle } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { getEmployees } from "@/lib/api";
+import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
+import { EmployeeTable } from "./employee-table";
+import Loading from "./loading";
 
-export default async function EmployeesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ month?: string; stations?: string }>;
-}) {
-  const { month, stations } = await searchParams;
-  if (!month || !stations) return <p>Bitte einen Planungsmonat und mindestens eine Station auswählen.</p>;
+export default async function EmployeesPage({ searchParams }: { searchParams: Promise<ScopeSearchParams> }) {
+  const scope = await loadPlanningScope("/employees", await searchParams);
   return (
-    <Suspense key={`${month}:${stations}`} fallback={<LoadingEmployees />}>
-      <EmployeeContent month={month} stations={stations} />
-    </Suspense>
+    <div className="py-6">
+      <PageHeader
+        title="Mitarbeiter"
+        description="Mitarbeiter der gewählten Stationen und des zugehörigen Pools, nur lesend."
+        scope={scope}
+      />
+      {!scope.month || !scope.stationIds.length ? (
+        <p className="py-12 text-center text-muted-foreground">
+          Bitte einen Planungsmonat und mindestens eine Station auswählen.
+        </p>
+      ) : scope.error ? (
+        <LoadError message={scope.error} />
+      ) : (
+        // A new key per scope shows the loading state instead of the previous scope's employees.
+        <Suspense key={`${scope.month}:${scope.stationIds}`} fallback={<Loading />}>
+          <Employees month={scope.month} stationIds={scope.stationIds} />
+        </Suspense>
+      )}
+    </div>
   );
 }
 
-async function EmployeeContent({ month, stations }: { month: string; stations: string }) {
-  try {
-    const params = monthParams(month);
-    if (!/^[1-9]\d*(,[1-9]\d*)*$/.test(stations)) throw new Error("Bitte gültige Stationen auswählen.");
-    for (const id of new Set(stations.split(","))) params.append("planning_unit_ids", id);
-    const inspection = await readPlanningApi("/employees", params, PlanningInspectionSchema);
-    const ids = [...new Set(stations.split(",").map(Number))];
-    if (
-      inspection.planning_month.start !== `${month}-01` ||
-      ids.length !== inspection.selected_station_ids.length ||
-      !ids.every((id) => inspection.selected_station_ids.includes(id))
-    ) {
-      throw new Error("Antwort gehört zu einer anderen Planungsauswahl. Bitte erneut laden.");
-    }
-    return <EmployeesPageClient key={`${month}:${stations}`} inspection={inspection} />;
-  } catch (error) {
-    return (
-      <div role="alert" className="rounded-md border p-4">
-        <h1 className="font-semibold">Mitarbeiter nicht geladen</h1>
-        <p>{error instanceof Error ? error.message : "Daten nicht verfügbar."}</p>
-        <p>Auswahl prüfen oder Stationen aktualisieren und erneut öffnen.</p>
-      </div>
-    );
-  }
+async function Employees({ month, stationIds }: { month: string; stationIds: number[] }) {
+  const result = await getEmployees(month, stationIds).then(
+    (inspection) => ({ inspection }),
+    (error: Error) => ({ error: error.message }),
+  );
+  return "error" in result ? <LoadError message={result.error} /> : <EmployeeTable inspection={result.inspection} />;
+}
+
+function LoadError({ message }: { message: string }) {
+  return (
+    <Alert variant="destructive">
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>Mitarbeiter nicht geladen</AlertTitle>
+      <AlertDescription>
+        <p>{message}</p>
+        <p>Auswahl prüfen oder Stationen aktualisieren.</p>
+      </AlertDescription>
+    </Alert>
+  );
 }

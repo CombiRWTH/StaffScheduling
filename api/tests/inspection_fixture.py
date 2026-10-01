@@ -13,11 +13,7 @@ from app.domain import PlanningUnitType
 from app.timeoffice.facts import TIMEOFFICE_FACTS
 from app.timeoffice.reading.container import TimeOfficeReaders
 from app.timeoffice.service import TimeOfficeService
-from app.timeoffice.writing.demand import TimeOfficeDemandWriter
-from app.timeoffice.writing.objective_weights import TimeOfficeWeightsWriter
-from app.timeoffice.writing.roster import TimeOfficeAvailabilityWriter
 from app.timeoffice.writing.solution import TimeOfficeSolutionWriter
-from app.timeoffice.writing.wishes import TimeOfficeWishWriter
 
 
 class InspectionSource:
@@ -50,10 +46,6 @@ class InspectionSource:
             engine=engine,
             readers=TimeOfficeReaders.create(facts=self.facts),
             solution_writer=TimeOfficeSolutionWriter(),
-            wish_writer=TimeOfficeWishWriter(target_planning_status_id=1),
-            demand_writer=TimeOfficeDemandWriter(),
-            objective_weights_writer=TimeOfficeWeightsWriter(),
-            availability_writer=TimeOfficeAvailabilityWriter(),
         )
 
     def execute(self, query: Any, params: dict[str, Any]) -> MagicMock:

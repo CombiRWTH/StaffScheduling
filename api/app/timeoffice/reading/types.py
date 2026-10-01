@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, StrictFloat, StrictInt
+from pydantic import BaseModel, BeforeValidator, ConfigDict, StrictInt
 
 
 class TimeOfficeSourceRow(BaseModel):
@@ -33,6 +33,3 @@ CleanNullableText = Annotated[str | None, BeforeValidator(clean_text)]
 
 SourceInt = StrictInt
 SourceNullableInt = Annotated[StrictInt | None, BeforeValidator(none_if_blank)]
-
-SourceFloat = StrictFloat
-SourceNullableFloat = Annotated[StrictFloat | None, BeforeValidator(none_if_blank)]

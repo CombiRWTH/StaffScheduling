@@ -26,13 +26,11 @@ services:
     build: ./webapp
     command: [sh, -c, "pnpm install --frozen-lockfile && exec pnpm run dev --hostname 0.0.0.0"]
     environment:
-      SOLVER_API_URL: http://api:8000
-      CASES_DIR: /data/cases
+      API_URL: http://api:8000
     ports:
       - "${BIND_ADDRESS:-127.0.0.1}:${WEBAPP_PORT:-3000}:3000"
     volumes:
       - ./webapp:/app
-      - ${DATA_DIR:-./data}:/data
       - webapp-dependencies:/app/node_modules
       - webapp-build:/app/.next
     depends_on:

@@ -17,7 +17,7 @@ export default defineConfig({
     {
       command: "pnpm dev --hostname 127.0.0.1 --port 18081",
       url: "http://127.0.0.1:18081",
-      env: { SOLVER_API_URL: "http://127.0.0.1:18080" },
+      env: { API_URL: "http://127.0.0.1:18080" },
       reuseExistingServer: false,
       timeout: 120_000,
     },

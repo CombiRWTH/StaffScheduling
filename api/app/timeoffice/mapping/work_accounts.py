@@ -17,7 +17,7 @@ def map_monthly_work_accounts(
             MonthlyWorkAccount(
                 employee_id=row.employee_id,
                 target_minutes=target_minutes,
-                actual_minutes=actual_minutes if row.actual_hours is not None else None,
+                actual_minutes=actual_minutes,
             )
         )
 
