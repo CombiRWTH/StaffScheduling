@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - "docs/**"
+      - "api/app/**"
       - "api/.python-version"
       - ".github/workflows/docs.yml"
 

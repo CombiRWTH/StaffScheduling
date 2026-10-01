@@ -1,62 +1,51 @@
-name: CI Check
+name: Webapp CI
 
 on:
-  # Trigger bei jedem Push auf IRGENDEINEN Branch
   push:
-  # Trigger bei jedem Pull Request auf IRGENDEINEN Branch
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  # Job 1: Nur Linting (Failt, wenn Code "unsauber" ist)
   lint:
-    name: Lint Check
+    name: Lint and React Doctor
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: webapp
     steps:
-      - name: Code auschecken
+      - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Install pinned Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: webapp/package.json
-
-      - name: Install pinned pnpm
+      - name: Install pnpm
         run: npm install --global pnpm@12.8.1
-
-      - name: Dependencies installieren
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Linter ausführen
-        # "continue-on-error: true" würde den Job grün lassen, auch wenn Fehler gefunden werden.
-        # Wenn du willst, dass er rot wird (aber der Build trotzdem läuft), lass es weg.
+      - name: Run ESLint
         run: pnpm run lint
+      - name: Run React Doctor
+        run: pnpm run quality
 
-  # Job 2: Build (Wichtigster Check)
   build:
-    name: Build Check
+    name: Production build
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: webapp
-    # "needs: lint" würde bedeuten, Build läuft erst, wenn Lint erfolgreich ist.
-    # Wir lassen es weg, damit beide PARALLEL laufen (schneller & Build läuft auch bei Lint-Fehlern).
     steps:
-      - name: Code auschecken
+      - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Install pinned Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: webapp/package.json
-
-      - name: Install pinned pnpm
+      - name: Install pnpm
         run: npm install --global pnpm@12.8.1
-
-      - name: Dependencies installieren
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Build ausführen
+      - name: Build Next.js application
         run: pnpm run build
