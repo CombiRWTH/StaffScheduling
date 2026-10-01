@@ -29,9 +29,9 @@ export function PageHeader({
               href={`${parent.href}${selectionSearch(scope.month, scope.stationIds)}`}
               aria-label={`Zurück zu ${parent.label}`}
               title={`Zurück zu ${parent.label}`}
-              className="-ml-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="-ml-1 rounded-md text-foreground transition-opacity hover:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <ChevronLeft className="size-7" strokeWidth={2.25} />
+              <ChevronLeft className="size-6" strokeWidth={2.25} />
             </Link>
           )}
           <h1 className="text-2xl font-bold">{title}</h1>
