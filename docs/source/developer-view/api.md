@@ -1,6 +1,6 @@
 # API reference
 
-The FastAPI application is `api/app/main.py`. Run `just api-dev` from the repository root, then inspect the actual schemas at `http://localhost:8000/docs` or `/openapi.json`.
+The FastAPI application is `api/app/main.py`. Run `just run` from the repository root, then inspect the actual schemas at `http://localhost:8000/docs` or `/openapi.json`.
 
 ## Routes
 

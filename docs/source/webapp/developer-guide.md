@@ -850,4 +850,4 @@ All files use **kebab-case**.
 
 ## Checks and documentation
 
-See [installation](../installation.md#optional-native-development) for service checks. Documentation is built once with docs-local MkDocs; the former Nextra package and deployment workflow are retired.
+See [installation](../installation.md#ide-support-and-dependency-maintenance) for service checks. Documentation is built once with docs-local MkDocs; the former Nextra package and deployment workflow are retired.

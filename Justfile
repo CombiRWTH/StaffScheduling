@@ -1,7 +1,7 @@
 _default:
     just --list
 
-# Optional native development tools; normal startup needs Docker and just only.
+# Install host dependencies for IDE support and dependency maintenance.
 install:
     cd api && uv sync --frozen
     cd webapp && pnpm install --frozen-lockfile
@@ -39,13 +39,6 @@ stop:
 
 logs:
     docker compose logs --follow
-
-# Native development is optional and uses the same service locks.
-api-dev:
-    cd api && uv run --frozen fastapi dev app/main.py --host 127.0.0.1 --port 8000
-
-webapp-dev:
-    cd webapp && pnpm run dev
 
 docs:
     uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs serve --dev-addr 127.0.0.1:8001

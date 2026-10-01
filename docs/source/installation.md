@@ -16,11 +16,11 @@ The webapp reaches the API through the server-side `SOLVER_API_URL=http://api:80
 
 `/status` checks process liveness, not database connectivity or schedule validity. Access to the configured TimeOffice SQL Server is required for database operations. API jobs and the solve lock belong to one process and disappear on reload or restart. The imported planning screens still have the [documented integration limits](webapp/solver-integration.md).
 
-## Optional native development
+## IDE support and dependency maintenance
 
 Install the versions declared in `api/.python-version` and `webapp/package.json`, plus uv 0.12.21. `just install` installs frozen API and webapp dependencies and Git hooks. It preserves existing configuration and secret files.
 
-For native development, stop Compose first, then run `just api-dev` and `just webapp-dev` in separate terminals. The API reads root `.env` and `.secrets/`; the webapp defaults to `http://127.0.0.1:8000`. Its optional `CASES_DIR` environment variable overrides the default root `data/cases/` directory. No launcher configuration file is needed.
+Start development services with `just run`; Compose provides both hot-reloading servers. No host service launch recipes are provided.
 
 Use ordinary uv and pnpm commands from their service directories to change dependencies, then commit their updated manifests and locks. Root just recipes provide [shared quality checks](developer-view/code-quality.md), including all offline solver tests; known solver/type failures remain visible.
 

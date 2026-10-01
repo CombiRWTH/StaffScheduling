@@ -23,7 +23,7 @@ Startup requires Docker with Compose and just. One root Compose file provides na
 
 ## Development
 
-For optional native development and quality checks, install the pinned runtimes, uv and pnpm, then run `just install`. Use `just api-dev` and `just webapp-dev` in separate terminals.
+Use `just run` for development through Compose. For IDE support, dependency maintenance and quality checks, install the pinned runtimes, uv and pnpm, then run `just install`.
 
 ```sh
 just format-check

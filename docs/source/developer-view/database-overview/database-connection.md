@@ -51,7 +51,7 @@ flowchart LR
 
 ### Environment Configuration (`.env`)
 
-The shared [installation guide](../../installation.md) uses the committed non-secret root `.env` and ignored `.secrets/db_password`. Compose injects the environment and mounts the password under `/run/secrets`; Pydantic settings loads it without a custom reader. Native `just api-dev` uses the same root configuration. Docker already includes the ODBC driver; local ODBC installation is needed only for optional native development.
+The shared [installation guide](../../installation.md) uses the committed non-secret root `.env` and ignored `.secrets/db_password`. Compose injects the environment and mounts the password under `/run/secrets`; Pydantic settings loads it without a custom reader. Docker already includes the ODBC driver.
 
 ### SQLAlchemy Engine Creation
 
