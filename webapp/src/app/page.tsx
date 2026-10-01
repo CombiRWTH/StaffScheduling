@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarCheck, CalendarPlus, Users, type LucideIcon } from "lucide-react";
+import { CalendarCheck, CalendarPlus, Users, type LucideIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
@@ -21,7 +21,7 @@ interface Area {
 const areas: Area[] = [
   {
     title: "Mitarbeiter",
-    description: "Mitarbeiter, Mitgliedschaften, Monatskonten und harte Einschränkungen der Auswahl prüfen",
+    description: "Mitarbeiter, Zuordnungen, Monatskonten und harte Einschränkungen der Auswahl prüfen",
     icon: Users,
     href: "/employees",
     color: "text-blue-500 bg-blue-50",
@@ -59,11 +59,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               className={cn("h-full gap-0 transition-shadow", href ? "cursor-pointer hover:shadow-lg" : "opacity-60")}
             >
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className={cn("rounded-lg p-3", color)}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  {href && <ArrowRight className="h-5 w-5 text-muted-foreground" />}
+                <div className={cn("w-fit rounded-lg p-3", color)}>
+                  <Icon className="h-6 w-6" />
                 </div>
                 <CardTitle className="mt-4">{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>

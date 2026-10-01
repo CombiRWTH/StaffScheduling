@@ -199,7 +199,7 @@ function EmployeeDetails({
   return (
     <div className="grid gap-6 px-2 py-3 md:grid-cols-3">
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold">Datierte Mitgliedschaften</h3>
+        <h3 className="text-sm font-semibold">Zuordnungen</h3>
         <ul className="space-y-1.5 text-sm">
           {employee.memberships.map((row) => {
             const type = units.get(row.planning_unit_id)?.type;

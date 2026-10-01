@@ -14,7 +14,7 @@ async function get<T>(path: string, params: URLSearchParams): Promise<T> {
     throw new Error("Ungültige Auswahl. Nur Stationen mit Planungsziel für diesen Monat wählen.");
   }
   if (response.status === 409) {
-    throw new Error("Daten unvollständig. Stationen, Mitgliedschaften, Konten und Monatsnachweise prüfen.");
+    throw new Error("Daten unvollständig. Stationen, Zuordnungen, Konten und Monatsnachweise prüfen.");
   }
   if (!response.ok) throw new Error("Backend oder TimeOffice nicht verfügbar. Verbindung und Einrichtung prüfen.");
   return response.json();

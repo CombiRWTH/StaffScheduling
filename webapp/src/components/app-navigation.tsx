@@ -7,11 +7,10 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Briefcase,
+  CalendarHeart,
   CalendarCheck,
-  CalendarClock,
   CalendarPlus,
   FileText,
-  Heart,
   type LucideIcon,
   Menu,
   Repeat,
@@ -27,6 +26,8 @@ interface NavigationLink {
   label: string;
   icon: LucideIcon;
   href?: string;
+  /** What the entry covers, shown as a tooltip. */
+  hint?: string;
 }
 
 const navigationSections: Array<{ label: string; links: NavigationLink[] }> = [
@@ -34,8 +35,15 @@ const navigationSections: Array<{ label: string; links: NavigationLink[] }> = [
     label: "Planungsdaten",
     links: [
       { href: "/employees", label: "Mitarbeiter", icon: Users },
-      { label: "Wünsche & Einschränkungen", icon: Heart },
+      { label: "Verfügbarkeit", icon: CalendarHeart, hint: "Wünsche und harte Einschränkungen des Monats" },
       { label: "Mindestbesetzung", icon: UserCog },
+    ],
+  },
+  {
+    label: "Wiederkehrend",
+    links: [
+      { label: "Verfügbarkeit", icon: Repeat, hint: "Wiederkehrende Wünsche und Einschränkungen" },
+      { label: "Vorlagen", icon: FileText },
     ],
   },
   {
@@ -43,14 +51,6 @@ const navigationSections: Array<{ label: string; links: NavigationLink[] }> = [
     links: [
       { label: "Erstellen", icon: CalendarPlus },
       { label: "Prüfen", icon: CalendarCheck },
-    ],
-  },
-  {
-    label: "Wiederkehrend",
-    links: [
-      { label: "Wünsche", icon: Repeat },
-      { label: "Verfügbarkeit", icon: CalendarClock },
-      { label: "Vorlagen", icon: FileText },
     ],
   },
 ];
@@ -94,12 +94,12 @@ function SidebarContent({ search, isActive, onClose, showCloseButton = false }: 
           {navigationSections.map(({ label, links }) => (
             <section key={label} className="space-y-0.5">
               <h2 className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</h2>
-              {links.map(({ href, label: linkLabel, icon: Icon }) =>
+              {links.map(({ href, label: linkLabel, icon: Icon, hint }) =>
                 !href ? (
                   <div
                     key={linkLabel}
                     aria-disabled="true"
-                    title="Noch nicht unterstützt"
+                    title={hint ? `${hint} – noch nicht unterstützt` : "Noch nicht unterstützt"}
                     className="flex h-8 cursor-not-allowed items-center gap-2.5 rounded-md px-3 text-sm text-muted-foreground/60"
                   >
                     <Icon className="h-4 w-4 shrink-0" />

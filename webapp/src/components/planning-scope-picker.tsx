@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { Building2, ChevronDown, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { Building2, ChevronDown, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,7 @@ import { MONTHS, selectionSearch } from "@/lib/selection";
 import { cn } from "@/lib/utils";
 
 function toMonth(year: number, month: number) {
-  const date = new Date(year, month - 1);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  return `${year}-${String(month).padStart(2, "0")}`;
 }
 
 /** Month and station selection; the URL is the only state. */
@@ -23,9 +22,9 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
-  const [year, monthNumber] = month ? month.split("-").map(Number) : [new Date().getFullYear(), 0];
+  const [year, monthNumber] = month.split("-").map(Number);
 
-  const navigate = (nextMonth: string | undefined, nextStations: number[]) => {
+  const navigate = (nextMonth: string, nextStations: number[]) => {
     startTransition(() => router.push(`${pathname}${selectionSearch(nextMonth, nextStations)}`));
   };
   const changeMonth = (nextMonth: string) => nextMonth !== month && navigate(nextMonth, stationIds);
@@ -34,9 +33,8 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
 
   const selected = new Set(stationIds);
   const selectedNames = stations.filter((unit) => selected.has(unit.planning_unit_id)).map((u) => u.display_name);
-  const summary = !month
-    ? "Erst Monat wählen"
-    : selectedNames.length === 0
+  const summary =
+    selectedNames.length === 0
       ? "Stationen wählen"
       : selectedNames.length === 1
         ? selectedNames[0]
@@ -44,18 +42,8 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
 
   return (
     <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Planungsauswahl">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-8"
-        disabled={!month || pending}
-        onClick={() => changeMonth(toMonth(year, monthNumber - 1))}
-        aria-label="Vorheriger Monat"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
       <Select
-        value={monthNumber ? String(monthNumber) : undefined}
+        value={String(monthNumber)}
         onValueChange={(value) => changeMonth(toMonth(year, Number(value)))}
         disabled={pending}
       >
@@ -84,26 +72,15 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
           const nextYear = Number(event.currentTarget.value);
           if (!Number.isInteger(nextYear) || nextYear < 2000 || nextYear > 2200)
             event.currentTarget.value = String(year);
-          else if (monthNumber) changeMonth(toMonth(nextYear, monthNumber));
+          else changeMonth(toMonth(nextYear, monthNumber));
         }}
       />
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-8"
-        disabled={!month || pending}
-        onClick={() => changeMonth(toMonth(year, monthNumber + 1))}
-        aria-label="Nächster Monat"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
 
       <Popover>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className={cn("h-8 max-w-[260px] gap-2 px-3 font-normal", month && !stationIds.length && "border-primary")}
-            disabled={!month}
+            className={cn("h-8 max-w-[260px] gap-2 px-3 font-normal", !stationIds.length && "border-primary")}
             aria-label={`Stationen: ${summary}`}
           >
             <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -141,7 +118,7 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
         size="icon"
         variant="outline"
         className="size-8"
-        disabled={!month || pending}
+        disabled={pending}
         onClick={() => startTransition(() => router.refresh())}
         aria-label="Stationen aktualisieren"
         title="Stationen aktualisieren"

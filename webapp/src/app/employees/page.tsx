@@ -19,10 +19,8 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
         description="Mitarbeiter der gewählten Stationen und des zugehörigen Pools, nur lesend."
         scope={scope}
       />
-      {!scope.month || !scope.stationIds.length ? (
-        <p className="py-12 text-center text-muted-foreground">
-          Bitte einen Planungsmonat und mindestens eine Station auswählen.
-        </p>
+      {!scope.stationIds.length ? (
+        <p className="py-12 text-center text-muted-foreground">Bitte mindestens eine Station auswählen.</p>
       ) : scope.error ? (
         <LoadError message={scope.error} />
       ) : (

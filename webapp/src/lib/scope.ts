@@ -10,7 +10,7 @@ export interface ScopeSearchParams {
 }
 
 export interface PlanningScope {
-  month?: string;
+  month: string;
   stationIds: number[];
   stations: PlanningUnit[];
   error?: string;
@@ -18,15 +18,18 @@ export interface PlanningScope {
 
 /**
  * Read the planning month and stations from the URL and load the month's stations.
- * Stations unavailable in the chosen month are dropped by redirecting to the corrected URL.
+ * A missing or invalid month redirects to January of the current year; stations unavailable
+ * in the month are dropped by redirecting to the corrected URL.
  */
 export async function loadPlanningScope(pathname: string, params: ScopeSearchParams): Promise<PlanningScope> {
-  const month = params.month && /^\d{4}-(0[1-9]|1[0-2])$/.test(params.month) ? params.month : undefined;
   const stationsParam = params.stations ?? "";
   const requested = /^[1-9]\d*(,[1-9]\d*)*$/.test(stationsParam)
     ? [...new Set(stationsParam.split(",").map(Number))]
     : [];
-  if (!month) return { stationIds: [], stations: [] };
+  const month = params.month ?? "";
+  if (!/^(20\d{2}|21\d{2}|2200)-(0[1-9]|1[0-2])$/.test(month)) {
+    redirect(`${pathname}${selectionSearch(`${new Date().getFullYear()}-01`, requested)}`);
+  }
 
   let stations: PlanningUnit[];
   try {

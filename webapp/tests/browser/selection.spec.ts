@@ -16,11 +16,16 @@ async function closeStations(page: Page) {
 }
 
 const rows = (page: Page) => page.getByRole("row");
+const defaultMonth = `${new Date().getFullYear()}-01`;
 
 test("select both stations, inspect stable employees and pool facts, then change scope", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("spinbutton", { name: "Jahr" }).fill("2026");
-  await chooseMonth(page, "Januar");
+  await expect(page).toHaveURL(`/?month=${defaultMonth}`);
+  await expect(page.getByRole("combobox", { name: "Monat" })).toHaveText("Januar");
+  await expect(page.getByRole("button", { name: "Vorheriger Monat" })).toHaveCount(0);
+  const year = page.getByRole("spinbutton", { name: "Jahr" });
+  await year.fill("2026");
+  await year.press("Enter");
   await expect(page).toHaveURL(/month=2026-01/);
   await toggleStation(page, "Example Station North");
   await expect(page.getByRole("checkbox", { name: "Example Station North" })).toBeChecked();
@@ -39,7 +44,7 @@ test("select both stations, inspect stable employees and pool facts, then change
   await expect(rows(page)).toHaveCount(4);
 
   await page.getByRole("button", { name: "Details für Example MFA One" }).click();
-  const details = page.getByRole("row").filter({ hasText: "Datierte Mitgliedschaften" });
+  const details = page.getByRole("row").filter({ hasText: "Zuordnungen" });
   await expect(details.getByText("9600 min", { exact: true })).toBeVisible();
   await expect(details.getByText("480 min", { exact: true })).toBeVisible();
   await expect(details.getByText(/01\.12\.2025 – 30\.06\.2026 · MFA · Heimat/)).toBeVisible();
@@ -64,7 +69,7 @@ test("select both stations, inspect stable employees and pool facts, then change
   await expect(page.getByText("Februar 2026 · Example Station South", { exact: true })).toBeVisible();
   await expect(page.getByText("Example Team Two", { exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Nächster Monat" }).click();
+  await chooseMonth(page, "März");
   await expect(page).toHaveURL(/month=2026-03/);
   await expect(page.getByText("Keine Mitarbeiter für diese Auswahl vorhanden.", { exact: true })).toBeVisible();
   await expect(page.getByText("Example MFA One", { exact: true })).toHaveCount(0);
@@ -86,21 +91,19 @@ test("unavailable and incomplete reads are useful errors with no partial employe
   await expect(page.getByRole("checkbox", { name: "Example Station North" })).not.toBeChecked();
   await toggleStation(page, "Example Station South");
   await expect(page.getByRole("checkbox", { name: "Example Station South" })).not.toBeChecked();
-  await expect(
-    page.getByText("Bitte einen Planungsmonat und mindestens eine Station auswählen.", { exact: true }),
-  ).toBeVisible();
+  await expect(page.getByText("Bitte mindestens eine Station auswählen.", { exact: true })).toBeVisible();
   await expect(page.getByRole("table")).toHaveCount(0);
 });
 
 test("unsupported areas are visible but not navigable", async ({ page }) => {
   await page.goto("/");
   const unsupported = page.locator('nav [aria-disabled="true"]');
-  await expect(unsupported).toHaveCount(7);
+  await expect(unsupported).toHaveCount(6);
   await expect(page.getByRole("navigation").getByRole("link")).toHaveCount(1);
   await expect(page.getByText("Noch nicht unterstützt", { exact: true })).toHaveCount(2);
 });
 
-test("year entry keeps the month and malformed URLs ask for a selection", async ({ page }) => {
+test("year entry keeps the month, a missing or invalid month defaults to January", async ({ page }) => {
   await page.goto("/employees?month=2026-01&stations=101");
   await expect(page.getByText("Example Team Two", { exact: true })).toBeVisible();
   const year = page.getByRole("spinbutton", { name: "Jahr" });
@@ -111,13 +114,13 @@ test("year entry keeps the month and malformed URLs ask for a selection", async 
   await year.press("Enter");
   await expect(year).toHaveValue("2025");
 
-  for (const query of ["month=2026-13&stations=101", "month=2026-01&stations=abc", "stations=101"]) {
+  for (const query of ["month=2026-13&stations=101", "stations=101"]) {
     await page.goto(`/employees?${query}`);
-    await expect(
-      page.getByText("Bitte einen Planungsmonat und mindestens eine Station auswählen.", { exact: true }),
-    ).toBeVisible();
-    await expect(page.getByRole("table")).toHaveCount(0);
+    await expect(page).toHaveURL(`/employees?month=${defaultMonth}&stations=101`);
   }
+  await page.goto("/employees?month=2026-01&stations=abc");
+  await expect(page.getByText("Bitte mindestens eine Station auswählen.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("table")).toHaveCount(0);
 });
 
 test("mobile navigation opens, keeps the selection and closes", async ({ page }) => {
@@ -126,7 +129,7 @@ test("mobile navigation opens, keeps the selection and closes", async ({ page })
   await page.getByRole("button", { name: "Navigation öffnen" }).click();
   const link = page.getByRole("navigation").getByRole("link", { name: "Mitarbeiter" });
   await expect(link).toHaveAttribute("href", "/employees?month=2026-01&stations=101");
-  await expect(page.locator('nav [aria-disabled="true"]').filter({ visible: true })).toHaveCount(7);
+  await expect(page.locator('nav [aria-disabled="true"]').filter({ visible: true })).toHaveCount(6);
   await link.click();
   await expect(page).toHaveURL(/\/employees\?month=2026-01&stations=101/);
   await expect(page.getByRole("button", { name: "Navigation öffnen" })).toBeVisible();

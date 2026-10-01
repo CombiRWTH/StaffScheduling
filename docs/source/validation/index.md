@@ -24,7 +24,7 @@ No publication or other database write path exists; scoped, checked publication 
 
 The latest executed offline suite reports **115 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
 
-Webapp strict TypeScript and the native production build pass. The five controlled browser scenarios (selection/inspection, unavailable/incomplete reads, unsupported areas, year entry and malformed selection URLs, mobile navigation) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
+Webapp strict TypeScript and the native production build pass. The five controlled browser scenarios (selection/inspection, unavailable/incomplete reads, unsupported areas, year entry and the January default, mobile navigation) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
 
 Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint reports no findings. React Doctor passes with visible warnings: pnpm install hardening, the planning picker's control-flow complexity and the standard shadcn `ui/` variant exports. `just check` now runs all independent offline gates, including browser flows, production build, docs and credential-free Compose smoke, and retains a failing exit status. It remains red for the nine solver failures.
 
