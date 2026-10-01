@@ -10,11 +10,11 @@ install:
 
 format:
     cd api && uv run --frozen ruff format .
-    cd webapp && pnpm exec prettier --write . ../docs/source ../docs/mkdocs.yml ../README.md ../compose.yaml ../.github ../.pre-commit-config.yaml ../.vscode/extensions.json --config .prettierrc.json
+    cd webapp && pnpm exec prettier --write . ../docs/source ../docs/adr ../docs/mkdocs.yml ../README.md ../GLOSSARY.md ../compose.yaml ../.github ../.pre-commit-config.yaml ../.vscode/extensions.json --config .prettierrc.json
 
 format-check:
     cd api && uv run --frozen ruff format --check .
-    cd webapp && pnpm exec prettier --check . ../docs/source ../docs/mkdocs.yml ../README.md ../compose.yaml ../.github ../.pre-commit-config.yaml ../.vscode/extensions.json --config .prettierrc.json
+    cd webapp && pnpm exec prettier --check . ../docs/source ../docs/adr ../docs/mkdocs.yml ../README.md ../GLOSSARY.md ../compose.yaml ../.github ../.pre-commit-config.yaml ../.vscode/extensions.json --config .prettierrc.json
 
 lint:
     cd api && uv run --frozen ruff check .

@@ -74,7 +74,7 @@ The solver engine depends only on `domain/`; the generation slice will connect i
 | Runtime/dependency pins             | service manifests/locks, Dockerfiles and consuming workflow/tool settings |
 | Documentation                       | `docs/source/` and `docs/mkdocs.yml`                                      |
 
-Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. The [limitations](../validation/index.md) page records remaining compatibility work.
+Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. Domain terms are defined in the repository's `GLOSSARY.md`; decisions that are hard to reverse are recorded in `docs/adr/` (for example, why the webapp was rebuilt rather than adapted, and why TimeOffice sits behind one service). The [limitations](../validation/index.md) page records remaining compatibility work.
 
 ## Selection and inspection boundary
 

@@ -22,6 +22,7 @@ Health checks establish service liveness. Database operations need network/crede
 - [Architecture and contracts](docs/source/architecture/index.md)
 - [Checks and dependency maintenance](docs/source/development/checks.md)
 - [Documentation maintenance](docs/source/development/documentation.md), [reasoning outline](docs/source/validation/reasoning.md) and [example reproduction outline](docs/source/validation/examples.md)
+- [Glossary](GLOSSARY.md) of domain terms and [architecture decision records](docs/adr/)
 - [API](docs/source/architecture/api.md), [domain](docs/source/architecture/domain.md), [solver](docs/source/architecture/solver.md), [TimeOffice](docs/source/architecture/timeoffice.md)
 
 `api/`, `webapp/` and `docs/` have separate manifests/locks; `data/` holds ignored runtime files. Development services use Compose with hot reload. Optional native tools support IDEs and quality checks via `just install` and `just check`; follow the installation guide for their prerequisites.
