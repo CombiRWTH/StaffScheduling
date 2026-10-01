@@ -2,21 +2,18 @@ _default:
     just --list
 
 # Optional native development tools; normal startup needs Docker and just only.
-sync:
-    uv sync --project docs --frozen --all-groups --python "$(cat api/.python-version)"
+install:
     cd api && uv sync --frozen
     cd webapp && pnpm install --frozen-lockfile
-
-setup: sync
-    uv run --project docs --frozen pre-commit install
+    cd api && uv run --frozen pre-commit install
 
 format:
     cd api && uv run --frozen ruff format .
-    cd webapp && pnpm exec prettier --write . ../docs/source ../docs/mkdocs.yml ../README.md ../compose.yaml ../.github ../.pre-commit-config.yaml --config .prettierrc.json
+    cd webapp && pnpm exec prettier --write . ../docs/source ../docs/mkdocs.yml ../README.md ../compose.yaml ../.github ../.pre-commit-config.yaml ../.vscode/extensions.json --config .prettierrc.json
 
 format-check:
     cd api && uv run --frozen ruff format --check .
-    cd webapp && pnpm exec prettier --check . ../docs/source ../docs/mkdocs.yml ../README.md ../compose.yaml ../.github ../.pre-commit-config.yaml --config .prettierrc.json
+    cd webapp && pnpm exec prettier --check . ../docs/source ../docs/mkdocs.yml ../README.md ../compose.yaml ../.github ../.pre-commit-config.yaml ../.vscode/extensions.json --config .prettierrc.json
 
 lint:
     cd api && uv run --frozen ruff check .
@@ -51,7 +48,7 @@ webapp-dev:
     cd webapp && pnpm run dev
 
 docs:
-    docker compose run --rm --build --service-ports docs
+    uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs serve --dev-addr 127.0.0.1:8001
 
 docs-check:
-    docker compose run --rm --build docs mkdocs build --strict
+    uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs build --strict

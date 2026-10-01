@@ -51,17 +51,6 @@ services:
       retries: 12
       start_period: 20s
 
-  docs:
-    profiles: [tools]
-    build: ./docs
-    working_dir: /project/docs
-    volumes:
-      - .:/project:ro
-      - ./docs/site:/project/docs/site
-    ports:
-      - "8001:8001"
-    command: [mkdocs, serve, --dev-addr, "0.0.0.0:8001"]
-
 secrets:
   db_password:
     file: ./.secrets/db_password

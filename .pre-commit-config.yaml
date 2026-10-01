@@ -15,17 +15,17 @@ repos:
       - id: check-json
       - id: check-yaml
         args: [--allow-multiple-documents]
-        exclude: mkdocs.yml
+        exclude: ^docs/mkdocs\.yml$
       - id: check-yaml
         args: [--unsafe]
-        files: mkdocs.yml
+        files: ^docs/mkdocs\.yml$
       - id: detect-private-key
       - id: debug-statements
       - id: end-of-file-fixer
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.9
+    rev: v0.16.10
     hooks:
       - id: ruff-check
         files: ^api/
@@ -36,7 +36,7 @@ repos:
     hooks:
       - id: prettier
         name: Prettier check
-        entry: just format-check
+        entry: pnpm --dir webapp exec prettier --check . ../docs/source ../docs/mkdocs.yml ../README.md ../compose.yaml ../.github ../.pre-commit-config.yaml ../.vscode/extensions.json --config .prettierrc.json
         language: system
         pass_filenames: false
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css]

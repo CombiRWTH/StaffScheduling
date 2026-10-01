@@ -35,9 +35,9 @@ jobs:
 
       - name: 📦 Install Dependencies
         run: |
-          uv sync --frozen --group docs --python "$(cat ../api/.python-version)"
+          uv sync --frozen --python "$(cat ../api/.python-version)"
 
       - name: 🚀 Build & Upload Documentation to GitHub Pages
         run: |
-          uv run --frozen --group docs mkdocs build --strict
-          uv run --frozen --group docs mkdocs gh-deploy --force
+          uv run --frozen mkdocs build --strict
+          uv run --frozen mkdocs gh-deploy --force

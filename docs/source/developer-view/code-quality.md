@@ -1,13 +1,12 @@
 # Code quality
 
-Run the root `just` recipes from the repository root. API dependencies and tools belong to `api/`; Node dependencies, Prettier configuration and tools belong to `webapp/`. MkDocs and root hook tooling have an independent uv manifest/lock under `docs/`. Commit both service locks and the documentation tooling lock, and install them frozen. Use Conventional Commits.
+Run the root `just` recipes from the repository root. API dependencies and tools belong to `api/`; Node dependencies, Prettier configuration and tools belong to `webapp/`. MkDocs has an independent uv manifest/lock under `docs/`. Pre-commit is a shared development tool installed with the API dev group. Commit both service locks and the documentation tooling lock, and install them frozen. Use Conventional Commits.
 
 ## Commands
 
 | Recipe                          | Behavior                                                                                            |
 | ------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `just setup`                    | Three frozen installs and Git hooks. Existing configuration and secrets are preserved.              |
-| `just sync`                     | Frozen documentation/tooling, API and webapp installs; never updates locks.                         |
+| `just install`                  | Frozen API/webapp installs and Git hooks. Existing configuration and secrets are preserved.         |
 | `just format`                   | Ruff formats Python; Prettier formats supported webapp and root documentation/configuration files.  |
 | `just format-check`             | Non-mutating Ruff and Prettier checks.                                                              |
 | `just lint`                     | Ruff and Next core web vitals/TypeScript ESLint rules.                                              |
@@ -21,7 +20,7 @@ Run the root `just` recipes from the repository root. API dependencies and tools
 
 Use `just test -m timeoffice` only for explicitly authorized external-database tests; none currently exist. Run `pnpm run build` from `webapp/` when checking a production build.
 
-Fast hooks check formatting, Ruff and file/private-key hygiene. Hooks use the same pinned Ruff/uv versions as local installs. Use `just format` before committing. Full checks belong outside the commit hook. EditorConfig, Ruff (Python width 120, four spaces) and Prettier (width 120, two spaces) define shared editor settings; personal extensions are optional.
+`just install` installs the Git pre-commit hook from the API development environment. Hooks check service locks without updating them, Ruff, Prettier and file/private-key hygiene. The Prettier hook uses the webapp configuration directly; Python formatting is handled by the Ruff hook. Hooks use the same pinned Ruff/uv versions as local installs. Use `just format` before committing. Full checks belong outside the commit hook. EditorConfig, Ruff (Python width 120, four spaces) and Prettier (width 120, two spaces) define shared editor settings; personal extensions are optional.
 
 ## Runtime and upgrade policy
 
@@ -32,7 +31,7 @@ Fast hooks check formatting, Ruff and file/private-key hygiene. Hooks use the sa
 | uv                      | 0.12.21 is enforced in both uv manifests and matched by Docker/hooks/workflows.      |
 | pnpm                    | `webapp/package.json`: 12.8.1.                                                       |
 | just                    | 1.58.0, tested; documented prerequisite without an unused version file.              |
-| Ruff / Pyright / pytest | API manifest and lock: 0.16.9 / 1.1.414 / 9.1.1.                                     |
+| Ruff / Pyright / pytest | API manifest and lock: 0.16.10 / 1.1.414 / 9.1.1.                                    |
 | Prettier / React Doctor | Webapp manifest and lock: 3.9.9 / 0.9.14.                                            |
 | TypeScript / ESLint     | 6.0.3 / 9.39.5, compatibility exceptions below.                                      |
 
@@ -41,6 +40,8 @@ Use newest stable releases when upgrading, then verify frozen installs, lint, ty
 - Python 3.14.8: uv had no macOS arm64 managed download, and the matching official `python:3.14.8-slim-bookworm` image was unavailable. Revisit when both artifacts exist.
 - TypeScript 7.0.2: Next's TypeScript ESLint parser crashed reading `ModuleKind.Cjs`. Its declared support is below 6.1; 6.0.3 passes lint initialization.
 - ESLint 10.11.0: Next's React plugin crashed calling the removed `context.getFilename` API. 9.39.5 passes the same check. Upgrade when the Next plugin stack supports ESLint 10.
+
+The effective Next.js core web vitals/TypeScript configuration was checked with eslint-config-prettier’s audit CLI: no enabled formatting conflicts were found, so no additional lint configuration dependency is needed. See [Next.js ESLint guidance](https://nextjs.org/docs/app/api-reference/config/eslint).
 
 The pnpm lock was imported from npm before upgrading dependencies. pnpm 12 requires `pnpm-workspace.yaml` for project settings even for a single package; this service-local file approves only `sharp` and `unrs-resolver` build scripts and declares no additional packages. There is no root Node workspace. See the [pnpm settings reference](https://pnpm.io/settings).
 
@@ -70,6 +71,6 @@ Python 3.14 and Node 26 are retained because frozen installs, API typing, offlin
 
 [Node 26 is Current; Node 24 is LTS](https://nodejs.org/en/about/previous-releases). Current is acceptable for this bounded student project after compatibility checks. Prefer an LTS line for long-lived production use. There is no observed compatibility reason to revert Python to 3.12.
 
-Dockerfiles use official Debian slim Python/Node images and readable version tags, frozen locks, cached dependency layers before source, exec-form startup and native development commands. The API includes Microsoft's ODBC driver and the development tools; unused compilers were removed. One development Compose file is sufficient. A production deployment would need its own build/runtime requirements, rather than an unused production stage here. These choices follow [Docker build guidance](https://docs.docker.com/build/building/best-practices/) and [FastAPI container guidance](https://fastapi.tiangolo.com/deployment/docker/).
+Dockerfiles use official Debian slim Python/Node images and readable version tags, frozen locks, cached dependency layers before source, exec-form startup and native development commands. The API includes Microsoft's ODBC driver and the development tools; unused compilers were removed. One development Compose file for API and webapp is sufficient. Documentation uses native MkDocs. A production deployment would need its own build/runtime requirements, rather than an unused production stage here. These choices follow [Docker build guidance](https://docs.docker.com/build/building/best-practices/) and [FastAPI container guidance](https://fastapi.tiangolo.com/deployment/docker/).
 
-One root `.gitignore` covers generated files and secrets across services. Each build context has its own `.dockerignore`; Docker does not apply a root ignore file to service-local contexts. Prettier's service-local ignore file serves its separate formatting purpose.
+One root `.gitignore` covers generated files and secrets across services. Each service build context has its own `.dockerignore`; Docker does not apply a root ignore file to service-local contexts. Prettier's service-local ignore file serves its separate formatting purpose.

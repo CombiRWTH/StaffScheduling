@@ -23,7 +23,7 @@ Startup requires Docker with Compose and just. One root Compose file provides na
 
 ## Development
 
-For optional native development and quality checks, install the pinned runtimes, uv and pnpm, then run `just setup`. Use `just api-dev` and `just webapp-dev` in separate terminals.
+For optional native development and quality checks, install the pinned runtimes, uv and pnpm, then run `just install`. Use `just api-dev` and `just webapp-dev` in separate terminals.
 
 ```sh
 just format-check
@@ -36,4 +36,4 @@ just docs-check
 
 `just test` includes all offline solver/service integration tests. Only actual external-database tests use the separate `timeoffice` marker. See [code quality](docs/source/developer-view/code-quality.md) for the unified `just check` gate, compatibility exceptions and known failures.
 
-[Online documentation](https://combirwth.github.io/StaffScheduling/) is published from main. Run `just docs` to view the working documentation locally.
+[Online documentation](https://combirwth.github.io/StaffScheduling/) is published from main. Run `just docs` to view the working documentation locally using uv and Python; its dependencies stay in `docs/`.
