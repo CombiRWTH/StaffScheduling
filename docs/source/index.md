@@ -4,16 +4,16 @@ A hospital planning application combining a Next.js webapp, a FastAPI API and an
 
 ## Find what you need
 
-| You are here to…                       | Start here                                            | What you will find                                                    |
-| -------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------- |
-| Try the application                    | [Quickstart](getting-started/quickstart.md)           | Docker, the password file and one startup command                     |
-| Set up a machine                       | [Installation](getting-started/installation.md)       | Prerequisites, configuration, network access and troubleshooting      |
-| Plan a roster                          | [User guide](user-guide/index.md)                     | The intended task sequence, with unfinished procedures clearly marked |
-| Understand the system                  | [Architecture](architecture/index.md)                 | Code map, data flow, domain and integration contracts                 |
-| Change the code                        | [Development checks](development/checks.md)           | Tooling, quality gates and where tests/docs belong                    |
-| Assess what has been proved            | [Evidence and limitations](validation/index.md)       | Executed checks, current failures and unverified behavior             |
-| Inspect or reproduce example results   | [Examples](validation/examples.md)                    | An outline until accepted files and reproduction checks exist         |
-| Examine the reasoning behind the model | [Reasoning and requirements](validation/reasoning.md) | An outline for sourced rules, choices and evaluation                  |
+| You are here to…                       | Start here                                            | What you will find                                                |
+| -------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------- |
+| Try the application                    | [Quickstart](getting-started/quickstart.md)           | Docker, the password file and one startup command                 |
+| Set up a machine                       | [Installation](getting-started/installation.md)       | Prerequisites, configuration, network access and troubleshooting  |
+| Use the application                    | [Use guide](user-guide/index.md)                      | Staff-admin operations, with unfinished procedures clearly marked |
+| Understand the system                  | [Architecture](architecture/index.md)                 | Code map, data flow, domain and integration contracts             |
+| Change the code                        | [Development checks](development/checks.md)           | Tooling, quality gates and where tests/docs belong                |
+| Assess what has been proved            | [Evidence and limitations](validation/index.md)       | Executed checks, current failures and unverified behavior         |
+| Inspect or reproduce example results   | [Examples](validation/examples.md)                    | An outline until accepted files and reproduction checks exist     |
+| Examine the reasoning behind the model | [Reasoning and requirements](validation/reasoning.md) | An outline for sourced rules, choices and evaluation              |
 
 ## What is ready to try
 

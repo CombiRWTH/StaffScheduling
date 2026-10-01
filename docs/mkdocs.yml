@@ -12,11 +12,11 @@ nav:
       - Installation: getting-started/installation.md
   - Use the app:
       - user-guide/index.md
-      - Selection and employees: user-guide/selection.md
-      - Monthly configuration: user-guide/configuration.md
-      - Generation and jobs: user-guide/generation.md
-      - Review and files: user-guide/review.md
-      - Publication and clear: user-guide/publication.md
+      - Select and inspect: user-guide/selection.md
+      - Configure monthly inputs: user-guide/configuration.md
+      - Generate schedules: user-guide/generation.md
+      - Review, import and export: user-guide/review.md
+      - Publish and clear: user-guide/publication.md
   - Understand the system:
       - architecture/index.md
       - Domain model: architecture/domain.md

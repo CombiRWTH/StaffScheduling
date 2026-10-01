@@ -1,10 +1,10 @@
-# User guide
+# Use the application
 
 Start through the [quickstart](../getting-started/quickstart.md), then open <http://localhost:3000>. Service startup has been checked; the complete staff-admin planning workflow has not. Consult [current limitations](../validation/index.md) before treating visible controls or generated files as supported operations.
 
-## Who this guide serves
+## What you can use this guide for
 
-For staff administrators who need to select a planning scope, inspect inputs, generate a roster, review it and explicitly publish it. The pages below reserve that task sequence; they will contain steps, expected outcomes and recovery paths after the workflows pass acceptance.
+For staff administrators using the application: choose the month and units, inspect employees, configure staffing and restrictions, generate schedules, review or exchange files, then publish or clear assignments. Each procedure will explain what to do, what result to expect and how to recover from a failure. These procedures remain outlines until their acceptance checks pass.
 
 ## Planning concepts
 
@@ -12,7 +12,7 @@ The backend models a calendar month, planning units, dated staffing demand, empl
 
 The imported UI still discovers cases in `data/cases/`. A fresh checkout has no case files. Its controls and compatibility formats are being reconciled with the backend; an empty selector is not proof that TimeOffice has no planning units.
 
-## Workflow documentation
+## Find an operation
 
 These pages are outlines to fill as each operation is verified. Their headings do not establish feature support.
 

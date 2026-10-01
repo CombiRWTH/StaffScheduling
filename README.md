@@ -18,7 +18,7 @@ Health checks establish service liveness. Database operations need network/crede
 
 ## Documentation and development
 
-- [User guide](docs/source/user-guide/index.md)
+- [Use the application](docs/source/user-guide/index.md)
 - [Architecture and contracts](docs/source/architecture/index.md)
 - [Checks and dependency maintenance](docs/source/development/checks.md)
 - [Documentation maintenance](docs/source/development/documentation.md), [reasoning outline](docs/source/validation/reasoning.md) and [example reproduction outline](docs/source/validation/examples.md)
