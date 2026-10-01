@@ -4,21 +4,25 @@ Run the root `just` recipes from the repository root. API dependencies and tools
 
 ## Commands
 
-| Recipe                          | Behavior                                                                                            |
-| ------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `just install`                  | Frozen API/webapp installs and Git hooks. Existing configuration and secrets are preserved.         |
-| `just format`                   | Ruff formats Python; Prettier formats supported webapp and root documentation/configuration files.  |
-| `just format-check`             | Non-mutating Ruff and Prettier checks.                                                              |
-| `just lint`                     | Ruff and Next core web vitals/TypeScript ESLint rules.                                              |
-| `just quality`                  | Full local React Doctor scan; errors fail, warnings remain visible.                                 |
-| `just typecheck`                | Strict Pyright and explicit strict `tsc --noEmit`.                                                  |
-| `just test [arguments...]`      | All offline tests, including solver and adapter tests using fakes. Arguments pass to pytest.        |
-| `just docs` / `just docs-check` | Unified MkDocs server / strict build.                                                               |
-| `just check`                    | Formatting, lint, quality, types, offline tests and strict docs. Stops on the first failing recipe. |
+| Recipe                          | Behavior                                                                                                 |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `just install`                  | Frozen API/webapp installs and Git hooks. Existing configuration and secrets are preserved.              |
+| `just format`                   | Ruff formats Python; Prettier formats supported webapp and root documentation/configuration files.       |
+| `just format-check`             | Non-mutating Ruff and Prettier checks.                                                                   |
+| `just lint`                     | Ruff and Next core web vitals/TypeScript ESLint rules.                                                   |
+| `just quality`                  | Full local React Doctor scan; errors fail, warnings remain visible.                                      |
+| `just typecheck`                | Strict Pyright and explicit strict `tsc --noEmit`.                                                       |
+| `just test [arguments...]`      | All offline tests, including solver and adapter tests using fakes. Arguments pass to pytest.             |
+| `just docs` / `just docs-check` | Unified MkDocs server / strict build.                                                                    |
+| `just build`                    | Native production webapp build, including its type gate.                                                 |
+| `just smoke`                    | Isolated Compose image builds, HTTP connectivity, failure recovery and output persistence.               |
+| `just connectivity`             | Explicit read-only external connection diagnostic in the running API container.                          |
+| `just test-timeoffice`          | External-only tests; currently exits 5 because none exist.                                               |
+| `just check`                    | Runs format, lint, quality, types, offline tests, build, strict docs and smoke; fails if any gate fails. |
 
-`just run` builds and starts both hot-reloading services through one root Compose file. The CI definitions cover independent offline gates; connected diagnostics and hosted CI execution remain unverified. Checks never rewrite source or refresh locks; builds and pytest may create ignored output.
+`just run` builds and starts both hot-reloading services through one root Compose file. The CI definitions cover independent offline gates. Diagnostic failure paths are verified; successful external connectivity and hosted CI execution remain pending. `just smoke` requires Docker Compose, curl and a POSIX shell; `just check` also requires the native tools. Checks never rewrite source or refresh locks; builds and pytest may create ignored output.
 
-Use `just test -m timeoffice` only for explicitly authorized external-database tests; none currently exist. Run `pnpm run build` from `webapp/` when checking a production build.
+Use `just test-timeoffice` only for explicitly authorized external-database tests; none currently exist. `just connectivity` checks basic access without calling application-table readers. See [testing](testing.md) for evidence and boundaries.
 
 `just install` installs the Git pre-commit hook from the API development environment. Hooks check service locks without updating them, Ruff, Prettier, merge-conflict markers and file/private-key hygiene. EOF/trailing-whitespace hooks can fix files; restage their corrections before committing. Follow the [native prerequisites](../getting-started/installation.md#optional-native-developer-setup) before installing hooks. Debug-statement detection explicitly uses `python3.14` so it can parse the API’s modern Python syntax, using pre-commit’s [language version override](https://pre-commit.com/#overriding-language-version). The Prettier hook runs the webapp’s locked Prettier binary through Node and checks only the selected files; Python formatting is handled by the Ruff hook. Hooks use the same pinned Ruff/uv versions as local installs. Use `just format` before committing. Run the full hook suite with `uv run --project api --frozen pre-commit run --all-files`. Full checks belong outside the commit hook. EditorConfig, Ruff (Python width 120, four spaces) and Prettier (width 120, two spaces) define shared editor settings; personal extensions are optional.
 
