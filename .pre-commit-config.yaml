@@ -21,6 +21,7 @@ repos:
         files: ^docs/mkdocs\.yml$
       - id: detect-private-key
       - id: debug-statements
+        language_version: python3.14
       - id: end-of-file-fixer
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]

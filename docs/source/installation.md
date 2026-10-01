@@ -18,7 +18,17 @@ The webapp reaches the API through the server-side `SOLVER_API_URL=http://api:80
 
 ## IDE support and dependency maintenance
 
-Install the versions declared in `api/.python-version` and `webapp/package.json`, plus uv 0.12.21. `just install` installs frozen API and webapp dependencies and Git hooks. It preserves existing configuration and secret files.
+Install uv 0.12.21 and the Node version declared in `webapp/package.json`. Install the pinned Python and pnpm before running `just install`:
+
+```sh
+uv python install "$(cat api/.python-version)"
+npm install --global pnpm@12.8.1 --allow-scripts=pnpm
+python3.14 --version
+pnpm --version
+just install
+```
+
+Ensure uv’s Python executable directory (`~/.local/bin` by default) and npm’s global executable directory are on `PATH`, including in the terminal or editor that commits. `python3.14` must report the version in `api/.python-version`; pnpm must report the `packageManager` version in `webapp/package.json`. This follows the [pnpm installation guide](https://pnpm.io/installation); npm 12 requires explicit approval of pnpm’s native installation scripts. `just install` installs frozen API and webapp dependencies and Git hooks. It preserves existing configuration and secret files.
 
 Start development services with `just run`; Compose provides both hot-reloading servers. No host service launch recipes are provided.
 
