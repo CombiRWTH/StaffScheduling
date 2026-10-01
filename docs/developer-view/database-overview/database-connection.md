@@ -51,17 +51,9 @@ flowchart LR
 
 ### Environment Configuration (`.env`)
 
-Create a `.env` file in the project root (from `.env.template`) containing your connection parameters:
+Follow the shared [installation guide](../../installation.md#install) to copy `api/.env.template` to ignored `api/.env` and supply the authorized TimeOffice connection settings.
 
-```env
-DB_DRIVER="ODBC Driver 18 for SQL Server"
-DB_SERVER=your.database.server
-DB_NAME=your_database_name
-DB_USER=your_username
-DB_PASSWORD=your_password
-```
-
-*(Note: Never commit `.env` containing production hospital credentials to git. The `.gitignore` file excludes `.env` by default).*
+The API loads `.env` relative to its working directory, `api/`. Root commands such as `just api-dev` select that directory automatically; run direct API commands from `api/`. Keep credentials untracked.
 
 ### SQLAlchemy Engine Creation
 

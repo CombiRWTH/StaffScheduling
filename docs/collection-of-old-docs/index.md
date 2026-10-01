@@ -5,6 +5,7 @@ These materials describe earlier implementations. Follow the [current installati
 - [Original concepts](concepts/index.md), [constraints](concepts/constraints.md) and [objectives](concepts/objectives.md).
 - [Original setup](getting-started/index.md).
 - [Original constraint data format](ConstraintDataFormat.md) and [output format](output_format.md).
+- [Former VM deployment](vm-setup.md).
 - [Former frontend integration](webapp/solver-integration.md) and [troubleshooting](webapp/troubleshooting.md).
 
 Images and the original constraint PDF are retained alongside their source references.
