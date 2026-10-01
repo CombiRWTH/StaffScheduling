@@ -99,3 +99,36 @@ test("unsupported areas are visible but not navigable", async ({ page }) => {
   await expect(page.getByRole("navigation").getByRole("link")).toHaveCount(1);
   await expect(page.getByText("Noch nicht unterstützt", { exact: true })).toHaveCount(2);
 });
+
+test("year entry keeps the month and malformed URLs ask for a selection", async ({ page }) => {
+  await page.goto("/employees?month=2026-01&stations=101");
+  await expect(page.getByText("Example Team Two", { exact: true })).toBeVisible();
+  const year = page.getByRole("spinbutton", { name: "Jahr" });
+  await year.fill("2025");
+  await year.press("Enter");
+  await expect(page).toHaveURL(/month=2025-01/);
+  await year.fill("1999");
+  await year.press("Enter");
+  await expect(year).toHaveValue("2025");
+
+  for (const query of ["month=2026-13&stations=101", "month=2026-01&stations=abc", "stations=101"]) {
+    await page.goto(`/employees?${query}`);
+    await expect(
+      page.getByText("Bitte einen Planungsmonat und mindestens eine Station auswählen.", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("table")).toHaveCount(0);
+  }
+});
+
+test("mobile navigation opens, keeps the selection and closes", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/?month=2026-01&stations=101");
+  await page.getByRole("button", { name: "Navigation öffnen" }).click();
+  const link = page.getByRole("navigation").getByRole("link", { name: "Mitarbeiter" });
+  await expect(link).toHaveAttribute("href", "/employees?month=2026-01&stations=101");
+  await expect(page.locator('nav [aria-disabled="true"]').filter({ visible: true })).toHaveCount(7);
+  await link.click();
+  await expect(page).toHaveURL(/\/employees\?month=2026-01&stations=101/);
+  await expect(page.getByRole("button", { name: "Navigation öffnen" })).toBeVisible();
+  await expect(page.getByRole("navigation")).toHaveCount(0);
+});

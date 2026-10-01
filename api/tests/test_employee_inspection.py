@@ -136,3 +136,75 @@ def test_declared_evidence_is_validated_before_any_employee_is_returned(defect: 
     source.connection.execute.side_effect = malformed_execute
     with pytest.raises(ValueError, match="outside|Duplicate|match|origin"):
         source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=PlanningMonth(year=2026, month=1))
+
+
+def with_rows(source: InspectionSource, table: str, change: Any) -> None:
+    """Edit the fictional rows one query returns before the adapter translates them."""
+    previous = source.connection.execute.side_effect
+
+    def execute(query: Any, params: dict[str, Any]) -> MagicMock:
+        result = previous(query, params)
+        rows = result.mappings.return_value.all.return_value
+        if table in str(query) and rows:
+            change(rows)
+        return result
+
+    source.connection.execute.side_effect = execute
+
+
+def test_source_codes_are_trimmed_and_ignored_absences_are_dropped() -> None:
+    source = InspectionSource()
+
+    def pad(rows: list[dict[str, Any]]) -> None:
+        for row in rows:
+            row["membership_profession_code"] = f" {row['membership_profession_code']} "
+
+    with_rows(source, "TPlanungseinheitenPersonal", pad)
+    with_rows(source, "TPlanPersonalKommtGeht", _set("resolved_absence_code", "FR"))
+    result = source.service.inspect_employees(
+        planning_unit_ids=(101, 102), planning_month=PlanningMonth(year=2026, month=1)
+    )
+
+    assert result.employees[0].memberships[0].staff_level == StaffLevel.MFA
+    assert result.employees[0].hard_restrictions == ()
+
+
+def _set(column: str, value: Any, index: int = 0) -> Any:
+    def change(rows: list[dict[str, Any]]) -> None:
+        rows[index][column] = value
+
+    return change
+
+
+@pytest.mark.parametrize(
+    ("table", "change", "message"),
+    [
+        ("TPlanPersonalKommtGeht", _set("resolved_absence_code", "XX"), "Unmapped TimeOffice absence code"),
+        ("TPlanungseinheitenPersonal", _set("membership_profession_code", "00000-000"), "No qualification mapping"),
+        ("TPersonal per", _set("employee_profession_code", None), "No qualification mapping"),
+        ("JOIN TPlan p", _set("plan_planning_unit_id", 999), "different planning unit"),
+        ("TPlanungseinheitenPersonal", _set("is_home", False, index=3), "home origin"),
+        ("FROM TPlanungseinheiten pe", _set("planning_unit_code", "   "), "display names"),
+    ],
+    ids=[
+        "unmapped_absence",
+        "unmapped_membership_profession",
+        "missing_employee_profession",
+        "foreign_plan",
+        "replacement_only_origin",
+        "blank_unit_name",
+    ],
+)
+def test_untranslatable_source_facts_fail_the_whole_inspection(table: str, change: Any, message: str) -> None:
+    source = InspectionSource()
+    with_rows(source, table, change)
+
+    with pytest.raises(ValueError, match=message):
+        source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=PlanningMonth(year=2026, month=1))
+
+
+def test_selected_station_without_target_plan_fails() -> None:
+    source = InspectionSource()
+
+    with pytest.raises(ValueError, match="No TimeOffice target plan"):
+        source.service.inspect_employees(planning_unit_ids=(101,), planning_month=PlanningMonth(year=2026, month=2))

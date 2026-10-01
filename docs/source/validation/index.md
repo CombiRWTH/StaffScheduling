@@ -22,7 +22,7 @@ No publication or other database write path exists: the legacy publication endpo
 
 ## Quality gates
 
-The latest executed offline suite reports **104 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
+The latest executed offline suite reports **114 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
 
 Webapp strict TypeScript and the native production build pass. The three controlled browser scenarios (selection/inspection, unavailable/incomplete reads, unsupported areas) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
 
