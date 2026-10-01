@@ -38,6 +38,7 @@ async def create_solve_task(
     command = SolveCommand(
         planning_unit_ids=request.planning_unit_ids,
         planning_month=request.planning_month(),
+        timeout=request.timeout,
     )
 
     if solve_lock.locked():
@@ -55,18 +56,20 @@ async def create_solve_task(
 
     job = job_store.create(command)
     logger.info(
-        "Solve job accepted: job_id=%s planning_units=%s planning_month=%s",
+        "Solve job accepted: job_id=%s planning_units=%s planning_month=%s timeout=%s",
         job.job_id,
         command.planning_unit_ids,
         command.planning_month.label,
+        command.timeout,
     )
 
     def kernel(command: SolveCommand) -> Solution:
         logger.info(
-            "Fetching scheduling dataset for solve job: job_id=%s planning_units=%s planning_month=%s",
+            "Fetching scheduling dataset for solve job: job_id=%s planning_units=%s planning_month=%s timeout=%s",
             job.job_id,
             command.planning_unit_ids,
             command.planning_month.label,
+            command.timeout,
         )
 
         dataset = timeoffice.fetch_dataset(
@@ -75,7 +78,7 @@ async def create_solve_task(
         )
 
         logger.info("Solving scheduling dataset for solve job: job_id=%s", job.job_id)
-        solution = solver.solve(dataset)
+        solution = solver.solve(dataset, timeout=command.timeout)
 
         start_date = command.planning_month.start.isoformat()
         end_date = command.planning_month.end.isoformat()

@@ -6,6 +6,19 @@ title: Staff Scheduling
 
 <h1>Staff Scheduling</h1>
 
+<p>Automatic staff scheduling powered by constraint solving — from raw shift data to a fair, demand-fitting plan.</p>
+
+<p>
+<a class="md-button md-button--primary" href="user-view/">User View</a>
+<a class="md-button" href="developer-view/">Developer View</a>
+</p>
+
+</div>
+
+<div class="hero">
+
+<h1>Staff Scheduling</h1>
+
 <p>
 <a class="md-button md-button--primary" href="user-view/">User Guide</a>
 <a class="md-button" href="developer-view/">Developer Guide</a>
