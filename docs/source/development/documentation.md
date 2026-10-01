@@ -28,7 +28,7 @@ Do not restore legacy commands or formats without checking them against the curr
 
 Edit `docs/source/`. Add or remove the corresponding entry in `docs/mkdocs.yml`; every published Markdown page belongs in navigation. Preserve established paths when practical and update inbound links when moving a page. Links between pages use paths relative to the source page, including `.md`; MkDocs builds the site routes. Check fragments as well as file targets. See the [MkDocs navigation configuration](https://www.mkdocs.org/user-guide/configuration/#nav) and [Material section indexes](https://squidfunk.github.io/mkdocs-material/setup/setting-up-navigation/#section-index-pages) for the native routing settings.
 
-Run `just docs-check` for a strict build and `just docs` to inspect navigation/search locally. Check README links separately because README is rendered by GitHub. Generated `docs/site/` remains untracked. Strict builds check documentation references; they do not execute setup commands or establish feature acceptance.
+Run `just docs-check` for a strict build and `just docs` to inspect navigation/search locally. Check README links separately because README is rendered by GitHub. Generated `docs/site/` remains untracked. Strict builds check documentation references, including missing heading anchors: `validation.links.anchors: warn` makes broken fragments fail the gate. README targets and external URLs still need separate checks. Builds do not execute setup commands or establish feature acceptance.
 
 ## Documentation dependencies
 
