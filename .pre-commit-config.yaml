@@ -19,6 +19,8 @@ repos:
       - id: check-yaml
         args: [--unsafe]
         files: ^docs/mkdocs\.yml$
+      - id: check-merge-conflict
+        args: [--assume-in-merge]
       - id: detect-private-key
       - id: debug-statements
         language_version: python3.14
@@ -37,8 +39,7 @@ repos:
     hooks:
       - id: prettier
         name: Prettier check
-        entry: pnpm --dir webapp exec prettier --check . ../docs/source ../docs/mkdocs.yml ../README.md ../compose.yaml ../.github ../.pre-commit-config.yaml ../.vscode/extensions.json --config .prettierrc.json
+        entry: node webapp/node_modules/prettier/bin/prettier.cjs --check --config webapp/.prettierrc.json --ignore-path webapp/.prettierignore
         language: system
-        pass_filenames: false
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css]
         exclude: ^(api/|webapp/pnpm-lock.yaml$)

@@ -105,15 +105,15 @@ uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs se
 
 ## Troubleshooting
 
-| Symptom                                           | Check or action                                                                                                 |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Docker daemon unavailable                         | Start Docker Desktop/Engine; verify `docker version`.                                                           |
-| `docker compose` unavailable or `--wait` unknown  | Install/update the Compose plugin using Docker's installation guide.                                            |
-| Password file missing / settings validation error | Check the exact `.secrets/db_password` path and root `.env`; inspect `docker compose logs api`.                 |
-| Port 3000 or 8000 already allocated               | Stop the conflicting process or previous Compose instance, then retry.                                          |
-| Build/download failure                            | Check internet/proxy access and the first failing build step; retry the startup command.                        |
-| Container unhealthy                               | Inspect `docker compose ps` and `docker compose logs api webapp`; health checks cover liveness only.            |
-| Healthy API, failing employee/configuration query | Check VPN/network, server/database/user/password and SQL permissions; startup did not test these.               |
-| Missing route or empty case/schedule selector     | Consult [limitations](limitations.md); removed case files and integration gaps are not an installation failure. |
-| Native hook cannot find `python3.14` or pnpm      | Complete native prerequisites and correct the committing terminal/editor's `PATH`; rerun `just install`.        |
-| Type/test gate fails after installation           | Compare the [known failing checks](limitations.md#quality-gates); do not bypass the gate.                       |
+| Symptom                                                    | Check or action                                                                                                 |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Docker daemon unavailable                                  | Start Docker Desktop/Engine; verify `docker version`.                                                           |
+| `docker compose` unavailable or `--wait` unknown           | Install/update the Compose plugin using Docker's installation guide.                                            |
+| Password file missing / settings validation error          | Check the exact `.secrets/db_password` path and root `.env`; inspect `docker compose logs api`.                 |
+| Port 3000 or 8000 already allocated                        | Stop the conflicting process or previous Compose instance, then retry.                                          |
+| Build/download failure                                     | Check internet/proxy access and the first failing build step; retry the startup command.                        |
+| Container unhealthy                                        | Inspect `docker compose ps` and `docker compose logs api webapp`; health checks cover liveness only.            |
+| Healthy API, failing employee/configuration query          | Check VPN/network, server/database/user/password and SQL permissions; startup did not test these.               |
+| Missing route or empty case/schedule selector              | Consult [limitations](limitations.md); removed case files and integration gaps are not an installation failure. |
+| Native install/check/hook cannot find Python, Node or pnpm | Complete native prerequisites and correct the committing terminal/editor's `PATH`; rerun `just install`.        |
+| Type/test gate fails after installation                    | Compare the [known failing checks](limitations.md#quality-gates); do not bypass the gate.                       |
