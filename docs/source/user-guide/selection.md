@@ -8,7 +8,7 @@ Return to the [documentation overview](index.md).
 
 1. Start both services as described in [installation](../getting-started/installation.md), then open <http://localhost:3000>.
 2. In the planning selection beside the page title, choose the month and year. Without a month in the URL, January of the current year is selected. Planning always covers one full calendar month. The station list is loaded from the backend for that month, using actual display names. A station requires exactly one configured monthly target plan; plan/status IDs stay inside the adapter.
-3. Open the **Stationen** list and tick one or more stations; the button names the selection. Then open **Mitarbeiter**. The URL carries `month=YYYY-MM&stations=ID,ID`; the selection is retained across navigation. A pool is context, never a selectable demand destination.
+3. Open the **Stationen** list and tick one or more stations; the button names the selection. Then open **Mitarbeiter**; the arrow before its title returns to the overview with the same selection. The URL carries `month=YYYY-MM&stations=ID,ID`; the selection is retained across navigation. A pool is context, never a selectable demand destination.
 4. Use the refresh button (**Stationen aktualisieren**) to reload stations and the current page. On a month change, still-available stations remain selected; stations without a target in the new month are removed.
 
 Changing month/stations replaces the displayed inspection, including filters/details. While the next inspection loads, a loading message replaces the old table. No local case files or successful old-scope results substitute for unavailable source data. Employee inspection is independent of the retired workflow's case lock.

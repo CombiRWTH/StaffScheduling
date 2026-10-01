@@ -95,6 +95,14 @@ test("unavailable and incomplete reads are useful errors with no partial employe
   await expect(page.getByRole("table")).toHaveCount(0);
 });
 
+test("a subpage links back to the overview with the selection kept", async ({ page }) => {
+  await page.goto("/employees?month=2026-01&stations=101");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mitarbeiter");
+  await page.getByRole("link", { name: "Zurück zu Übersicht" }).click();
+  await expect(page).toHaveURL("/?month=2026-01&stations=101");
+  await expect(page.getByRole("link", { name: /^Zurück zu/ })).toHaveCount(0);
+});
+
 test("unsupported areas are visible but not navigable", async ({ page }) => {
   await page.goto("/");
   const unsupported = page.locator('nav [aria-disabled="true"]');

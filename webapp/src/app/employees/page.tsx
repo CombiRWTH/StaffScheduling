@@ -16,6 +16,7 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
     <div className="py-6">
       <PageHeader
         title="Mitarbeiter"
+        parent={{ href: "/", label: "Übersicht" }}
         description="Mitarbeiter der gewählten Stationen und des zugehörigen Pools, nur lesend."
         scope={scope}
       />
