@@ -21,7 +21,7 @@ class SolverService:
         self._settings = settings
         self._model_builder = model_builder
 
-    def solve(self, dataset: SchedulingDataset) -> Solution:
+    def solve(self, dataset: SchedulingDataset, timeout: float | None = None) -> Solution:
         build_result = self._build_model(dataset)
         ctx = build_result.ctx
 
@@ -35,11 +35,12 @@ class SolverService:
                 audit=AuditReport(),
             )
 
-        solver = self._create_solver()
+        max_time_seconds = timeout if timeout is not None else self._settings.solver_max_time_seconds
+        solver = self._create_solver(max_time_seconds)
 
         logger.info(
             "Solving CP-SAT model: max_time_seconds=%s search_workers=%s random_seed=%s",
-            self._settings.solver_max_time_seconds,
+            max_time_seconds,
             self._settings.solver_num_search_workers,
             self._settings.solver_random_seed,
         )
@@ -140,10 +141,10 @@ class SolverService:
 
         return inspection
 
-    def _create_solver(self) -> cp_model.CpSolver:
+    def _create_solver(self, max_time_seconds: float) -> cp_model.CpSolver:
         solver = cp_model.CpSolver()
 
-        solver.parameters.max_time_in_seconds = self._settings.solver_max_time_seconds
+        solver.parameters.max_time_in_seconds = max_time_seconds
         solver.parameters.log_search_progress = self._settings.solver_log_search_progress
 
         if self._settings.solver_num_search_workers is not None:

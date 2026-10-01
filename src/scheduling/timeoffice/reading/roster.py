@@ -1,7 +1,5 @@
 from datetime import datetime
-from typing import Self
 
-from pydantic import model_validator
 from sqlalchemy import Connection, bindparam, text
 
 from scheduling.domain import PlanningMonth
@@ -17,39 +15,15 @@ class TimeOfficeRosterRow(TimeOfficeSourceRow):
     work_shift_code: CleanNullableText = None
 
     global_absence_shift_id: SourceNullableInt = None
+    global_absence_shift_code: CleanNullableText = None
+
     absence_shift_id: SourceNullableInt = None
+    absence_shift_code: CleanNullableText = None
+
     resolved_absence_shift_id: SourceNullableInt = None
     resolved_absence_code: CleanNullableText = None
 
     planning_unit_id: SourceNullableInt = None
-
-    @model_validator(mode="after")
-    def validate_row_type(self) -> Self:
-        has_work_shift = self.work_shift_id is not None
-        has_absence = self.global_absence_shift_id is not None or self.absence_shift_id is not None
-
-        if not has_work_shift and not has_absence:
-            raise ValueError(
-                "Invalid TimeOffice roster row: neither work shift nor absence is set "
-                f"for employee_id={self.employee_id}, roster_date={self.roster_date}."
-            )
-
-        return self
-
-    @model_validator(mode="after")
-    def validate_absence_references(self) -> Self:
-        if (
-            self.global_absence_shift_id is not None
-            and self.absence_shift_id is not None
-            and self.global_absence_shift_id != self.absence_shift_id
-        ):
-            raise ValueError(
-                "Conflicting TimeOffice absence references in TPlanPersonalKommtGeht: "
-                f"RefgAbw={self.global_absence_shift_id} "
-                f"RefDienstAbw={self.absence_shift_id}."
-            )
-
-        return self
 
 
 class TimeOfficeRosterReader:
@@ -76,7 +50,10 @@ class TimeOfficeRosterReader:
                 work_d.KurzBez AS work_shift_code,
 
                 pkg.RefgAbw AS global_absence_shift_id,
+                global_absence_d.KurzBez AS global_absence_shift_code,
+
                 pkg.RefDienstAbw AS absence_shift_id,
+                absence_d.KurzBez AS absence_shift_code,
 
                 COALESCE(pkg.RefgAbw, pkg.RefDienstAbw) AS resolved_absence_shift_id,
                 COALESCE(global_absence_d.KurzBez, absence_d.KurzBez) AS resolved_absence_code,
@@ -91,6 +68,7 @@ class TimeOfficeRosterReader:
                 ON absence_d.Prim = pkg.RefDienstAbw
             WHERE pkg.RefPersonal IN :employee_ids
                 AND CONVERT(date, pkg.Datum) BETWEEN :start AND :end
+                AND ISNULL(pkg.Wunschdienst, 0) = 0
                 AND (
                     pkg.RefDienste IS NOT NULL
                     OR pkg.RefgAbw IS NOT NULL
