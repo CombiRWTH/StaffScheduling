@@ -24,7 +24,7 @@ services:
 
   webapp:
     build: ./webapp
-    command: [sh, -c, "pnpm install --frozen-lockfile && pnpm run dev --hostname 0.0.0.0"]
+    command: [sh, -c, "pnpm install --frozen-lockfile && exec pnpm run dev --hostname 0.0.0.0"]
     environment:
       SOLVER_API_URL: http://api:8000
       CASES_DIR: /data/cases
