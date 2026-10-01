@@ -4,7 +4,7 @@ user-view/list-of-conditions.md:target-working-time
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/constraints/target_working_time.py"
+```python title="api/app/solver/cp_sat/constraints/target_working_time.py"
 # Enforce that total generated working minutes fall within tolerance of monthly target
 ctx.model.add(total_working_minutes <= target_max).with_name(
     f"target_time_upper_emp_{employee_id}"

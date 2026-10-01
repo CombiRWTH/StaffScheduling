@@ -2,7 +2,7 @@
 !!! note
     Configuration can be managed in two ways:
 
-    - Preferred: via the browser-based [StaffSchedulingWeb](https://julian466.github.io/StaffSchedulingWeb/) interface.
+    - Preferred: via the browser-based [webapp](../../webapp/index.md) interface.
     - Advanced/manual: by editing the JSON files in the case folder directly.
 
     For month-based cases, files are usually located in `cases/{case_id}/{MM_YYYY}/...` (for example `cases/77/11_2024/...`).
@@ -10,7 +10,7 @@
 
 This section explains which settings are available and where they are stored.
 
-If you use StaffSchedulingWeb, you can maintain these settings through forms in the UI. The solver still reads the same JSON files in this repository.
+If you use webapp, you can maintain these settings through forms in the UI. The solver still reads the same JSON files in this repository.
 
 In CLI/light workflows, you can edit these files manually.
 

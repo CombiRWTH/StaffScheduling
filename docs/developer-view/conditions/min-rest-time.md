@@ -4,7 +4,7 @@ user-view/list-of-conditions.md:min-rest-time
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/constraints/min_rest_time.py"
+```python title="api/app/solver/cp_sat/constraints/min_rest_time.py"
 # Prevent a Late shift today from being followed by an Early shift tomorrow (minimum 11-hour rest time)
 constraint = ctx.model.add(sum_late + sum_early <= 1)
 constraint.with_name(_constraint_name(employee_id, date))

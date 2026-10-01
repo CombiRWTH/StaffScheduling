@@ -43,4 +43,4 @@ Useful when working exclusively on documentation.
 
 ### 5. Next steps
 
-   Proceed to the [first-steps](/getting-started/first-steps) section to start with your project.
+   Proceed to the [first-steps](first-steps.md) section to start with your project.

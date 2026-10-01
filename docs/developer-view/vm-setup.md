@@ -32,7 +32,7 @@ Once connected to the VM:
 This executes a script at `C:\Tools\run.bat` (also available in the repository at `legacy/src/run.bat`) which:
 
 - Starts the **Staff Scheduling API** backend
-- Launches the **StaffSchedulingWeb** frontend
+- Launches the **webapp** frontend
 - Opens the solver interface in the browser for the selected month and station
 
 ---
@@ -44,7 +44,7 @@ The relevant repositories are located in:
 ```
 C:/Users/rwthadmin/Documents/
 ├── Staff Scheduling        ← This repository (Python backend + solver)
-└── Staff Scheduling Web    ← StaffSchedulingWeb (Next.js frontend)
+└── Staff Scheduling Web    ← webapp (Next.js frontend)
 ```
 
 Both should be kept up to date by pulling from GitHub when updates are released.

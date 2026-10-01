@@ -6,6 +6,8 @@ on:
     paths:
       - "mkdocs.yml"
       - "docs/**"
+      - "api/pyproject.toml"
+      - "api/uv.lock"
       - ".github/workflows/docs.yml"
 
 jobs:
@@ -21,19 +23,20 @@ jobs:
       - name: 📦 Install uv
         uses: astral-sh/setup-uv@v6
         with:
-          activate-environment: true
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "api/uv.lock"
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version-file: ".python-version"
+          python-version-file: "api/.python-version"
 
       - name: 📦 Install Dependencies
+        working-directory: api
         run: |
           uv sync --frozen --extra docs
 
       - name: 🚀 Build & Upload Documentation to GitHub Pages
+        working-directory: api
         run: |
-          uv run mkdocs gh-deploy --force
+          uv run mkdocs gh-deploy --force -f ../mkdocs.yml

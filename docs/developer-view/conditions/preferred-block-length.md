@@ -4,7 +4,7 @@ user-view/list-of-conditions.md:preferred-block-length
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/objectives/preferred_block_length.py"
+```python title="api/app/solver/cp_sat/objectives/preferred_block_length.py"
 # Penalize shift streaks that deviate from the optimal ergonomic block length (e.g. 3-4 days)
 for length, var in block_length_vars:
     deviation = abs(length - target_block_length)

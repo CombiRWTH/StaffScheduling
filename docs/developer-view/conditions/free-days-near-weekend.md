@@ -4,7 +4,7 @@ user-view/list-of-conditions.md:free-days-near-weekend
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/objectives/free_days_near_weekend.py"
+```python title="api/app/solver/cp_sat/objectives/free_days_near_weekend.py"
 # Reward free Fridays, Saturdays, Sundays, and Mondays by penalizing shifts on those days
 return (
     Penalty(

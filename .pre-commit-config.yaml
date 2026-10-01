@@ -1,10 +1,12 @@
-exclude: ^legacy/
+exclude: ^api/legacy/
 
 repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.7.2
     hooks:
       - id: uv-lock
+        args: [--directory, api]
+        files: ^api/(pyproject\.toml|uv\.lock)$
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
     hooks:
@@ -24,5 +26,7 @@ repos:
     rev: v0.11.8
     hooks:
       - id: ruff
+        files: ^api/
         args: [ --fix ]
       - id: ruff-format
+        files: ^api/

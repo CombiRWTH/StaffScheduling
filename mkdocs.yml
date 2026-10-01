@@ -6,6 +6,7 @@ repo_name: CombiRWTH/StaffScheduling
 
 nav:
   - Introduction: index.md
+  - Installation and startup: installation.md
   - User Guide:
       - User Guide: user-view/index.md
       - Problem Definition: user-view/problem-definition.md
@@ -26,9 +27,10 @@ nav:
   - Developer Guide:
       - Developer Guide: developer-view/index.md
       - API: developer-view/api.md
-      - Web Interface (StaffSchedulingWeb): developer-view/web-interface.md
+      - Web Interface: developer-view/web-interface.md
       - Google's OR Tools and SAT-Solver: developer-view/ortools.md
       - Mathematical Problem Definition: developer-view/mathematical-problem-definition.md
+      - Monorepo migration: developer-view/monorepo-migration.md
       - Codebase Overview: developer-view/codebase-overview.md
       - Domain Data Model: developer-view/domain-data-model.md
       - Getting-Started (Dev): developer-view/getting-started-dev.md
@@ -66,6 +68,14 @@ nav:
       - VM-Setup: developer-view/vm-setup.md
       - JSON Dataformats: developer-view/json-dataformat.md
 
+  - Webapp:
+      - Overview: webapp/index.md
+      - Workflow: webapp/user-guide.md
+      - Developer reference: webapp/developer-guide.md
+      - Legacy file formats: webapp/underlying_data.md
+      - Integration limits: webapp/solver-integration.md
+      - Troubleshooting: webapp/troubleshooting.md
+  - Historical documentation: collection-of-old-docs/index.md
 
 theme:
   name: material
@@ -143,6 +153,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
+          paths: [api]
           options:
             # disable by default, as it can not do attributes anyways
             inherited_members: true

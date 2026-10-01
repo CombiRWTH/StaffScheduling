@@ -4,7 +4,7 @@ user-view/list-of-conditions.md:min-num-of-cons-night-shifts
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/objectives/minimize_consecutive_night_shifts.py"
+```python title="api/app/solver/cp_sat/objectives/minimize_consecutive_night_shifts.py"
 # Penalize longer consecutive night shift blocks with exponentially increasing penalties
 for length, var in night_block_vars:
     # 2 nights: mild penalty; 4+ nights: steep exponential penalty

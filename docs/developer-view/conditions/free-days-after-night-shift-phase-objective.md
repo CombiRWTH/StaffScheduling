@@ -7,7 +7,7 @@ user-view/list-of-conditions.md:free-days-after-night-shift-phase
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/objectives/free_day_after_night_shift_phase.py"
+```python title="api/app/solver/cp_sat/objectives/free_day_after_night_shift_phase.py"
 # Penalize having only a single free day after a night shift phase (aiming for 2 full recovery days)
 ctx.model.add(penalty_var == 1).only_enforce_if([night_today, next_day_free, day_after_next_worked])
 ctx.model.add(penalty_var == 0).only_enforce_if(night_today.Not())

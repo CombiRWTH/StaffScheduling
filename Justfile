@@ -2,30 +2,31 @@ IMAGE_NAME := "staff-scheduling-api"
 PORT := "8000"
 
 # Shared Docker args for dev commands
-DOCKER_DEV_ARGS := "--env-file .env -v $PWD/src:/app/src -v $PWD/tests:/app/tests -v $PWD/found_solutions:/app/found_solutions -v $PWD/processed_solutions:/app/processed_solutions" + " -p " + PORT + ":8000"
+DOCKER_DEV_ARGS := "--env-file api/.env -v $PWD/api/app:/app/app -v $PWD/api/tests:/app/tests -v $PWD/api/found_solutions:/app/found_solutions -v $PWD/api/processed_solutions:/app/processed_solutions" + " -p " + PORT + ":8000"
 
 _default:
     just --list
 
 sync:
-    uv sync --all-extras
+    cd api && uv sync --frozen --all-extras
+    cd webapp && npm ci
 
 lint *args:
-    uv run ruff check . {{args}}
+    cd api && uv run ruff check . {{args}}
 
 format *args:
-    uv run ruff format . {{args}}
+    cd api && uv run ruff format . {{args}}
 
 typecheck *args:
-    uv run pyright . {{args}}
+    cd api && uv run pyright . {{args}}
 
 test *args:
-    uv run pytest {{args}}
+    cd api && uv run python -m pytest {{args}}
 
 check: lint typecheck test
 
 build:
-    docker build -t {{IMAGE_NAME}} .
+    docker build -t {{IMAGE_NAME}} api
 
 run:
     docker run --rm -it \
@@ -33,7 +34,7 @@ run:
         {{IMAGE_NAME}} \
         uv run \
             fastapi dev \
-            src/scheduling/api/app.py \
+            app/main.py \
             --host 0.0.0.0 --port 8000
 
 debug:
@@ -46,7 +47,7 @@ debug:
             --listen 0.0.0.0:5678 \
             --wait-for-client \
             -m fastapi dev \
-            src/scheduling/api/app.py \
+            app/main.py \
             --host 0.0.0.0 --port 8000
 
 docker-shell:
@@ -56,7 +57,7 @@ docker-shell:
         bash
 
 health:
-    curl http://localhost:{{PORT}}/health
+    curl http://localhost:{{PORT}}/status
 
 # Starts the container in the background and keeps it alive
 up:
@@ -72,3 +73,19 @@ exec *args:
 # Stops the background container
 down:
     docker stop {{IMAGE_NAME}}-dev && docker rm {{IMAGE_NAME}}-dev
+
+# Native host startup; connected Compose startup is introduced in the foundation pass.
+api-dev:
+    cd api && uv run fastapi dev app/main.py --host 127.0.0.1 --port 8000
+
+webapp-dev:
+    cd webapp && npm run dev
+
+webapp-build:
+    cd webapp && npm run build
+
+docs:
+    cd api && uv run --extra docs mkdocs serve -f ../mkdocs.yml
+
+docs-check:
+    cd api && uv run --extra docs mkdocs build --strict -f ../mkdocs.yml

@@ -30,4 +30,4 @@ You can install it following the instructions in the official documentation:
 
 ### 4. Next steps
 
-Proceed to the [Installation](/getting-started/installation) section to set up the project dependencies.
+Proceed to the [Installation](installation.md) section to set up the project dependencies.

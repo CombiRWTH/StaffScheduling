@@ -4,7 +4,7 @@ user-view/list-of-conditions.md:rotate-shifts-forwards
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/objectives/rotate_shits_foward.py"
+```python title="api/app/solver/cp_sat/objectives/rotate_shits_foward.py"
 # Penalize backward shift transitions (Late -> Early, Night -> Late)
 # and reward forward shift rotations (Early -> Late -> Night)
 for (employee_id, date), var in backward_rotation_vars.items():

@@ -23,7 +23,7 @@ Weights control the relative importance of soft optimization objectives. Since r
 
 #### Configuration in Practice
 
-* **Web Interface (StaffSchedulingWeb):** The preferred method is to adjust the weight sliders in the **Weights** section of the web interface. Changes are sent via `PUT /weights` using the frontend keys above.
+* **Web Interface (webapp):** The preferred method is to adjust the weight sliders in the **Weights** section of the web interface. Changes are sent via `PUT /weights` using the frontend keys above.
 * **REST API:** Direct API calls use the frontend key format in the request body (e.g. `{"data": {"wishes": 3, "overtime": 4, ...}}`).
 * **Offline / Light Mode:** Case files contain no weight configuration. Weights are stored per planning unit in TimeOffice; when nothing is stored, the built-in defaults shown above are used automatically.
 

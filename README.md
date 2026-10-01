@@ -1,50 +1,38 @@
-# Staff Scheduling Optimization in Hospitals
+# Staff Scheduling
 
-Welcome to the Staff Scheduling Optimization project repository! This project was developed by students from the Chair of Combinatorial Optimization at RWTH Aachen University in collaboration with St. Marien-Hospital Düren and Pradtke GmbH.
+Staff Scheduling is a hospital staff scheduling application developed at RWTH Aachen University with St. Marien-Hospital Düren and Pradtke GmbH. A Next.js webapp provides planning views, while a FastAPI application reads TimeOffice data and generates schedules with Google OR-Tools CP-SAT.
 
-The primary aim of this project is to automate the existing scheduling process within hospitals using TimeOffice software. The system extracts planning data from TimeOffice, solves a constrained combinatorial optimization problem via Google OR-Tools CP-SAT, and persists the generated schedule back into TimeOffice.
+This repository contains one project:
 
----
+- `api/`: Python application, canonical domain, solver, TimeOffice adapter, tests and historical cases.
+- `webapp/`: Next.js application and imported example files.
+- `docs/`: shared user and developer documentation, built with MkDocs.
 
-## Quickstart
+## Install and start
 
-### Prerequisites
+See the [installation guide](docs/installation.md) for prerequisites, configuration and troubleshooting.
 
-* **Python 3.12+**
-* [**`uv`**](https://docs.astral-sh/uv/) package manager
-* *(Optional)* Microsoft ODBC Driver 18 for SQL Server (for live database connectivity)
-
-### Installation
-
-```shell
-git clone https://github.com/CombiRWTH/StaffScheduling.git
-cd StaffScheduling
-uv sync
+```sh
+just sync
+cp api/.env.template api/.env
+# Set the TimeOffice connection settings in api/.env.
+just api-dev
 ```
 
-### Running the Application
+In another terminal at the repository root, run `just webapp-dev` and open <http://localhost:3000>. The API exposes interactive documentation at <http://localhost:8000/docs>.
 
-* **Start the FastAPI Backend:**
-  ```shell
-  uv run fastapi dev src/scheduling/api/app.py --host 0.0.0.0 --port 8000
-  ```
+The current migration uses the existing Python and npm locks. Connected Compose startup and the tooling transition follow in the foundation pass. The imported UI still has legacy file and endpoint assumptions; see [integration limits](docs/webapp/solver-integration.md) before generating or publishing schedules. Example files are historical inputs, not validated hand-in schedules.
 
-* **Run via CLI:**
-  ```shell
-  uv run staff-scheduling solve <planning_unit_id> <start_date> <end_date>
-  # Example: uv run staff-scheduling solve 77 2024-11-01 2024-11-30
-  ```
+## Development
 
-* **Web Interface:**
-  The frontend is available in the companion repository [**StaffSchedulingWeb**](https://github.com/julian466/StaffSchedulingWeb).
+```sh
+just lint
+just typecheck
+just test
+just webapp-build
+just docs-check
+```
 
----
+`just test` currently excludes integration-marked tests; run `cd api && uv run python -m pytest -m integration` to include those separately. Existing failing checks and migration verification are recorded in [the migration notes](docs/developer-view/monorepo-migration.md).
 
-## Documentation
-
-* **Online Documentation 🌐:** [https://combirwth.github.io/StaffScheduling/](https://combirwth.github.io/StaffScheduling/)
-* **Run Documentation Locally 📚:**
-  ```shell
-  uv sync --extra docs
-  uv run mkdocs serve
-  ```
+[Online documentation](https://combirwth.github.io/StaffScheduling/) is published from main. Run `just docs` to view the working documentation locally.

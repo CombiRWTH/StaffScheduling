@@ -7,7 +7,7 @@ user-view/list-of-conditions.md:user-free-day-after-night-shift-phase
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/constraints/free_day_after_night_shift_phase.py"
+```python title="api/app/solver/cp_sat/constraints/free_day_after_night_shift_phase.py"
 # Enforce that all assignment variables tomorrow sum to 0 if a night shift was worked today but not tomorrow
 constraint = ctx.model.add(sum(all_vars_tomorrow) == 0)
 constraint.only_enforce_if([works_night_today, works_night_tomorrow.Not()])

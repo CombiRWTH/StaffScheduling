@@ -8,7 +8,7 @@ This guide explains how to implement and register a new **hard constraint** in t
 
 A constraint enforces a non-negotiable rule that every valid schedule must satisfy (such as labor laws, hospital safety policies, or contracted limits). If a constraint cannot be satisfied, the solver marks the problem as **infeasible**.
 
-Every constraint must conform to the **[`Constraint`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/constraint.py)** typing protocol:
+Every constraint must conform to the **[`Constraint`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/solver/cp_sat/constraint.py)** typing protocol:
 
 ```python
 class Constraint(Protocol):
@@ -35,7 +35,7 @@ class Constraint(Protocol):
 
 ## Step 1: Create the Constraint File
 
-Create a new file under [`src/scheduling/solver/cp_sat/constraints/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/constraints/), for example `max_shifts_per_week.py`:
+Create a new file under [`api/app/solver/cp_sat/constraints/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/solver/cp_sat/constraints/), for example `max_shifts_per_week.py`:
 
 ```python
 from collections import defaultdict
@@ -45,9 +45,9 @@ from typing import Any, ClassVar
 
 from ortools.sat.python import cp_model
 
-from scheduling.solver.audit import AuditFinding, AuditSeverity
-from scheduling.solver.cp_sat.context import AuditContext, SolverContext
-from scheduling.solver.diagnostics import SolverDiagnostic
+from app.solver.audit import AuditFinding, AuditSeverity
+from app.solver.cp_sat.context import AuditContext, SolverContext
+from app.solver.diagnostics import SolverDiagnostic
 
 
 class MaxShiftsPerWeek:
@@ -121,7 +121,7 @@ When writing constraints, you interact with two context objects:
 ### `SolverContext` (During Model Building)
 * `ctx.model`: The OR-Tools `cp_model.CpModel` instance.
 * `ctx.assignment_variables`: Mapping of `AssignmentVariableKey` tuple `(employee_id, planning_unit_id, date, shift_id, staff_level)` to CP-SAT Boolean variables.
-* `ctx.dataset`: The canonical [`SchedulingDataset`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/dataset.py) containing employees, shifts, demands, and calendar bounds.
+* `ctx.dataset`: The canonical [`SchedulingDataset`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/domain/dataset.py) containing employees, shifts, demands, and calendar bounds.
 * `ctx.index`: Precomputed lookup indices (e.g. `ctx.index.shifts_by_id`, `ctx.index.dates`).
 
 ### `AuditContext` (Post-Solve Auditing)
@@ -132,10 +132,10 @@ When writing constraints, you interact with two context objects:
 
 ## Step 3: Register the Constraint in the Builder
 
-Open [`src/scheduling/solver/cp_sat/builder.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/builder.py) and add your constraint to `CP_SAT_CONSTRAINTS`:
+Open [`api/app/solver/cp_sat/builder.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/solver/cp_sat/builder.py) and add your constraint to `CP_SAT_CONSTRAINTS`:
 
 ```python
-from scheduling.solver.cp_sat.constraints.max_shifts_per_week import MaxShiftsPerWeek
+from app.solver.cp_sat.constraints.max_shifts_per_week import MaxShiftsPerWeek
 
 CP_SAT_CONSTRAINTS: tuple[Constraint, ...] = (
     MinimumStaffing(),
@@ -156,9 +156,9 @@ CP_SAT_CONSTRAINTS: tuple[Constraint, ...] = (
 Add unit tests under `tests/cp/constraints/` to verify constraint formulation and audit reporting using `create_context` or `AuditContext`:
 
 ```python
-from scheduling.solver.cp_sat.context import AuditContext, create_context
-from scheduling.solver.cp_sat.variables import create_assignment_variables
-from scheduling.solver.index import build_schedule_index
+from app.solver.cp_sat.context import AuditContext, create_context
+from app.solver.cp_sat.variables import create_assignment_variables
+from app.solver.index import build_schedule_index
 
 
 def test_max_shifts_per_week_add_to_model(sample_dataset):

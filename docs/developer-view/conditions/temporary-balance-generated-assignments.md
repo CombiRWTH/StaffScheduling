@@ -14,7 +14,7 @@ This objective introduces a **minimax fairness balance**: it computes the total 
 
 ### Implementation in CP-SAT
 
-```python title="src/scheduling/solver/cp_sat/objectives/temporary_balance_generated_assignments.py"
+```python title="api/app/solver/cp_sat/objectives/temporary_balance_generated_assignments.py"
 # 1. Count generated assignments per employee
 generated_counts = [sum(variables) for variables in variables_by_employee.values()]
 

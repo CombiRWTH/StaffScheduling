@@ -1,7 +1,7 @@
 All constraints are located inside `src/cp/constraints/*.py`.
 Each constraint is implemented as a function that takes a `CpModel`[^1] object and adds the necessary constraints to it.
 Constraints are considered as hard constraints as they must be satisfied for a valid schedule.
-For soft constraints, see the [Objectives](/concepts/objectives) chapter.
+For soft constraints, see the [Objectives](objectives.md) chapter.
 
 - [Free day after night shift phase](#free-day-after-night-shift-phase)
 - [Max one shift per day](#max-one-shift-per-day)
@@ -40,7 +40,7 @@ Therefore, the total number of staff members assigned to a shift must be greater
 model.add(sum(potential_working_staff) >= min_staffing)
 ```
 
-![Staff_Requirements](/images/staff_requirements.png)
+![Staff_Requirements](../Images/staff_requirements.png)
 /// caption
 Staff requirements per weekday and professional group.
 ///
@@ -68,7 +68,7 @@ model.add_at_least_one(early_shift_variables)
 
 Each employee has an individual monthly work target.
 This target is considered a hard constraint because it must be met within a certain range.
-A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the [objective](/concepts/objectives/#minimize-overtimeundertime) function to ensure minimal overtime/undertime.
+A maximum deviation of one day shift is allowed (±7.67 hours), but this is minimized by the [objective](objectives.md#minimize-overtimeundertime) function to ensure minimal overtime/undertime.
 Therefore, the total working time must fall within the range of all possible shift combinations and the target working time range.
 
 ```python title="src/cp/constraints/target_working_time.py"

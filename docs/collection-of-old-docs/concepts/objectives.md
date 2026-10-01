@@ -1,7 +1,7 @@
 All objectiveds are located inside `src/cp/objectives/*.py`.
 Each objective is implemented as a function that takes a `CpModel`[^1] object and adds the necessary constraints to it, while returning a returning a linear expression that represents the objective to be minimized.
 Objectives are considered as soft constraints as they should be satisfied in the best way possible for a valid schedule.
-For hard constraints, see the [Constraints](/concepts/constraints) chapter.
+For hard constraints, see the [Constraints](constraints.md) chapter.
 
 - [Free days near weekends](#free-days-near-weekends)
 - [Minimize consecutive night shifts](#minimize-consecutive-night-shifts)

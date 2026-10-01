@@ -48,20 +48,30 @@ site/
 .env
 .env.*
 !.env.example
+!.env.template
 
 # Logs
 *.log
 logs/
 
 # Solver outputs
-found_solutions/*.json
-processed_solutions/*
+**/found_solutions/*.json
+**/processed_solutions/*
 
 .cache
-cases/*/
-!cases/case_catalog.md
+/api/cases/*/
+!/api/cases/case_catalog.md
 
 # Test-generated outputs
-tests/cp/constraints/output_test_all_constraints*
-tests/cp/constraints/mass*
-tests/cp/constraints/mass_test_results/
+api/tests/cp/constraints/output_test_all_constraints*
+api/tests/cp/constraints/mass*
+api/tests/cp/constraints/mass_test_results/
+
+# Web application dependencies, local configuration and generated files
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+/webapp/config.json
+/data/

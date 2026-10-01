@@ -4,7 +4,7 @@ user-view/list-of-conditions.md:min-working-phases
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/objectives/not_too_many_consecutive_days.py"
+```python title="api/app/solver/cp_sat/objectives/not_too_many_consecutive_days.py"
 # Penalize consecutive working day streaks exceeding allowed length (e.g. 5 or 6+ days)
 return (
     Penalty(

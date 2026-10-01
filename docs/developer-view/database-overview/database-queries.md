@@ -1,6 +1,6 @@
 # Database Queries
 
-Overview of the SQL queries used to retrieve data from the TimeOffice database. These queries were originally in a single `export_data.py` file and have since been refactored into modular readers in [`src/scheduling/timeoffice/reading/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/reading/) (e.g. `personnel.py`, `demand.py`, `wishes.py`, `roster.py`, `work_accounts.py`). The SQL shown here reflects the underlying logic used in those readers.
+Overview of the SQL queries used to retrieve data from the TimeOffice database. These queries were originally in a single `export_data.py` file and have since been refactored into modular readers in [`api/app/timeoffice/reading/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/timeoffice/reading/) (e.g. `personnel.py`, `demand.py`, `wishes.py`, `roster.py`, `work_accounts.py`). The SQL shown here reflects the underlying logic used in those readers.
 
 ## Basic Plan Data
 

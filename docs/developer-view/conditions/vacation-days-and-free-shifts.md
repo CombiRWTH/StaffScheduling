@@ -6,7 +6,7 @@ user-view/list-of-conditions.md:vacation-days-and-free-shifts
 
 In the modern architecture, vacations, sick leaves, and blocked days are unified into the `AvailabilitiesConstraint`:
 
-```python title="src/scheduling/solver/cp_sat/constraints/availabilities_constraint.py"
+```python title="api/app/solver/cp_sat/constraints/availabilities_constraint.py"
 # For any date where an employee is marked unavailable, enforce 0 assignments
 for (employee_id, unavailable_date), variables in unavailable_variables.items():
     ctx.model.add(sum(variables) == 0).with_name(

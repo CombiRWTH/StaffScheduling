@@ -1,6 +1,6 @@
 # Database Connection & TimeOffice Integration
 
-This guide explains how the application connects to the hospital's **TimeOffice Microsoft SQL Server** database, manages credentials via `.env`, and coordinates reads and writes through the [`src/scheduling/timeoffice/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/) integration package.
+This guide explains how the application connects to the hospital's **TimeOffice Microsoft SQL Server** database, manages credentials via `.env`, and coordinates reads and writes through the [`api/app/timeoffice/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/timeoffice/) integration package.
 
 ---
 
@@ -14,18 +14,18 @@ flowchart LR
         RawDB[("TPersonal, TDienste,<br/>TPlan, TRaster, ...")]
     end
 
-    subgraph TimeOfficeLayer["src/scheduling/timeoffice/"]
+    subgraph TimeOfficeLayer["api/app/timeoffice/"]
         Readers["Query Readers<br/>(reading/)"]
         Mappers["Domain Mappers<br/>(mapping/)"]
         Writers["Roster Writers<br/>(writing/)"]
         Service["TimeOfficeService<br/>(Façade)"]
     end
 
-    subgraph DomainLayer["src/scheduling/domain/"]
+    subgraph DomainLayer["api/app/domain/"]
         Dataset["SchedulingDataset<br/>(Canonical Model)"]
     end
 
-    subgraph SolverLayer["src/scheduling/solver/"]
+    subgraph SolverLayer["api/app/solver/"]
         Solver["CP-SAT Solver Engine"]
         Solution["Solution"]
     end
@@ -65,11 +65,11 @@ DB_PASSWORD=your_password
 
 ### SQLAlchemy Engine Creation
 
-Database connectivity is managed in [`src/scheduling/timeoffice/database.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/database.py) using **SQLAlchemy** and **`pyodbc`**:
+Database connectivity is managed in [`api/app/timeoffice/database.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/timeoffice/database.py) using **SQLAlchemy** and **`pyodbc`**:
 
 ```python
 from sqlalchemy import URL, Engine, create_engine
-from scheduling.settings import Settings
+from app.settings import Settings
 
 def create_db_engine(settings: Settings) -> Engine:
     """Build the SQLAlchemy Engine for the TimeOffice SQL Server database."""
@@ -91,12 +91,12 @@ The engine uses standard SQLAlchemy connection pooling and passes `TrustServerCe
 
 ---
 
-## TimeOffice Module Layout (`src/scheduling/timeoffice/`)
+## TimeOffice Module Layout (`api/app/timeoffice/`)
 
 The database integration package is structured into clean, modular subpackages:
 
 ```
-src/scheduling/timeoffice/
+api/app/timeoffice/
 ├── facts.py                 # TimeOffice constants, table IDs, and status codes
 ├── database.py              # SQLAlchemy engine creation & connection pooling
 ├── service.py               # TimeOfficeService coordinator façade
@@ -138,7 +138,7 @@ This separates SQL Server intricacies (like German column identifiers, status co
 
 ## Writing Solutions Back to TimeOffice
 
-When the solver finishes generating a schedule, [`TimeOfficeService.write_solution(...)`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/timeoffice/service.py) persists the resulting assignments into TimeOffice:
+When the solver finishes generating a schedule, [`TimeOfficeService.write_solution(...)`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/timeoffice/service.py) persists the resulting assignments into TimeOffice:
 
 1. **Target Planning Records (`TPlan`):** Inserts or updates the planning header for the given planning unit and month, marking the plan status as active.
 2. **Shift Raster (`TRaster`):** Writes individual shift entries (`TDienste.Prim`) for each employee and date slot.

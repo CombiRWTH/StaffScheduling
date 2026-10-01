@@ -10,4 +10,4 @@ Get right into it:
     - [querying](./database-overview/database-queries.md)
     - [tables](./database-overview/database-tables.md)
 - Start Contributing: [Codebase Overview](./codebase-overview.md)
-- Web Interface: [StaffSchedulingWeb](./web-interface.md) — a modern, browser-based frontend for the solver
+- Web Interface: [webapp](./web-interface.md) — a modern, browser-based frontend for the solver

@@ -1,0 +1,101 @@
+{
+  "schedules": [
+    {
+      "scheduleId": "1765285523650",
+      "seed": 15,
+      "generatedAt": "2025-12-09T13:05:23.678Z",
+      "isSelected": false,
+      "stats": {
+        "forward_rotation_violations": 63,
+        "consecutive_working_days_gt_5": 18,
+        "no_free_weekend": 38,
+        "consecutive_night_shifts_gt_3": 9,
+        "total_overtime_hours": 629.37,
+        "no_free_days_around_weekend": 115,
+        "not_free_after_night_shift": 41,
+        "violated_wish_total": 8
+      }
+    },
+    {
+      "scheduleId": "1767435707356",
+      "seed": 45645612,
+      "generatedAt": "2026-01-03T10:21:47.387Z",
+      "isSelected": false,
+      "stats": {
+        "forward_rotation_violations": 56,
+        "consecutive_working_days_gt_5": 10,
+        "no_free_weekend": 35,
+        "consecutive_night_shifts_gt_3": 7,
+        "total_overtime_hours": 154.4,
+        "no_free_days_around_weekend": 104,
+        "not_free_after_night_shift": 24,
+        "violated_wish_total": 2
+      }
+    },
+    {
+      "scheduleId": "1768494524829",
+      "seed": 3213123123,
+      "generatedAt": "2026-01-15T16:28:45.105Z",
+      "isSelected": false,
+      "stats": {
+        "forward_rotation_violations": 37,
+        "consecutive_working_days_gt_5": 26,
+        "no_free_weekend": 36,
+        "consecutive_night_shifts_gt_3": 7,
+        "total_overtime_hours": 178.73,
+        "no_free_days_around_weekend": 119,
+        "not_free_after_night_shift": 16,
+        "violated_wish_total": 6
+      }
+    },
+    {
+      "scheduleId": "1768495056605",
+      "seed": 11111,
+      "generatedAt": "2026-01-15T16:37:36.647Z",
+      "isSelected": false,
+      "stats": {
+        "forward_rotation_violations": 39,
+        "consecutive_working_days_gt_5": 24,
+        "no_free_weekend": 36,
+        "consecutive_night_shifts_gt_3": 7,
+        "total_overtime_hours": 180.82,
+        "no_free_days_around_weekend": 119,
+        "not_free_after_night_shift": 21,
+        "violated_wish_total": 6
+      }
+    },
+    {
+      "scheduleId": "1768495061697",
+      "seed": 11112,
+      "generatedAt": "2026-01-15T16:37:41.746Z",
+      "isSelected": false,
+      "stats": {
+        "forward_rotation_violations": 40,
+        "consecutive_working_days_gt_5": 28,
+        "no_free_weekend": 36,
+        "consecutive_night_shifts_gt_3": 8,
+        "total_overtime_hours": 180.15,
+        "no_free_days_around_weekend": 118,
+        "not_free_after_night_shift": 28,
+        "violated_wish_total": 7
+      }
+    },
+    {
+      "scheduleId": "1768495067765",
+      "seed": 11113,
+      "generatedAt": "2026-01-15T16:37:47.798Z",
+      "isSelected": true,
+      "stats": {
+        "forward_rotation_violations": 38,
+        "consecutive_working_days_gt_5": 1,
+        "no_free_weekend": 36,
+        "consecutive_night_shifts_gt_3": 11,
+        "total_overtime_hours": 181.48,
+        "no_free_days_around_weekend": 99,
+        "not_free_after_night_shift": 13,
+        "violated_wish_total": 3
+      }
+    }
+  ],
+  "selectedScheduleId": "1768495067765"
+}

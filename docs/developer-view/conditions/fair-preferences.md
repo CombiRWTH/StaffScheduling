@@ -6,7 +6,7 @@ user-view/list-of-conditions.md:fair-preferences
 
 Wish fulfillment is handled by `FairPreferencesObjective`:
 
-```python title="src/scheduling/solver/cp_sat/objectives/fair_preferences.py"
+```python title="api/app/solver/cp_sat/objectives/fair_preferences.py"
 class FairPreferencesObjective:
     """Penalize repeated wish violations increasingly per employee.
 
@@ -85,7 +85,7 @@ is that $S$ is itself a variable, so you can't just write "$S^3$" as a
 constraint. What the code does instead is split $S$ into a row of booleans,
 one per possible strike level, and only let them switch on in order:
 
-```python title="src/scheduling/solver/cp_sat/objectives/fair_preferences.py"
+```python title="api/app/solver/cp_sat/objectives/fair_preferences.py"
 tier_variables = [
     ctx.model.new_bool_var(f"fair_preferences__{wish_group}__employee_{employee_id}__tier_{tier}")
     for tier in range(1, maximum_strikes + 1)

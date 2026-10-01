@@ -4,7 +4,7 @@ user-view/list-of-conditions.md:min-number-of-staff-per-shift
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/constraints/minimum_staffing.py"
+```python title="api/app/solver/cp_sat/constraints/minimum_staffing.py"
 # For each date, shift, and qualification level, enforce exact staffing demand
 ctx.model.add(sum(candidate_variables) == requirement.required_count).with_name(
     _constraint_name(requirement)

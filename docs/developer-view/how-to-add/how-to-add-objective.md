@@ -14,7 +14,7 @@ $$\text{minimize} \sum_i w_i \cdot P_i$$
 
 Where $w_i$ is the user-configured weight multiplier, and $P_i$ is the penalty expression.
 
-Every objective must conform to the **[`Objective`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/objective.py)** protocol:
+Every objective must conform to the **[`Objective`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/solver/cp_sat/objective.py)** protocol:
 
 ```python
 class Objective(Protocol):
@@ -49,13 +49,13 @@ class Penalty:
 ```
 
 !!! important "Weight Separation"
-    Objectives **never** apply the global user weight directly. The model builder in [`builder.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/builder.py) retrieves user weights centrally from `ctx.dataset.objective_weights` and multiplies them automatically.
+    Objectives **never** apply the global user weight directly. The model builder in [`builder.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/solver/cp_sat/builder.py) retrieves user weights centrally from `ctx.dataset.objective_weights` and multiplies them automatically.
 
 ---
 
 ## Step 1: Create the Objective Class
 
-Create a new file under [`src/scheduling/solver/cp_sat/objectives/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/objectives/), for example `minimize_weekend_shifts.py`:
+Create a new file under [`api/app/solver/cp_sat/objectives/`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/solver/cp_sat/objectives/), for example `minimize_weekend_shifts.py`:
 
 ```python
 from collections.abc import Mapping
@@ -63,9 +63,9 @@ from typing import Any, ClassVar
 
 from ortools.sat.python import cp_model
 
-from scheduling.solver.audit import AuditFinding, AuditSeverity
-from scheduling.solver.cp_sat.context import AuditContext, SolverContext
-from scheduling.solver.cp_sat.objective import Penalty
+from app.solver.audit import AuditFinding, AuditSeverity
+from app.solver.cp_sat.context import AuditContext, SolverContext
+from app.solver.cp_sat.objective import Penalty
 
 
 class MinimizeWeekendShifts:
@@ -128,10 +128,10 @@ class MinimizeWeekendShifts:
 
 ## Step 2: Register the Objective in the Builder
 
-Add your objective to `CP_SAT_OBJECTIVES` in [`src/scheduling/solver/cp_sat/builder.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/solver/cp_sat/builder.py):
+Add your objective to `CP_SAT_OBJECTIVES` in [`api/app/solver/cp_sat/builder.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/solver/cp_sat/builder.py):
 
 ```python
-from scheduling.solver.cp_sat.objectives.minimize_weekend_shifts import MinimizeWeekendShifts
+from app.solver.cp_sat.objectives.minimize_weekend_shifts import MinimizeWeekendShifts
 
 CP_SAT_OBJECTIVES: tuple[Objective, ...] = (
     TemporaryBalanceGeneratedAssignments(),
@@ -154,7 +154,7 @@ CP_SAT_OBJECTIVES: tuple[Objective, ...] = (
 
 To control how heavily CP-SAT penalizes this objective relative to other goals:
 
-1. **Via the Web Interface (StaffSchedulingWeb):** Adjust the weight slider under the **Weights** configuration page.
+1. **Via the Web Interface (webapp):** Adjust the weight slider under the **Weights** configuration page.
 2. **Via the REST API:** Update the weight through `PUT /weights`.
 
-User weights are stored per planning unit in TimeOffice — the offline JSON cases contain no `weights.json`. When nothing is stored, the defaults from `SolverObjectiveWeights.default_for_planning_unit` in [`src/scheduling/domain/objective_weights.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/src/scheduling/domain/objective_weights.py) apply. Note that the built-in weight slots cover the existing objectives; to give your new objective its own user-adjustable weight, add a field to `SolverObjectiveWeights` and expose it through the weights API.
+User weights are stored per planning unit in TimeOffice — the offline JSON cases contain no `weights.json`. When nothing is stored, the defaults from `SolverObjectiveWeights.default_for_planning_unit` in [`api/app/domain/objective_weights.py`](https://github.com/CombiRWTH/StaffScheduling/blob/main/api/app/domain/objective_weights.py) apply. Note that the built-in weight slots cover the existing objectives; to give your new objective its own user-adjustable weight, add a field to `SolverObjectiveWeights` and expose it through the weights API.

@@ -4,7 +4,7 @@ user-view/list-of-conditions.md:every-second-weekend-free
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/objectives/every_second_weekend_free.py"
+```python title="api/app/solver/cp_sat/objectives/every_second_weekend_free.py"
 # A weekend is free only if both Saturday AND Sunday are free
 ctx.model.add(sat_var + sun_var == 0).only_enforce_if(weekend_free)
 ctx.model.add(sat_var + sun_var >= 1).only_enforce_if(weekend_free.Not())

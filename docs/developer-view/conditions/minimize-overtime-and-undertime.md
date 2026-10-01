@@ -4,7 +4,7 @@ user-view/list-of-conditions.md:min-over-and-undertime
 
 ### Implemented using Google's OR-Tools
 
-```python title="src/scheduling/solver/cp_sat/objectives/minimize_overtime.py"
+```python title="api/app/solver/cp_sat/objectives/minimize_overtime.py"
 # Penalize absolute deviation from monthly contracted working hours
 # overtime_excess >= total_minutes - target_minutes
 # undertime_deficit >= target_minutes - total_minutes
