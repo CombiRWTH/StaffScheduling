@@ -4,7 +4,6 @@
 
 :root {
   --ink: #262220;
-  --ink-soft: #2e2a26;
   --ink-deep: #16120f;
   --coral: #ee6c4d;
   --coral-bright: #ff8360;
@@ -34,11 +33,6 @@
 
 ::selection {
   background: rgba(238, 108, 77, 0.3);
-}
-
-/* Coral hairline along the bottom edge of the ink tab band */
-.md-tabs {
-  box-shadow: inset 0 -3px 0 0 var(--coral);
 }
 
 /* Serif page titles with a coral tick */

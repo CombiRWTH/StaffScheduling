@@ -23,7 +23,7 @@ docker version
 docker compose version
 ```
 
-The first build needs internet access to fetch images, OS packages and locked dependencies. Docker images contain Python, Node, uv, pnpm and Microsoft's ODBC Driver 18; these do not need host installations for Compose startup. Dedicated Linux-host and connected database acceptance are still pending; see [limitations](limitations.md).
+The first build needs internet access to fetch images, OS packages and locked dependencies. Docker images contain Python, Node, uv, pnpm and Microsoft's ODBC Driver 18; these do not need host installations for Compose startup. Dedicated Linux-host and connected database acceptance are still pending; see [limitations](../validation/index.md).
 
 ## Obtain the repository
 
@@ -47,7 +47,7 @@ chmod 600 .secrets/db_password
 
 On Windows, restrict the folder/file to your user through its security properties. Do not overwrite an existing password during setup.
 
-Compose reads `.env` and mounts the password at `/run/secrets/db_password`. Pydantic settings loads that file using `SECRETS_DIR=/run/secrets`. The adapter connects to an external TimeOffice Microsoft SQL Server; Compose does not provision a database or sample hospital data. Arrange the required network/VPN route, database permissions and planning scope with the database administrator. [TimeOffice reference](reference/timeoffice.md) describes the adapter and supplemental tables.
+Compose reads `.env` and mounts the password at `/run/secrets/db_password`. Pydantic settings loads that file using `SECRETS_DIR=/run/secrets`. The adapter connects to an external TimeOffice Microsoft SQL Server; Compose does not provision a database or sample hospital data. Arrange the required network/VPN route, database permissions and planning scope with the database administrator. [TimeOffice reference](../architecture/timeoffice.md) describes the adapter and supplemental tables.
 
 The SQL engine is created at startup and opens connections when operations need them. Consequently, `/status` can return healthy even when the SQL Server is unreachable or the credentials are invalid.
 
@@ -87,7 +87,7 @@ just install
 
 The [pnpm installation](https://pnpm.io/installation) uses npm; npm 12 requires explicit approval of pnpm's installation scripts. Ensure uv's executable directory (`~/.local/bin` by default) and npm's global executable directory are on `PATH`, including in the editor/terminal that commits. `python3.14` must match `api/.python-version`, and pnpm must match `packageManager` in `webapp/package.json`.
 
-`just install` frozen-installs API and webapp dependencies and installs the Git hook. It preserves existing configuration and secrets. On macOS/Linux, native code that imports `pyodbc` also needs a host unixODBC driver manager. For native SQL connections, install [Microsoft ODBC Driver 18](https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server) for your platform. Compose already supplies both; no host SQL client is needed for container use. Select `api/.venv` for the Python IDE interpreter. Documentation has its own environment. See [code quality](development/quality.md) for checks and dependency changes.
+`just install` frozen-installs API and webapp dependencies and installs the Git hook. It preserves existing configuration and secrets. On macOS/Linux, native code that imports `pyodbc` also needs a host unixODBC driver manager. For native SQL connections, install [Microsoft ODBC Driver 18](https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server) for your platform. Compose already supplies both; no host SQL client is needed for container use. Select `api/.venv` for the Python IDE interpreter. Documentation has its own environment. See [code quality](../development/checks.md) for checks and dependency changes.
 
 ## Documentation setup
 
@@ -105,15 +105,15 @@ uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs se
 
 ## Troubleshooting
 
-| Symptom                                                    | Check or action                                                                                                 |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Docker daemon unavailable                                  | Start Docker Desktop/Engine; verify `docker version`.                                                           |
-| `docker compose` unavailable or `--wait` unknown           | Install/update the Compose plugin using Docker's installation guide.                                            |
-| Password file missing / settings validation error          | Check the exact `.secrets/db_password` path and root `.env`; inspect `docker compose logs api`.                 |
-| Port 3000 or 8000 already allocated                        | Stop the conflicting process or previous Compose instance, then retry.                                          |
-| Build/download failure                                     | Check internet/proxy access and the first failing build step; retry the startup command.                        |
-| Container unhealthy                                        | Inspect `docker compose ps` and `docker compose logs api webapp`; health checks cover liveness only.            |
-| Healthy API, failing employee/configuration query          | Check VPN/network, server/database/user/password and SQL permissions; startup did not test these.               |
-| Missing route or empty case/schedule selector              | Consult [limitations](limitations.md); removed case files and integration gaps are not an installation failure. |
-| Native install/check/hook cannot find Python, Node or pnpm | Complete native prerequisites and correct the committing terminal/editor's `PATH`; rerun `just install`.        |
-| Type/test gate fails after installation                    | Compare the [known failing checks](limitations.md#quality-gates); do not bypass the gate.                       |
+| Symptom                                                    | Check or action                                                                                                         |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Docker daemon unavailable                                  | Start Docker Desktop/Engine; verify `docker version`.                                                                   |
+| `docker compose` unavailable or `--wait` unknown           | Install/update the Compose plugin using Docker's installation guide.                                                    |
+| Password file missing / settings validation error          | Check the exact `.secrets/db_password` path and root `.env`; inspect `docker compose logs api`.                         |
+| Port 3000 or 8000 already allocated                        | Stop the conflicting process or previous Compose instance, then retry.                                                  |
+| Build/download failure                                     | Check internet/proxy access and the first failing build step; retry the startup command.                                |
+| Container unhealthy                                        | Inspect `docker compose ps` and `docker compose logs api webapp`; health checks cover liveness only.                    |
+| Healthy API, failing employee/configuration query          | Check VPN/network, server/database/user/password and SQL permissions; startup did not test these.                       |
+| Missing route or empty case/schedule selector              | Consult [limitations](../validation/index.md); removed case files and integration gaps are not an installation failure. |
+| Native install/check/hook cannot find Python, Node or pnpm | Complete native prerequisites and correct the committing terminal/editor's `PATH`; rerun `just install`.                |
+| Type/test gate fails after installation                    | Compare the [known failing checks](../validation/index.md#quality-gates); do not bypass the gate.                       |

@@ -1,5 +1,7 @@
 # Solver
 
+This reference describes inspected source definitions. Connected database behavior and complete user workflows require separate acceptance evidence; see [current limitations](../validation/index.md).
+
 `SolverService` builds and runs an OR-Tools CP-SAT model from a validated `SchedulingDataset`. It extracts generated assignments, evaluates the configured component audits and returns a solution status, diagnostics and audit findings.
 
 ## Model and configuration
@@ -22,7 +24,7 @@ Its objectives cover assignment balance, overtime, consecutive workdays, preferr
 
 `inspection.py` checks CP-SAT model validity before search. `SolverService` maps OR-Tools results to `OPTIMAL`, `FEASIBLE`, `INFEASIBLE`, `MODEL_INVALID` or `UNKNOWN`. Only feasible/optimal results yield extracted assignments and component audits. The audit includes imported existing assignments alongside generated work.
 
-A feasible model satisfies the implemented model, which may differ from the complete intended policy. The audit reuses constraint/objective implementations. Independent acceptance and policy correction remain pending, and preferred-block-length/forward-rotation tests currently fail. See [limitations](../limitations.md#quality-gates).
+A feasible model satisfies the implemented model, which may differ from the complete intended policy. The audit reuses constraint/objective implementations. Independent acceptance and policy correction remain pending, and preferred-block-length/forward-rotation tests currently fail. See [limitations](../validation/index.md#quality-gates).
 
 ## Settings
 
@@ -37,4 +39,4 @@ A feasible model satisfies the implemented model, which may differ from the comp
 
 ## Changing a rule
 
-Read the relevant component, callers and focused tests first. Constraints implement model construction and audit; objectives return penalty expressions and audit findings. Register actual new components in `cp_sat/builder.py` and `solver/config.py`, and exercise the behavior in the corresponding `api/tests/cp/` area. Keep domain inputs independent of TimeOffice. Run focused tests and the shared checks described in [code quality](../development/quality.md).
+Read the relevant component, callers and focused tests first. Constraints implement model construction and audit; objectives return penalty expressions and audit findings. Register actual new components in `cp_sat/builder.py` and `solver/config.py`, and exercise the behavior in the corresponding `api/tests/cp/` area. Keep domain inputs independent of TimeOffice. Run focused tests and the shared checks described in [code quality](../development/checks.md).

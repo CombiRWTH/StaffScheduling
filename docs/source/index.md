@@ -1,17 +1,22 @@
 # Staff Scheduling
 
-Staff Scheduling supports hospital staff planning with a Next.js webapp, a FastAPI API and Google OR-Tools CP-SAT. It was developed at RWTH Aachen University with St. Marien-Hospital Düren and Pradtke GmbH. TimeOffice provides the employee, shift and planning data.
+A hospital planning application combining a Next.js webapp, a FastAPI API and an OR-Tools CP-SAT solver. A TimeOffice adapter reads planning inputs and writes assignments to an external SQL Server. The current checkout starts both services; connected planning and independently accepted example schedules are still being completed.
 
-Start with the [quickstart](quickstart.md) to launch both services using Docker. The [installation guide](installation.md) covers prerequisites, configuration, network access and optional developer tools.
+## Find what you need
 
-| You want to…                                   | Read                                                                                                                         |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Start the application                          | [Quickstart](quickstart.md)                                                                                                  |
-| Set up another machine or troubleshoot startup | [Installation](installation.md)                                                                                              |
-| Understand the planning screens                | [Using the app](usage.md)                                                                                                    |
-| Check what works and what remains unfinished   | [Current limitations](limitations.md)                                                                                        |
-| Find the relevant code                         | [Codebase overview](development/overview.md)                                                                                 |
-| Run checks or change dependencies              | [Code quality](development/quality.md)                                                                                       |
-| Understand backend contracts                   | [API](reference/api.md), [domain](reference/domain.md), [solver](reference/solver.md), [TimeOffice](reference/timeoffice.md) |
+| You are here to…                       | Start here                                            | What you will find                                                    |
+| -------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------- |
+| Try the application                    | [Quickstart](getting-started/quickstart.md)           | Docker, the password file and one startup command                     |
+| Set up a machine                       | [Installation](getting-started/installation.md)       | Prerequisites, configuration, network access and troubleshooting      |
+| Plan a roster                          | [User guide](user-guide/index.md)                     | The intended task sequence, with unfinished procedures clearly marked |
+| Understand the system                  | [Architecture](architecture/index.md)                 | Code map, data flow, domain and integration contracts                 |
+| Change the code                        | [Development checks](development/checks.md)           | Tooling, quality gates and where tests/docs belong                    |
+| Assess what has been proved            | [Evidence and limitations](validation/index.md)       | Executed checks, current failures and unverified behavior             |
+| Inspect or reproduce example results   | [Examples](validation/examples.md)                    | An outline until accepted files and reproduction checks exist         |
+| Examine the reasoning behind the model | [Reasoning and requirements](validation/reasoning.md) | An outline for sourced rules, choices and evaluation                  |
 
-Both services can start before a database connection is established. Planning operations need the configured TimeOffice database. The application is undergoing integration work; [current limitations](limitations.md) distinguish service startup from verified scheduling and publication.
+## What is ready to try
+
+Docker startup and the webapp home/API liveness pages have been checked. Start with the quickstart to inspect this foundation. A healthy process does not establish database access or a supported complete planning workflow. Visible controls and source-defined routes are not scheduling acceptance evidence.
+
+This site separates setup, staff-admin tasks, technical understanding, contribution procedures and validation. Each page has one purpose; [documentation maintenance](development/documentation.md) describes how verified changes fill the outlines and keep these perspectives consistent.

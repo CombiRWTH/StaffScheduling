@@ -1,6 +1,10 @@
-# Current limitations
+# Evidence and current limitations
 
 This checkout provides a reproducible development foundation. Connected planning, independently accepted schedules and the final example dataset remain unfinished. These limits describe current code and executed checks; they are not promises inferred from visible controls.
+
+## What this section proves
+
+For evaluators and anyone deciding whether to rely on a result. The checks below cover the current foundation; no independently accepted example schedule or connected end-to-end flow is claimed. [Reasoning and requirements](reasoning.md) will explain policy choices and evaluation; [examples and reproduction](examples.md) will document actual accepted deliverables. These two pages are outlines.
 
 ## Startup and connectivity
 
@@ -22,7 +26,7 @@ The current publication endpoint translates legacy variables and performs a tran
 
 The latest executed offline suite reports **89 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
 
-Webapp strict TypeScript reports TS2339 at `src/infrastructure/repositories/lowdb-employee.repository.ts:19`: `write` is absent from the returned object type. Employee inspection migration owns the correction. The production build has also failed at this type gate; a later native attempt hit an environment restriction when Turbopack started a CSS worker, so production build acceptance remains outstanding.
+Webapp strict TypeScript reports TS2339 at `src/infrastructure/repositories/lowdb-employee.repository.ts:19`: `write` is absent from the returned object type. Employee inspection migration owns the correction. The Linux-container production build compiles and then fails at this same type gate; production build acceptance remains outstanding.
 
 Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint has zero errors and 13 warnings; React Doctor warnings remain visible. `just check` stops at the webapp type failure and therefore does not reach its test/docs recipes; run them separately to inspect their results.
 

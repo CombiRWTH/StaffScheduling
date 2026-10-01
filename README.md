@@ -12,16 +12,17 @@ From the repository root:
 docker compose up --build --wait
 ```
 
-Open <http://localhost:3000>; API documentation is at <http://localhost:8000/docs>. No host Python, Node, pnpm or just is needed. Stop with `docker compose down`; inspect with `docker compose logs --follow`. See the [step-by-step quickstart](docs/source/quickstart.md) and [full installation guide](docs/source/installation.md).
+Open <http://localhost:3000>; API documentation is at <http://localhost:8000/docs>. No host Python, Node, pnpm or just is needed. Stop with `docker compose down`; inspect with `docker compose logs --follow`. See the [step-by-step quickstart](docs/source/getting-started/quickstart.md) and [full installation guide](docs/source/getting-started/installation.md).
 
-Health checks establish service liveness. Database operations need network/credentials, and the planning workflow has [known integration and solver limitations](docs/source/limitations.md). Independently accepted example schedules remain pending.
+Health checks establish service liveness. Database operations need network/credentials, and the planning workflow has [known integration and solver limitations](docs/source/validation/index.md). Independently accepted example schedules remain pending.
 
 ## Documentation and development
 
-- [Using the app](docs/source/usage.md)
-- [Codebase overview](docs/source/development/overview.md)
-- [Checks and dependency maintenance](docs/source/development/quality.md)
-- [API](docs/source/reference/api.md), [domain](docs/source/reference/domain.md), [solver](docs/source/reference/solver.md), [TimeOffice](docs/source/reference/timeoffice.md)
+- [User guide](docs/source/user-guide/index.md)
+- [Architecture and contracts](docs/source/architecture/index.md)
+- [Checks and dependency maintenance](docs/source/development/checks.md)
+- [Documentation maintenance](docs/source/development/documentation.md), [reasoning outline](docs/source/validation/reasoning.md) and [example reproduction outline](docs/source/validation/examples.md)
+- [API](docs/source/architecture/api.md), [domain](docs/source/architecture/domain.md), [solver](docs/source/architecture/solver.md), [TimeOffice](docs/source/architecture/timeoffice.md)
 
 `api/`, `webapp/` and `docs/` have separate manifests/locks; `data/` holds ignored runtime files. Development services use Compose with hot reload. Optional native tools support IDEs and quality checks via `just install` and `just check`; follow the installation guide for their prerequisites.
 

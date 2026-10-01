@@ -37,7 +37,7 @@ The first build downloads dependencies. This command runs in the background and 
 
 Open the webapp at <http://localhost:3000>. The API's interactive reference is at <http://localhost:8000/docs>; <http://localhost:8000/status> should return `{"status":"healthy"}`.
 
-A healthy service does not prove database connectivity. Employee/configuration queries and generation need access to the TimeOffice network and database. Read [current limitations](limitations.md) before relying on planning or publication results.
+A healthy service does not prove database connectivity. Employee/configuration queries and generation need access to the TimeOffice network and database. Read [current limitations](../validation/index.md) before relying on planning or publication results.
 
 ## Stop or inspect
 

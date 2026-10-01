@@ -7,20 +7,30 @@ repo_name: CombiRWTH/StaffScheduling
 
 nav:
   - Home: index.md
-  - Getting started:
-      - Quickstart: quickstart.md
-      - Installation: installation.md
-  - Using the app:
-      - Planning workflow: usage.md
-      - Current limitations: limitations.md
-  - Development:
-      - Codebase overview: development/overview.md
-      - Code quality: development/quality.md
-  - Reference:
-      - API: reference/api.md
-      - Domain model: reference/domain.md
-      - Solver: reference/solver.md
-      - TimeOffice: reference/timeoffice.md
+  - Try it:
+      - Quickstart: getting-started/quickstart.md
+      - Installation: getting-started/installation.md
+  - Use the app:
+      - user-guide/index.md
+      - Selection and employees: user-guide/selection.md
+      - Monthly configuration: user-guide/configuration.md
+      - Generation and jobs: user-guide/generation.md
+      - Review and files: user-guide/review.md
+      - Publication and clear: user-guide/publication.md
+  - Understand the system:
+      - architecture/index.md
+      - Domain model: architecture/domain.md
+      - API contracts: architecture/api.md
+      - Solver: architecture/solver.md
+      - TimeOffice adapter: architecture/timeoffice.md
+  - Develop:
+      - Checks and tooling: development/checks.md
+      - Testing: development/testing.md
+      - Documentation: development/documentation.md
+  - Validate:
+      - validation/index.md
+      - Reasoning and requirements: validation/reasoning.md
+      - Examples and reproduction: validation/examples.md
 
 theme:
   name: material
@@ -28,9 +38,7 @@ theme:
   font: false
   features:
     - navigation.indexes
-    - navigation.instant
     - navigation.sections
-    - navigation.tabs.sticky
     - navigation.top
     - navigation.tracking
     - toc.follow

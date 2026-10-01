@@ -1,5 +1,7 @@
 # TimeOffice adapter
 
+This reference describes inspected source definitions. Connected database behavior and complete user workflows require separate acceptance evidence; see [current limitations](../validation/index.md).
+
 `api/app/timeoffice/` owns the application's Microsoft SQL Server integration. `TimeOfficeService` coordinates reads, mapping, validation and transactional writes. The solver depends on the [domain model](domain.md), not the database schema.
 
 ## Modules
@@ -16,7 +18,7 @@
 
 ## Connection and schema
 
-Follow [database configuration](../installation.md#database-configuration) for `.env` and the password file. Docker includes ODBC Driver 18. `database.py` constructs the SQLAlchemy URL from settings and currently uses `TrustServerCertificate=yes`. TLS policy/independent connectivity diagnostics still require foundation verification.
+Follow [database configuration](../getting-started/installation.md#database-configuration) for `.env` and the password file. Docker includes ODBC Driver 18. `database.py` constructs the SQLAlchemy URL from settings and currently uses `TrustServerCertificate=yes`. TLS policy/independent connectivity diagnostics still require foundation verification.
 
 The adapter reads TimeOffice tables including `TPlanungseinheiten`, `TPlanungseinheitenPersonal`, `TPersonal`, `TPlan`, `TDienste`, `TPlanPersonalKommtGeht` and monthly/daily account tables. Actual SQL and join/filter rules are in the reader modules; this reference does not substitute a copied schema diagram for the database's current schema.
 
@@ -28,4 +30,4 @@ Minimum staffing and objective weights use `dbo.StaffSchedulingMinimalStaffing` 
 
 Writes use `engine.begin()` transaction boundaries. The solution writer replaces generated assignments using `TPlanPersonalKommtGeht` and existing plan/personnel/shift context. Wishes, availability, minimum staffing and weights have separate writers. Transactions roll back on failure; independent input acceptance, exact publication/clear scope and connected write verification are still unfinished.
 
-Generation also writes compatibility JSON to the shared runtime data directory for feasible results. Those filesystem exports are separate from SQL publication and from the pending portable bundle contract. See [limitations](../limitations.md) before treating a result as accepted or published.
+Generation also writes compatibility JSON to the shared runtime data directory for feasible results. Those filesystem exports are separate from SQL publication and from the pending portable bundle contract. See [limitations](../validation/index.md) before treating a result as accepted or published.

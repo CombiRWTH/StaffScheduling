@@ -1,5 +1,7 @@
 # API
 
+This reference describes inspected source definitions. Connected database behavior and complete user workflows require separate acceptance evidence; see [current limitations](../validation/index.md).
+
 The FastAPI application is `api/app/main.py`. With Compose running, open <http://localhost:8000/docs> for interactive request/response schemas, or <http://localhost:8000/openapi.json> for OpenAPI. Schemas reflect the current checkout.
 
 ## Routes
@@ -32,4 +34,4 @@ Jobs/lock live in memory and disappear on restart or development reload. Use one
 
 Configuration writes and publication change the external database. Some configuration readers can create supplemental tables; see [TimeOffice](timeoffice.md). This reference intentionally does not provide a publication command before its pending scope/acceptance verification.
 
-The old fetch/insert/delete routes, multi-solve, metadata endpoint and CLI entry points are not supplied by this API. Existing frontend DTO translations differ from canonical domain models. Consult [limitations](../limitations.md) for remaining integration and quality gates.
+The old fetch/insert/delete routes, multi-solve, metadata endpoint and CLI entry points are not supplied by this API. Existing frontend DTO translations differ from canonical domain models. Consult [limitations](../validation/index.md) for remaining integration and quality gates.
