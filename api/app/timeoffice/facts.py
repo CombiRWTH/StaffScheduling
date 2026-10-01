@@ -6,16 +6,12 @@ from app.domain.availability import AvailabilityType
 from app.domain.employee import Capability, StaffLevel
 from app.domain.planning_unit import PlanningUnitId, PlanningUnitType
 from app.domain.shift import ShiftId, ShiftType, StaffingDemandRole
-from app.domain.wish import WishType
 
 # TPlan.RefPlanungsIntervalle value for monthly planning.
 MONTHLY_PLANNING_INTERVAL_ID = 1
 
 # TPlan.RefStati value for the editable target roster used as planning input.
 TARGET_PLANNING_STATUS_ID = 20
-
-# TDienste.RefDienstTypen value for normal work shifts.
-WORK_SHIFT_TYPE_ID = 1
 
 # TPersonalKontenJeMonat.RefKonten for planned monthly target hours.
 MONTHLY_TARGET_WORK_ACCOUNT_ID = 1
@@ -61,10 +57,6 @@ class TimeOfficeReferenceShiftFact:
     staffing_role: StaffingDemandRole
 
 
-type WeekdayDemand = tuple[int, int, int, int, int, int, int]  # Mo, Di, Mi, Do, Fr, Sa, So
-type PlanningUnitDemandMatrix = Mapping[StaffLevel, Mapping[ShiftId, WeekdayDemand]]
-
-
 @dataclass(frozen=True, slots=True)
 class TimeOfficeFacts:
     """Source assumptions and reduced-domain mappings for the TimeOffice adapter.
@@ -79,32 +71,15 @@ class TimeOfficeFacts:
 
     planning_unit_type_by_id: Mapping[PlanningUnitId, PlanningUnitType]
 
-    work_shift_type_id: int
-
     reference_shift_facts_by_id: Mapping[ShiftId, TimeOfficeReferenceShiftFact]
-    # Shift IDs used only to read TDiensteSollzeiten for VonZeit/BisZeit/Minuten
-    time_source_shift_id_by_reference_shift_id: Mapping[ShiftId, int]
-
-    # Non-reference source shift IDs normalized to reduced reference shifts.
-    # Missing source shift ID => fail loudly in mapping.
-    shift_id_overrides: Mapping[ShiftId, ShiftId]
 
     staff_level_by_profession_code: Mapping[str, StaffLevel]
-
-    # Temporary fallback until demand is read from TimeOffice demand tables.
-    # Shape mirrors the future source concept: planning unit -> staff level -> shift -> weekday demand.
-    fallback_demand_by_planning_unit: Mapping[PlanningUnitId, PlanningUnitDemandMatrix]
 
     # Temporary project/problem assumptions. Not DB-backed yet.
     capabilities_by_employee_id: Mapping[int, tuple[Capability, ...]]
 
     availability_type_by_absence_code: Mapping[str, AvailabilityType]
     ignored_availability_absence_codes: frozenset[str]
-
-    wish_type_by_absence_code: Mapping[str, WishType]
-    wish_absence_shift_id_by_type: Mapping[WishType, int]
-
-    availability_absence_shift_id_by_type: Mapping[AvailabilityType, int]
 
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
@@ -135,43 +110,6 @@ REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = Ma
             type=ShiftType.INTERMEDIATE,
             staffing_role=StaffingDemandRole.OPTIONAL_COVERAGE,
         ),
-    }
-)
-
-# Source shift variants observed in roster rows.
-# Reference shift codes must not be repeated here.
-SHIFT_ID_OVERRIDES: Mapping[ShiftId, ShiftId] = MappingProxyType(
-    {
-        # Night variants normalized to canonical N2_ night shift.
-        2939: EARLY_SHIFT_ID,  # F2_
-        1125: EARLY_SHIFT_ID,  # F32
-        1194: EARLY_SHIFT_ID,  # F95
-        2947: LATE_SHIFT_ID,  # S2_
-        2867: LATE_SHIFT_ID,  # S61
-        2953: NIGHT_SHIFT_ID,  # N2_
-        2906: INTERMEDIATE_SHIFT_ID,  # T72_
-        1692: NIGHT_SHIFT_ID,  # N15, partial night
-        3076: NIGHT_SHIFT_ID,  # N5
-        2889: NIGHT_SHIFT_ID,  # N5
-        1698: NIGHT_SHIFT_ID,  # N5
-        2866: NIGHT_SHIFT_ID,  # N5
-        # Day/intermediate variant normalized to canonical T75_ intermediate shift.
-        2994: INTERMEDIATE_SHIFT_ID,  # T8x
-        1274: INTERMEDIATE_SHIFT_ID,  # T8
-        1234: INTERMEDIATE_SHIFT_ID,  # T28
-        3065: INTERMEDIATE_SHIFT_ID,  # Z7
-        3086: INTERMEDIATE_SHIFT_ID,  # RBLx
-        1198: INTERMEDIATE_SHIFT_ID,  # T1
-        2733: EARLY_SHIFT_ID,  # F34
-        2923: EARLY_SHIFT_ID,  # F1_
-        3263: INTERMEDIATE_SHIFT_ID,  # M15
-        2924: LATE_SHIFT_ID,  # S1_
-        2925: NIGHT_SHIFT_ID,  # N
-        1364: EARLY_SHIFT_ID,  # D29
-        1356: INTERMEDIATE_SHIFT_ID,
-        3066: INTERMEDIATE_SHIFT_ID,  # Z52 intermediate shift
-        1406: INTERMEDIATE_SHIFT_ID,  # Z60 intermediate shift
-        1452: INTERMEDIATE_SHIFT_ID,  # Z53 intermediate shift
     }
 )
 
@@ -216,39 +154,6 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
     }
 )
 
-# Minimal default while solver constraints are being migrated to SchedulingDataset.
-# Empty demand means: read/map/validate the station, but do not create artificial
-# fallback coverage requirements for it yet.
-DEFAULT_STATION_DEMAND: PlanningUnitDemandMatrix = MappingProxyType({})
-
-STATION_77_DEMAND: PlanningUnitDemandMatrix = MappingProxyType(
-    {
-        # Weekday tuple order: Mo, Di, Mi, Do, Fr, Sa, So.
-        StaffLevel.PROFESSIONAL: MappingProxyType(
-            {
-                EARLY_SHIFT_ID: (3, 3, 4, 3, 3, 2, 2),
-                LATE_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
-                NIGHT_SHIFT_ID: (2, 2, 2, 2, 2, 1, 1),
-            }
-        ),
-        StaffLevel.ASSISTANT: MappingProxyType(
-            {
-                EARLY_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
-                LATE_SHIFT_ID: (2, 2, 2, 2, 2, 2, 2),
-                NIGHT_SHIFT_ID: (0, 0, 0, 0, 0, 1, 1),
-            }
-        ),
-        StaffLevel.TRAINEE: MappingProxyType(
-            {
-                EARLY_SHIFT_ID: (1, 1, 1, 1, 1, 1, 1),
-                LATE_SHIFT_ID: (1, 1, 1, 1, 1, 1, 1),
-                NIGHT_SHIFT_ID: (0, 0, 0, 0, 0, 0, 0),
-            }
-        ),
-    }
-)
-
-
 TIMEOFFICE_FACTS = TimeOfficeFacts(
     monthly_planning_interval_id=MONTHLY_PLANNING_INTERVAL_ID,
     target_planning_status_id=TARGET_PLANNING_STATUS_ID,
@@ -263,29 +168,8 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
             SHARED_POOL_408_ID: PlanningUnitType.SHARED_POOL,
         }
     ),
-    work_shift_type_id=WORK_SHIFT_TYPE_ID,
     reference_shift_facts_by_id=REFERENCE_SHIFT_FACTS_BY_ID,
-    time_source_shift_id_by_reference_shift_id=MappingProxyType(
-        {
-            EARLY_SHIFT_ID: 2939,  # Für F2 -> Konnte keine Zeiten für F finden
-            LATE_SHIFT_ID: 2947,  # Für S2 -> Konnte keine Zeiten für S finden
-            NIGHT_SHIFT_ID: 2953,  # Für N2_ -> Konnte keine Zeiten für N finden
-            INTERMEDIATE_SHIFT_ID: 1274,  # Für T8 -> Konnte keine Zeiten für T finden
-        }
-    ),
-    shift_id_overrides=SHIFT_ID_OVERRIDES,
     staff_level_by_profession_code=STAFF_LEVEL_BY_PROFESSION_CODE,
-    fallback_demand_by_planning_unit=MappingProxyType(
-        {
-            STATION_77_ID: STATION_77_DEMAND,
-            STATION_78_ID: DEFAULT_STATION_DEMAND,
-            STATION_79_ID: DEFAULT_STATION_DEMAND,
-            STATION_85_ID: DEFAULT_STATION_DEMAND,
-            STATION_239_ID: DEFAULT_STATION_DEMAND,
-            STATION_337_ID: DEFAULT_STATION_DEMAND,
-            # Intentionally no demand for SHARED_POOL_408_ID.
-        }
-    ),
     capabilities_by_employee_id=MappingProxyType(
         {
             # Not DB-backed yet.
@@ -315,26 +199,11 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
             "KK": AvailabilityType.UNAVAILABLE,  # Krank
         }
     ),
-    availability_absence_shift_id_by_type=MappingProxyType(
-        {
-            AvailabilityType.UNAVAILABLE: 2738,  # TODO: Mapped momentan auf SC. Durch richtigen Code ersetzen
-        }
-    ),
     ignored_availability_absence_codes=frozenset(
         {
             # Existing roster free/reduction markers.
             # They must not block solve-from-scratch.
             "FR",  # geplanter Freier Tag - Soll der als Urlaub oder unavailable gehändelt werden
-        }
-    ),
-    wish_type_by_absence_code=MappingProxyType(
-        {
-            "FR": WishType.FREE_DAY,
-        }
-    ),
-    wish_absence_shift_id_by_type=MappingProxyType(
-        {
-            WishType.FREE_DAY: 1089,
         }
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,

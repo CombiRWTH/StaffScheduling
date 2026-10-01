@@ -4,7 +4,15 @@ from app.domain.core import MinuteOfDay, NonEmptyStr, NonNegativeInt, PositiveId
 from app.domain.dataset import SchedulingDataset
 from app.domain.demand import DemandRequirement
 from app.domain.employee import Capability, Employee, EmployeeId, StaffLevel
-from app.domain.monthly_work_account import MonthlyWorkAccount
+from app.domain.inspection import (
+    EmployeeInspection,
+    EmployeeMonthEvidence,
+    PlanningInspection,
+    PlanningOptions,
+    build_inspection,
+    inspection_employee_ids,
+)
+from app.domain.monthly_work_account import MonthlyWorkAccount, WorkCredit
 from app.domain.objective_weights import SolverObjectiveWeights
 from app.domain.plan import Plan, PlanId
 from app.domain.planning_month import PlanningMonth
@@ -44,5 +52,12 @@ __all__ = [
     "Wish",
     "WishType",
     "MonthlyWorkAccount",
+    "WorkCredit",
+    "EmployeeMonthEvidence",
+    "EmployeeInspection",
+    "PlanningInspection",
+    "PlanningOptions",
+    "build_inspection",
+    "inspection_employee_ids",
     "SolverObjectiveWeights",
 ]

@@ -41,7 +41,6 @@ build:
     cd webapp && pnpm run build
 
 run:
-    mkdir -p data/found_solutions data/processed_solutions
     docker compose up --build --wait
 
 stop:

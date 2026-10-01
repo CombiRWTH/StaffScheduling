@@ -54,10 +54,6 @@ site/
 *.log
 logs/
 
-# Solver outputs
-**/found_solutions/*.json
-**/processed_solutions/*
-
 .cache
 
 # Test-generated outputs

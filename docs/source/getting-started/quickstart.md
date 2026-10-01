@@ -32,7 +32,6 @@ The committed `.env` already contains the test database server, database name an
 ## 3. Start both services
 
 ```sh
-mkdir -p data/found_solutions data/processed_solutions
 docker compose up --build --wait
 ```
 

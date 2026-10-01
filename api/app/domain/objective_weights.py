@@ -1,5 +1,3 @@
-from typing import Self
-
 from pydantic import Field
 
 from app.domain.core import SchedulingBaseModel
@@ -24,7 +22,3 @@ class SolverObjectiveWeights(SchedulingBaseModel):
     shift_rotation: int = Field(default=1, ge=0)
     second_weekend_penalty: int = Field(default=1, ge=0)
     employee_wish: int = Field(default=3, ge=0)
-
-    @classmethod
-    def default_for_planning_unit(cls, planning_unit_id: PlanningUnitId) -> Self:
-        return cls(planning_unit_id=planning_unit_id)

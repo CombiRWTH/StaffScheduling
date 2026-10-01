@@ -35,7 +35,7 @@ A feasible model satisfies the implemented model, which may differ from the comp
 | `SOLVER_RANDOM_SEED`         | unset   | Optional search seed                               |
 | `SOLVER_LOG_SEARCH_PROGRESS` | `false` | Enable solver progress logs                        |
 
-`POST /solve/` has its own `timeout` field, defaulting to 30 seconds, which is passed to the service and overrides its default search limit. A fixed seed alone does not guarantee reproducibility with parallel search. Set settings in root `.env` for Compose and recreate the API after changes.
+The engine is currently exercised only by its unit tests; no API route invokes it until the generation slice reconnects it. A fixed seed alone does not guarantee reproducibility with parallel search. Set settings in root `.env` for Compose and recreate the API after changes.
 
 ## Changing a rule
 

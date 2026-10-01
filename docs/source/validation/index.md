@@ -16,9 +16,9 @@ The webapp was rebuilt as a plain Next.js App Router project. Only the home page
 
 ## Solver and publication
 
-Jobs and the solve lock are process-local; use one API process. Jobs disappear on reload/restart. A completed job can contain an infeasible, unknown or invalid model result. Independent schedule acceptance, complete required policy correction, scoped publication/clear verification and coordinated six-month example files are pending.
+The solver engine is not reachable through the API; its unit tests run offline, nine currently failing. Generation jobs, independent schedule acceptance, complete required policy correction, scoped publication/clear verification and coordinated six-month example files are pending.
 
-No publication or other database write path exists: the legacy publication endpoint and all adapter writers were removed. Scoped, checked publication and clear are a later slice. Current compatibility JSON exports are not the final portable input/result/CSV bundle contract.
+No publication or other database write path exists: the legacy publication endpoint and all adapter writers were removed. Scoped, checked publication and clear are a later slice.
 
 ## Quality gates
 

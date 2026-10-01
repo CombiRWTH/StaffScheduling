@@ -1,0 +1,295 @@
+"""TimeOffice SELECTs, each returning canonical domain models.
+
+Every function owns one source query together with its TimeOffice-specific translation
+(codes, accounts, names) and the source-level checks that need that knowledge.
+Cross-entity completeness rules live in the domain.
+"""
+
+import json
+from collections.abc import Sequence
+from datetime import datetime
+from math import isfinite
+from typing import Any
+
+from sqlalchemy import BindParameter, Connection, RowMapping, bindparam, text
+
+from app.domain import (
+    Availability,
+    Employee,
+    EmployeeMonthEvidence,
+    MonthlyWorkAccount,
+    PlanningMonth,
+    PlanningUnit,
+    PlanningUnitMembership,
+    StaffLevel,
+)
+from app.timeoffice.facts import TimeOfficeFacts
+
+
+def read_units(connection: Connection, facts: TimeOfficeFacts) -> tuple[PlanningUnit, ...]:
+    """All configured planning units with their TimeOffice short names."""
+    rows = _select(
+        connection,
+        """
+        SELECT pe.Prim AS planning_unit_id, pe.KurzBez AS planning_unit_code
+        FROM TPlanungseinheiten pe
+        WHERE pe.Prim IN :planning_unit_ids
+        ORDER BY pe.Prim
+        """,
+        planning_unit_ids=sorted(facts.planning_unit_type_by_id),
+    )
+    if len({row["planning_unit_id"] for row in rows}) != len(rows):
+        raise ValueError("Duplicate planning unit option rows.")
+    if not set(facts.planning_unit_type_by_id) <= {row["planning_unit_id"] for row in rows}:
+        raise ValueError("Configured planning units are missing.")
+    units: list[PlanningUnit] = []
+    for row in rows:
+        name = _text(row["planning_unit_code"])
+        if name is None:
+            raise ValueError("Planning unit display names are missing.")
+        unit_id = row["planning_unit_id"]
+        units.append(
+            PlanningUnit(planning_unit_id=unit_id, display_name=name, type=facts.planning_unit_type_by_id[unit_id])
+        )
+    return tuple(units)
+
+
+def read_units_with_target_plan(
+    connection: Connection, facts: TimeOfficeFacts, unit_ids: Sequence[int], month: PlanningMonth
+) -> set[int]:
+    """Units that have exactly one editable full-month target plan; plan IDs stay inside the adapter."""
+    if not unit_ids:
+        return set()
+    rows = _select(
+        connection,
+        """
+        SELECT pe.Prim AS planning_unit_id, p.Prim AS plan_id, p.RefPlanungseinheiten AS plan_planning_unit_id
+        FROM TPlanungseinheiten pe
+        JOIN TPlan p ON p.RefPlanungseinheiten = pe.Prim
+        WHERE pe.Prim IN :planning_unit_ids
+            AND p.RefPlanungsIntervalle = :planning_interval_id
+            AND p.RefStati = :planning_status_id
+            AND CONVERT(date, p.VonDat) = :start
+            AND CONVERT(date, p.BisDat) = :end
+        ORDER BY pe.Prim
+        """,
+        planning_unit_ids=list(unit_ids),
+        start=month.start,
+        end=month.end,
+        planning_interval_id=facts.monthly_planning_interval_id,
+        planning_status_id=facts.target_planning_status_id,
+    )
+    found = [row["planning_unit_id"] for row in rows]
+    if any(row["plan_planning_unit_id"] != row["planning_unit_id"] for row in rows):
+        raise ValueError("A TimeOffice target plan references a different planning unit.")
+    if len(set(found)) != len(found):
+        raise ValueError("Multiple TimeOffice target plans found for one planning unit.")
+    return set(found)
+
+
+def read_memberships(
+    connection: Connection, facts: TimeOfficeFacts, unit_ids: Sequence[int], month: PlanningMonth
+) -> tuple[PlanningUnitMembership, ...]:
+    """Dated unit memberships overlapping the month, excluding those marked as not planned."""
+    rows = _select(
+        connection,
+        """
+        SELECT
+            pep.RefPlanungseinheiten AS planning_unit_id,
+            pep.RefPersonal AS employee_id,
+            b.KurzBez AS membership_profession_code,
+            pep.VonDat AS valid_from,
+            pep.BisDat AS valid_until,
+            CAST(ISNULL(pep.IstHeimat, 0) AS bit) AS is_home,
+            CAST(ISNULL(pep.IstVonErsatz, 0) AS bit) AS is_replacement
+        FROM TPlanungseinheitenPersonal pep
+        LEFT JOIN TBerufe b ON b.Prim = pep.RefBerufe
+        WHERE pep.RefPlanungseinheiten IN :planning_unit_ids
+            AND CONVERT(date, pep.VonDat) <= :end
+            AND (pep.BisDat IS NULL OR CONVERT(date, pep.BisDat) >= :start)
+            AND ISNULL(pep.KeinEPlan, 0) = 0
+        ORDER BY planning_unit_id, employee_id, valid_from, valid_until
+        """,
+        planning_unit_ids=list(unit_ids),
+        start=month.start,
+        end=month.end,
+    )
+    return tuple(
+        PlanningUnitMembership(
+            planning_unit_id=row["planning_unit_id"],
+            employee_id=row["employee_id"],
+            valid_from=row["valid_from"].date(),
+            valid_until=row["valid_until"].date() if row["valid_until"] else None,
+            staff_level=_staff_level(row["membership_profession_code"], facts, f"membership of {row['employee_id']}"),
+            is_home=row["is_home"],
+            is_replacement=row["is_replacement"],
+        )
+        for row in rows
+    )
+
+
+def read_employees(connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int]) -> tuple[Employee, ...]:
+    """Employee master data; every requested employee must exist and have a name."""
+    rows = _select(
+        connection,
+        """
+        SELECT
+            per.Prim AS employee_id,
+            b.KurzBez AS employee_profession_code,
+            per.Vorname AS first_name,
+            per.Name AS last_name
+        FROM TPersonal per
+        LEFT JOIN TBerufe b ON b.Prim = per.RefBerufe
+        WHERE per.Prim IN :employee_ids
+        ORDER BY per.Name, per.Vorname, per.Prim
+        """,
+        employee_ids=list(employee_ids),
+    )
+    if missing := sorted(set(employee_ids) - {row["employee_id"] for row in rows}):
+        raise ValueError(f"Missing TimeOffice employee master rows for employee_ids={missing}.")
+    employees: list[Employee] = []
+    for row in rows:
+        name = " ".join(part for part in (_text(row["last_name"]), _text(row["first_name"])) if part)
+        if not name:
+            raise ValueError(f"Missing TimeOffice employee display name for employee_id={row['employee_id']}.")
+        employees.append(
+            Employee(
+                employee_id=row["employee_id"],
+                display_name=name,
+                staff_level=_staff_level(row["employee_profession_code"], facts, f"employee {row['employee_id']}"),
+                capabilities=tuple(facts.capabilities_by_employee_id.get(row["employee_id"], ())),
+            )
+        )
+    return tuple(employees)
+
+
+def read_accounts(
+    connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
+) -> tuple[MonthlyWorkAccount, ...]:
+    """Monthly target hours (required) and actual hours (optional), converted to minutes."""
+    rows = _select(
+        connection,
+        """
+        SELECT target.RefPersonal AS employee_id, target.Wert2 AS target_hours, actual.Wert2 AS actual_hours
+        FROM TPersonalKontenJeMonat target
+        LEFT JOIN TPersonalKontenJeMonat actual
+            ON actual.RefPersonal = target.RefPersonal
+            AND actual.Monat = target.Monat
+            AND actual.RefKonten = :actual_account_id
+        WHERE target.RefPersonal IN :employee_ids
+            AND target.Monat = :month
+            AND target.RefKonten = :target_account_id
+        ORDER BY target.RefPersonal
+        """,
+        employee_ids=list(employee_ids),
+        month=month.year * 100 + month.month,
+        target_account_id=facts.monthly_target_work_account_id,
+        actual_account_id=facts.monthly_actual_work_account_id,
+    )
+    return tuple(
+        MonthlyWorkAccount(
+            employee_id=row["employee_id"],
+            target_minutes=_minutes(row["target_hours"]),
+            actual_minutes=None if row["actual_hours"] is None else _minutes(row["actual_hours"]),
+        )
+        for row in rows
+    )
+
+
+def read_absences(
+    connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
+) -> tuple[Availability, ...]:
+    """Dated roster absences as hard restrictions; ignored codes are dropped, unknown codes fail."""
+    rows = _select(
+        connection,
+        """
+        SELECT
+            pkg.RefPersonal AS employee_id,
+            pkg.Datum AS roster_date,
+            COALESCE(global_absence_d.KurzBez, absence_d.KurzBez) AS resolved_absence_code
+        FROM TPlanPersonalKommtGeht pkg
+        LEFT JOIN TDienste global_absence_d ON global_absence_d.Prim = pkg.RefgAbw
+        LEFT JOIN TDienste absence_d ON absence_d.Prim = pkg.RefDienstAbw
+        WHERE pkg.RefPersonal IN :employee_ids
+            AND CONVERT(date, pkg.Datum) BETWEEN :start AND :end
+            AND ISNULL(pkg.Wunschdienst, 0) = 0
+            AND (pkg.RefgAbw IS NOT NULL OR pkg.RefDienstAbw IS NOT NULL)
+        ORDER BY pkg.RefPersonal, pkg.Datum
+        """,
+        employee_ids=list(employee_ids),
+        start=month.start,
+        end=month.end,
+    )
+    absences: dict[Availability, None] = {}
+    for row in rows:
+        code = _text(row["resolved_absence_code"])
+        day: datetime = row["roster_date"]
+        if code is None:
+            raise ValueError(f"Missing absence code for employee_id={row['employee_id']} on {day.date()}.")
+        if code in facts.ignored_availability_absence_codes:
+            continue
+        if code not in facts.availability_type_by_absence_code:
+            raise ValueError(f"Unmapped TimeOffice absence code {code!r} for employee_id={row['employee_id']}.")
+        restriction = Availability(
+            employee_id=row["employee_id"],
+            date=day.date(),
+            availability_type=facts.availability_type_by_absence_code[code],
+            reason=code,
+            source="TimeOffice absence",
+        )
+        absences[restriction] = None
+    return tuple(absences)
+
+
+def read_evidence(
+    connection: Connection, employee_ids: Sequence[int], month: PlanningMonth
+) -> tuple[EmployeeMonthEvidence, ...]:
+    """Explicitly prepared monthly credit/restriction declarations; reads never provision the table."""
+    rows = _select(
+        connection,
+        """
+        SELECT employee_id, credit_details, hard_restrictions, source
+        FROM dbo.StaffSchedulingEmployeeMonthEvidence
+        WHERE employee_id IN :employee_ids AND planning_month = :planning_month
+        ORDER BY employee_id
+        """,
+        employee_ids=list(employee_ids),
+        planning_month=month.start,
+    )
+    return tuple(
+        EmployeeMonthEvidence(
+            employee_id=row["employee_id"],
+            credit_details=json.loads(row["credit_details"]),
+            hard_restrictions=json.loads(row["hard_restrictions"]),
+            source=row["source"],
+        )
+        for row in rows
+    )
+
+
+def _select(connection: Connection, sql: str, **params: Any) -> Sequence[RowMapping]:
+    """Run one SELECT; list parameters expand into IN clauses. An empty IN list reads nothing."""
+    lists = [name for name, value in params.items() if isinstance(value, list)]
+    if any(not params[name] for name in lists):
+        return []
+    binds: list[BindParameter[Any]] = [bindparam(name, expanding=True) for name in lists]
+    query = text(sql).bindparams(*binds)
+    return connection.execute(query, params).mappings().all()
+
+
+def _text(value: Any) -> str | None:
+    """TimeOffice stores blanks and padded codes; treat whitespace-only text as missing."""
+    return str(value).strip() or None if value is not None else None
+
+
+def _staff_level(profession_code: Any, facts: TimeOfficeFacts, context: str) -> StaffLevel:
+    code = _text(profession_code)
+    if code is None or code not in facts.staff_level_by_profession_code:
+        raise ValueError(f"No qualification mapping for TimeOffice profession {code!r} ({context}).")
+    return facts.staff_level_by_profession_code[code]
+
+
+def _minutes(hours: Any) -> int:
+    if hours is None or not isfinite(hours) or hours < 0:
+        raise ValueError("Missing or invalid monthly work-account hours.")
+    return round(hours * 60)

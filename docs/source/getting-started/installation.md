@@ -66,7 +66,6 @@ It checks configuration, the installed driver, DNS, encrypted login and `SELECT 
 ## Start, update and stop
 
 ```sh
-mkdir -p data/found_solutions data/processed_solutions
 docker compose up --build --wait
 docker compose ps
 ```
@@ -78,7 +77,7 @@ docker compose logs --follow
 docker compose down
 ```
 
-`data/` is used by the API and initially contains only `.gitkeep`. Solver compatibility exports use `data/found_solutions/` and `data/processed_solutions/`. Prepare the two output directories before startup as shown above; `just run` does this too. Runtime files are ignored. The API maps them under `/project/data/`. Container shutdown preserves them. Exported compatibility files are not independently accepted hand-in schedules.
+`data/` is the API's persistent runtime directory, mapped to `/project/data/`, and initially contains only `.gitkeep`. Nothing writes to it yet; later export bundles will. Runtime files are ignored and survive container shutdown.
 
 Named volumes hold webapp dependencies and Next build output. Do not delete `data/` as a troubleshooting step. `docker compose down` is sufficient for ordinary shutdown.
 

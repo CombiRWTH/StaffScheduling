@@ -10,10 +10,8 @@ from unittest.mock import MagicMock
 from sqlalchemy import Engine
 
 from app.domain import PlanningUnitType
+from app.timeoffice import TimeOfficeService
 from app.timeoffice.facts import TIMEOFFICE_FACTS
-from app.timeoffice.reading.container import TimeOfficeReaders
-from app.timeoffice.service import TimeOfficeService
-from app.timeoffice.writing.solution import TimeOfficeSolutionWriter
 
 
 class InspectionSource:
@@ -44,8 +42,6 @@ class InspectionSource:
         self.service = TimeOfficeService(
             facts=self.facts,
             engine=engine,
-            readers=TimeOfficeReaders.create(facts=self.facts),
-            solution_writer=TimeOfficeSolutionWriter(),
         )
 
     def execute(self, query: Any, params: dict[str, Any]) -> MagicMock:

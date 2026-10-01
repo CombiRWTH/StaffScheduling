@@ -8,11 +8,9 @@ import pytest
 from fastapi.testclient import TestClient
 from inspection_fixture import InspectionSource
 
-from app.dependencies import get_timeoffice_service
+from app.api.planning import get_planning_source
 from app.domain import PlanningMonth, StaffLevel
 from app.main import app
-from app.timeoffice.mapping.work_accounts import map_monthly_work_accounts
-from app.timeoffice.reading.work_accounts import TimeOfficeMonthlyWorkAccountRow
 
 
 def test_combined_scope_retains_identity_memberships_mfa_origin_and_account_evidence() -> None:
@@ -70,7 +68,7 @@ def test_missing_or_ambiguous_source_facts_fail_the_whole_inspection(flag: str) 
 
 def test_options_full_month_and_http_failure_contract() -> None:
     source = InspectionSource()
-    app.dependency_overrides[get_timeoffice_service] = lambda: source.service
+    app.dependency_overrides[get_planning_source] = lambda: source.service
     try:
         client = cast(httpx.Client, TestClient(app))
         response = client.get("/planning/options?year=2026&month=2")
@@ -91,13 +89,25 @@ def test_options_full_month_and_http_failure_contract() -> None:
 
 
 def test_explicit_zero_target_and_actual_are_preserved_missing_target_is_error() -> None:
-    row = TimeOfficeMonthlyWorkAccountRow(employee_id=1, month=202601, target_hours=0, actual_hours=0)
-    account = map_monthly_work_accounts((row,))[0]
+    source = InspectionSource()
+    original_execute = source.execute
+    target_hours: list[float | None] = [0.0]
+
+    def accounts_execute(query: Any, params: dict[str, Any]) -> MagicMock:
+        result = original_execute(query, params)
+        if "TPersonalKontenJeMonat" in str(query):
+            for row in result.mappings.return_value.all.return_value:
+                row.update(target_hours=target_hours[0], actual_hours=0.0)
+        return result
+
+    source.connection.execute.side_effect = accounts_execute
+    month = PlanningMonth(year=2026, month=1)
+    account = source.service.inspect_employees(planning_unit_ids=(101,), planning_month=month).employees[0].account
     assert account.target_minutes == 0
     assert account.actual_minutes == 0
-    assert account.credited_minutes is None
+    target_hours[0] = None
     with pytest.raises(ValueError, match="Missing"):
-        map_monthly_work_accounts((row.model_copy(update={"target_hours": None}),))
+        source.service.inspect_employees(planning_unit_ids=(101,), planning_month=month)
 
 
 @pytest.mark.parametrize("defect", ["credit_date", "duplicate_credit", "restriction_identity", "ambiguous_home"])

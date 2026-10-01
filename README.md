@@ -9,7 +9,6 @@ Install [Docker with Compose](https://docs.docker.com/compose/install/) and star
 From the repository root:
 
 ```sh
-mkdir -p data/found_solutions data/processed_solutions
 docker compose up --build --wait
 ```
 

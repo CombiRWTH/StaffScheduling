@@ -23,7 +23,3 @@ class PlanningMonth(SchedulingBaseModel):
             self.month,
             monthrange(self.year, self.month)[1],
         )
-
-    @property
-    def label(self) -> str:
-        return f"{self.year:04d}-{self.month:02d}"

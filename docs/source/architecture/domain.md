@@ -30,7 +30,7 @@ A `PLANNED` assignment belongs to a selected unit and requires its unit ID. `EXT
 
 ## Validation and output
 
-Model validators check individual fields and relationships. `api/app/validation/` checks aggregate consistency across IDs, dates and entities. Solver-specific indexes and decision variables are derived later in `solver/cp_sat/`.
+Model validators check individual fields and relationships. Solver-specific indexes and decision variables are derived later in `solver/cp_sat/`.
 
 `Solution` in `api/app/solver/models.py` carries status, generated assignments, diagnostics and audit. The existing audit is implemented by solver components, not an independent acceptance checker. Canonical portable bundles and accepted CSV exports remain pending; the retired JSON file formats are not this domain contract.
 
@@ -38,7 +38,7 @@ For exact fields and validators, read the model modules rather than copying fron
 
 ## Complete employee inspection
 
-`api/app/employees/` composes existing canonical employee, unit, membership, account and availability models into a `PlanningInspection`. It contains one month, selected station IDs, the relevant unit catalog and one entry per stable employee ID. It exposes no plan IDs, source rows, split-name aliases or special capabilities. Inspection validates only its own read responsibilities; it does not require staffing demand, a solve result or the full legacy dataset to be valid.
+`api/app/domain/inspection.py` composes existing canonical employee, unit, membership, account and availability models into a `PlanningInspection`. It contains one month, selected station IDs, the relevant unit catalog and one entry per stable employee ID. It exposes no plan IDs, source rows, split-name aliases or special capabilities. Inspection validates only its own read responsibilities; it does not require staffing demand, a solve result or the full legacy dataset to be valid.
 
 Every employee requires exactly one account and monthly evidence declaration. `WorkCredit` carries a full date, nonnegative integer minutes, `approved_absence`/`trusted_work` kind and source. Explicitly declared empty credits sum to zero; absent credit evidence remains unknown and is rejected by inspection. Actual hours never become credits. Native restrictions preserve reason/source; prepared restrictions retain dates and allowed-shift IDs. Foreign employee/shift references and out-of-month credit/restriction dates fail the read.
 

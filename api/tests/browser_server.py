@@ -6,10 +6,9 @@ import uvicorn
 from fastapi import Request
 from inspection_fixture import InspectionSource
 
-from app.dependencies import get_timeoffice_service
+from app.api.planning import get_planning_source
 from app.main import app
-from app.timeoffice.database import TimeOfficeUnavailable
-from app.timeoffice.service import TimeOfficeService
+from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable
 
 source = InspectionSource()
 
@@ -24,7 +23,7 @@ def browser_timeoffice(request: Request) -> TimeOfficeService:
     return source.service
 
 
-app.dependency_overrides[get_timeoffice_service] = browser_timeoffice
+app.dependency_overrides[get_planning_source] = browser_timeoffice
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=18080)

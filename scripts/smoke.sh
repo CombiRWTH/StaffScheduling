@@ -6,7 +6,7 @@ smoke_dir=$(mktemp -d)
 export COMPOSE_PROJECT_NAME="foundation-$(basename "$smoke_dir" | tr '[:upper:].' '[:lower:]-')"
 export API_PORT=0 WEBAPP_PORT=0 BIND_ADDRESS=127.0.0.1
 export DATA_DIR="$smoke_dir/data" DB_PASSWORD_FILE="$smoke_dir/db_password"
-mkdir -p "$DATA_DIR/found_solutions" "$DATA_DIR/processed_solutions"
+mkdir -p "$DATA_DIR"
 : > "$DB_PASSWORD_FILE"
 cat > "$smoke_dir/compose.yaml" <<'YAML'
 services:
@@ -52,21 +52,17 @@ except HTTPError as error:
     assert 'smoke-only' not in str(body)
 else:
     raise AssertionError('Unavailable database must return 503')
-for directory in ('found_solutions', 'processed_solutions'):
-    Path('../data', directory, 'smoke.txt').write_text('persistent\n')
+Path('../data/smoke.txt').write_text('persistent\n')
 PY
 # Stop the API to prove the webapp route performs a real server-side request.
 docker compose stop api
 docker compose exec -T webapp node -e "fetch('http://localhost:3000/api/health', {signal: AbortSignal.timeout(10000)}).then(async r => { if (r.status !== 503) throw Error('Expected unavailable API'); }).catch(e => { console.error(e); process.exit(1); })"
 docker compose down
 docker compose up --wait --wait-timeout 180
-for directory in found_solutions processed_solutions; do
-    test "$(cat "$DATA_DIR/$directory/smoke.txt")" = persistent
-done
+test "$(cat "$DATA_DIR/smoke.txt")" = persistent
 docker compose exec -T api python - <<'PY'
 from pathlib import Path
-for directory in ('found_solutions', 'processed_solutions'):
-    assert Path('../data', directory, 'smoke.txt').read_text() == 'persistent\n'
+assert Path('../data/smoke.txt').read_text() == 'persistent\n'
 PY
 docker compose exec -T webapp node -e "fetch('http://localhost:3000/api/health', {signal: AbortSignal.timeout(10000)}).then(r => { if (!r.ok) throw Error('API did not recover'); }).catch(e => { console.error(e); process.exit(1); })"
 printf 'Compose smoke passed: HTTP connectivity, unavailable database/API, persistence and recreation.\n'

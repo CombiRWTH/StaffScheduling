@@ -6,14 +6,12 @@ This reference describes inspected source definitions. Connected database behavi
 
 ## Modules
 
-| Path under `api/app/timeoffice/` | Responsibility                                                                                 |
-| -------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `database.py`                    | SQLAlchemy engine using `mssql+pyodbc`                                                         |
-| `facts.py`                       | Reference identifiers, shift mappings and planning status assumptions                          |
-| `reading/`                       | SQL readers for units, personnel, shifts, rosters, demand, wishes, accounts and Sunday history |
-| `mapping/`                       | Source rows to canonical models/dataset                                                        |
-| `writing/`                       | Solver compatibility JSON exports                                                              |
-| `service.py`                     | Small entry points that coordinate these operations                                            |
+| Path under `api/app/timeoffice/` | Responsibility                                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `database.py`                    | SQLAlchemy engine using `mssql+pyodbc`                                                           |
+| `facts.py`                       | Reference identifiers, shift mappings and planning status assumptions                            |
+| `queries.py`                     | One function per TimeOffice SELECT, returning canonical models with its code/account translation |
+| `service.py`                     | `TimeOfficeService`, the package's only public entry point; one connection per call              |
 
 ## Connection and schema
 
@@ -23,19 +21,15 @@ Follow [database configuration](../getting-started/installation.md#database-conf
 
 The adapter reads TimeOffice tables including `TPlanungseinheiten`, `TPlanungseinheitenPersonal`, `TPersonal`, `TPlan`, `TDienste`, `TPlanPersonalKommtGeht` and monthly/daily account tables. Actual SQL and join/filter rules are in the reader modules; this reference does not substitute a copied schema diagram for the database's current schema.
 
-Minimum staffing and objective weights use `dbo.StaffSchedulingMinimalStaffing` and `dbo.StaffSchedulingObjectiveWeights`. The current readers can create these tables if missing, so apparently read-oriented configuration operations may need DDL permissions and may change the database. Coordinate table provisioning and permissions before using connected planning operations.
-
 ## Read and write boundaries
 
-`fetch_dataset` normalizes selected unit IDs, reads source data, maps it and validates the aggregate. TimeOffice reductions and fixed reference mappings remain adapter behavior and must be checked against the chosen dataset.
+`TimeOfficeService` is the adapter's whole interface: `get_planning_options` and `inspect_employees` take canonical arguments and return canonical domain models. SQL, source rows and TimeOffice terminology stay private to the package (`app.timeoffice` exports only the service, the unavailable error and the engine factory). Each query function translates its own source codes and checks source-level facts such as missing master rows, duplicate target plans or unmapped codes; cross-entity completeness belongs to `domain/inspection.py`. The API depends on a small `PlanningSource` protocol, so another planning database can replace TimeOffice without touching routes or domain. TimeOffice reductions and fixed reference mappings in `facts.py` remain adapter behavior and must be checked against the chosen data.
 
-The adapter currently performs no SQL writes. The former writers for generated assignments, wishes, availability, minimum staffing and weights were removed with their legacy API routes. Scoped publication/clear and monthly configuration writes return as canonical, transactional operations in later slices.
-
-Generation also writes compatibility JSON to the shared runtime data directory for feasible results. Those filesystem exports are separate from SQL publication and from the pending portable bundle contract. See [limitations](../validation/index.md) before treating a result as accepted or published.
+The adapter currently performs no SQL writes and builds no solver dataset. Writers, compatibility exports and the dataset queries for shifts, demand, wishes, Sunday history and weights were removed; later slices add them back as canonical operations behind the same service.
 
 ## Employee inspection evidence
 
-Selection and employee inspection are strictly read-only. They do not call the configuration readers that can provision tables, nor do they require `TPlanPersonal` or existing work duties in an empty target. Target plans are selected internally by configured status/interval and exact month bounds. Memberships across the configured units determine pool/home context; pool origin alone is never destination eligibility. Missing names, identities, unique targets or complete evidence fail inspection.
+Selection and employee inspection are strictly read-only. They never create tables, nor do they require `TPlanPersonal` or existing work duties in an empty target. Target plans are selected internally by configured status/interval and exact month bounds. Memberships across the configured units determine pool/home context; pool origin alone is never destination eligibility. Missing names, identities, unique targets or complete evidence fail inspection.
 
 Monthly native target/actual reads use the configured account IDs (currently target 1 and actual 55, `Wert2` hours). The adapter converts finite nonnegative hours to integer minutes, retaining explicit zero. Native actual totals are not approved credits; their meaning still needs live verification against the prepared source.
 

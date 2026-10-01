@@ -1,24 +1,49 @@
+"""Read-only planning inspection: the selected month/stations with their complete employee facts."""
+
 from collections.abc import Iterable
 from datetime import timedelta
-from typing import Protocol
 
-from app.domain import Availability, Employee, MonthlyWorkAccount, PlanningMonth, PlanningUnit, PlanningUnitMembership
-from app.employees.models import EmployeeInspection, EmployeeMonthEvidence, PlanningInspection
+from app.domain.availability import Availability
+from app.domain.core import NonEmptyStr, SchedulingBaseModel
+from app.domain.employee import Employee, EmployeeId, StaffLevel
+from app.domain.monthly_work_account import MonthlyWorkAccount, WorkCredit
+from app.domain.planning_month import PlanningMonth
+from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership
 
 
-class _ScopeMembership(Protocol):
-    @property
-    def employee_id(self) -> int: ...
-    @property
-    def planning_unit_id(self) -> int: ...
-    @property
-    def is_home(self) -> bool: ...
+class EmployeeMonthEvidence(SchedulingBaseModel):
+    employee_id: EmployeeId
+    credit_details: tuple[WorkCredit, ...]
+    hard_restrictions: tuple[Availability, ...]
+    source: NonEmptyStr
+
+
+class EmployeeInspection(SchedulingBaseModel):
+    employee_id: EmployeeId
+    display_name: NonEmptyStr
+    staff_level: StaffLevel
+    memberships: tuple[PlanningUnitMembership, ...]
+    account: MonthlyWorkAccount
+    hard_restrictions: tuple[Availability, ...]
+    restrictions_source: NonEmptyStr
+
+
+class PlanningInspection(SchedulingBaseModel):
+    planning_month: PlanningMonth
+    selected_station_ids: tuple[int, ...]
+    planning_units: tuple[PlanningUnit, ...]
+    employees: tuple[EmployeeInspection, ...]
+
+
+class PlanningOptions(SchedulingBaseModel):
+    planning_month: PlanningMonth
+    planning_units: tuple[PlanningUnit, ...]
 
 
 def inspection_employee_ids(
     *,
     selected_station_ids: tuple[int, ...],
-    memberships: Iterable[_ScopeMembership],
+    memberships: Iterable[PlanningUnitMembership],
     shared_pool_ids: set[int],
 ) -> set[int]:
     """Select station members plus every member of a shared pool that one of them calls home.
