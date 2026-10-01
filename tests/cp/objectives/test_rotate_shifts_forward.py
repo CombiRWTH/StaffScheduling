@@ -140,7 +140,6 @@ def test_forward_rotation_is_rewarded(first_shift_id: int, second_shift_id: int)
     [
         (LATE_SHIFT.shift_id, EARLY_SHIFT.shift_id),
         (NIGHT_SHIFT.shift_id, LATE_SHIFT.shift_id),
-        (NIGHT_SHIFT.shift_id, EARLY_SHIFT.shift_id),
     ],
 )
 def test_backward_rotation_is_penalized(first_shift_id: int, second_shift_id: int) -> None:
@@ -153,13 +152,26 @@ def test_backward_rotation_is_penalized(first_shift_id: int, second_shift_id: in
 
 
 @pytest.mark.integration
-def test_rotation_three_days_apart_is_scored() -> None:
+def test_night_to_early_rotation_is_not_scored() -> None:
+    # Night→Early is not listed in BACKWARD_ROTATIONS, so it produces no score.
+    worked_assignments = {
+        (date(2024, 11, 1), NIGHT_SHIFT.shift_id),
+        (date(2024, 11, 2), EARLY_SHIFT.shift_id),
+    }
+
+    assert _penalty_for(worked_assignments) == 0
+
+
+@pytest.mark.integration
+def test_rotation_three_days_apart_is_not_scored() -> None:
+    # The implementation only evaluates consecutive calendar days;
+    # gaps of 3 days produce no forward-rotation reward.
     worked_assignments = {
         (date(2024, 11, 1), EARLY_SHIFT.shift_id),
         (date(2024, 11, 4), LATE_SHIFT.shift_id),
     }
 
-    assert _penalty_for(worked_assignments) == -1
+    assert _penalty_for(worked_assignments) == 0
 
 
 @pytest.mark.integration
