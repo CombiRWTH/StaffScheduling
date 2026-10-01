@@ -8,7 +8,16 @@ from app.domain.monthly_work_account import MonthlyWorkAccount
 from app.solver.audit import AuditFinding, AuditSeverity
 from app.solver.cp_sat.context import AuditContext, SolverContext
 from app.solver.diagnostics import SolverDiagnostic
-from app.timeoffice import facts
+
+DEFAULT_TOLERANCE_MINUTES = 500
+
+
+def _tolerances(params: Mapping[str, Any]) -> tuple[int, int]:
+    """Allowed minutes below/above the net target, from the constraint config."""
+    return (
+        int(params.get("tolerance_less_minutes", DEFAULT_TOLERANCE_MINUTES)),
+        int(params.get("tolerance_more_minutes", DEFAULT_TOLERANCE_MINUTES)),
+    )
 
 
 class TargetWorkingTime:
@@ -22,9 +31,7 @@ class TargetWorkingTime:
         ctx: SolverContext,
         params: Mapping[str, Any],
     ) -> tuple[SolverDiagnostic, ...]:
-        # Parameter aus params mit Fallbacks
-        tolerance_less = facts.TIMEOFFICE_FACTS.target_working_time_tolerance_less
-        tolerance_more = facts.TIMEOFFICE_FACTS.target_working_time_tolerance_more
+        tolerance_less, tolerance_more = _tolerances(params)
 
         # Mapping von employee_id auf MonthlyWorkAccount
         accounts = {acc.employee_id: acc for acc in ctx.dataset.monthly_work_accounts}
@@ -62,8 +69,7 @@ class TargetWorkingTime:
         ctx: AuditContext,
         params: Mapping[str, Any],
     ) -> tuple[AuditFinding, ...]:
-        tolerance_less = facts.TIMEOFFICE_FACTS.target_working_time_tolerance_less
-        tolerance_more = facts.TIMEOFFICE_FACTS.target_working_time_tolerance_more
+        tolerance_less, tolerance_more = _tolerances(params)
 
         findings: list[AuditFinding] = []
         accounts = {acc.employee_id: acc for acc in ctx.dataset.monthly_work_accounts}

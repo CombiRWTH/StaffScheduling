@@ -19,6 +19,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { selectionSearch } from "@/lib/selection";
 import { cn } from "@/lib/utils";
 
 /** Links without `href` are discoverable but not yet supported by the canonical backend. */
@@ -55,18 +56,18 @@ const navigationSections: Array<{ label: string; links: NavigationLink[] }> = [
 ];
 
 interface SidebarContentProps {
-  selectionSearch: string;
+  search: string;
   isActive: (path: string) => boolean;
   onClose?: () => void;
   showCloseButton?: boolean;
 }
 
-function SidebarContent({ selectionSearch, isActive, onClose, showCloseButton = false }: SidebarContentProps) {
+function SidebarContent({ search, isActive, onClose, showCloseButton = false }: SidebarContentProps) {
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-sidebar-border px-4">
         <Link
-          href={`/${selectionSearch}`}
+          href={`/${search}`}
           className="flex min-w-0 items-center gap-2 hover:opacity-80 transition-opacity"
           onClick={onClose}
         >
@@ -115,7 +116,7 @@ function SidebarContent({ selectionSearch, isActive, onClose, showCloseButton = 
                       isActive(href) && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
                     )}
                   >
-                    <Link href={`${href}${selectionSearch}`} onClick={onClose}>
+                    <Link href={`${href}${search}`} onClick={onClose}>
                       <Icon className="h-4 w-4 shrink-0" />
                       <span className="truncate">{linkLabel}</span>
                     </Link>
@@ -134,12 +135,7 @@ export function AppNavigation() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const selection = new URLSearchParams();
-  for (const key of ["month", "stations"]) {
-    const value = searchParams.get(key);
-    if (value) selection.set(key, value);
-  }
-  const selectionSearch = selection.size ? `?${selection}` : "";
+  const search = selectionSearch(searchParams.get("month"), searchParams.get("stations"));
 
   const isActive = (path: string) => {
     return pathname === path || pathname.startsWith(path + "/");
@@ -148,7 +144,7 @@ export function AppNavigation() {
   return (
     <>
       <div className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
-        <Link href={`/${selectionSearch}`} className="flex items-center gap-2 font-semibold">
+        <Link href={`/${search}`} className="flex items-center gap-2 font-semibold">
           <Briefcase className="h-5 w-5" />
           Schichtplan Manager
         </Link>
@@ -158,7 +154,7 @@ export function AppNavigation() {
       </div>
 
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-sidebar-border md:block">
-        <SidebarContent selectionSearch={selectionSearch} isActive={isActive} />
+        <SidebarContent search={search} isActive={isActive} />
       </aside>
 
       {isMobileOpen && (
@@ -171,7 +167,7 @@ export function AppNavigation() {
           />
           <aside className="relative h-full w-64 max-w-[85vw] border-r border-sidebar-border shadow-xl">
             <SidebarContent
-              selectionSearch={selectionSearch}
+              search={search}
               isActive={isActive}
               onClose={() => setIsMobileOpen(false)}
               showCloseButton

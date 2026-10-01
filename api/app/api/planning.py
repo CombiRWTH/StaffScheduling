@@ -2,7 +2,7 @@ from typing import Annotated, Protocol
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
-from app.domain import PlanningInspection, PlanningMonth, PlanningOptions, PositiveId
+from app.domain import InvalidSelection, PlanningInspection, PlanningMonth, PlanningOptions, PositiveId
 
 router = APIRouter()
 
@@ -47,6 +47,10 @@ def get_employees(
             planning_unit_ids=tuple(planning_unit_ids),
             planning_month=PlanningMonth(year=year, month=month),
         )
+    except InvalidSelection as error:
+        raise HTTPException(
+            status_code=422, detail="Invalid selection: choose configured stations with a target plan for the month."
+        ) from error
     except ValueError as error:
         raise HTTPException(
             status_code=409,

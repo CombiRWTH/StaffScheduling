@@ -7,6 +7,7 @@ from app.domain.employee import Capability, Employee, EmployeeId, StaffLevel
 from app.domain.inspection import (
     EmployeeInspection,
     EmployeeMonthEvidence,
+    InvalidSelection,
     PlanningInspection,
     PlanningOptions,
     build_inspection,
@@ -54,6 +55,7 @@ __all__ = [
     "MonthlyWorkAccount",
     "WorkCredit",
     "EmployeeMonthEvidence",
+    "InvalidSelection",
     "EmployeeInspection",
     "PlanningInspection",
     "PlanningOptions",

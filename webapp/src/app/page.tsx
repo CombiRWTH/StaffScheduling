@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
 import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
+import { selectionSearch } from "@/lib/selection";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -41,10 +42,7 @@ const areas: Area[] = [
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<ScopeSearchParams> }) {
   const scope = await loadPlanningScope("/", await searchParams);
-  const selection = new URLSearchParams();
-  if (scope.month) selection.set("month", scope.month);
-  if (scope.stationIds.length) selection.set("stations", scope.stationIds.join(","));
-  const search = selection.size ? `?${selection}` : "";
+  const search = selectionSearch(scope.month, scope.stationIds);
 
   return (
     <div className="py-6">

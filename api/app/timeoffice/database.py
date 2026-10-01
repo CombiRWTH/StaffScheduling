@@ -38,7 +38,7 @@ def check_database_configuration(settings: Settings) -> None:
 def create_db_engine(settings: Settings) -> Engine:
     """Create a lazy engine with bounded login/query waits and sanitized failures.
 
-    All adapter callers share this connection boundary, including transactional writes.
+    All adapter queries share this connection boundary.
     Encryption and certificate verification are mandatory.
     """
     url = URL.create(
@@ -80,7 +80,7 @@ def create_db_engine(settings: Settings) -> Engine:
 def diagnose(settings: Settings) -> dict[str, str]:
     """Check configuration, driver, bounded DNS, encrypted login and SELECT 1 only.
 
-    This deliberately bypasses domain readers, which can provision supplemental tables.
+    This deliberately bypasses the application queries.
     No application-table reads, provisioning or database writes are performed.
     """
     check_database_configuration(settings)

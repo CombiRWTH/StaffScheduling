@@ -5,7 +5,7 @@ from types import MappingProxyType
 from app.domain.availability import AvailabilityType
 from app.domain.employee import Capability, StaffLevel
 from app.domain.planning_unit import PlanningUnitId, PlanningUnitType
-from app.domain.shift import ShiftId, ShiftType, StaffingDemandRole
+from app.domain.shift import ShiftId
 
 # TPlan.RefPlanungsIntervalle value for monthly planning.
 MONTHLY_PLANNING_INTERVAL_ID = 1
@@ -30,9 +30,7 @@ STATION_337_ID = 337
 # Known TimeOffice planning unit for the shared/jump pool.
 SHARED_POOL_408_ID = 408
 
-# TDienste.Prim values for the reduced reference shifts exposed to the solver.
-# These are the only TimeOffice shift IDs that should become canonical Shift.shift_id
-# values in the reduced SchedulingDataset.
+# TDienste.Prim values of the reduced reference shifts; the only shift IDs the planning model uses.
 # There are 2 Prim for the Early Shift: 1113 and 3000
 EARLY_SHIFT_ID = 1113
 # There are 3 Prim for the Late Shift: 1605, 2011, and 3002
@@ -44,26 +42,12 @@ INTERMEDIATE_SHIFT_ID = 1453
 
 
 @dataclass(frozen=True, slots=True)
-class TimeOfficeReferenceShiftFact:
-    """Domain meaning of one reduced reference shift.
-
-    The mapping code verifies that the TimeOffice shift row identified by the
-    reference shift ID still has expected_code. Source-shift variants are mapped
-    separately by shift_code_overrides.
-    """
-
-    expected_code: str
-    type: ShiftType
-    staffing_role: StaffingDemandRole
-
-
-@dataclass(frozen=True, slots=True)
 class TimeOfficeFacts:
     """Source assumptions and reduced-domain mappings for the TimeOffice adapter.
 
     Facts contain adapter constants and source-to-domain mappings only. They do
-    not perform checks themselves; readers provide source rows and mapping code
-    uses these facts to fail loudly on unmapped or drifted source semantics.
+    not perform checks themselves; the query functions use them and fail loudly
+    on unmapped or drifted source semantics.
     """
 
     monthly_planning_interval_id: int
@@ -71,7 +55,7 @@ class TimeOfficeFacts:
 
     planning_unit_type_by_id: Mapping[PlanningUnitId, PlanningUnitType]
 
-    reference_shift_facts_by_id: Mapping[ShiftId, TimeOfficeReferenceShiftFact]
+    reference_shift_ids: frozenset[ShiftId]
 
     staff_level_by_profession_code: Mapping[str, StaffLevel]
 
@@ -84,34 +68,6 @@ class TimeOfficeFacts:
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
 
-    target_working_time_tolerance_less: int
-    target_working_time_tolerance_more: int
-
-
-REFERENCE_SHIFT_FACTS_BY_ID: Mapping[ShiftId, TimeOfficeReferenceShiftFact] = MappingProxyType(
-    {
-        EARLY_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="F",
-            type=ShiftType.EARLY,
-            staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
-        ),
-        LATE_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="S",
-            type=ShiftType.LATE,
-            staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
-        ),
-        NIGHT_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="N",
-            type=ShiftType.NIGHT,
-            staffing_role=StaffingDemandRole.REQUIRED_MINIMUM,
-        ),
-        INTERMEDIATE_SHIFT_ID: TimeOfficeReferenceShiftFact(
-            expected_code="T",
-            type=ShiftType.INTERMEDIATE,
-            staffing_role=StaffingDemandRole.OPTIONAL_COVERAGE,
-        ),
-    }
-)
 
 STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
     {
@@ -168,7 +124,7 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
             SHARED_POOL_408_ID: PlanningUnitType.SHARED_POOL,
         }
     ),
-    reference_shift_facts_by_id=REFERENCE_SHIFT_FACTS_BY_ID,
+    reference_shift_ids=frozenset({EARLY_SHIFT_ID, LATE_SHIFT_ID, NIGHT_SHIFT_ID, INTERMEDIATE_SHIFT_ID}),
     staff_level_by_profession_code=STAFF_LEVEL_BY_PROFESSION_CODE,
     capabilities_by_employee_id=MappingProxyType(
         {
@@ -208,6 +164,4 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,
     monthly_actual_work_account_id=MONTHLY_ACTUAL_WORK_ACCOUNT_ID,
-    target_working_time_tolerance_less=500,
-    target_working_time_tolerance_more=500,
 )

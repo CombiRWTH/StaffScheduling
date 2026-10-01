@@ -10,22 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { PlanningScope } from "@/lib/scope";
+import { MONTHS, selectionSearch } from "@/lib/selection";
 import { cn } from "@/lib/utils";
-
-const MONTHS = [
-  "Januar",
-  "Februar",
-  "März",
-  "April",
-  "Mai",
-  "Juni",
-  "Juli",
-  "August",
-  "September",
-  "Oktober",
-  "November",
-  "Dezember",
-];
 
 function toMonth(year: number, month: number) {
   const date = new Date(year, month - 1);
@@ -40,10 +26,7 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
   const [year, monthNumber] = month ? month.split("-").map(Number) : [new Date().getFullYear(), 0];
 
   const navigate = (nextMonth: string | undefined, nextStations: number[]) => {
-    const query = new URLSearchParams();
-    if (nextMonth) query.set("month", nextMonth);
-    if (nextStations.length) query.set("stations", nextStations.join(","));
-    startTransition(() => router.push(`${pathname}?${query}`));
+    startTransition(() => router.push(`${pathname}${selectionSearch(nextMonth, nextStations)}`));
   };
   const changeMonth = (nextMonth: string) => nextMonth !== month && navigate(nextMonth, stationIds);
   const toggleStation = (id: number, checked: boolean) =>

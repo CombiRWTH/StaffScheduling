@@ -35,7 +35,7 @@ The locked `@playwright/test` runner uses Chromium; `just install` installs it a
 
 ## Live TimeOffice verification
 
-With services running, `just connectivity` performs only configuration/ODBC/DNS/login/`SELECT 1` checks. It needs the authorized connection settings, private password and VPN/network/TLS prerequisites documented in [installation](../getting-started/installation.md#database-configuration). It never calls domain readers, which may provision supplemental tables. A successful diagnostic would prove basic connection/query access, not planning-table permissions or valid scheduling data.
+With services running, `just connectivity` performs only configuration/ODBC/DNS/login/`SELECT 1` checks. It needs the authorized connection settings, private password and VPN/network/TLS prerequisites documented in [installation](../getting-started/installation.md#database-configuration). It never runs application queries. A successful diagnostic would prove basic connection/query access, not planning-table permissions or valid scheduling data.
 
 `just test-timeoffice` runs only explicitly external tests. No such tests are present yet: pytest exits with status 5, which is a missing gate, not success. Later live checks must use a declared prepared test database, serialize writes and independently verify publication/recovery scope.
 

@@ -15,7 +15,7 @@ Changing month/stations replaces the displayed inspection, including filters/det
 
 ## Inspect employees and memberships
 
-The table heading names the month and selected stations. **Zugehöriger Pool** names pools discovered from the dated home memberships of station-eligible employees. Their other pool employees are included for inspection, even if they have no membership permitting an assignment at the selected stations. No home relationship means no inferred pool association.
+The table heading names the month and selected stations. **Zugehöriger Pool** names pools discovered from the dated home memberships of station-eligible employees. Their other pool employees are included for inspection, even if they have no membership permitting an assignment at the selected stations. No home relationship means no inferred pool association; a replacement membership in a pool does not associate it.
 
 Each employee appears once by stable positive ID. Display names may change without changing identity. Search by name, ID, qualification or unit name; the unit filter limits employees by membership. Expand a row for all dated memberships, including home/replacement flags and membership qualifications. Professional, assistant, trainee and MFA remain distinct. Employee-level qualification does not override a different unit membership qualification.
 

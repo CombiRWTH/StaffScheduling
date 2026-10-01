@@ -93,7 +93,7 @@ BIND_ADDRESS=0.0.0.0 API_PORT=8000 WEBAPP_PORT=3000 docker compose up --build --
 
 Use the laptop's address in the browser. Its VPN/firewall must allow both the SQL connection and the intended client access. Keep loopback defaults for local use. Separate checkouts/projects can set `COMPOSE_PROJECT_NAME`, ports and `DATA_DIR`; `DB_PASSWORD_FILE` selects a private password file. Keep machine-specific overrides in your shell environment, rather than committing them. These are Compose settings, not `NEXT_PUBLIC_` browser configuration.
 
-Linux bind mounts preserve numeric ownership. The current containers run as root; prepare the host output directories as your user and check host readability after writing. If existing directories are owned by another user, arrange narrowly scoped ownership correction for those output directories; do not use `chmod 777`. Stop/recreation preserves host data; removing the webapp dependency/build volumes is separate from removing outputs. Jobs and the solve lock remain in one API process and disappear on reload/restart; there is no automatic job recovery.
+Linux bind mounts preserve numeric ownership. The current containers run as root; prepare `data/` as your user and check host readability after writing. If it is owned by another user, arrange narrowly scoped ownership correction; do not use `chmod 777`. Stop/recreation preserves host data; removing the webapp dependency/build volumes is separate from removing data.
 
 ## Optional native developer setup
 

@@ -1,6 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { getPlanningOptions } from "@/lib/api";
+import { selectionSearch } from "@/lib/selection";
 import type { PlanningUnit } from "@/lib/types";
 
 export interface ScopeSearchParams {
@@ -35,9 +36,7 @@ export async function loadPlanningScope(pathname: string, params: ScopeSearchPar
   }
   const stationIds = requested.filter((id) => stations.some((unit) => unit.planning_unit_id === id));
   if (stationIds.length !== requested.length) {
-    const query = new URLSearchParams({ month });
-    if (stationIds.length) query.set("stations", stationIds.join(","));
-    redirect(`${pathname}?${query}`);
+    redirect(`${pathname}${selectionSearch(month, stationIds)}`);
   }
   return { month, stationIds, stations };
 }

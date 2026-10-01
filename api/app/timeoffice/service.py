@@ -1,6 +1,7 @@
 from sqlalchemy import Engine
 
 from app.domain import (
+    InvalidSelection,
     PlanningInspection,
     PlanningMonth,
     PlanningOptions,
@@ -15,8 +16,8 @@ from app.timeoffice.facts import TIMEOFFICE_FACTS, TimeOfficeFacts
 class TimeOfficeService:
     """The TimeOffice adapter's whole interface: canonical models in and out; SQL and source terms stay inside.
 
-    Methods raise `ValueError` for incomplete or ambiguous source data and
-    `TimeOfficeUnavailable` when the database cannot be reached.
+    Methods raise `InvalidSelection` for stations that cannot be planned in the month, `ValueError`
+    for incomplete or ambiguous source data and `TimeOfficeUnavailable` when the database cannot be reached.
     """
 
     def __init__(self, engine: Engine, facts: TimeOfficeFacts = TIMEOFFICE_FACTS) -> None:
@@ -41,15 +42,15 @@ class TimeOfficeService:
         selected = tuple(dict.fromkeys(planning_unit_ids))
         unit_types = self._facts.planning_unit_type_by_id
         if not selected:
-            raise ValueError("At least one station must be selected.")
+            raise InvalidSelection("At least one station must be selected.")
         if any(unit_types.get(unit_id) != PlanningUnitType.STATION for unit_id in selected):
-            raise ValueError("Select configured stations; a shared pool is origin context only.")
+            raise InvalidSelection("Select configured stations; a shared pool is origin context only.")
 
         with self._engine.connect() as connection:
             if missing := set(selected) - queries.read_units_with_target_plan(
                 connection, self._facts, selected, planning_month
             ):
-                raise ValueError(f"No TimeOffice target plan for planning_unit_ids={sorted(missing)}.")
+                raise InvalidSelection(f"No TimeOffice target plan for planning_unit_ids={sorted(missing)}.")
             units = queries.read_units(connection, self._facts)
             memberships = queries.read_memberships(
                 connection, self._facts, [unit.planning_unit_id for unit in units], planning_month
@@ -77,5 +78,5 @@ class TimeOfficeService:
             accounts=accounts,
             evidence=evidence,
             availability=absences,
-            allowed_shift_ids=set(self._facts.reference_shift_facts_by_id),
+            allowed_shift_ids=set(self._facts.reference_shift_ids),
         )

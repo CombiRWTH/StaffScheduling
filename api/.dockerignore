@@ -5,5 +5,3 @@ __pycache__
 *.pyc
 .pytest_cache
 .ruff_cache
-found_solutions
-processed_solutions

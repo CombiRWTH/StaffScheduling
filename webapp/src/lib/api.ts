@@ -10,6 +10,9 @@ async function get<T>(path: string, params: URLSearchParams): Promise<T> {
   } catch {
     throw new Error("Backend nicht erreichbar. Verbindung und Einrichtung prüfen.");
   }
+  if (response.status === 422) {
+    throw new Error("Ungültige Auswahl. Nur Stationen mit Planungsziel für diesen Monat wählen.");
+  }
   if (response.status === 409) {
     throw new Error("Daten unvollständig. Stationen, Mitgliedschaften, Konten und Monatsnachweise prüfen.");
   }

@@ -16,6 +16,7 @@ import type {
   Qualification,
   WorkCredit,
 } from "@/lib/types";
+import { MONTHS } from "@/lib/selection";
 
 const QUALIFICATION_LABELS: Record<Qualification, string> = {
   professional: "Fachkraft",
@@ -37,21 +38,6 @@ const CREDIT_LABELS: Record<WorkCredit["kind"], string> = {
 };
 const ALL_UNITS = "all";
 
-const MONTHS = [
-  "Januar",
-  "Februar",
-  "März",
-  "April",
-  "Mai",
-  "Juni",
-  "Juli",
-  "August",
-  "September",
-  "Oktober",
-  "November",
-  "Dezember",
-];
-
 // Format ISO dates from their text, so server and browser render identically regardless of locale/timezone.
 function formatDate(value: string) {
   const [year, month, day] = value.split("-");
@@ -70,7 +56,7 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
   const units = new Map(inspection.planning_units.map((unit) => [unit.planning_unit_id, unit]));
   const unitName = (id: number) => units.get(id)?.display_name ?? `Einheit ${id}`;
   const stations = inspection.selected_station_ids.map(unitName).join(", ");
-  const pools = inspection.planning_units.filter((unit) => unit.type === "shared_pool");
+  const pools = inspection.associated_pool_ids.map((id) => units.get(id)).filter((unit) => unit !== undefined);
   const needle = search.toLocaleLowerCase("de-DE");
   const filtered = inspection.employees.filter(
     (employee) =>

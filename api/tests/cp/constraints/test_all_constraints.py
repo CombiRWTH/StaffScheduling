@@ -1,6 +1,6 @@
 import datetime
 from contextlib import ExitStack
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import PropertyMock, patch
 
 import pytest
 from ortools.sat.python import cp_model
@@ -195,13 +195,6 @@ def _solve_master_scenario(
             )
         )
 
-        mock_facts = MagicMock()
-        mock_facts.target_working_time_tolerance_less = 0
-        mock_facts.target_working_time_tolerance_more = 0
-        stack.enter_context(
-            patch("app.solver.cp_sat.constraints.target_working_time.facts.TIMEOFFICE_FACTS", mock_facts)
-        )
-
         stack.enter_context(
             patch.object(
                 type(ctx.index), "required_count_by_demand_key", new_callable=PropertyMock, return_value=demands
@@ -215,7 +208,7 @@ def _solve_master_scenario(
         MinimumStaffing().add_to_model(ctx, params={})
         OneAssignmentPerDay().add_to_model(ctx, params={})
         RoundsInEarlyShift().add_to_model(ctx, params={})
-        TargetWorkingTime().add_to_model(ctx, params={})
+        TargetWorkingTime().add_to_model(ctx, params={"tolerance_less_minutes": 0, "tolerance_more_minutes": 0})
 
     for emp_id, date, fixed_shift_id in forced_assignments:
         key = (emp_id, PLANNING_UNIT.planning_unit_id, date, fixed_shift_id, StaffLevel.PROFESSIONAL)

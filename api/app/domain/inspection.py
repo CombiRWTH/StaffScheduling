@@ -8,7 +8,11 @@ from app.domain.core import NonEmptyStr, SchedulingBaseModel
 from app.domain.employee import Employee, EmployeeId, StaffLevel
 from app.domain.monthly_work_account import MonthlyWorkAccount, WorkCredit
 from app.domain.planning_month import PlanningMonth
-from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership
+from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership, PlanningUnitType
+
+
+class InvalidSelection(ValueError):
+    """The requested stations cannot be planned for the month (unknown, not a station, or without target)."""
 
 
 class EmployeeMonthEvidence(SchedulingBaseModel):
@@ -31,6 +35,8 @@ class EmployeeInspection(SchedulingBaseModel):
 class PlanningInspection(SchedulingBaseModel):
     planning_month: PlanningMonth
     selected_station_ids: tuple[int, ...]
+    # Pools that station members call home; other pool memberships are not an association.
+    associated_pool_ids: tuple[int, ...]
     planning_units: tuple[PlanningUnit, ...]
     employees: tuple[EmployeeInspection, ...]
 
@@ -51,13 +57,21 @@ def inspection_employee_ids(
     A pool is origin context: its members are inspected without implying station eligibility.
     """
     memberships = tuple(memberships)
-    employee_ids = {row.employee_id for row in memberships if row.planning_unit_id in selected_station_ids}
-    associated_pool_ids = {
+    pool_ids = _associated_pool_ids(selected_station_ids, memberships, shared_pool_ids)
+    return {row.employee_id for row in memberships if row.planning_unit_id in {*selected_station_ids, *pool_ids}}
+
+
+def _associated_pool_ids(
+    selected_station_ids: tuple[int, ...],
+    memberships: tuple[PlanningUnitMembership, ...],
+    shared_pool_ids: set[int],
+) -> set[int]:
+    station_members = {row.employee_id for row in memberships if row.planning_unit_id in selected_station_ids}
+    return {
         row.planning_unit_id
         for row in memberships
-        if row.employee_id in employee_ids and row.is_home and row.planning_unit_id in shared_pool_ids
+        if row.employee_id in station_members and row.is_home and row.planning_unit_id in shared_pool_ids
     }
-    return employee_ids | {row.employee_id for row in memberships if row.planning_unit_id in associated_pool_ids}
 
 
 def build_inspection(
@@ -140,9 +154,11 @@ def build_inspection(
                 restrictions_source=declaration.source,
             )
         )
+    pool_ids = {unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.SHARED_POOL}
     return PlanningInspection(
         planning_month=planning_month,
         selected_station_ids=selected_station_ids,
+        associated_pool_ids=tuple(sorted(_associated_pool_ids(selected_station_ids, memberships, pool_ids))),
         planning_units=units,
         employees=tuple(inspected),
     )

@@ -1,4 +1,5 @@
 import json
+from collections.abc import Callable
 from datetime import date
 from typing import Any, cast
 from unittest.mock import MagicMock
@@ -12,12 +13,36 @@ from app.api.planning import get_planning_source
 from app.domain import PlanningMonth, StaffLevel
 from app.main import app
 
+RowChange = Callable[[list[dict[str, Any]]], None]
+
+
+def with_rows(source: InspectionSource, table: str, change: RowChange) -> None:
+    """Edit the fictional rows one query returns before the adapter translates them."""
+    previous = source.connection.execute.side_effect
+
+    def execute(query: Any, params: dict[str, Any]) -> MagicMock:
+        result = previous(query, params)
+        rows = result.mappings.return_value.all.return_value
+        if table in str(query) and rows:
+            change(rows)
+        return result
+
+    source.connection.execute.side_effect = execute
+
+
+def _set(column: str, value: Any, index: int = 0) -> RowChange:
+    def change(rows: list[dict[str, Any]]) -> None:
+        rows[index][column] = value
+
+    return change
+
 
 def test_combined_scope_retains_identity_memberships_mfa_origin_and_account_evidence() -> None:
     source = InspectionSource()
     month = PlanningMonth(year=2026, month=1)
     result = source.service.inspect_employees(planning_unit_ids=(101, 102, 101), planning_month=month)
     assert result.selected_station_ids == (101, 102)
+    assert result.associated_pool_ids == (201,)
     assert [employee.employee_id for employee in result.employees] == [1, 2, 3]
     employee = result.employees[0]
     assert employee.staff_level == StaffLevel.MFA
@@ -38,16 +63,7 @@ def test_combined_scope_retains_identity_memberships_mfa_origin_and_account_evid
     assert not any(word in sql.upper() for sql in source.queries for word in ("CREATE TABLE", "INSERT ", "DELETE "))
     assert not any("FROM TPlanPersonal " in sql for sql in source.queries)
 
-    original_execute = source.execute
-
-    def two_absence_reasons(query: Any, params: dict[str, Any]) -> MagicMock:
-        result = original_execute(query, params)
-        if "TPlanPersonalKommtGeht" in str(query):
-            rows = result.mappings.return_value.all.return_value
-            rows.append({**rows[0], "resolved_absence_code": "ZU"})
-        return result
-
-    source.connection.execute.side_effect = two_absence_reasons
+    with_rows(source, "TPlanPersonalKommtGeht", lambda rows: rows.append({**rows[0], "resolved_absence_code": "ZU"}))
     distinct = source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=month)
     assert {row.reason for row in distinct.employees[0].hard_restrictions} == {"U", "ZU"}
 
@@ -76,7 +92,8 @@ def test_options_full_month_and_http_failure_contract() -> None:
         assert [row["planning_unit_id"] for row in response.json()["planning_units"]] == [102]
         assert response.json()["planning_month"]["end"] == "2026-02-28"
         assert client.get("/employees?year=2026&month=1&planning_unit_ids=101&planning_unit_ids=102").status_code == 200
-        assert client.get("/employees?year=2026&month=1&planning_unit_ids=201").status_code == 409
+        assert client.get("/employees?year=2026&month=1&planning_unit_ids=201").status_code == 422
+        assert client.get("/employees?year=2026&month=2&planning_unit_ids=101").status_code == 422
         assert client.get("/employees?year=2026&month=1&planning_unit_ids=-1").status_code == 422
         assert client.get("/employees?year=2026&month=13&planning_unit_ids=101").status_code == 422
         source.missing_account = True
@@ -90,17 +107,13 @@ def test_options_full_month_and_http_failure_contract() -> None:
 
 def test_explicit_zero_target_and_actual_are_preserved_missing_target_is_error() -> None:
     source = InspectionSource()
-    original_execute = source.execute
     target_hours: list[float | None] = [0.0]
 
-    def accounts_execute(query: Any, params: dict[str, Any]) -> MagicMock:
-        result = original_execute(query, params)
-        if "TPersonalKontenJeMonat" in str(query):
-            for row in result.mappings.return_value.all.return_value:
-                row.update(target_hours=target_hours[0], actual_hours=0.0)
-        return result
+    def set_hours(rows: list[dict[str, Any]]) -> None:
+        for row in rows:
+            row.update(target_hours=target_hours[0], actual_hours=0.0)
 
-    source.connection.execute.side_effect = accounts_execute
+    with_rows(source, "TPersonalKontenJeMonat", set_hours)
     month = PlanningMonth(year=2026, month=1)
     account = source.service.inspect_employees(planning_unit_ids=(101,), planning_month=month).employees[0].account
     assert account.target_minutes == 0
@@ -113,43 +126,25 @@ def test_explicit_zero_target_and_actual_are_preserved_missing_target_is_error()
 @pytest.mark.parametrize("defect", ["credit_date", "duplicate_credit", "restriction_identity", "ambiguous_home"])
 def test_declared_evidence_is_validated_before_any_employee_is_returned(defect: str) -> None:
     source = InspectionSource()
-    original_execute = source.execute
 
-    def malformed_execute(query: Any, params: dict[str, Any]) -> MagicMock:
-        result = original_execute(query, params)
-        rows = result.mappings.return_value.all.return_value
-        if "StaffSchedulingEmployeeMonthEvidence" in str(query):
-            credits = json.loads(rows[0]["credit_details"])
-            if defect == "credit_date":
-                credits[0]["date"] = "2025-12-31"
-            elif defect == "duplicate_credit":
-                credits.append(credits[0])
-            elif defect == "restriction_identity":
-                rows[0]["hard_restrictions"] = json.dumps(
-                    [{"employee_id": 999, "date": "2026-01-01", "availability_type": "unavailable"}]
-                )
-            rows[0]["credit_details"] = json.dumps(credits)
-        elif "TPlanungseinheitenPersonal" in str(query) and defect == "ambiguous_home":
-            rows[1]["is_home"] = True
-        return result
+    def malformed_evidence(rows: list[dict[str, Any]]) -> None:
+        credits = json.loads(rows[0]["credit_details"])
+        if defect == "credit_date":
+            credits[0]["date"] = "2025-12-31"
+        elif defect == "duplicate_credit":
+            credits.append(credits[0])
+        elif defect == "restriction_identity":
+            rows[0]["hard_restrictions"] = json.dumps(
+                [{"employee_id": 999, "date": "2026-01-01", "availability_type": "unavailable"}]
+            )
+        rows[0]["credit_details"] = json.dumps(credits)
 
-    source.connection.execute.side_effect = malformed_execute
+    if defect == "ambiguous_home":
+        with_rows(source, "TPlanungseinheitenPersonal", _set("is_home", True, index=1))
+    else:
+        with_rows(source, "StaffSchedulingEmployeeMonthEvidence", malformed_evidence)
     with pytest.raises(ValueError, match="outside|Duplicate|match|origin"):
         source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=PlanningMonth(year=2026, month=1))
-
-
-def with_rows(source: InspectionSource, table: str, change: Any) -> None:
-    """Edit the fictional rows one query returns before the adapter translates them."""
-    previous = source.connection.execute.side_effect
-
-    def execute(query: Any, params: dict[str, Any]) -> MagicMock:
-        result = previous(query, params)
-        rows = result.mappings.return_value.all.return_value
-        if table in str(query) and rows:
-            change(rows)
-        return result
-
-    source.connection.execute.side_effect = execute
 
 
 def test_source_codes_are_trimmed_and_ignored_absences_are_dropped() -> None:
@@ -167,13 +162,6 @@ def test_source_codes_are_trimmed_and_ignored_absences_are_dropped() -> None:
 
     assert result.employees[0].memberships[0].staff_level == StaffLevel.MFA
     assert result.employees[0].hard_restrictions == ()
-
-
-def _set(column: str, value: Any, index: int = 0) -> Any:
-    def change(rows: list[dict[str, Any]]) -> None:
-        rows[index][column] = value
-
-    return change
 
 
 @pytest.mark.parametrize(
@@ -195,7 +183,7 @@ def _set(column: str, value: Any, index: int = 0) -> Any:
         "blank_unit_name",
     ],
 )
-def test_untranslatable_source_facts_fail_the_whole_inspection(table: str, change: Any, message: str) -> None:
+def test_untranslatable_source_facts_fail_the_whole_inspection(table: str, change: RowChange, message: str) -> None:
     source = InspectionSource()
     with_rows(source, table, change)
 
@@ -208,3 +196,22 @@ def test_selected_station_without_target_plan_fails() -> None:
 
     with pytest.raises(ValueError, match="No TimeOffice target plan"):
         source.service.inspect_employees(planning_unit_ids=(101,), planning_month=PlanningMonth(year=2026, month=2))
+
+
+def test_replacement_only_pool_membership_is_not_an_association() -> None:
+    source = InspectionSource()
+
+    def pool_as_replacement(rows: list[dict[str, Any]]) -> None:
+        for row in rows:
+            if row["employee_id"] == 1:
+                row["is_home"] = row["planning_unit_id"] == 101
+                row["is_replacement"] = row["planning_unit_id"] != 101
+
+    with_rows(source, "TPlanungseinheitenPersonal", pool_as_replacement)
+    result = source.service.inspect_employees(
+        planning_unit_ids=(101,), planning_month=PlanningMonth(year=2026, month=1)
+    )
+
+    assert result.associated_pool_ids == ()
+    assert [employee.employee_id for employee in result.employees] == [1, 2]
+    assert 201 in {unit.planning_unit_id for unit in result.planning_units}

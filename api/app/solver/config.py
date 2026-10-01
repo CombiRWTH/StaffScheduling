@@ -54,7 +54,10 @@ def create_base_solver_config() -> SolverConfig:
             AvailabilitiesConstraint.id: ConstraintConfig(enabled=True),
             HierarchyOfIntermediateShifts.id: ConstraintConfig(enabled=True),
             OneAssignmentPerDay.id: ConstraintConfig(enabled=True),
-            TargetWorkingTime.id: ConstraintConfig(enabled=True),
+            TargetWorkingTime.id: ConstraintConfig(
+                enabled=True,
+                params={"tolerance_less_minutes": 500, "tolerance_more_minutes": 500},
+            ),
         },
         objectives={
             TemporaryBalanceGeneratedAssignments.id: ObjectiveConfig(

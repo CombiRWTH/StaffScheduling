@@ -6,7 +6,7 @@ This reference describes inspected source definitions. Connected database behavi
 
 ## SchedulingDataset
 
-One `SchedulingDataset` aggregates a `PlanningMonth` and tuples of planning units, plans, shifts, dated staffing requirements, employees, memberships, Sunday work history, wishes, assignments, availability, monthly accounts and objective weights. `TimeOfficeService.fetch_dataset` maps source rows and invokes `validate_scheduling_dataset` before returning it.
+One `SchedulingDataset` aggregates a `PlanningMonth` and tuples of planning units, plans, shifts, dated staffing requirements, employees, memberships, Sunday work history, wishes, assignments, availability, monthly accounts and objective weights. The solver consumes it; no adapter currently builds one, and aggregate dataset validation is not implemented.
 
 | Concept                     | Meaning and important fields                                                                           |
 | --------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -38,7 +38,7 @@ For exact fields and validators, read the model modules rather than copying fron
 
 ## Complete employee inspection
 
-`api/app/domain/inspection.py` composes existing canonical employee, unit, membership, account and availability models into a `PlanningInspection`. It contains one month, selected station IDs, the relevant unit catalog and one entry per stable employee ID. It exposes no plan IDs, source rows, split-name aliases or special capabilities. Inspection validates only its own read responsibilities; it does not require staffing demand, a solve result or the full legacy dataset to be valid.
+`api/app/domain/inspection.py` composes existing canonical employee, unit, membership, account and availability models into a `PlanningInspection`. It contains one month, selected station IDs, the relevant unit catalog and one entry per stable employee ID. It exposes no plan IDs, source rows, split-name aliases or special capabilities. `associated_pool_ids` names the pools that members of the selected stations call home, computed by the same rule that adds those pools' employees. A selection that cannot be planned (a pool, an unconfigured unit or a station without a target plan) raises `InvalidSelection` instead of an incomplete-data error. Inspection validates only its own read responsibilities; it does not require staffing demand, a solve result or the full legacy dataset to be valid.
 
 Every employee requires exactly one account and monthly evidence declaration. `WorkCredit` carries a full date, nonnegative integer minutes, `approved_absence`/`trusted_work` kind and source. Explicitly declared empty credits sum to zero; absent credit evidence remains unknown and is rejected by inspection. Actual hours never become credits. Native restrictions preserve reason/source; prepared restrictions retain dates and allowed-shift IDs. Foreign employee/shift references and out-of-month credit/restriction dates fail the read.
 

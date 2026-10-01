@@ -65,6 +65,8 @@ export interface Employee {
 export interface PlanningInspection {
   planning_month: PlanningMonth;
   selected_station_ids: number[];
+  /** Pools that station members call home; replacement memberships do not associate a pool. */
+  associated_pool_ids: number[];
   planning_units: PlanningUnit[];
   employees: Employee[];
 }

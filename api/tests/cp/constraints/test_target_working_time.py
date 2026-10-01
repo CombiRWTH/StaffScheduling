@@ -1,5 +1,4 @@
 import datetime
-from unittest.mock import MagicMock, patch
 
 import pytest
 from ortools.sat.python import cp_model
@@ -107,14 +106,10 @@ def _solve_with_setup(
         else:
             ctx.model.add(ctx.assignment_variables[key] == 0)
 
-    # 3. Inject Constraint & Mock TimeOffice Facts
-    mock_facts = MagicMock()
-    mock_facts.target_working_time_tolerance_less = tolerance_less
-    mock_facts.target_working_time_tolerance_more = tolerance_more
-
-    mock_target = "app.solver.cp_sat.constraints.target_working_time.facts.TIMEOFFICE_FACTS"
-    with patch(mock_target, mock_facts):
-        TargetWorkingTime().add_to_model(ctx, params={})
+    # 3. Inject the constraint with explicit tolerances
+    TargetWorkingTime().add_to_model(
+        ctx, params={"tolerance_less_minutes": tolerance_less, "tolerance_more_minutes": tolerance_more}
+    )
 
     # 4. Evaluate Solver
     solver = cp_model.CpSolver()

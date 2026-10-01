@@ -12,19 +12,19 @@ Image-built development Compose startup, actual Next-server/API HTTP connectivit
 
 ## Webapp integration
 
-The webapp was rebuilt as a plain Next.js App Router project. Only the home page and canonical month/station selection with complete read-only employee inspection are implemented, with controlled browser evidence. Monthly configuration, minimum staffing, generation, review/export/publication, recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. The previous imported views, their file-based case discovery and compatibility repositories were removed and are recoverable from the frozen frontend reference. The matching legacy-shaped API routes (weights, wishes/blocked periods, minimum staffing, schedules/publication and `/solve/options`) were removed as well. Selection requires explicit prepared monthly credit/restriction evidence; no live table provisioning or inspection has been performed.
+The webapp is a plain Next.js App Router project. Only the home page and canonical month/station selection with complete read-only employee inspection are implemented, with controlled browser evidence. Monthly configuration, minimum staffing, generation, review/export/publication, recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. Selection requires explicit prepared monthly credit/restriction evidence; no live table provisioning or inspection has been performed.
 
 ## Solver and publication
 
 The solver engine is not reachable through the API; its unit tests run offline, nine currently failing. Generation jobs, independent schedule acceptance, complete required policy correction, scoped publication/clear verification and coordinated six-month example files are pending.
 
-No publication or other database write path exists: the legacy publication endpoint and all adapter writers were removed. Scoped, checked publication and clear are a later slice.
+No publication or other database write path exists; scoped, checked publication and clear are a later slice.
 
 ## Quality gates
 
-The latest executed offline suite reports **114 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
+The latest executed offline suite reports **115 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
 
-Webapp strict TypeScript and the native production build pass. The three controlled browser scenarios (selection/inspection, unavailable/incomplete reads, unsupported areas) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
+Webapp strict TypeScript and the native production build pass. The five controlled browser scenarios (selection/inspection, unavailable/incomplete reads, unsupported areas, year entry and malformed selection URLs, mobile navigation) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
 
 Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint reports no findings. React Doctor passes with visible warnings: pnpm install hardening, the planning picker's control-flow complexity and the standard shadcn `ui/` variant exports. `just check` now runs all independent offline gates, including browser flows, production build, docs and credential-free Compose smoke, and retains a failing exit status. It remains red for the nine solver failures.
 
