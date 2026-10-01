@@ -12,9 +12,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { PlanningScope } from "@/lib/scope";
 import { cn } from "@/lib/utils";
 
-const MONTHS = Array.from({ length: 12 }, (_, index) =>
-  new Date(2000, index).toLocaleString("de-DE", { month: "long" }),
-);
+const MONTHS = [
+  "Januar",
+  "Februar",
+  "März",
+  "April",
+  "Mai",
+  "Juni",
+  "Juli",
+  "August",
+  "September",
+  "Oktober",
+  "November",
+  "Dezember",
+];
 
 function toMonth(year: number, month: number) {
   const date = new Date(year, month - 1);
@@ -38,9 +49,8 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
   const toggleStation = (id: number, checked: boolean) =>
     navigate(month, checked ? [...stationIds, id] : stationIds.filter((value) => value !== id));
 
-  const selectedNames = stations
-    .filter((unit) => stationIds.includes(unit.planning_unit_id))
-    .map((u) => u.display_name);
+  const selected = new Set(stationIds);
+  const selectedNames = stations.filter((unit) => selected.has(unit.planning_unit_id)).map((u) => u.display_name);
   const summary = !month
     ? "Erst Monat wählen"
     : selectedNames.length === 0
@@ -133,7 +143,7 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
                 className="cursor-pointer rounded-sm px-2 py-1.5 font-normal hover:bg-accent"
               >
                 <Checkbox
-                  checked={stationIds.includes(unit.planning_unit_id)}
+                  checked={selected.has(unit.planning_unit_id)}
                   disabled={pending}
                   onCheckedChange={(checked) => toggleStation(unit.planning_unit_id, checked === true)}
                 />

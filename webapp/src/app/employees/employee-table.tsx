@@ -37,16 +37,30 @@ const CREDIT_LABELS: Record<WorkCredit["kind"], string> = {
 };
 const ALL_UNITS = "all";
 
+const MONTHS = [
+  "Januar",
+  "Februar",
+  "März",
+  "April",
+  "Mai",
+  "Juni",
+  "Juli",
+  "August",
+  "September",
+  "Oktober",
+  "November",
+  "Dezember",
+];
+
+// Format ISO dates from their text, so server and browser render identically regardless of locale/timezone.
 function formatDate(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const [year, month, day] = value.split("-");
+  return `${day}.${month}.${year}`;
 }
 
 function formatMonth(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+  const [year, month] = value.split("-");
+  return `${MONTHS[Number(month) - 1]} ${year}`;
 }
 
 export function EmployeeTable({ inspection }: { inspection: PlanningInspection }) {
@@ -201,10 +215,10 @@ function EmployeeDetails({
       <section className="space-y-2">
         <h3 className="text-sm font-semibold">Datierte Mitgliedschaften</h3>
         <ul className="space-y-1.5 text-sm">
-          {employee.memberships.map((row, index) => {
+          {employee.memberships.map((row) => {
             const type = units.get(row.planning_unit_id)?.type;
             return (
-              <li key={`${row.planning_unit_id}:${row.valid_from}:${index}`}>
+              <li key={`${row.planning_unit_id}:${row.valid_from}:${row.valid_until}:${row.staff_level}`}>
                 <span className="font-medium">{unitName(row.planning_unit_id)}</span>
                 {type && <span className="text-muted-foreground"> ({UNIT_TYPE_LABELS[type]})</span>}
                 <div className="text-muted-foreground">
@@ -245,8 +259,8 @@ function EmployeeDetails({
         <h3 className="text-sm font-semibold">Harte Einschränkungen</h3>
         {employee.hard_restrictions.length ? (
           <ul className="space-y-1 text-sm">
-            {employee.hard_restrictions.map((row, index) => (
-              <li key={`${row.date}:${row.availability_type}:${index}`}>
+            {employee.hard_restrictions.map((row) => (
+              <li key={`${row.date}:${row.availability_type}:${row.reason}:${row.source}:${row.shift_ids}`}>
                 {formatDate(row.date)} · {RESTRICTION_LABELS[row.availability_type]}
                 {row.reason && ` · ${row.reason}`}
                 {row.shift_ids && ` · Erlaubte Schichten: ${row.shift_ids.join(", ")}`}

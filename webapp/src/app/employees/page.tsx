@@ -6,6 +6,9 @@ import { getEmployees } from "@/lib/api";
 import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
 import { EmployeeTable } from "./employee-table";
 import Loading from "./loading";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Mitarbeiter · Schichtplanung" };
 
 export default async function EmployeesPage({ searchParams }: { searchParams: Promise<ScopeSearchParams> }) {
   const scope = await loadPlanningScope("/employees", await searchParams);
