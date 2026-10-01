@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { PlanningScopePicker } from "@/components/planning-scope-picker";
-import { Button } from "@/components/ui/button";
 import type { PlanningScope } from "@/lib/scope";
 import { selectionSearch } from "@/lib/selection";
 
@@ -23,22 +22,21 @@ export function PageHeader({
 }) {
   return (
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b pb-4">
-      <div className="flex items-start gap-2">
-        {parent && (
-          <Button variant="ghost" size="icon" className="mt-0.5 size-8 shrink-0" asChild>
+      <div>
+        <div className="flex items-center gap-1">
+          {parent && (
             <Link
               href={`${parent.href}${selectionSearch(scope.month, scope.stationIds)}`}
               aria-label={`Zurück zu ${parent.label}`}
               title={`Zurück zu ${parent.label}`}
+              className="-ml-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ChevronLeft className="size-7" strokeWidth={2.25} />
             </Link>
-          </Button>
-        )}
-        <div>
+          )}
           <h1 className="text-2xl font-bold">{title}</h1>
-          <p className="text-muted-foreground">{description}</p>
         </div>
+        <p className="text-muted-foreground">{description}</p>
       </div>
       <PlanningScopePicker {...scope} />
     </header>
