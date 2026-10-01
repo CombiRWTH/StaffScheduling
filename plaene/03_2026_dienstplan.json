@@ -1,0 +1,4572 @@
+{
+  "employees": {
+    "0": {
+      "actual_working_minutes": 0.0,
+      "category": "Hilfskraft",
+      "constraints": {},
+      "firstname": "Annika",
+      "is_springer": true,
+      "lastname": "Behrens",
+      "qualifications": [
+        "rounds"
+      ],
+      "springer_pool": "Springerpool",
+      "target_working_minutes": 0.0,
+      "type": "Stationshilfe (81301-018)"
+    },
+    "1": {
+      "actual_working_minutes": 0.0,
+      "category": "Hilfskraft",
+      "constraints": {},
+      "firstname": "Lars",
+      "is_springer": true,
+      "lastname": "Schumann",
+      "qualifications": [
+        "rounds"
+      ],
+      "springer_pool": "Springerpool",
+      "target_working_minutes": 0.0,
+      "type": "Stationshilfe (81301-018)"
+    },
+    "1230": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Constance",
+      "is_springer": false,
+      "lastname": "Palacio",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
+    },
+    "2": {
+      "actual_working_minutes": 0.0,
+      "category": "Hilfskraft",
+      "constraints": {},
+      "firstname": "Miriam",
+      "is_springer": true,
+      "lastname": "K\u00f6hler",
+      "qualifications": [
+        "rounds"
+      ],
+      "springer_pool": "Springerpool",
+      "target_working_minutes": 0.0,
+      "type": "Stationshilfe (81301-018)"
+    },
+    "2932": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Kersten",
+      "is_springer": false,
+      "lastname": "Devers",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "Pflegefachkraft (Krankenpflege) (81302-018)"
+    },
+    "2963": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Renilde",
+      "is_springer": false,
+      "lastname": "Hoots",
+      "qualifications": [
+        "rounds"
+      ],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    "3566": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Elgine",
+      "is_springer": false,
+      "lastname": "Seligman",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    "3868": {
+      "actual_working_minutes": 0.0,
+      "category": "Hilfskraft",
+      "constraints": {},
+      "firstname": "Eike",
+      "is_springer": false,
+      "lastname": "Vanfleet",
+      "qualifications": [
+        "rounds"
+      ],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
+    },
+    "5367": {
+      "actual_working_minutes": 0.0,
+      "category": "Hilfskraft",
+      "constraints": {},
+      "firstname": "Henni",
+      "is_springer": false,
+      "lastname": "Donis",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
+    },
+    "6614": {
+      "actual_working_minutes": 0.0,
+      "category": "Azubi",
+      "constraints": {},
+      "firstname": "Reni",
+      "is_springer": false,
+      "lastname": "Casarez",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    "6713": {
+      "actual_working_minutes": 0.0,
+      "category": "Azubi",
+      "constraints": {
+        "forbidden_days": [
+          "2026-03-09",
+          "2026-03-10",
+          "2026-03-11",
+          "2026-03-12",
+          "2026-03-13",
+          "2026-03-14",
+          "2026-03-15",
+          "2026-03-16",
+          "2026-03-17",
+          "2026-03-18",
+          "2026-03-19",
+          "2026-03-20",
+          "2026-03-21",
+          "2026-03-22",
+          "2026-03-23",
+          "2026-03-24",
+          "2026-03-25",
+          "2026-03-26",
+          "2026-03-27",
+          "2026-03-28",
+          "2026-03-29",
+          "2026-03-30",
+          "2026-03-31"
+        ]
+      },
+      "firstname": "Klothildi",
+      "is_springer": false,
+      "lastname": "Webster",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    "6836": {
+      "actual_working_minutes": 0.0,
+      "category": "Azubi",
+      "constraints": {},
+      "firstname": "Trude",
+      "is_springer": false,
+      "lastname": "Valentino",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    "6928": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Annelene",
+      "is_springer": false,
+      "lastname": "Izzo",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10296.0,
+      "type": "Medizinische/r Fachangestellte/r (81102-004)"
+    },
+    "7603": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Ludger",
+      "is_springer": false,
+      "lastname": "Roberson",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    "7746": {
+      "actual_working_minutes": 0.0,
+      "category": "Hilfskraft",
+      "constraints": {
+        "forbidden_days": [
+          "2026-03-01",
+          "2026-03-02",
+          "2026-03-03",
+          "2026-03-04",
+          "2026-03-05",
+          "2026-03-06",
+          "2026-03-07",
+          "2026-03-08",
+          "2026-03-09",
+          "2026-03-10",
+          "2026-03-11",
+          "2026-03-12",
+          "2026-03-13",
+          "2026-03-14",
+          "2026-03-15",
+          "2026-03-16",
+          "2026-03-17",
+          "2026-03-18"
+        ]
+      },
+      "firstname": "Adele",
+      "is_springer": false,
+      "lastname": "Ohman",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10296.0,
+      "type": "Stationshilfe (81301-018)"
+    },
+    "791": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Janett",
+      "is_springer": false,
+      "lastname": "Branz",
+      "qualifications": [
+        "rounds"
+      ],
+      "springer_pool": null,
+      "target_working_minutes": 7623.0,
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    "7919": {
+      "actual_working_minutes": 0.0,
+      "category": "Azubi",
+      "constraints": {},
+      "firstname": "Irma",
+      "is_springer": false,
+      "lastname": "Weathers",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10164.0,
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
+    },
+    "914": {
+      "actual_working_minutes": 0.0,
+      "category": "Hilfskraft",
+      "constraints": {},
+      "firstname": "Silvia",
+      "is_springer": false,
+      "lastname": "Harkins",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 9148.0,
+      "type": "Krankenpflegehelfer/in (1 j\u00e4hrige A.) (81301-006)"
+    },
+    "917": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Ingbert",
+      "is_springer": false,
+      "lastname": "Catoe",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 8448.0,
+      "type": "Krankenschwester/-pfleger (81302-008)"
+    },
+    "921": {
+      "actual_working_minutes": 5082.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Jenny",
+      "is_springer": false,
+      "lastname": "Keese",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 5082.0,
+      "type": "Altenpfleger/in (82102-002)"
+    },
+    "924": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {
+        "planned_shifts": [
+          {
+            "date": "2026-03-02",
+            "shift": "F2_"
+          },
+          {
+            "date": "2026-03-03",
+            "shift": "F2_"
+          },
+          {
+            "date": "2026-03-09",
+            "shift": "F2_"
+          },
+          {
+            "date": "2026-03-10",
+            "shift": "F2_"
+          },
+          {
+            "date": "2026-03-16",
+            "shift": "F2_"
+          },
+          {
+            "date": "2026-03-17",
+            "shift": "F2_"
+          },
+          {
+            "date": "2026-03-23",
+            "shift": "F2_"
+          },
+          {
+            "date": "2026-03-24",
+            "shift": "F2_"
+          },
+          {
+            "date": "2026-03-30",
+            "shift": "F2_"
+          }
+        ]
+      },
+      "firstname": "B\u00e4rbl",
+      "is_springer": false,
+      "lastname": "Merriweather",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 5017.0,
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    "925": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Lina",
+      "is_springer": false,
+      "lastname": "Farniok",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 3049.0,
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    },
+    "927": {
+      "actual_working_minutes": 0.0,
+      "category": "Hilfskraft",
+      "constraints": {},
+      "firstname": "Margaritt",
+      "is_springer": false,
+      "lastname": "Mittrach",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 10296.0,
+      "type": "Stationshilfe (81301-018)"
+    },
+    "928": {
+      "actual_working_minutes": 0.0,
+      "category": "Fachkraft",
+      "constraints": {},
+      "firstname": "Daniele",
+      "is_springer": false,
+      "lastname": "Wunderlich",
+      "qualifications": [],
+      "springer_pool": null,
+      "target_working_minutes": 6098.0,
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
+    }
+  },
+  "month": "03/2026",
+  "period_end": "2026-03-31",
+  "period_start": "2026-03-01",
+  "schedule": [
+    {
+      "date": "2026-03-01",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-01",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-02",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst (F2_)",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 6713,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "16:10",
+      "shift_start": "08:00",
+      "shift_type": "Zwischendienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 925,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-03",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst (F2_)",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 6713,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "16:10",
+      "shift_start": "08:00",
+      "shift_type": "Zwischendienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-04",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 921,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 6713,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "16:10",
+      "shift_start": "08:00",
+      "shift_type": "Zwischendienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-05",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 925,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 6713,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-06",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 925,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 6713,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-07",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 6713,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 925,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-08",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 0,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-09",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst (F2_)",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "16:10",
+      "shift_start": "08:00",
+      "shift_type": "Zwischendienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-10",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst (F2_)",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 0,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-11",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "16:10",
+      "shift_start": "08:00",
+      "shift_type": "Zwischendienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 0,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-12",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 0,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-13",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-14",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-15",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-16",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst (F2_)",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 925,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "16:10",
+      "shift_start": "08:00",
+      "shift_type": "Zwischendienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-17",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst (F2_)",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 925,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-18",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "16:10",
+      "shift_start": "08:00",
+      "shift_type": "Zwischendienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-19",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 7746,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-20",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 7746,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-21",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 7746,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-22",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 7746,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-23",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst (F2_)",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 7746,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-24",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst (F2_)",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 0,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-25",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Mittwoch"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 0,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "16:10",
+      "shift_start": "08:00",
+      "shift_type": "Zwischendienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 7746,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-26",
+      "employee_id": 928,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Donnerstag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 7746,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-27",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Freitag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 791,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-28",
+      "employee_id": 7746,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Samstag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 2,
+      "from_springer_pool": true,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 914,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-29",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Sonntag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 1,
+      "from_springer_pool": true,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 7746,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "16:10",
+      "shift_start": "08:00",
+      "shift_type": "Zwischendienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 1230,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 7603,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-30",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst (F2_)",
+      "shift_working_minutes": 460,
+      "weekday": "Montag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 924,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 925,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 2932,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 3868,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 6836,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 7746,
+      "from_springer_pool": false,
+      "shift_end": "14:10",
+      "shift_start": "06:00",
+      "shift_type": "Fr\u00fchdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 7919,
+      "from_springer_pool": false,
+      "shift_end": "16:10",
+      "shift_start": "08:00",
+      "shift_type": "Zwischendienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 917,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 927,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 5367,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 6614,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 6928,
+      "from_springer_pool": false,
+      "shift_end": "21:00",
+      "shift_start": "12:50",
+      "shift_type": "Sp\u00e4tdienst",
+      "shift_working_minutes": 460,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 2963,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Dienstag"
+    },
+    {
+      "date": "2026-03-31",
+      "employee_id": 3566,
+      "from_springer_pool": false,
+      "shift_end": "06:30",
+      "shift_start": "20:20",
+      "shift_type": "Nachtdienst",
+      "shift_working_minutes": 565,
+      "weekday": "Dienstag"
+    }
+  ],
+  "station_id": 77,
+  "station_name": "Station 77",
+  "statistics": {
+    "regular_shift_assignments": 376,
+    "springer_shift_assignments": 41,
+    "total_shift_assignments": 417
+  }
+}
