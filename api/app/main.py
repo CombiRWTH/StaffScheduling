@@ -3,7 +3,8 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from app.dependencies import ApiRuntime
 from app.logging import configure_logging
@@ -17,7 +18,7 @@ from app.routers.web.wishes_availabilities_router import wishes_and_availabiliti
 from app.settings import get_settings
 from app.solver.cp_sat.builder import create_cp_sat_model_builder
 from app.solver.service import SolverService
-from app.timeoffice.database import create_db_engine
+from app.timeoffice.database import TimeOfficeUnavailable, create_db_engine
 from app.timeoffice.facts import TIMEOFFICE_FACTS
 from app.timeoffice.reading.container import TimeOfficeReaders
 from app.timeoffice.service import TimeOfficeService
@@ -74,6 +75,14 @@ app.include_router(wishes_and_availabilities_router)
 app.include_router(minimal_staff_router)
 app.include_router(schedule_router)
 app.include_router(solve_router)
+
+
+@app.exception_handler(TimeOfficeUnavailable)
+async def timeoffice_unavailable(_request: Request, error: TimeOfficeUnavailable) -> JSONResponse:
+    return JSONResponse(
+        status_code=503,
+        content={"detail": str(error), "integration": "timeoffice", "stage": error.stage},
+    )
 
 
 @app.get("/status")

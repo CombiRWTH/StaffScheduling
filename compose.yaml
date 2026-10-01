@@ -10,10 +10,10 @@ services:
     secrets:
       - db_password
     ports:
-      - "8000:8000"
+      - "${BIND_ADDRESS:-127.0.0.1}:${API_PORT:-8000}:8000"
     volumes:
       - ./api/app:/project/api/app
-      - ./data:/project/data
+      - ${DATA_DIR:-./data}:/project/data
     healthcheck:
       test:
         [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/status', timeout=3)"]
@@ -29,10 +29,10 @@ services:
       SOLVER_API_URL: http://api:8000
       CASES_DIR: /data/cases
     ports:
-      - "3000:3000"
+      - "${BIND_ADDRESS:-127.0.0.1}:${WEBAPP_PORT:-3000}:3000"
     volumes:
       - ./webapp:/app
-      - ./data:/data
+      - ${DATA_DIR:-./data}:/data
       - webapp-dependencies:/app/node_modules
       - webapp-build:/app/.next
     depends_on:
@@ -44,7 +44,7 @@ services:
           CMD,
           node,
           -e,
-          "fetch('http://127.0.0.1:3000').then(r => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1))",
+          "fetch('http://127.0.0.1:3000/api/health', {signal: AbortSignal.timeout(5000)}).then(r => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1))",
         ]
       interval: 5s
       timeout: 5s
@@ -53,7 +53,7 @@ services:
 
 secrets:
   db_password:
-    file: ./.secrets/db_password
+    file: ${DB_PASSWORD_FILE:-./.secrets/db_password}
 
 volumes:
   webapp-dependencies:

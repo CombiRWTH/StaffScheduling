@@ -25,11 +25,14 @@ StaffScheduling/
     └── db_password         # supplied password; ignored by Git
 ```
 
+If no password is available, leave the file empty: both services can start, while database operations report an unavailable integration.
+
 The committed `.env` already contains the test database server, database name and user. [Installation](installation.md#database-configuration) explains how to use a different authorized database.
 
 ## 3. Start both services
 
 ```sh
+mkdir -p data/found_solutions data/processed_solutions
 docker compose up --build --wait
 ```
 
@@ -37,7 +40,7 @@ The first build downloads dependencies. This command runs in the background and 
 
 Open the webapp at <http://localhost:3000>. The API's interactive reference is at <http://localhost:8000/docs>; <http://localhost:8000/status> should return `{"status":"healthy"}`.
 
-A healthy service does not prove database connectivity. Employee/configuration queries and generation need access to the TimeOffice network and database. Read [current limitations](../validation/index.md) before relying on planning or publication results.
+Open <http://localhost:3000/api/health> to check a real request from the webapp server to the API. It returns `503` if the API is unavailable. A healthy service does not prove database connectivity. Employee/configuration queries and generation need access to the TimeOffice network and database. Read [current limitations](../validation/index.md) before relying on planning or publication results.
 
 ## Stop or inspect
 

@@ -59,7 +59,7 @@ React Doctor runs the installed binary with full scope, no cache, no supply-chai
 
 ## Known failing checks
 
-See [current limitations](../validation/index.md#quality-gates) for the exact test/type failures and remaining build acceptance. `just check` remains failing and stops at the first unsuccessful recipe. Run `just test` and `just docs-check` separately when that happens.
+See [current limitations](../validation/index.md#quality-gates) for the exact test/type failures and remaining build acceptance. `just check` runs format, lint, quality, types, offline tests, production webapp build, strict docs and isolated Compose smoke even when a gate fails; it returns nonzero if any gate fails. It requires Docker as well as the native tools. The type/build and solver failures remain visible.
 
 ## Configuration ownership
 
@@ -69,13 +69,13 @@ Root EditorConfig supplies shared editor settings. Ruff uses a Python line width
 
 ## Tests and documentation
 
-Use focused unit tests for local rule logic, service integration tests for module boundaries and distinct system flows for staff-admin behavior. Avoid proving the same responsibility at every level. `api/tests/cp/` covers constraints/objectives; the solution writer/settings tests cover adapter/settings behavior. Run `uv run python -m pytest` from `api/` for direct test execution, or use root `just test` with forwarded arguments.
+Use focused unit tests for local rule logic, service integration tests for module boundaries and distinct system flows for staff-admin behavior. Avoid proving the same responsibility at every level. `api/tests/cp/` covers constraints/objectives; the solution writer/settings/foundation tests cover adapter/settings behavior. `just build` runs the native production webapp build; `just smoke` builds both development images and tests isolated startup, actual HTTP connectivity, unavailable integration behavior and persistence. `just connectivity` is an explicit read-only external diagnostic. `just test-timeoffice` selects only external tests; none are implemented yet, so it currently exits with pytest’s no-tests status rather than proving live acceptance. Run `uv run python -m pytest` from `api/` for direct test execution, or use root `just test` with forwarded arguments.
 
-Documentation is a separate locked project with MkDocs and Material. Edit `docs/source/`, update `docs/mkdocs.yml` navigation when adding/removing a page, and run `just docs-check`. Keep current instructions tied to source, preserve known limitations and remove obsolete instructions rather than publishing competing workflows. Generated `docs/site/` is disposable. Every implementation change updates its affected documentation; see [maintaining documentation](documentation.md) for section ownership and evidence rules. The [testing outline](testing.md) will document verified integration and system procedures.
+Documentation is a separate locked project with MkDocs and Material. Edit `docs/source/`, update `docs/mkdocs.yml` navigation when adding/removing a page, and run `just docs-check`. Keep current instructions tied to source, preserve known limitations and remove obsolete instructions rather than publishing competing workflows. Generated `docs/site/` is disposable. Every implementation change updates its affected documentation; see [maintaining documentation](documentation.md) for section ownership and evidence rules. See [testing](testing.md) for verified foundation checks and pending system procedures.
 
 ## CI and Git hooks
 
-`.github/workflows/ci.yml` is the monorepo CI entry point for main/handin-readiness pushes, PRs into main and manual runs. Its five independent jobs cover quality/hooks and types, all offline API tests, the Next production build, both Compose image builds/ODBC import, and strict documentation. Independent jobs ensure a known type failure does not prevent tests or docs from running. Service installs are frozen, action references are pinned to commits and validation permissions are read-only. CI needs no TimeOffice credentials and performs no connected database operations.
+`.github/workflows/ci.yml` is the monorepo CI entry point for main/handin-readiness pushes, PRs into main and manual runs. Its five independent jobs cover quality/hooks and types, all offline API tests, the Next production build, both Compose image builds/ODBC import and isolated startup/connectivity/persistence smoke, and strict documentation. Independent jobs ensure a known type failure does not prevent tests or docs from running. Service installs are frozen, action references are pinned to commits and validation permissions are read-only. CI needs no TimeOffice credentials and performs no connected database operations.
 
 `.github/workflows/docs.yml` publishes only relevant main-branch pushes to the existing `gh-pages` branch after a strict docs build. Only that publishing job has repository write permission; its deployments are serialized. Docs no longer import API modules, so API-source-only changes do not trigger publication. GitHub Pages must continue serving the `gh-pages` branch.
 

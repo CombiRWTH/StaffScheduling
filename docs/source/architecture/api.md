@@ -22,6 +22,8 @@ Configuration routes use `planning_unit` and `from_date` query parameters; consu
 | `/solve/`                           | POST        | Accept a full-month solve job                                                                  |
 | `/solve/jobs/{job_id}`              | GET         | Poll process-local job execution and result                                                    |
 
+Next's `GET /api/health` makes a server-side request to API `/status`: it returns healthy only for a valid API liveness response, or `503` if the API is unavailable. Database availability is separate. Direct TimeOffice failures return `503` with sanitized `detail`, `integration: timeoffice` and the failed `stage`; accepted background jobs still report failures through their job state. See the [read-only diagnostic](../getting-started/installation.md#database-configuration).
+
 ## Solve lifecycle
 
 `POST /solve/` accepts nonempty `planning_unit_ids`, `year`, `month` and `timeout` in seconds. The selected month is expanded to a full calendar month. An accepted request returns HTTP 202 with its job ID/status. An occupied solve lock returns HTTP 423. An unknown job ID returns HTTP 404.

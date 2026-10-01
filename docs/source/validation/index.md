@@ -8,7 +8,7 @@ For evaluators and anyone deciding whether to rely on a result. The checks below
 
 ## Startup and connectivity
 
-Compose startup, API/webapp liveness and reload have been checked. `/status` reports process liveness only. Live TimeOffice access, connected staff-admin flows and dedicated Linux-host acceptance remain outstanding. The Compose file runs development servers; a production build/deployment is a separate gate.
+Image-built development Compose startup, actual Next-server/API HTTP connectivity, bounded unavailable-database/API states, persistent output recreation and separate source reload passed in Linux arm64 containers on macOS. A Linux amd64 API build/import check includes ODBC Driver 18. `/status` reports API liveness; Next `/api/health` checks API process connectivity. Neither claims database readiness. Explicit read-only diagnostics failed at the encrypted connection stage for the configured test target. Live TimeOffice access, connected staff-admin flows, hosted CI and actual Linux-host acceptance remain outstanding. The Compose file runs development servers; a production build/deployment is a separate gate.
 
 ## Webapp integration
 
@@ -24,11 +24,11 @@ The current publication endpoint translates legacy variables and performs a tran
 
 ## Quality gates
 
-The latest executed offline suite reports **89 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
+The latest executed offline suite reports **93 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
 
 Webapp strict TypeScript reports TS2339 at `src/infrastructure/repositories/lowdb-employee.repository.ts:19`: `write` is absent from the returned object type. Employee inspection migration owns the correction. The Linux-container production build compiles and then fails at this same type gate; production build acceptance remains outstanding.
 
-Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint has zero errors and 13 warnings; React Doctor warnings remain visible. `just check` stops at the webapp type failure and therefore does not reach its test/docs recipes; run them separately to inspect their results.
+Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint has zero errors and 13 warnings; React Doctor warnings remain visible. `just check` now runs all independent offline gates, including production build, docs and credential-free Compose smoke, and retains a failing exit status. It remains red for the existing employee type/build and nine solver failures.
 
 ## Retired material
 

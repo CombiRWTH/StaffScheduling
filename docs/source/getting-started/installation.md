@@ -49,27 +49,52 @@ On Windows, restrict the folder/file to your user through its security propertie
 
 Compose reads `.env` and mounts the password at `/run/secrets/db_password`. Pydantic settings loads that file using `SECRETS_DIR=/run/secrets`. The adapter connects to an external TimeOffice Microsoft SQL Server; Compose does not provision a database or sample hospital data. Arrange the required network/VPN route, database permissions and planning scope with the database administrator. [TimeOffice reference](../architecture/timeoffice.md) describes the adapter and supplemental tables.
 
-The SQL engine is created at startup and opens connections when operations need them. Consequently, `/status` can return healthy even when the SQL Server is unreachable or the credentials are invalid.
+The SQL engine is lazy: startup needs no database connection. An empty password file permits startup when credentials are unavailable. Database-backed operations return a sanitized `503` with the failing stage and recovery advice. `/status` reports only API liveness; `/api/health` on the webapp makes a real server-side API request. The browser uses Next routes/actions; `http://api:8000` is the internal server URL, not a browser address.
+
+Use a hostname or IP in `DB_SERVER`, with a separate optional `DB_PORT` (default 1433). `DB_TIMEOUT_SECONDS` defaults to five seconds, accepts 1–30, and bounds individual DNS, login and query waits. The total diagnostic can include several waits. The adapter requires encrypted SQL connections and validates the server certificate. Arrange a certificate matching the configured hostname and a CA trusted by the container; an IP address works only when the certificate covers it. For a private CA, have the administrator install its public CA certificate into the API image trust store and rebuild. Do not disable encryption or certificate verification to bypass failures.
+
+With services running, execute the read-only diagnostic:
+
+```sh
+docker compose exec -T api python -m app.timeoffice.database
+# Equivalent when just is installed:
+just connectivity
+```
+
+It checks configuration, the installed driver, DNS, encrypted login and `SELECT 1`. It prints safe JSON, exits nonzero on failure and performs no application-table queries or writes. A connection failure means checking the VPN/network route, firewall/port, login and TLS trust with the administrator. Query failure means checking connectivity/schema/permissions. SQLAlchemy may also issue read-only server/session metadata queries when initializing the connection. The diagnostic does not establish planning-table permissions or dataset validity.
 
 ## Start, update and stop
 
 ```sh
+mkdir -p data/found_solutions data/processed_solutions
 docker compose up --build --wait
 docker compose ps
 ```
 
-Open <http://localhost:3000> and <http://localhost:8000/docs>. Both ports are fixed in `compose.yaml`. Source mounts support FastAPI and Next.js development reload. Changes to manifests, locks or Dockerfiles require rebuilding with the same startup command. The webapp installs its frozen lock in a persistent dependency volume when it starts.
+Open <http://localhost:3000> and <http://localhost:8000/docs>. Ports bind to loopback by default. `API_PORT`, `WEBAPP_PORT` and `BIND_ADDRESS` can override them. Source mounts support FastAPI and Next.js development reload. Changes to manifests, locks or Dockerfiles require rebuilding with the same startup command. The webapp installs its frozen lock in a persistent dependency volume when it starts.
 
 ```sh
 docker compose logs --follow
 docker compose down
 ```
 
-`data/` is shared by both services and initially contains only `.gitkeep`. Retained file-based screens use `data/cases/`; solver compatibility exports use `data/found_solutions/` and `data/processed_solutions/`. These directories are created on use and are ignored. Container shutdown preserves them. Exported compatibility files are not independently accepted hand-in schedules.
+`data/` is shared by both services and initially contains only `.gitkeep`. Retained file-based screens use `data/cases/`; solver compatibility exports use `data/found_solutions/` and `data/processed_solutions/`. Prepare the two output directories before startup as shown above; `just run` does this too. Runtime files are ignored. The API maps them under `/project/data/`; the webapp maps the same root under `/data/`. Container shutdown preserves them. Exported compatibility files are not independently accepted hand-in schedules.
 
 Named volumes hold webapp dependencies and Next build output. Do not delete `data/` as a troubleshooting step. `docker compose down` is sufficient for ordinary shutdown.
 
 The current Compose setup runs development servers and exposes their ports on the host. A production deployment, authentication and TLS termination are outside this setup; it is intended for the prepared development/test environment.
+
+## Laptop ports and output permissions
+
+For a prepared laptop needing LAN access, deliberately bind the development services and choose free host ports:
+
+```sh
+BIND_ADDRESS=0.0.0.0 API_PORT=8000 WEBAPP_PORT=3000 docker compose up --build --wait
+```
+
+Use the laptop's address in the browser. Its VPN/firewall must allow both the SQL connection and the intended client access. Keep loopback defaults for local use. Separate checkouts/projects can set `COMPOSE_PROJECT_NAME`, ports and `DATA_DIR`; `DB_PASSWORD_FILE` selects a private password file. Keep machine-specific overrides in your shell environment, rather than committing them. These are Compose settings, not `NEXT_PUBLIC_` browser configuration.
+
+Linux bind mounts preserve numeric ownership. The current containers run as root; prepare the host output directories as your user and check host readability after writing. If existing directories are owned by another user, arrange narrowly scoped ownership correction for those output directories; do not use `chmod 777`. Stop/recreation preserves host data; removing the webapp dependency/build volumes is separate from removing outputs. Jobs and the solve lock remain in one API process and disappear on reload/restart; there is no automatic job recovery.
 
 ## Optional native developer setup
 

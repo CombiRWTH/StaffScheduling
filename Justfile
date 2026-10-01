@@ -29,9 +29,15 @@ typecheck:
 test *args:
     cd api && uv run --frozen python -m pytest {{args}}
 
-check: format-check lint quality typecheck test docs-check
+# Run every independent offline gate and retain a failure exit status.
+check:
+    @result=0; for task in format-check lint quality typecheck test build docs-check smoke; do "{{just_executable()}}" "$task" || result=1; done; exit "$result"
+
+build:
+    cd webapp && pnpm run build
 
 run:
+    mkdir -p data/found_solutions data/processed_solutions
     docker compose up --build --wait
 
 stop:
@@ -45,3 +51,15 @@ docs:
 
 docs-check:
     uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs build --strict
+
+# Credential-free isolated startup, HTTP connectivity and persistent output checks.
+smoke:
+    sh scripts/smoke.sh
+
+# Explicit read-only external integration diagnostics; services must already be running.
+connectivity:
+    docker compose exec -T api python -m app.timeoffice.database
+
+# Only tests explicitly marked for the authorized external test database.
+test-timeoffice:
+    cd api && uv run --frozen python -m pytest -m timeoffice
