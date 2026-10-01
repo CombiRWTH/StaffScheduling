@@ -15,6 +15,7 @@ class StaffLevel(StrEnum):
     PROFESSIONAL = "professional"  # Fachkraft
     ASSISTANT = "assistant"  # Hilfskraft
     TRAINEE = "trainee"  # Azubi
+    MFA = "mfa"  # Medizinische Fachangestellte
 
 
 class Capability(StrEnum):

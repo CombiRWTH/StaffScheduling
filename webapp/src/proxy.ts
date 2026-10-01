@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PROTECTED_PREFIXES = ["/employees", "/solver", "/wishes-and-blocked", "/schedule", "/weights", "/minimal-staff"];
+const PROTECTED_PREFIXES = ["/solver", "/wishes-and-blocked", "/schedule", "/weights", "/minimal-staff"];
 
 export function proxy(request: NextRequest) {
   // Ignore the request unless workflow mode is enabled.

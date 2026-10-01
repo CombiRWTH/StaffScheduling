@@ -194,7 +194,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "63302-045": StaffLevel.PROFESSIONAL,  # Servicekraft
         # Hilfskraft / support
         "81102-001": StaffLevel.ASSISTANT,  # Arzthelfer/in
-        "81102-004": StaffLevel.ASSISTANT,  # Medizinische/r Fachangestellte/r
+        "81102-004": StaffLevel.MFA,  # Medizinische/r Fachangestellte/r
         "81301-002": StaffLevel.ASSISTANT,  # Helfer/in - stationäre Krankenpflege
         "81301-006": StaffLevel.ASSISTANT,  # Krankenpflegehelfer/in, 1-jährige Ausbildung
         "81301-010": StaffLevel.ASSISTANT,  # Pflegehelfer/in ohne 1-jährige Ausbildung

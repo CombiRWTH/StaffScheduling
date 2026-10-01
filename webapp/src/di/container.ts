@@ -1,7 +1,6 @@
 import "server-only";
 import { createContainer } from "@evyweb/ioctopus";
 import { DI_RETURN_TYPES, DI_SYMBOLS } from "@/di/types";
-import { createEmployeesModule } from "@/di/modules/employees.module";
 import { createWeightsModule } from "@/di/modules/weights.module";
 import { createMinimalStaffModule } from "@/di/modules/minimal-staff.module";
 import { createWishesAndBlockedModule } from "@/di/modules/wishes-and-blocked.module";
@@ -18,7 +17,6 @@ import { createGlobalAvailabilityModule } from "@/di/modules/global-availability
 
 const ApplicationContainer = createContainer();
 
-ApplicationContainer.load(Symbol("EmployeesModule"), createEmployeesModule());
 ApplicationContainer.load(Symbol("WeightsModule"), createWeightsModule());
 ApplicationContainer.load(Symbol("MinimalStaffModule"), createMinimalStaffModule());
 ApplicationContainer.load(Symbol("WishesAndBlockedModule"), createWishesAndBlockedModule());

@@ -11,7 +11,8 @@ Configuration routes use `planning_unit` and `from_date` query parameters; consu
 | Route                               | Methods     | Current behavior                                                                               |
 | ----------------------------------- | ----------- | ---------------------------------------------------------------------------------------------- |
 | `/status`                           | GET         | Process liveness without a TimeOffice query                                                    |
-| `/employees`                        | GET         | Read employees for a unit/month                                                                |
+| `/planning/options`                 | GET         | Named stations with unique full-month targets                                                  |
+| `/employees`                        | GET         | Complete canonical combined month/station/pool inspection                                      |
 | `/weights`                          | GET, PUT    | Read/update objective weights                                                                  |
 | `/wishes-and-blocked`               | GET         | Read wishes and availability                                                                   |
 | `/wishes-and-blocked/{employee_id}` | PUT, DELETE | Replace/delete employee wishes and blocked periods                                             |
@@ -23,6 +24,16 @@ Configuration routes use `planning_unit` and `from_date` query parameters; consu
 | `/solve/jobs/{job_id}`              | GET         | Poll process-local job execution and result                                                    |
 
 Next's `GET /api/health` makes a server-side request to API `/status`: it returns healthy only for a valid API liveness response, or `503` if the API is unavailable. Database availability is separate. Direct TimeOffice failures return `503` with sanitized `detail`, `integration: timeoffice` and the failed `stage`; accepted background jobs still report failures through their job state. See the [read-only diagnostic](../getting-started/installation.md#database-configuration).
+
+## Selection and employee reads
+
+`GET /planning/options?year=2026&month=1` returns the canonical `planning_month` (inclusive derived start/end) and named `planning_units` with station type. Only stations with a unique configured full-month target are offered. Empty options are distinct from a source failure. The existing `/solve/options` route remains for generation compatibility; the new selector does not use it.
+
+`GET /employees?year=2026&month=1&planning_unit_ids=101&planning_unit_ids=102` accepts repeated positive station IDs and deduplicates them. The numbers here are illustrative, not connected target IDs. The response contains `selected_station_ids`, `planning_units` including relevant pool/home units, and deduplicated employees. Each employee has `employee_id`, `display_name`, `staff_level`, full dated `memberships`, `account`, `hard_restrictions` and `restrictions_source`. Accounts expose target/actual/credited minutes, dated `credit_details` and `evidence_source`. OpenAPI supplies the exact current schema. The retired `planning_unit`/`from_date` employee payload and split-name DTO are removed.
+
+Invalid query values return `422`. Unavailable connectivity/query access returns sanitized `503`. Incomplete/ambiguous prepared facts or invalid station selection return `409` and no employee table. A pool cannot be selected as a station. These routes execute synchronous database reads in FastAPI's worker pool and never create tables, read demand, mutate output, load filesystem cases or invoke the solver. All-or-error source validation prevents partially successful station inspection.
+
+The webapp uses a small server-only native-fetch boundary with `cache: no-store`, a ten-second request timeout, schema validation and scope matching. Browser URLs contain the canonical month/station selection; SQL connection details remain server-side.
 
 ## Solve lifecycle
 

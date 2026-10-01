@@ -5,6 +5,7 @@ _default:
 install:
     cd api && uv sync --frozen
     cd webapp && pnpm install --frozen-lockfile
+    cd webapp && pnpm exec playwright install chromium
     cd api && uv run --frozen pre-commit install
 
 format:
@@ -29,9 +30,12 @@ typecheck:
 test *args:
     cd api && uv run --frozen python -m pytest {{args}}
 
+test-browser:
+    cd webapp && pnpm run test:browser
+
 # Run every independent offline gate and retain a failure exit status.
 check:
-    @result=0; for task in format-check lint quality typecheck test build docs-check smoke; do "{{just_executable()}}" "$task" || result=1; done; exit "$result"
+    @result=0; for task in format-check lint quality typecheck test test-browser build docs-check smoke; do "{{just_executable()}}" "$task" || result=1; done; exit "$result"
 
 build:
     cd webapp && pnpm run build

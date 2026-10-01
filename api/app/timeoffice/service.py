@@ -6,16 +6,23 @@ from app.domain import (
     Availability,
     DemandRequirement,
     PlanningMonth,
+    PlanningUnitType,
     SchedulingDataset,
     SolverObjectiveWeights,
     Wish,
 )
+from app.employees.inspection import build_inspection
+from app.employees.models import PlanningInspection, PlanningOptions
 from app.routers.solve.schemas import SolveOptions
 from app.solver.models import Solution
 from app.timeoffice.facts import TimeOfficeFacts
 from app.timeoffice.mapping import map_scheduling_dataset
-from app.timeoffice.mapping.options import map_solve_options
+from app.timeoffice.mapping.options import map_planning_units, map_solve_options
+from app.timeoffice.mapping.personnel import map_employees, map_planning_unit_memberships
+from app.timeoffice.mapping.roster import map_availability
+from app.timeoffice.mapping.work_accounts import map_monthly_work_accounts
 from app.timeoffice.reading.container import TimeOfficeReaders
+from app.timeoffice.reading.employee_evidence import read_employee_evidence
 from app.timeoffice.writing.demand import TimeOfficeDemandWriter
 from app.timeoffice.writing.objective_weights import TimeOfficeWeightsWriter
 from app.timeoffice.writing.roster import TimeOfficeAvailabilityWriter
@@ -64,6 +71,112 @@ class TimeOfficeService:
         )
 
         return options
+
+    def get_planning_options(self, *, planning_month: PlanningMonth) -> PlanningOptions:
+        """Return named station destinations with unique full-month targets, without provisioning.
+
+        Raises:
+            ValueError: Configured names or target selection are ambiguous/incomplete.
+        """
+        with self._engine.connect() as connection:
+            units = map_planning_units(
+                rows=self._readers.options.read_planning_unit_option_rows(connection=connection), facts=self._facts
+            )
+            station_ids = tuple(unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.STATION)
+            rows = self._readers.planning_units.read_rows(
+                connection=connection,
+                selected_planning_unit_ids=station_ids,
+                planning_month=planning_month,
+                require_all=False,
+            )
+        available_ids = {row.planning_unit_id for row in rows}
+        return PlanningOptions(
+            planning_month=planning_month,
+            planning_units=tuple(unit for unit in units if unit.planning_unit_id in available_ids),
+        )
+
+    def inspect_employees(
+        self, *, planning_unit_ids: tuple[int, ...], planning_month: PlanningMonth
+    ) -> PlanningInspection:
+        """Read the entire station/pool scope or fail before returning any employees.
+
+        No demand, prior output, plan-personnel artifacts or write/provisioning paths
+        are used. Every employee needs complete account and monthly evidence.
+
+        Raises:
+            ValueError: Selection or employee source facts are incomplete/ambiguous.
+        """
+        selected = self._normalize_planning_unit_ids(planning_unit_ids)
+        if any(self._facts.planning_unit_type_by_id[unit_id] != PlanningUnitType.STATION for unit_id in selected):
+            raise ValueError("Select station destinations; a shared pool is origin context only.")
+        with self._engine.connect() as connection:
+            # Validate all selected target plans without loading prior generated output.
+            self._readers.planning_units.read_rows(
+                connection=connection,
+                selected_planning_unit_ids=selected,
+                planning_month=planning_month,
+            )
+            units = map_planning_units(
+                rows=self._readers.options.read_planning_unit_option_rows(connection=connection), facts=self._facts
+            )
+            all_rows = self._readers.personnel.read_membership_rows(
+                connection=connection,
+                planning_unit_ids=tuple(unit.planning_unit_id for unit in units),
+                planning_month=planning_month,
+            )
+            relevant_employee_ids = {row.employee_id for row in all_rows if row.planning_unit_id in selected}
+            pool_ids = {
+                row.planning_unit_id
+                for row in all_rows
+                if row.employee_id in relevant_employee_ids
+                and row.is_home
+                and self._facts.planning_unit_type_by_id[row.planning_unit_id] == PlanningUnitType.SHARED_POOL
+            }
+            relevant_employee_ids.update(row.employee_id for row in all_rows if row.planning_unit_id in pool_ids)
+            memberships = tuple(row for row in all_rows if row.employee_id in relevant_employee_ids)
+            employee_ids = tuple(sorted(relevant_employee_ids))
+            employees = map_employees(
+                self._readers.personnel.read_employee_rows(
+                    connection=connection,
+                    employee_ids=employee_ids,
+                ),
+                facts=self._facts,
+            )
+            accounts = map_monthly_work_accounts(
+                self._readers.monthly_work_accounts.read_rows(
+                    connection=connection,
+                    employee_ids=employee_ids,
+                    planning_month=planning_month,
+                )
+            )
+            evidence = read_employee_evidence(
+                connection=connection,
+                employee_ids=employee_ids,
+                planning_month=planning_month,
+            )
+            availability = map_availability(
+                rows=self._readers.roster.read_rows(
+                    connection=connection,
+                    employee_ids=employee_ids,
+                    planning_month=planning_month,
+                ),
+                facts=self._facts,
+            )
+        canonical_memberships = map_planning_unit_memberships(memberships, facts=self._facts)
+        relevant_unit_ids = set(selected) | {row.planning_unit_id for row in canonical_memberships}
+        if not set(selected) <= {unit.planning_unit_id for unit in units}:
+            raise ValueError("Selected station names are missing.")
+        return build_inspection(
+            planning_month=planning_month,
+            selected_station_ids=selected,
+            units=tuple(unit for unit in units if unit.planning_unit_id in relevant_unit_ids),
+            employees=employees,
+            memberships=canonical_memberships,
+            accounts=accounts,
+            evidence=evidence,
+            availability=availability,
+            allowed_shift_ids=set(self._facts.reference_shift_facts_by_id),
+        )
 
     def fetch_dataset(
         self,

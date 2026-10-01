@@ -22,7 +22,7 @@ export function HomePageClient({ caseSearch, isWorkflowMode }: HomePageClientPro
   const databases = [
     {
       title: "Mitarbeiter",
-      description: "Verwalte alle Mitarbeiter und ihre Informationen",
+      description: "Lies Mitarbeiter, Mitgliedschaften, Monatskonten und Einschränkungen",
       icon: Users,
       href: `/employees${caseSearch}`,
       color: "text-blue-500",
@@ -57,17 +57,20 @@ export function HomePageClient({ caseSearch, isWorkflowMode }: HomePageClientPro
   return (
     <div className="py-10">
       <div className="mb-6">
-        <h1 className="text-4xl font-bold mb-2">Schichtplan Datenbank Manager</h1>
-        <p className="text-muted-foreground text-lg">Zentrale Verwaltung aller Datenbanken für die Schichtplanung</p>
+        <h1 className="text-4xl font-bold mb-2">Schichtplanung</h1>
+        <p className="text-muted-foreground text-lg">
+          Wähle oben einen Planungsmonat und Stationen; öffne dann die Mitarbeiterprüfung.
+        </p>
       </div>
 
       {!isWorkflowMode && (
         <Alert className="mb-6 border-blue-200 bg-blue-50">
           <Wand2 className="h-5 w-5 text-blue-600" />
-          <AlertTitle className="text-blue-900">TimeOffice Integration</AlertTitle>
+          <AlertTitle className="text-blue-900">Aktueller Funktionsumfang</AlertTitle>
           <AlertDescription className="text-blue-800">
-            Wenn Sie diese Anwendung über den Zauberstab-Button in TimeOffice starten, werden Sie automatisch zum
-            strukturierten Workflow weitergeleitet, wo Sie Schritt für Schritt Ihren Dienstplan erstellen können.
+            Planungsauswahl und Mitarbeiterprüfung sind verbunden. Konfiguration, Generierung und Dienstplanprüfung
+            werden in den folgenden Schritten erneuert. Wiederkehrende Einstellungen, Vorlagen und eine gespeicherte
+            Bibliothek sind noch nicht unterstützt.
           </AlertDescription>
         </Alert>
       )}

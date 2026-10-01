@@ -1,14 +1,13 @@
-// Server component: compute search parameters and render a thin client wrapper
 import { HomePageClient } from "@/components/home-page-client";
-import { getWorkflowSession } from "@/infrastructure/services/workflow-session.service";
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ caseId?: string; monthYear?: string }>;
+  searchParams: Promise<{ month?: string; stations?: string }>;
 }) {
-  const [{ caseId, monthYear }, workflowState] = await Promise.all([searchParams, getWorkflowSession()]);
-  const caseSearch = caseId && monthYear ? `?caseId=${caseId}&monthYear=${monthYear}` : "";
-
-  return <HomePageClient caseSearch={caseSearch} isWorkflowMode={workflowState.isWorkflowMode} />;
+  const { month, stations } = await searchParams;
+  const params = new URLSearchParams();
+  if (month) params.set("month", month);
+  if (stations) params.set("stations", stations);
+  return <HomePageClient caseSearch={params.size ? `?${params}` : ""} isWorkflowMode={false} />;
 }

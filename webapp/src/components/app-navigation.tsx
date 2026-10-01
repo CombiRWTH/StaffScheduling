@@ -15,7 +15,6 @@ import {
   Heart,
   type LucideIcon,
   Menu,
-  Scale,
   UserCog,
   X,
 } from "lucide-react";
@@ -23,12 +22,6 @@ import { cn } from "@/lib/utils";
 // This wrapper is required because AppNavigation uses useSearchParams, a client hook.
 // During SSR/prerendering it must be rendered inside a Suspense boundary.
 import { Suspense } from "react";
-
-interface AppNavigationProps {
-  isLocked: boolean;
-  lockedCaseId?: number | null;
-  lockedMonthYear?: string | null;
-}
 
 const mainLinks: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: "/employees", label: "Mitarbeiter", icon: Calendar },
@@ -61,7 +54,9 @@ const groupedLinks: Array<{
     label: "Konfiguration",
     icon: Cog,
     links: [
-      { href: "/weights", label: "Gewichtungen", icon: Scale },
+      { href: "/templates", label: "Vorlagen (nicht unterstützt)", icon: Cog },
+      { href: "/global-wishes-and-blocked", label: "Wiederkehrende Wünsche (nicht unterstützt)", icon: Heart },
+      { href: "/global-availability", label: "Wiederkehrende Verfügbarkeit (nicht unterstützt)", icon: Heart },
       { href: "/minimal-staff", label: "Mindestbesetzung", icon: UserCog },
     ],
   },
@@ -164,15 +159,16 @@ function SidebarContent({ caseSearch, isActive, onClose, showCloseButton = false
   );
 }
 
-export function AppNavigation({ isLocked, lockedCaseId, lockedMonthYear }: AppNavigationProps) {
+export function AppNavigation() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const caseId = searchParams.get("caseId");
-  const caseIds = searchParams.get("caseIds");
-  const monthYear = searchParams.get("monthYear");
-  const caseSearch =
-    caseId && monthYear ? `?caseId=${caseId}${caseIds ? `&caseIds=${caseIds}` : ""}&monthYear=${monthYear}` : "";
+  const selection = new URLSearchParams();
+  for (const key of ["month", "stations"]) {
+    const value = searchParams.get(key);
+    if (value) selection.set(key, value);
+  }
+  const caseSearch = selection.size ? `?${selection}` : "";
 
   const isActive = (path: string) => {
     return pathname === path || pathname.startsWith(path + "/");
@@ -203,7 +199,7 @@ export function AppNavigation({ isLocked, lockedCaseId, lockedMonthYear }: AppNa
           </div>
 
           <div className="ml-auto flex w-full justify-start md:w-auto md:justify-end">
-            <MonthSelector disabled={isLocked} lockedCaseId={lockedCaseId} lockedMonthYear={lockedMonthYear} />
+            <MonthSelector />
           </div>
         </div>
       </div>
@@ -234,16 +230,10 @@ export function AppNavigation({ isLocked, lockedCaseId, lockedMonthYear }: AppNa
   );
 }
 
-interface NavigationWrapperProps {
-  isLocked: boolean;
-  lockedCaseId?: number | null;
-  lockedMonthYear?: string | null;
-}
-
-export function NavigationWrapper({ isLocked, lockedCaseId, lockedMonthYear }: NavigationWrapperProps) {
+export function NavigationWrapper() {
   return (
     <Suspense fallback={<div className="h-16 border-b bg-background sticky top-0 z-50 md:ml-72" />}>
-      <AppNavigation isLocked={isLocked} lockedCaseId={lockedCaseId} lockedMonthYear={lockedMonthYear} />
+      <AppNavigation />
     </Suspense>
   );
 }

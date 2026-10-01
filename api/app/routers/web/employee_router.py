@@ -1,41 +1,43 @@
-import logging
-from datetime import date
-from typing import Annotated, Any
+from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.dependencies import get_timeoffice_service
-from app.domain import Employee, PlanningMonth
+from app.domain import PlanningMonth, PositiveId
+from app.employees.models import PlanningInspection, PlanningOptions
 from app.timeoffice.service import TimeOfficeService
-
-logger = logging.getLogger(__name__)
-
 
 employee_router = APIRouter()
 
 
-@employee_router.get("/employees")
-async def get_employees(
-    planning_unit: int,
-    from_date: date,
+@employee_router.get("/planning/options")
+def get_planning_options(
+    year: Annotated[int, Query(ge=2000, le=2200)],
+    month: Annotated[int, Query(ge=1, le=12)],
     timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
-) -> dict[str, list[dict[str, Any]]]:
-    month = PlanningMonth(year=from_date.year, month=from_date.month)
-    employees = timeoffice.fetch_dataset(planning_unit_ids=(planning_unit,), planning_month=month).employees
-    return {"employees": [_employee_to_frontend(employee) for employee in employees]}
+) -> PlanningOptions:
+    try:
+        return timeoffice.get_planning_options(planning_month=PlanningMonth(year=year, month=month))
+    except ValueError as error:
+        raise HTTPException(
+            status_code=409, detail="Planning options are incomplete; verify prepared unit/target data."
+        ) from error
 
 
-def _employee_to_frontend(employee: Employee) -> dict[str, Any]:
-    name, firstname = _split_display_name(employee.display_name)
-
-    return {
-        "key": employee.employee_id,
-        "name": name,
-        "firstname": firstname,
-        "type": employee.staff_level.value,
-    }
-
-
-def _split_display_name(display_name: str) -> tuple[str, str]:
-    name, _separator, firstname = display_name.partition(" ")
-    return name, firstname
+@employee_router.get("/employees")
+def get_employees(
+    planning_unit_ids: Annotated[list[PositiveId], Query(min_length=1)],
+    year: Annotated[int, Query(ge=2000, le=2200)],
+    month: Annotated[int, Query(ge=1, le=12)],
+    timeoffice: Annotated[TimeOfficeService, Depends(get_timeoffice_service)],
+) -> PlanningInspection:
+    try:
+        return timeoffice.inspect_employees(
+            planning_unit_ids=tuple(planning_unit_ids),
+            planning_month=PlanningMonth(year=year, month=month),
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=409,
+            detail="Employee inspection is incomplete. Verify stations, memberships, accounts and monthly evidence.",
+        ) from error

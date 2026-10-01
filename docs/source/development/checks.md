@@ -4,21 +4,22 @@ Run the root `just` recipes from the repository root. API dependencies and tools
 
 ## Commands
 
-| Recipe                          | Behavior                                                                                                 |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `just install`                  | Frozen API/webapp installs and Git hooks. Existing configuration and secrets are preserved.              |
-| `just format`                   | Ruff formats Python; Prettier formats supported webapp and root documentation/configuration files.       |
-| `just format-check`             | Non-mutating Ruff and Prettier checks.                                                                   |
-| `just lint`                     | Ruff and Next core web vitals/TypeScript ESLint rules.                                                   |
-| `just quality`                  | Full local React Doctor scan; errors fail, warnings remain visible.                                      |
-| `just typecheck`                | Strict Pyright and explicit strict `tsc --noEmit`.                                                       |
-| `just test [arguments...]`      | All offline tests, including solver and adapter tests using fakes. Arguments pass to pytest.             |
-| `just docs` / `just docs-check` | Unified MkDocs server / strict build.                                                                    |
-| `just build`                    | Native production webapp build, including its type gate.                                                 |
-| `just smoke`                    | Isolated Compose image builds, HTTP connectivity, failure recovery and output persistence.               |
-| `just connectivity`             | Explicit read-only external connection diagnostic in the running API container.                          |
-| `just test-timeoffice`          | External-only tests; currently exits 5 because none exist.                                               |
-| `just check`                    | Runs format, lint, quality, types, offline tests, build, strict docs and smoke; fails if any gate fails. |
+| Recipe                          | Behavior                                                                                                             |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `just install`                  | Frozen API/webapp installs, Chromium and Git hooks. Existing configuration and secrets are preserved.                |
+| `just format`                   | Ruff formats Python; Prettier formats supported webapp and root documentation/configuration files.                   |
+| `just format-check`             | Non-mutating Ruff and Prettier checks.                                                                               |
+| `just lint`                     | Ruff and Next core web vitals/TypeScript ESLint rules.                                                               |
+| `just quality`                  | Full local React Doctor scan; errors fail, warnings remain visible.                                                  |
+| `just typecheck`                | Strict Pyright and explicit strict `tsc --noEmit`.                                                                   |
+| `just test [arguments...]`      | All offline tests, including solver and adapter tests using fakes. Arguments pass to pytest.                         |
+| `just test-browser`             | Controlled Chromium staff-admin flows through temporary Next.js/FastAPI servers.                                     |
+| `just docs` / `just docs-check` | Unified MkDocs server / strict build.                                                                                |
+| `just build`                    | Native production webapp build, including its type gate.                                                             |
+| `just smoke`                    | Isolated Compose image builds, HTTP connectivity, failure recovery and output persistence.                           |
+| `just connectivity`             | Explicit read-only external connection diagnostic in the running API container.                                      |
+| `just test-timeoffice`          | External-only tests; currently exits 5 because none exist.                                                           |
+| `just check`                    | Runs format, lint, quality, types, offline API/browser tests, build, strict docs and smoke; fails if any gate fails. |
 
 `just run` builds and starts both hot-reloading services through one root Compose file. The CI definitions cover independent offline gates. Diagnostic failure paths are verified; successful external connectivity and hosted CI execution remain pending. `just smoke` requires Docker Compose, curl and a POSIX shell; `just check` also requires the native tools. Checks never rewrite source or refresh locks; builds and pytest may create ignored output.
 
@@ -63,7 +64,7 @@ React Doctor runs the installed binary with full scope, no cache, no supply-chai
 
 ## Known failing checks
 
-See [current limitations](../validation/index.md#quality-gates) for the exact test/type failures and remaining build acceptance. `just check` runs format, lint, quality, types, offline tests, production webapp build, strict docs and isolated Compose smoke even when a gate fails; it returns nonzero if any gate fails. It requires Docker as well as the native tools. The type/build and solver failures remain visible.
+See [current limitations](../validation/index.md#quality-gates) for the exact solver failures and remaining acceptance. `just check` runs format, lint, quality, types, offline API/browser tests, production webapp build, strict docs and isolated Compose smoke even when a gate fails; it returns nonzero if any gate fails. It requires Docker as well as the native tools. The solver failures remain visible.
 
 ## Configuration ownership
 

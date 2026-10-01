@@ -38,6 +38,7 @@ class TimeOfficePlanningUnitReader:
         connection: Connection,
         selected_planning_unit_ids: tuple[int, ...],
         planning_month: PlanningMonth,
+        require_all: bool = True,
     ) -> tuple[TimeOfficePlanningUnitRow, ...]:
         if not selected_planning_unit_ids:
             return ()
@@ -76,7 +77,7 @@ class TimeOfficePlanningUnitReader:
         )
 
         rows = tuple(TimeOfficePlanningUnitRow.model_validate(row) for row in raw_rows)
-        self._validate_requested_units(requested_ids=selected_planning_unit_ids, rows=rows)
+        self._validate_requested_units(requested_ids=selected_planning_unit_ids, rows=rows, require_all=require_all)
 
         return rows
 
@@ -85,12 +86,13 @@ class TimeOfficePlanningUnitReader:
         *,
         requested_ids: tuple[int, ...],
         rows: tuple[TimeOfficePlanningUnitRow, ...],
+        require_all: bool = True,
     ) -> None:
         requested = set(requested_ids)
         returned_ids = [row.planning_unit_id for row in rows]
 
         missing = sorted(requested - set(returned_ids))
-        if missing:
+        if missing and require_all:
             raise ValueError(f"No selected TimeOffice target plan found for planning_unit_ids={missing}.")
 
         duplicates = _duplicate_values(returned_ids)

@@ -4,7 +4,7 @@ This checkout provides a reproducible development foundation. Connected planning
 
 ## What this section proves
 
-For evaluators and anyone deciding whether to rely on a result. The checks below cover the current foundation; no independently accepted example schedule or connected end-to-end flow is claimed. [Reasoning and requirements](reasoning.md) will explain policy choices and evaluation; [examples and reproduction](examples.md) will document actual accepted deliverables. These two pages are outlines.
+For evaluators and anyone deciding whether to rely on a result. The checks below cover the current foundation; offline canonical selection/inspection is verified, while no independently accepted example schedule or live TimeOffice end-to-end flow is claimed. [Reasoning and requirements](reasoning.md) will explain policy choices and evaluation; [examples and reproduction](examples.md) will document actual accepted deliverables. These two pages are outlines.
 
 ## Startup and connectivity
 
@@ -12,9 +12,9 @@ Image-built development Compose startup, actual Next-server/API HTTP connectivit
 
 ## Webapp integration
 
-The imported webapp retains file-based case discovery under `data/cases/`, compatibility-shaped repositories and several endpoint/schema assumptions. The runtime data directory starts empty. Repository names containing `lowdb` remain in code, but the LowDB dependency has been removed; several of those modules now call HTTP APIs.
+Canonical month/station selection and complete read-only employee inspection use the backend directly, with controlled browser evidence. That path has no filesystem case fallback, name splitting or false Lowdb employee persistence. The remaining imported views retain file-based case discovery under `data/cases/`, compatibility-shaped repositories and several endpoint/schema assumptions. The runtime data directory starts empty. Repository names containing `lowdb` remain in code, but the LowDB dependency has been removed; several of those modules now call HTTP APIs.
 
-The backend does not supply the old `/fetch`, `/insert`, `/delete`, multi-solve or phase-progress contracts. The UI expects `/schedules/metadata`, whereas `GET /schedules` currently returns an empty placeholder list. Employee/configuration schemas and schedule formats still need reconciliation. Templates/global settings, file-library operations and imported progress displays must not be treated as verified canonical features.
+The backend does not supply the old `/fetch`, `/insert`, `/delete`, multi-solve or phase-progress contracts. The UI expects `/schedules/metadata`, whereas `GET /schedules` currently returns an empty placeholder list. Monthly configuration and schedule formats still need reconciliation. Recurring settings and all template families now display unsupported states; optimization is omitted from navigation. File-library operations and imported progress displays must not be treated as verified canonical features. Selection requires explicit prepared monthly credit/restriction evidence; no live table provisioning or inspection has been performed.
 
 ## Solver and publication
 
@@ -24,11 +24,11 @@ The current publication endpoint translates legacy variables and performs a tran
 
 ## Quality gates
 
-The latest executed offline suite reports **93 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
+The latest executed offline suite reports **106 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
 
-Webapp strict TypeScript reports TS2339 at `src/infrastructure/repositories/lowdb-employee.repository.ts:19`: `write` is absent from the returned object type. Employee inspection migration owns the correction. The Linux-container production build compiles and then fails at this same type gate; production build acceptance remains outstanding.
+Webapp strict TypeScript and the native production build now pass after removal of the obsolete employee persistence/create chain. The controlled selection/inspection browser scenarios pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
 
-Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint has zero errors and 13 warnings; React Doctor warnings remain visible. `just check` now runs all independent offline gates, including production build, docs and credential-free Compose smoke, and retains a failing exit status. It remains red for the existing employee type/build and nine solver failures.
+Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint has zero errors; warnings remain visible; React Doctor warnings remain visible. `just check` now runs all independent offline gates, including browser flows, production build, docs and credential-free Compose smoke, and retains a failing exit status. It remains red for the nine solver failures.
 
 ## Retired material
 

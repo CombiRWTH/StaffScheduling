@@ -78,3 +78,7 @@ next-env.d.ts
 .vercel/
 coverage/
 *.pem
+
+# Browser test artifacts
+playwright-report/
+test-results/

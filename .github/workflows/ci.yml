@@ -95,6 +95,39 @@ jobs:
       - name: Build Next.js, including its type gate
         run: just build
 
+  browser:
+    name: Offline staff-admin browser flows
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.21"
+          enable-cache: true
+          cache-dependency-glob: api/uv.lock
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: api/.python-version
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: webapp/package.json
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
+        with:
+          just-version: "1.58.0"
+      - name: Install native tools and browser
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends unixodbc
+          npm install --global pnpm@12.8.1 --allow-scripts=pnpm
+          uv sync --directory api --frozen
+          pnpm --dir webapp install --frozen-lockfile
+          pnpm --dir webapp exec playwright install --with-deps chromium
+      - name: Run controlled browser flows through Next.js and FastAPI
+        run: just test-browser
+
   containers:
     name: Compose images
     runs-on: ubuntu-latest

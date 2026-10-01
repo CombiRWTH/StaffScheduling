@@ -4,27 +4,26 @@ from app.timeoffice.facts import TimeOfficeFacts
 from app.timeoffice.reading.options import TimeOfficePlanningUnitOptionRow
 
 
-def map_solve_options(*, rows: tuple[TimeOfficePlanningUnitOptionRow, ...], facts: TimeOfficeFacts) -> SolveOptions:
-    rows_by_planning_unit_id = {row.planning_unit_id: row for row in rows}
-
-    planning_units: list[PlanningUnit] = []
-
-    for planning_unit_id, planning_unit_type in sorted(facts.planning_unit_type_by_id.items()):
-        if planning_unit_type != PlanningUnitType.STATION:
-            continue
-
-        row = rows_by_planning_unit_id.get(planning_unit_id)
-        if row is None:
-            raise ValueError(
-                f"Configured planning unit does not exist in TimeOffice: planning_unit_id={planning_unit_id}."
-            )
-
-        planning_units.append(
-            PlanningUnit(
-                planning_unit_id=planning_unit_id,
-                display_name=row.planning_unit_code or f"Planning unit {planning_unit_id}",
-                type=planning_unit_type,
-            )
+def map_planning_units(
+    *, rows: tuple[TimeOfficePlanningUnitOptionRow, ...], facts: TimeOfficeFacts
+) -> tuple[PlanningUnit, ...]:
+    if len({row.planning_unit_id for row in rows}) != len(rows):
+        raise ValueError("Duplicate planning unit option rows.")
+    if not set(facts.planning_unit_type_by_id) <= {row.planning_unit_id for row in rows}:
+        raise ValueError("Configured planning units are missing.")
+    if any(not row.planning_unit_code for row in rows):
+        raise ValueError("Planning unit display names are missing.")
+    return tuple(
+        PlanningUnit(
+            planning_unit_id=row.planning_unit_id,
+            display_name=row.planning_unit_code,
+            type=facts.planning_unit_type_by_id[row.planning_unit_id],
         )
+        for row in rows
+        if row.planning_unit_id in facts.planning_unit_type_by_id and row.planning_unit_code is not None
+    )
 
-    return SolveOptions(planning_units=tuple(planning_units))
+
+def map_solve_options(*, rows: tuple[TimeOfficePlanningUnitOptionRow, ...], facts: TimeOfficeFacts) -> SolveOptions:
+    units = map_planning_units(rows=rows, facts=facts)
+    return SolveOptions(planning_units=tuple(unit for unit in units if unit.type == PlanningUnitType.STATION))

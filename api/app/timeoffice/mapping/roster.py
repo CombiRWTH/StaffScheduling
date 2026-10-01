@@ -77,6 +77,8 @@ def map_availability(*, rows: tuple[TimeOfficeRosterRow, ...], facts: TimeOffice
                 employee_id=row.employee_id,
                 date=row.roster_date.date(),
                 availability_type=availability_type,
+                reason=row.resolved_absence_code,
+                source="TimeOffice absence",
             )
         )
 
@@ -141,29 +143,16 @@ def _availability_type_for_absence_code(
 def _deduplicate_availability(
     availability: Sequence[Availability],
 ) -> tuple[Availability, ...]:
-    availability_by_key: dict[
-        tuple[int, date, AvailabilityType, tuple[int, ...] | None],
-        Availability,
-    ] = {}
-
-    for item in availability:
-        key = (
-            item.employee_id,
-            item.date,
-            item.availability_type,
-            tuple(sorted(item.shift_ids)) if item.shift_ids is not None else None,
-        )
-        availability_by_key.setdefault(key, item)
-
     return tuple(
-        availability_by_key[key]
-        for key in sorted(
-            availability_by_key,
+        sorted(
+            dict.fromkeys(availability),
             key=lambda item: (
-                item[0],
-                item[1],
-                item[2].value,
-                item[3] or (),
+                item.employee_id,
+                item.date,
+                item.availability_type,
+                tuple(sorted(item.shift_ids or ())),
+                item.reason or "",
+                item.source or "",
             ),
         )
     )

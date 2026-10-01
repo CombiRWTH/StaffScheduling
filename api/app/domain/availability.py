@@ -30,6 +30,9 @@ class Availability(SchedulingBaseModel):
     date: Date
     availability_type: AvailabilityType
 
+    reason: str | None = None
+    source: str | None = None
+
     # Only used for AVAILABLE_ONLY. For absences/blockers this stays None.
     shift_ids: tuple[ShiftId, ...] | None = None
 

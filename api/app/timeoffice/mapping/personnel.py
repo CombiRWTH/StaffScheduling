@@ -84,4 +84,6 @@ def _display_name(
     last_name: str | None,
 ) -> str:
     display_name = " ".join(part for part in (last_name, first_name) if part)
-    return display_name or f"Employee {employee_id}"
+    if not display_name:
+        raise ValueError(f"Missing TimeOffice employee display name for employee_id={employee_id}.")
+    return display_name

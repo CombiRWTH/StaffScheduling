@@ -1,6 +1,6 @@
 # Architecture and contracts
 
-The repository contains a Python API, a Next.js webapp and one MkDocs documentation project. FastAPI owns the canonical scheduling domain and solver; TimeOffice-specific SQL, identifiers and translations stay in its adapter. The webapp's imported application/entity/infrastructure layers still contain compatibility code.
+The repository contains a Python API, a Next.js webapp and one MkDocs documentation project. FastAPI owns the canonical scheduling domain and solver; TimeOffice-specific SQL, identifiers and translations stay in its adapter. The selection/employee slice uses direct canonical server reads; remaining imported views still contain compatibility code.
 
 ## Who this section serves
 
@@ -21,6 +21,7 @@ For developers and technical reviewers tracing responsibilities and data flow. T
 │   │   ├── dependencies.py   # access to process-local services/jobs/lock
 │   │   ├── routers/          # HTTP DTOs, solve jobs and web compatibility
 │   │   ├── domain/           # canonical Pydantic scheduling models
+│   │   ├── employees/        # complete read-only scope/identity/evidence validation
 │   │   ├── validation/       # dataset integrity checks
 │   │   ├── solver/           # CP-SAT building, execution and audit
 │   │   └── timeoffice/       # database reads, mappings and writes
@@ -86,3 +87,9 @@ Next.js server-side callers use `SOLVER_API_URL`; Compose sets it to `http://api
 | Documentation                           | `docs/source/` and `docs/mkdocs.yml`                                                |
 
 Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. The [limitations](../validation/index.md) page records remaining compatibility work.
+
+## Selection and inspection boundary
+
+`webapp/src/features/planning/` owns the server-only HTTP read and response schemas. The global selector uses month-specific options; `app/employees/` loads all selected stations together and renders a keyed Suspense loading boundary. Search/filter/details are interaction state, discarded when scope changes. Backend `employees/` validates completeness; the concrete TimeOffice adapter resolves target plans, reads membership/master/account/absence sources and prepared evidence. No employee DI forwarding chain, false Lowdb write or filesystem fallback remains in this path.
+
+The offline browser fixture substitutes SQL query results, while using the actual FastAPI routes, TimeOffice readers/mappers and Next.js pages. It is test infrastructure, never a production data fallback. [Testing](../development/testing.md#staff-admin-browser-flows) describes reproduction and limitations.

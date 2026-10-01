@@ -1,5 +1,4 @@
 // Repository interfaces
-import type { IEmployeeRepository } from "@/application/ports/employee.repository";
 import type { IWeightsRepository } from "@/application/ports/weights.repository";
 import type { IMinimalStaffRepository } from "@/application/ports/minimal-staff.repository";
 import type { IWishesAndBlockedRepository } from "@/application/ports/wishes-and-blocked.repository";
@@ -18,9 +17,6 @@ import type { ISolverService } from "@/application/ports/solver.service";
 import type { IScheduleParserService } from "@/application/ports/schedule-parser.service";
 
 // Use Case interfaces
-import type { IGetAllEmployeesUseCase } from "@/application/use-cases/employees/get-all-employees.use-case";
-import type { IGetEmployeeUseCase } from "@/application/use-cases/employees/get-employee.use-case";
-import type { ICreateEmployeeUseCase } from "@/application/use-cases/employees/create-employee.use-case";
 import type { IGetWeightsUseCase } from "@/application/use-cases/weights/get-weights.use-case";
 import type { IUpdateWeightsUseCase } from "@/application/use-cases/weights/update-weights.use-case";
 import type { IGetMinimalStaffUseCase } from "@/application/use-cases/minimal-staff/get-minimal-staff.use-case";
@@ -86,9 +82,6 @@ import type { IExecuteSolverDeleteUseCase } from "@/application/use-cases/solver
 import type { IImportSolutionUseCase } from "@/application/use-cases/solver/import-solution.use-case";
 
 // Controller interfaces
-import type { IGetAllEmployeesController } from "@/controllers/employees/get-all-employees.controller";
-import type { IGetEmployeeController } from "@/controllers/employees/get-employee.controller";
-import type { ICreateEmployeeController } from "@/controllers/employees/create-employee.controller";
 import type { IGetWeightsController } from "@/controllers/weights/get-weights.controller";
 import type { IUpdateWeightsController } from "@/controllers/weights/update-weights.controller";
 import type { IGetMinimalStaffController } from "@/controllers/minimal-staff/get-minimal-staff.controller";
@@ -159,7 +152,6 @@ import type { IGetLastInsertedSolutionController } from "@/controllers/solver/ge
 
 export const DI_SYMBOLS = {
   // Repositories
-  IEmployeeRepository: Symbol.for("IEmployeeRepository"),
   IWeightsRepository: Symbol.for("IWeightsRepository"),
   IMinimalStaffRepository: Symbol.for("IMinimalStaffRepository"),
   IWishesAndBlockedRepository: Symbol.for("IWishesAndBlockedRepository"),
@@ -174,9 +166,6 @@ export const DI_SYMBOLS = {
   ICaseRepository: Symbol.for("ICaseRepository"),
 
   // Use Cases — Employees
-  IGetAllEmployeesUseCase: Symbol.for("IGetAllEmployeesUseCase"),
-  IGetEmployeeUseCase: Symbol.for("IGetEmployeeUseCase"),
-  ICreateEmployeeUseCase: Symbol.for("ICreateEmployeeUseCase"),
 
   // Use Cases — Weights
   IGetWeightsUseCase: Symbol.for("IGetWeightsUseCase"),
@@ -271,9 +260,6 @@ export const DI_SYMBOLS = {
   IGetLastInsertedSolutionUseCase: Symbol.for("IGetLastInsertedSolutionUseCase"),
 
   // Controllers — Employees
-  IGetAllEmployeesController: Symbol.for("IGetAllEmployeesController"),
-  IGetEmployeeController: Symbol.for("IGetEmployeeController"),
-  ICreateEmployeeController: Symbol.for("ICreateEmployeeController"),
 
   // Controllers — Weights
   IGetWeightsController: Symbol.for("IGetWeightsController"),
@@ -366,7 +352,6 @@ export const DI_SYMBOLS = {
 
 export interface DI_RETURN_TYPES {
   // Repositories
-  IEmployeeRepository: IEmployeeRepository;
   IWeightsRepository: IWeightsRepository;
   IMinimalStaffRepository: IMinimalStaffRepository;
   IWishesAndBlockedRepository: IWishesAndBlockedRepository;
@@ -381,9 +366,6 @@ export interface DI_RETURN_TYPES {
   ICaseRepository: ICaseRepository;
 
   // Use Cases — Employees
-  IGetAllEmployeesUseCase: IGetAllEmployeesUseCase;
-  IGetEmployeeUseCase: IGetEmployeeUseCase;
-  ICreateEmployeeUseCase: ICreateEmployeeUseCase;
 
   // Use Cases — Weights
   IGetWeightsUseCase: IGetWeightsUseCase;
@@ -478,9 +460,6 @@ export interface DI_RETURN_TYPES {
   IGetLastInsertedSolutionUseCase: IGetLastInsertedSolutionUseCase;
 
   // Controllers — Employees
-  IGetAllEmployeesController: IGetAllEmployeesController;
-  IGetEmployeeController: IGetEmployeeController;
-  ICreateEmployeeController: ICreateEmployeeController;
 
   // Controllers — Weights
   IGetWeightsController: IGetWeightsController;

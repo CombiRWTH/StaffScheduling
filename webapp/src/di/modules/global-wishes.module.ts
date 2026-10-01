@@ -39,12 +39,10 @@ export function createGlobalWishesModule() {
     DI_SYMBOLS.IGlobalWishesAndBlockedRepository,
     DI_SYMBOLS.IWishesAndBlockedRepository,
   ]);
-  m.bind(DI_SYMBOLS.IImportGlobalWishesTemplateUseCase).toHigherOrderFunction(makeImportGlobalWishesTemplateUseCase, [
-    DI_SYMBOLS.IGlobalWishesAndBlockedRepository,
-    DI_SYMBOLS.IGlobalWishesTemplateRepository,
-    DI_SYMBOLS.IEmployeeRepository,
-    DI_SYMBOLS.IWishesAndBlockedRepository,
-  ]);
+  m.bind(DI_SYMBOLS.IImportGlobalWishesTemplateUseCase).toHigherOrderFunction(
+    makeImportGlobalWishesTemplateUseCase,
+    [],
+  );
 
   m.bind(DI_SYMBOLS.IGetAllGlobalWishesController).toHigherOrderFunction(makeGetAllGlobalWishesController, [
     DI_SYMBOLS.IGetAllGlobalWishesUseCase,
