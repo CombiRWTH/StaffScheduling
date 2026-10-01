@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import {getInjection} from "@/di/container";
+import { NextResponse } from "next/server";
+import { getInjection } from "@/di/container";
 
 /**
  * GET /api/solver/status
@@ -10,15 +10,15 @@ import {getInjection} from "@/di/container";
  * Server Actions hold a per-session lock; Route Handlers do not.
  */
 export async function GET() {
-    try {
-        const controller = getInjection('IGetSolverProgressController');
-        const result = await controller();
-        if ('error' in result) {
-            return NextResponse.json(null); // Graceful degradation
-        }
-        return NextResponse.json(result.data); // SolverProgress | null
-    } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return NextResponse.json({ error: message }, { status: 502 });
+  try {
+    const controller = getInjection("IGetSolverProgressController");
+    const result = await controller();
+    if ("error" in result) {
+      return NextResponse.json(null); // Graceful degradation
     }
+    return NextResponse.json(result.data); // SolverProgress | null
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 }

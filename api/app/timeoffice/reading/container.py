@@ -59,7 +59,7 @@ class TimeOfficeReaders:
     weights: TimeOfficeWeightsReader
 
     @classmethod
-    def create(cls, *, facts: TimeOfficeFacts) -> "TimeOfficeReaders":
+    def create(cls, *, facts: TimeOfficeFacts) -> TimeOfficeReaders:
         return cls(
             options=TimeOfficeOptionsReader(facts=facts),
             planning_units=TimeOfficePlanningUnitReader(facts=facts),

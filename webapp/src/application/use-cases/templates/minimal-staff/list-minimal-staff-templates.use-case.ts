@@ -1,14 +1,14 @@
-import {IMinimalStaffTemplateRepository} from '@/application/ports/minimal-staff-template.repository';
-import {TemplateSummary} from '@/entities/models/template.model';
+import { IMinimalStaffTemplateRepository } from "@/application/ports/minimal-staff-template.repository";
+import { TemplateSummary } from "@/entities/models/template.model";
 
 export interface IListMinimalStaffTemplatesUseCase {
-    (input: { caseId: number }): Promise<TemplateSummary[]>;
+  (input: { caseId: number }): Promise<TemplateSummary[]>;
 }
 
 export function makeListMinimalStaffTemplatesUseCase(
-    repository: IMinimalStaffTemplateRepository
+  repository: IMinimalStaffTemplateRepository,
 ): IListMinimalStaffTemplatesUseCase {
-    return async ({caseId}) => {
-        return repository.list(caseId);
-    };
+  return async ({ caseId }) => {
+    return repository.list(caseId);
+  };
 }

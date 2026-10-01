@@ -2,54 +2,53 @@
 name = "scheduling"
 version = "0.1.0"
 description = ""
-requires-python = ">=3.12"
+requires-python = ">=3.14,<3.15"
 dependencies = [
-    "fastapi[standard]>=0.137.0",
-    "ortools>=9.15.6755",
-    "SQLAlchemy>=2.0.50",
-    "pyodbc>=5.3.0",
-    "pydantic>=2.13.4",
-    "pydantic-settings>=2.14.1",
+    "fastapi[standard]==0.142.2",
+    "ortools==9.15.6755",
+    "SQLAlchemy==2.1.1",
+    "pyodbc==5.3.0",
+    "pydantic==2.13.5",
+    "pydantic-settings==2.15.0",
 ]
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.6.0",
-    "pyright>=1.1.411",
-    "ruff>=0.15.17",
-    "pytest>=9.1.0",
-    "debugpy>=1.8.21",
-]
-
-[project.optional-dependencies]
-docs = [
-    "mkdocs (>=1.4.2)",
-    "mkdocs-include-markdown-plugin (>=1.0.0)",
-    "mkdocstrings-python (>=0.15.2)",
-    "mkdocs-material (==9.6.14)",
-    "mkdocstrings (>=0.15.2)",
-    "mkdocs-material-extensions (>=1.0.0)",
-    "mkdocs-autorefs (>=0.2.1)",
+    "pyright==1.1.414",
+    "ruff==0.16.9",
+    "pytest==9.1.1",
 ]
 
 [tool.uv]
 package = false
+required-version = "==0.12.21"
 
 [tool.ruff]
 line-length = 120
-extend-exclude = ["legacy"]
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "W", "I", "C4", "ISC", "PT", "Q", "UP"] # Plan to add 'N' and 'ANN' later
+select = [
+    "E", "F", "B", "W", "I", "C4", "PT", "UP", "FAST", "S", "PTH",
+    "RUF001", "RUF002", "RUF003", "RUF005", "RUF006", "RUF008", "RUF012", "RUF013",
+    "SIM105", "SIM108", "SIM110", "SIM115", "SIM117",
+    "TRY201", "TRY203", "TRY300",
+    "D201", "D202", "D204", "D206", "D207", "D208", "D210", "D214", "D215", "D300", "D301", "D417",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
 reportUnusedVariable = "warning"
-ignore = ["legacy"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-m 'not integration'"
+addopts = "-m 'not timeoffice'"
 markers = [
-    "integration: tests that run the solver or cross module boundaries"
+    "integration: offline tests that run the solver or cross module boundaries",
+    "timeoffice: tests requiring an explicitly declared external test database"
 ]

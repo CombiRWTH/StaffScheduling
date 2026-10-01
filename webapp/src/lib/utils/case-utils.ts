@@ -10,11 +10,11 @@
  * @returns String in MM_YYYY format (e.g., "11_2024"), or empty string if invalid
  */
 export function deriveMonthYear(ddmmyyyy: string): string {
-    const parts = ddmmyyyy.split('.');
-    if (parts.length === 3) {
-        return `${parts[1].padStart(2, '0')}_${parts[2]}`;
-    }
-    return '';
+  const parts = ddmmyyyy.split(".");
+  if (parts.length === 3) {
+    return `${parts[1].padStart(2, "0")}_${parts[2]}`;
+  }
+  return "";
 }
 
 /**
@@ -28,11 +28,11 @@ export function deriveMonthYear(ddmmyyyy: string): string {
  * console.log(month, year); // 11, 2024
  */
 export function parseMonthYear(monthYear: string): { month: number; year: number } {
-    const [monthStr, yearStr] = monthYear.split('_');
-    return {
-        month: parseInt(monthStr, 10),
-        year: parseInt(yearStr, 10)
-    };
+  const [monthStr, yearStr] = monthYear.split("_");
+  return {
+    month: parseInt(monthStr, 10),
+    year: parseInt(yearStr, 10),
+  };
 }
 
 /**
@@ -47,7 +47,7 @@ export function parseMonthYear(monthYear: string): { month: number; year: number
  * console.log(formatted); // "11_2024"
  */
 export function formatMonthYear(month: number, year: number): string {
-    return `${month.toString().padStart(2, '0')}_${year}`;
+  return `${month.toString().padStart(2, "0")}_${year}`;
 }
 
 /**
@@ -57,11 +57,21 @@ export function formatMonthYear(month: number, year: number): string {
  * @returns Full month name (e.g., "January")
  */
 export function getMonthName(month: number): string {
-    const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return monthNames[month - 1] || 'Unknown';
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  return monthNames[month - 1] || "Unknown";
 }
 
 /**
@@ -71,9 +81,19 @@ export function getMonthName(month: number): string {
  * @returns Full month name in German (e.g., "Januar")
  */
 export function getMonthNameGerman(month: number): string {
-    const monthNames = [
-        'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-        'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
-    ];
-    return monthNames[month - 1] || 'Unbekannt';
+  const monthNames = [
+    "Januar",
+    "Februar",
+    "März",
+    "April",
+    "Mai",
+    "Juni",
+    "Juli",
+    "August",
+    "September",
+    "Oktober",
+    "November",
+    "Dezember",
+  ];
+  return monthNames[month - 1] || "Unbekannt";
 }

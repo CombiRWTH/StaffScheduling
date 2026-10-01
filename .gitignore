@@ -47,8 +47,8 @@ site/
 # Environment / secrets
 .env
 .env.*
-!.env.example
-!.env.template
+!/.env
+/.secrets/
 
 # Logs
 *.log
@@ -59,8 +59,6 @@ logs/
 **/processed_solutions/*
 
 .cache
-/api/cases/*/
-!/api/cases/case_catalog.md
 
 # Test-generated outputs
 api/tests/cp/constraints/output_test_all_constraints*
@@ -73,5 +71,10 @@ node_modules/
 out/
 *.tsbuildinfo
 next-env.d.ts
-/webapp/config.json
-/data/
+/data/*
+!/data/.gitkeep
+
+# Optional webapp deployment and test output
+.vercel/
+coverage/
+*.pem

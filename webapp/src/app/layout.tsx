@@ -1,32 +1,28 @@
-import {NavigationWrapper} from '@/components/app-navigation';
-import {WorkflowBanner} from '@/components/workflow-banner';
-import {Toaster} from '@/components/ui/sonner';
-import {getWorkflowSession} from '@/infrastructure/services/workflow-session.service';
-import './globals.css';
+import { NavigationWrapper } from "@/components/app-navigation";
+import { WorkflowBanner } from "@/components/workflow-banner";
+import { Toaster } from "@/components/ui/sonner";
+import { getWorkflowSession } from "@/infrastructure/services/workflow-session.service";
+import "./globals.css";
 
-export default async function RootLayout({
-                                             children,
-                                         }: {
-    children: React.ReactNode;
-}) {
-    const workflowState = await getWorkflowSession();
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const workflowState = await getWorkflowSession();
 
-    return (
-        <html lang="de">
-        <body>
+  return (
+    <html lang="de">
+      <body>
         <NavigationWrapper
-            isLocked={workflowState.isWorkflowMode}
-            lockedCaseId={workflowState.caseId}
-            lockedMonthYear={workflowState.monthYear}
+          isLocked={workflowState.isWorkflowMode}
+          lockedCaseId={workflowState.caseId}
+          lockedMonthYear={workflowState.monthYear}
         />
         <main className="min-h-screen p-4 md:ml-72">
-            <div className="mx-auto max-w-7xl">
-            <WorkflowBanner state={workflowState}/>
+          <div className="mx-auto max-w-7xl">
+            <WorkflowBanner state={workflowState} />
             {children}
-            </div>
+          </div>
         </main>
-        <Toaster/>
-        </body>
-        </html>
-    );
+        <Toaster />
+      </body>
+    </html>
+  );
 }

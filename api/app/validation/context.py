@@ -16,7 +16,7 @@ class DatasetValidationContext:
     shifts_by_id: Mapping[ShiftId, Shift]
 
     @classmethod
-    def from_dataset(cls, dataset: SchedulingDataset) -> "DatasetValidationContext":
+    def from_dataset(cls, dataset: SchedulingDataset) -> DatasetValidationContext:
         employee_ids = _ensure_unique(
             (employee.employee_id for employee in dataset.employees),
             "employee_id",

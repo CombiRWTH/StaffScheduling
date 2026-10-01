@@ -1,24 +1,20 @@
-FROM python:3.12-slim-bookworm AS base
+FROM python:3.14.7-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1 \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
-    PATH="/app/.venv/bin:$PATH"
+    PATH="/project/api/.venv/bin:$PATH"
 
 # System dependencies:
 # - curl/gnupg/ca-certificates: install Microsoft repo
-# - unixodbc/unixodbc-dev: required by pyodbc
+# - unixodbc: required by pyodbc
 # - msodbcsql18: Microsoft ODBC Driver 18 for SQL Server
-# - build-essential: useful if a dependency needs compilation
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-    bash \
     curl \
     ca-certificates \
     gnupg \
     unixodbc \
-    unixodbc-dev \
-    build-essential \
     && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" \
     > /etc/apt/sources.list.d/microsoft-prod.list \
@@ -27,9 +23,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv from the official uv image
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.12.21 /uv /uvx /bin/
 
-WORKDIR /app
+WORKDIR /project/api
 
 COPY pyproject.toml uv.lock ./
 
@@ -40,4 +36,4 @@ COPY app ./app
 
 EXPOSE 8000
 
-CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]

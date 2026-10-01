@@ -1,4 +1,5 @@
 from functools import lru_cache
+from os import environ
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -6,7 +7,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file="../.env",
+        secrets_dir=environ.get("SECRETS_DIR", "../.secrets"),
         extra="ignore",
     )
 

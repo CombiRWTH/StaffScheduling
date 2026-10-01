@@ -70,8 +70,8 @@ class TimeOfficeSolutionWriter:
     def __init__(
         self,
         *,
-        legacy_solution_dir: Path | str = "found_solutions",
-        processed_solution_dir: Path | str = "processed_solutions",
+        legacy_solution_dir: Path | str = "../data/found_solutions",
+        processed_solution_dir: Path | str = "../data/processed_solutions",
     ) -> None:
         self._legacy_solution_dir = Path(legacy_solution_dir)
         self._processed_solution_dir = Path(processed_solution_dir)

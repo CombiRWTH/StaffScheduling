@@ -1,13 +1,11 @@
-import type { ISolverService, SolverProgress } from '@/application/ports/solver.service';
+import type { ISolverService, SolverProgress } from "@/application/ports/solver.service";
 
 export interface IGetSolverProgressUseCase {
-    (): Promise<SolverProgress | null>;
+  (): Promise<SolverProgress | null>;
 }
 
-export function makeGetSolverProgressUseCase(
-    solverService: ISolverService
-): IGetSolverProgressUseCase {
-    return async () => {
-        return solverService.getProgress();
-    };
+export function makeGetSolverProgressUseCase(solverService: ISolverService): IGetSolverProgressUseCase {
+  return async () => {
+    return solverService.getProgress();
+  };
 }

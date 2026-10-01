@@ -1,5 +1,5 @@
-import {type ClassValue, clsx} from "clsx"
-import {twMerge} from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 /**
  * Utility function for merging Tailwind CSS classes.
@@ -17,5 +17,5 @@ import {twMerge} from "tailwind-merge"
  * cn(['flex', 'items-center'], 'justify-between') // Array support
  */
 export function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }

@@ -1,15 +1,15 @@
-import {getSolverApiConfig} from '@/lib/config/app-config';
-import {ScheduleDatabase, SchedulesMetadata, ScheduleSolutionRaw} from "@/entities/models";
+import { getSolverApiConfig } from "@/lib/config/app-config";
+import { ScheduleDatabase, SchedulesMetadata, ScheduleSolutionRaw } from "@/entities/models";
 
 function getScheduleApiUrl(caseId: number, monthYear: string, endpoint: string) {
-    const [month, year] = monthYear.split('_').map(Number);
-    const fromDate = new Date(Date.UTC(year, month - 1, 1));
-    const url = new URL(`${getSolverApiConfig().baseUrl}${endpoint}`);
+  const [month, year] = monthYear.split("_").map(Number);
+  const fromDate = new Date(Date.UTC(year, month - 1, 1));
+  const url = new URL(`${getSolverApiConfig().baseUrl}${endpoint}`);
 
-    url.searchParams.set('planning_unit', String(caseId));
-    url.searchParams.set('from_date', fromDate.toISOString().split('T')[0]);
+  url.searchParams.set("planning_unit", String(caseId));
+  url.searchParams.set("from_date", fromDate.toISOString().split("T")[0]);
 
-    return url;
+  return url;
 }
 
 /**
@@ -21,28 +21,28 @@ function getScheduleApiUrl(caseId: number, monthYear: string, endpoint: string) 
  * @returns Promise resolving to the schedules metadata database instance
  */
 export async function getSchedulesMetadataDb(caseId: number, monthYear: string) {
-    const url = getScheduleApiUrl(caseId, monthYear, '/schedules/metadata');
-    let data: SchedulesMetadata = {schedules: [], selectedScheduleId: null};
+  const url = getScheduleApiUrl(caseId, monthYear, "/schedules/metadata");
+  let data: SchedulesMetadata = { schedules: [], selectedScheduleId: null };
 
-    try {
-        const response = await fetch(url, {cache: 'no-store'});
-        data = response.ok ? await response.json() as SchedulesMetadata : {schedules: [], selectedScheduleId: null};
-    } catch {
-        data = {schedules: [], selectedScheduleId: null};
-    }
+  try {
+    const response = await fetch(url, { cache: "no-store" });
+    data = response.ok ? ((await response.json()) as SchedulesMetadata) : { schedules: [], selectedScheduleId: null };
+  } catch {
+    data = { schedules: [], selectedScheduleId: null };
+  }
 
-    const db = {
-        data,
-        async write() {
-            await fetch(url, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({data: db.data}),
-            });
-        },
-    };
+  const db = {
+    data,
+    async write() {
+      await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: db.data }),
+      });
+    },
+  };
 
-    return db;
+  return db;
 }
 
 /**
@@ -55,47 +55,47 @@ export async function getSchedulesMetadataDb(caseId: number, monthYear: string) 
  * @returns Promise resolving to the schedule database instance
  */
 export async function getScheduleDb(caseId: number, monthYear: string, scheduleId: string) {
-    const url = getScheduleApiUrl(caseId, monthYear, `/schedules/${scheduleId}`);
-    let data: ScheduleDatabase = {solution: null};
+  const url = getScheduleApiUrl(caseId, monthYear, `/schedules/${scheduleId}`);
+  let data: ScheduleDatabase = { solution: null };
 
-    try {
-        const response = await fetch(url, {cache: 'no-store'});
-        data = response.ok ? await response.json() as ScheduleDatabase : {solution: null};
-    } catch {
-        data = {solution: null};
-    }
+  try {
+    const response = await fetch(url, { cache: "no-store" });
+    data = response.ok ? ((await response.json()) as ScheduleDatabase) : { solution: null };
+  } catch {
+    data = { solution: null };
+  }
 
-    const db = {
-        data,
-        async write() {
-            await fetch(url, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({data: db.data}),
-            });
-        },
-    };
-    return db;
+  const db = {
+    data,
+    async write() {
+      await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: db.data }),
+      });
+    },
+  };
+  return db;
 }
 
 /** Writes one saved schedule to TimeOffice through the scheduling backend. */
 export async function writeScheduleToTimeOfficeDb(
-    caseId: number,
-    monthYear: string,
-    solution: ScheduleSolutionRaw,
+  caseId: number,
+  monthYear: string,
+  solution: ScheduleSolutionRaw,
 ): Promise<void> {
-    const url = getScheduleApiUrl(caseId, monthYear, '/schedules/write-to-timeoffice');
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({data: solution}),
-        cache: 'no-store',
-    });
+  const url = getScheduleApiUrl(caseId, monthYear, "/schedules/write-to-timeoffice");
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data: solution }),
+    cache: "no-store",
+  });
 
-    if (!response.ok) {
-        const message = await response.text().catch(() => '');
-        throw new Error(message || `Dienstplan konnte nicht in TimeOffice gespeichert werden (${response.status}).`);
-    }
+  if (!response.ok) {
+    const message = await response.text().catch(() => "");
+    throw new Error(message || `Dienstplan konnte nicht in TimeOffice gespeichert werden (${response.status}).`);
+  }
 }
 
 /**
@@ -106,35 +106,41 @@ export async function writeScheduleToTimeOfficeDb(
  * @param scheduleId - The ID of the schedule to delete
  */
 export async function deleteSchedule(caseId: number, monthYear: string, scheduleId: string): Promise<void> {
-    try {
-        await fetch(getScheduleApiUrl(caseId, monthYear, `/schedules/${scheduleId}`), {method: 'DELETE'});
-    } catch {
-        // Keep old filesystem behavior: deleting a missing schedule is a no-op.
-    }
+  try {
+    await fetch(getScheduleApiUrl(caseId, monthYear, `/schedules/${scheduleId}`), { method: "DELETE" });
+  } catch {
+    // Keep old filesystem behavior: deleting a missing schedule is a no-op.
+  }
 }
 
-export async function saveLastInsertedDb(caseId: number, monthYear: string, solution: ScheduleSolutionRaw): Promise<void> {
-    await fetch(getScheduleApiUrl(caseId, monthYear, '/schedules/last-inserted'), {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({data: solution}),
-    });
+export async function saveLastInsertedDb(
+  caseId: number,
+  monthYear: string,
+  solution: ScheduleSolutionRaw,
+): Promise<void> {
+  await fetch(getScheduleApiUrl(caseId, monthYear, "/schedules/last-inserted"), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data: solution }),
+  });
 }
 
 export async function getLastInsertedDb(caseId: number, monthYear: string): Promise<ScheduleSolutionRaw | null> {
-    try {
-        const response = await fetch(getScheduleApiUrl(caseId, monthYear, '/schedules/last-inserted'), {cache: 'no-store'});
+  try {
+    const response = await fetch(getScheduleApiUrl(caseId, monthYear, "/schedules/last-inserted"), {
+      cache: "no-store",
+    });
 
-        return response.ok ? await response.json() as ScheduleSolutionRaw : null;
-    } catch {
-        return null;
-    }
+    return response.ok ? ((await response.json()) as ScheduleSolutionRaw) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function clearLastInsertedDb(caseId: number, monthYear: string): Promise<void> {
-    try {
-        await fetch(getScheduleApiUrl(caseId, monthYear, '/schedules/last-inserted'), {method: 'DELETE'});
-    } catch {
-        // Keep old filesystem behavior: clearing a missing marker is a no-op.
-    }
+  try {
+    await fetch(getScheduleApiUrl(caseId, monthYear, "/schedules/last-inserted"), { method: "DELETE" });
+  } catch {
+    // Keep old filesystem behavior: clearing a missing marker is a no-op.
+  }
 }

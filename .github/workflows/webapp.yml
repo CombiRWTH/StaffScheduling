@@ -6,7 +6,6 @@ on:
   # Trigger bei jedem Pull Request auf IRGENDEINEN Branch
   pull_request:
 
-
 jobs:
   # Job 1: Nur Linting (Failt, wenn Code "unsauber" ist)
   lint:
@@ -17,22 +16,23 @@ jobs:
         working-directory: webapp
     steps:
       - name: Code auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Node.js v24 installieren
-        uses: actions/setup-node@v4
+      - name: Install pinned Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24.11.0'
-          cache: 'npm'
-          cache-dependency-path: webapp/package-lock.json
+          node-version-file: webapp/package.json
+
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@12.8.1
 
       - name: Dependencies installieren
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Linter ausführen
         # "continue-on-error: true" würde den Job grün lassen, auch wenn Fehler gefunden werden.
         # Wenn du willst, dass er rot wird (aber der Build trotzdem läuft), lass es weg.
-        run: npm run lint
+        run: pnpm run lint
 
   # Job 2: Build (Wichtigster Check)
   build:
@@ -45,17 +45,18 @@ jobs:
     # Wir lassen es weg, damit beide PARALLEL laufen (schneller & Build läuft auch bei Lint-Fehlern).
     steps:
       - name: Code auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Node.js v24 installieren
-        uses: actions/setup-node@v4
+      - name: Install pinned Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24.11.0'
-          cache: 'npm'
-          cache-dependency-path: webapp/package-lock.json
+          node-version-file: webapp/package.json
+
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@12.8.1
 
       - name: Dependencies installieren
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build ausführen
-        run: npm run build
+        run: pnpm run build
