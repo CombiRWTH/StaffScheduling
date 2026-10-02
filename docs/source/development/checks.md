@@ -90,7 +90,7 @@ Documentation is a separate MkDocs Material project. Edit `docs/source/`, update
 
 ## CI and Git hooks
 
-`.github/workflows/ci.yml` runs on pushes to `main` and `handin-readiness`, pull requests into `main` and manual runs. Its six independent jobs are:
+`.github/workflows/ci.yml` runs on pushes to `main`, pull requests into `main` and manual runs. Its six independent jobs are:
 
 - Hooks, lint, quality and type checks (`Pre-commit Checks`).
 - All offline API tests.
