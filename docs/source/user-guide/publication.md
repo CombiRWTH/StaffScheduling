@@ -1,6 +1,6 @@
 # Publication and clear
 
-**Dienstplan → Prüfen** can write the schedule under review into the stations' TimeOffice planning targets, and remove published duties again. Nothing else publishes: generation and import only replace the schedule under review. The procedure below is checked with controlled browser flows and fictional data and with live runs on the prepared test database; see [current limitations](../validation/index.md#publication-and-clear).
+**Dienstplan → Prüfen** can write the schedule under review into the stations' TimeOffice planning targets, and remove published duties again. Nothing else publishes: generation and import only replace the schedule under review. See [current limitations](../validation/index.md#publication-and-clear) for what has been checked.
 
 Return to the [documentation overview](index.md).
 
@@ -11,7 +11,9 @@ Publication is one action in the review's summary card on **Prüfen**; it writes
 - the schedule under review belongs to exactly this selection (otherwise **Zu diesem Umfang wechseln** selects the schedule's own scope), and
 - its independent check is **Regeln eingehalten** (accepted). For a rejected or incompletely checked schedule the card says that only an accepted schedule can be published.
 
-Each selected station needs one TimeOffice target plan for the month, the same plan the [selection](selection.md) offers.
+!!! note "Prerequisite"
+
+    Each selected station needs one TimeOffice target plan for the month, the same plan the [selection](selection.md) offers.
 
 The review itself does not show whether its schedule is published: only the message under the actions after a confirmed publication or clear reports it, and that message is gone after a reload.
 

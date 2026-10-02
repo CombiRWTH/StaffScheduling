@@ -1,6 +1,6 @@
 # Monthly configuration
 
-The **Verfügbarkeit** and **Mindestbesetzung** pages edit the inputs of one planning month. The offline [browser procedure](../development/testing.md#staff-admin-browser-flows) passes against fictional SQL results, and saves against the prepared test database are recorded under [current limitations](../validation/index.md#webapp-integration).
+The **Verfügbarkeit** and **Mindestbesetzung** pages edit the inputs of one planning month. See [current limitations](../validation/index.md#webapp-integration) for what has been checked.
 
 Return to the [documentation overview](index.md).
 
@@ -20,7 +20,11 @@ Generation considers wishes after gaps, health rules and station transfers and b
 
 Open **Mindestbesetzung**. With several stations selected, a tab per station chooses the station (`station=` in the URL). The card _Tägliche Mindestbesetzung_ holds the whole editor: the qualification tabs **Fachkraft**, **Hilfskraft**, **Azubi** and **MFA**, the save controls, the weekly pattern and the dated grid with one row per date and one column per reference shift (F, Z, S, N). Weekends and North Rhine-Westphalia public holidays are shaded, and a holiday's name appears under its date. Enter whole numbers from 0 to 99; an empty or zero cell means nobody is required. Another value, such as `-1` or `1.5`, is kept and marked, and **Speichern** then fails with "Mindestbesetzung ungültig" until you correct it.
 
-Edits stay unsaved until **Speichern**. Every cell whose value differs from the saved month has a thick amber border and bold digits, also when it was changed to zero; screen readers announce "Geändert, gespeichert: _n_" with the saved value, and pointing at the cell shows it. A qualification tab with changed cells carries a dot, and the toolbar counts the unsaved changes. A successful save or **Zurücksetzen** (which restores the last saved month) removes every mark; after a failed save the changes and their marks stay. On narrow screens the grid scrolls horizontally, and the save controls stay at the top of the card instead of following the scroll. Until a month has been saved once, the page says that no staffing demand is saved; afterwards a saved empty month means nobody is required.
+!!! warning "Save before you leave"
+
+    Edits stay unsaved until **Speichern**. Leaving the page or changing the selection discards them.
+
+Every cell whose value differs from the saved month has a thick amber border and bold digits, also when it was changed to zero; screen readers announce "Geändert, gespeichert: _n_" with the saved value, and pointing at the cell shows it. A qualification tab with changed cells carries a dot, and the toolbar counts the unsaved changes. A successful save or **Zurücksetzen** (which restores the last saved month) removes every mark; after a failed save the changes and their marks stay. On narrow screens the grid scrolls horizontally, and the save controls stay at the top of the card instead of following the scroll. Until a month has been saved once, the page says that no staffing demand is saved; afterwards a saved empty month means nobody is required.
 
 To fill a month quickly, open **Wochenmuster anwenden**. Enter counts for Monday to Sunday and a holiday row for the shown qualification, then press **Vorschau**. Each qualification has its own pattern while the page is open. The backend applies the pattern to the month with its NRW calendar; public holidays take the holiday row. The preview lists the dates whose values change. **Übernehmen** replaces those dates in the unsaved grid and marks the changed cells like direct edits; **Verwerfen** keeps the grid as it was. Save afterwards to persist the result. The pattern itself is not stored and does not affect other months.
 

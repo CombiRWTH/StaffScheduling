@@ -1,6 +1,6 @@
 # Selection and employee inspection
 
-The selection and read-only employee view use the canonical API. The automated [browser procedure](../development/testing.md#staff-admin-browser-flows) passes with fictional SQL results through the real Next.js/FastAPI read path. Live TimeOffice data acceptance remains outstanding; see [limitations](../validation/index.md).
+The selection and read-only employee view use the canonical API. See [current limitations](../validation/index.md#webapp-integration) for what has been checked.
 
 Return to the [documentation overview](index.md).
 

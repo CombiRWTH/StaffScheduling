@@ -17,6 +17,6 @@ A hospital planning application combining a Next.js webapp, a FastAPI API and an
 
 ## What is ready to try
 
-Docker startup and the webapp home/API liveness pages have been checked. Start with the quickstart to inspect this foundation. A healthy process does not establish database access or a supported complete planning workflow. Visible controls and source-defined routes are not scheduling acceptance evidence.
+Start with the [quickstart](getting-started/quickstart.md), then follow the [user guide](user-guide/index.md) from selection to publication. Planning pages need access to a prepared TimeOffice database; the [example schedules](validation/examples.md) can be checked without it. [Evidence and limitations](validation/index.md) record what was verified.
 
 This site separates setup, staff-admin tasks, technical understanding, contribution procedures and validation. Each page has one purpose; [documentation maintenance](development/documentation.md) describes how changes keep these perspectives consistent.

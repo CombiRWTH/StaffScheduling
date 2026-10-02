@@ -4,7 +4,7 @@ Documentation changes accompany every implementation change. Update instructions
 
 ## Reader goals and section ownership
 
-The home page routes readers by purpose. Organize content by the question it answers, rather than by the legacy repositories or implementation ticket boundaries.
+The home page routes readers by purpose. Organize content by the question a reader brings, not by repository history or the order in which features were built.
 
 | Reader goal                              | Section            | Purpose                                                                     |
 | ---------------------------------------- | ------------------ | --------------------------------------------------------------------------- |
@@ -14,9 +14,9 @@ The home page routes readers by purpose. Organize content by the question it ans
 | Make a change                            | `development/`     | Commands, testing responsibilities and contribution procedures              |
 | Assess correctness or reproduce a result | `validation/`      | Evidence/limitations, sourced reasoning, accepted examples and reproduction |
 
-User-guide outlines are arranged in the planning task order, architecture follows the system boundaries, and validation separates reasoning from executed proof. The home page showcases only checked behavior and routes future example results to their evidence.
+User-guide pages follow the planning task order, architecture follows the system boundaries, and validation separates reasoning from executed proof. The home page showcases only checked behavior and routes future example results to their evidence.
 
-Use the terms in the [glossary](../glossary.md) (`docs/source/glossary.md`); add a term there when one is resolved. Record a decision as a short ADR in `docs/adr/` only when it is hard to reverse, surprising without context and the result of a real trade-off. Keep installation in one place and link to it. Extend an existing page when it fits; add a page only when readers need a separate topic. Outline pages reserve sections without claiming that the feature works. Fill or reorganize them as verified behavior develops. Optional unsupported controls do not need a full guide.
+Use the terms in the [glossary](../glossary.md) (`docs/source/glossary.md`); add a term there when one is resolved. Record a decision as a short ADR in `docs/adr/` only when it is hard to reverse, surprising without context and the result of a real trade-off. Keep installation in one place and link to it. Extend an existing page when it fits; add a page only when readers need a separate topic. Optional unsupported controls do not need a full guide.
 
 ## Evidence and accuracy
 
