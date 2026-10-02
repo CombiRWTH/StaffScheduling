@@ -56,7 +56,6 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
         <Card>
           <CardHeader>
             <CardTitle>Neue Generierung</CardTitle>
-            <CardDescription>Plant immer den ganzen Monat.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <dl className="grid gap-x-8 gap-y-5 text-sm sm:grid-cols-2">

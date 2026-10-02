@@ -13,6 +13,8 @@ The card _Veröffentlichen_ on **Prüfen** names the selected stations and month
 
 Each selected station needs one TimeOffice target plan for the month, the same plan the [selection](selection.md) offers.
 
+The review itself does not show whether its schedule is published: only the card's message after a confirmed publication or clear reports it, and that message is gone after a reload.
+
 ## Publish assignments
 
 1. Select **In TimeOffice veröffentlichen**. The card asks for confirmation and names the stations, the month and the number of duties. **Abbrechen** changes nothing.

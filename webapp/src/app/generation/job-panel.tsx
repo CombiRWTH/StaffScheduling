@@ -121,9 +121,7 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
           <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
             {[
               ["Generierte Dienste", solution.assignments.length],
-              ["Diagnosen", solution.diagnostics.length],
-              ["Regelverstöße", check?.findings.length ?? 0],
-              ["Nicht bewertet", check?.not_assessed.length ?? 0],
+              ["Solver-Diagnosen", solution.diagnostics.length],
             ].map(([label, count]) => (
               <div key={label} className="flex items-baseline gap-2">
                 <dd className="text-lg font-semibold tabular-nums">{count}</dd>

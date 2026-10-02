@@ -10,17 +10,18 @@ After a generation that found a schedule, _Letzte Generierung_ on **Erstellen** 
 
 The page always reviews one schedule. Its card _Dienstplan zur Prüfung_ names the month, the stations and whether it was generated or imported, and when. If the header selection is another month or other stations, the page says so instead of showing the schedule as the selected one; **Zu diesem Umfang wechseln** selects the schedule's own scope.
 
-| Part           | What it shows                                                                                                                                                                                        |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Solver-Status  | What CP-SAT found: **Optimale Lösung** or **Lösung gefunden** (time limit ended the search)                                                                                                          |
-| Prüfung        | The independent check: **Regeln eingehalten** (accepted), **Regelverstöße** (rejected) or **Unvollständig geprüft** (a promised check lacked input)                                                  |
-| Zielfunktion   | The relative gap between the objective value and CP-SAT's proven bound; a large gap means a weak bound, not a broken rule                                                                            |
-| Bewertung      | The check's scores: health events (six-day runs and backward shift changes), total deviation of the monthly accounts in minutes, surplus intermediate duties, and the number of duties               |
-| Einstellungen  | The run's actual time, time limit, search threads, random seed and the derived objective weights                                                                                                     |
-| Verstöße       | Every finding of the check with its rule, message, employee, date and station                                                                                                                        |
-| Nicht bewertet | Rules the input cannot decide, with their date window: _fehlende Eingaben, verhindert die Annahme_ blocks acceptance; _über den Monat hinaus_ (the next month's start, annual free Sundays) does not |
+| Part              | What it shows                                                                                                                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Solver-Status     | What CP-SAT found: **Optimale Lösung** or **Lösung gefunden** (time limit ended the search)                                                                                                          |
+| Prüfung           | The independent check: **Regeln eingehalten** (accepted), **Regelverstöße** (rejected) or **Unvollständig geprüft** (a promised check lacked input)                                                  |
+| Optimalitätslücke | The relative gap between the objective value and CP-SAT's proven bound; a large gap means a weak bound, not a broken rule and not missing staff (see _Besetzung_ below)                              |
+| Bewertung         | The check's scores: health events (six-day runs and backward shift changes), total deviation of the monthly accounts in minutes, surplus intermediate duties, and the number of duties               |
+| Verstöße          | Every finding of the check with its rule, message, employee, date and station                                                                                                                        |
+| Nicht bewertet    | Rules the input cannot decide, with their date window: _fehlende Eingaben, verhindert die Annahme_ blocks acceptance; _über den Monat hinaus_ (the next month's start, annual free Sundays) does not |
 
 Only an accepted schedule is usable; any other one is a diagnosis. The check message, not the solver status, decides.
+
+The collapsed section **Solver-Details** holds the run's actual time and time limit, search threads, random seed, the derived objective weights (health · accounts · intermediate duties), the objective value and the proven bound. Solver diagnostics, findings and items not assessed always stay visible.
 
 ## Inspect employee and unit schedules
 

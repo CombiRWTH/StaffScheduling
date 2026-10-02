@@ -23,7 +23,7 @@ export function ImportForm() {
   }
 
   return (
-    <Card className="max-w-3xl">
+    <Card className="max-w-5xl">
       <CardHeader>
         <CardTitle>Importieren</CardTitle>
         <CardDescription>

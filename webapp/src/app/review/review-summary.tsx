@@ -1,5 +1,6 @@
 import { Download, Info } from "lucide-react";
 import { BulletList } from "@/components/bullet-list";
+import { Disclosure } from "@/components/disclosure";
 import { Outcome } from "@/components/outcome";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,41 +77,24 @@ export function ReviewSummary({ review }: { review: ScheduleReview }) {
             tone={accepted ? undefined : "text-destructive"}
           />
           <Outcome
-            label="Zielfunktion"
-            value={`Lücke ${NUMBER.format(objective.relative_gap * 100)} %`}
-            detail={`Wert ${objective.value}, Schranke ${NUMBER.format(objective.best_bound)}`}
+            label="Optimalitätslücke"
+            value={`${NUMBER.format(objective.relative_gap * 100)} %`}
+            detail="Abstand zur bestmöglichen Bewertung, keine fehlende Besetzung"
           />
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <Facts
-            title="Bewertung"
-            facts={[
-              [
-                "Gesundheitsereignisse",
-                `${check.scores.health_events} (${check.scores.six_day_windows} Sechs-Tage-Folgen, ${check.scores.backward_transitions} Rückwärtswechsel)`,
-              ],
-              ["Abweichung der Monatskonten", `${check.scores.balance_deviation_minutes} min`],
-              ["Überzählige Zwischendienste", String(check.scores.surplus_intermediate_duties)],
-              ["Dienste", String(tables.duties.length)],
-            ]}
-          />
-          <Facts
-            title="Einstellungen"
-            facts={[
-              ["Laufzeit", `${NUMBER.format(solution.wall_time_seconds)} von ${configuration.timeout_seconds} s`],
-              [
-                "Suchthreads",
-                configuration.search_workers === null ? "automatisch" : String(configuration.search_workers),
-              ],
-              ["Startwert", configuration.random_seed === null ? "keiner" : String(configuration.random_seed)],
-              [
-                "Gewichte",
-                `${configuration.weights.health_events} · ${configuration.weights.balance_deviation_minutes} · ${configuration.weights.surplus_intermediate_duties}`,
-              ],
-            ]}
-          />
-        </div>
+        <Facts
+          title="Bewertung"
+          facts={[
+            [
+              "Gesundheitsereignisse",
+              `${check.scores.health_events} (${check.scores.six_day_windows} Sechs-Tage-Folgen, ${check.scores.backward_transitions} Rückwärtswechsel)`,
+            ],
+            ["Abweichung der Monatskonten", `${check.scores.balance_deviation_minutes} min`],
+            ["Überzählige Zwischendienste", String(check.scores.surplus_intermediate_duties)],
+            ["Dienste", String(tables.duties.length)],
+          ]}
+        />
 
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="space-y-1.5">
@@ -136,6 +120,26 @@ export function ReviewSummary({ review }: { review: ScheduleReview }) {
           </div>
         )}
 
+        <Disclosure title="Solver-Details">
+          <Facts
+            title="Einstellungen und Zielfunktion"
+            facts={[
+              ["Laufzeit", `${NUMBER.format(solution.wall_time_seconds)} von ${configuration.timeout_seconds} s`],
+              [
+                "Suchthreads",
+                configuration.search_workers === null ? "automatisch" : String(configuration.search_workers),
+              ],
+              ["Startwert", configuration.random_seed === null ? "keiner" : String(configuration.random_seed)],
+              [
+                "Gewichte",
+                `${configuration.weights.health_events} · ${configuration.weights.balance_deviation_minutes} · ${configuration.weights.surplus_intermediate_duties} (Gesundheit · Konten · Zwischendienste)`,
+              ],
+              ["Zielwert", String(objective.value)],
+              ["Schranke", NUMBER.format(objective.best_bound)],
+            ]}
+          />
+        </Disclosure>
+
         <div className="space-y-2 border-t pt-4">
           <div className="flex flex-wrap gap-2">
             {REVIEW_FILES.map((name) => (
@@ -148,7 +152,7 @@ export function ReviewSummary({ review }: { review: ScheduleReview }) {
           <p className="flex items-center gap-2 text-muted-foreground">
             <Info className="size-4 shrink-0" />
             {accepted
-              ? "Nicht veröffentlicht; die Dateien sind ohne TimeOffice lesbar und prüfbar."
+              ? "Die Dateien sind ohne TimeOffice lesbar und prüfbar."
               : "Nicht angenommen: Die Dateien sind eine Diagnose, kein verwendbarer Dienstplan."}
           </p>
         </div>

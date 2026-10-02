@@ -45,6 +45,12 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   await expect(summary(page)).toContainText("Regeln eingehalten");
   await expect(summary(page)).toContainText("Freie Sonntage im Jahr");
   await expect(summary(page)).toContainText("über den Monat hinaus");
+  await expect(summary(page)).toContainText("Optimalitätslücke");
+  // Solver settings and bounds are optional detail, collapsed until opened.
+  await expect(summary(page).getByText("Gewichte")).toBeHidden();
+  // Keyboard users open the collapsed section like any other control.
+  await summary(page).getByText("Solver-Details").press("Enter");
+  await expect(summary(page).getByText("Gewichte")).toBeVisible();
 
   const grid = page.getByLabel("Dienstplan", { exact: true });
   await expect(grid.getByRole("rowheader", { name: /Example Jumper Three/ })).toBeVisible();

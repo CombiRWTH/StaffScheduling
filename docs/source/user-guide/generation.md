@@ -22,7 +22,7 @@ Check the employee page for completeness first: generation reads the same facts 
 ## Start a full-month run
 
 1. Choose the month and one or more stations in the header.
-2. Open **Dienstplan erstellen**. The card _Neue Generierung_ on the left repeats the period and stations and lists which inputs are and are not used; a run always covers the whole month.
+2. Open **Dienstplan erstellen**. The card _Neue Generierung_ repeats the period and stations and lists which inputs are and are not used; a run always covers the whole month.
 3. Enter the **maximale Laufzeit** in seconds (30–3600, default 30). This is the solver's search limit; reading the data and preparing the model come on top.
 4. Select **Starten**.
 
@@ -40,7 +40,7 @@ The card _Letzte Generierung_ shows the job's month and stations and three separ
 | Solver-Status | **Optimale Lösung**, **Lösung gefunden** (optimum not proven), **Keine Lösung möglich** (proven infeasible), **Keine Lösung innerhalb der Laufzeit**, or **Modell ungültig**                                                          |
 | Prüfung       | **Regeln eingehalten** (every checked rule kept), **Regelverstöße** (the schedule breaks a rule and is not usable), **Unvollständig geprüft** (a rule lacked input, for example the days before the month) or **Kein Plan zu prüfen** |
 
-Below them are the counts of generated shifts, diagnostics, rule violations and items not assessed, and the affected rules by name. _Nicht bewertet … (über den Monat hinaus)_ lists obligations that a month cannot decide, such as annual free Sundays; they do not prevent acceptance. _(fehlende Eingaben)_ means a check promised for the month had no input and the schedule is not accepted. Nothing is published automatically.
+Below them are the counts of generated duties and solver diagnostics, and the violated and not-assessed rules by name with their counts. The [review](review.md) shows the optimality gap and the solver details. _Nicht bewertet … (über den Monat hinaus)_ lists obligations that a month cannot decide, such as annual free Sundays; they do not prevent acceptance. _(fehlende Eingaben)_ means a check promised for the month had no input and the schedule is not accepted. Nothing is published automatically.
 
 With a found schedule, **Dienstplan prüfen** opens its [review](review.md): every duty, finding, account and the downloads.
 

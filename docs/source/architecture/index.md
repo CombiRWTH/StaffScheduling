@@ -87,9 +87,10 @@ UI conventions for every page:
 - Pages render `PageHeader` with a title, a one-line description and the planning selection. Every page below the overview passes `parent`, which shows a back arrow before the title; it returns to the parent page and keeps the month/station selection.
 - The URL is the only selection state. A missing or invalid month means January of the current year; navigation links carry the selection.
 - Unsupported areas stay visible in the sidebar as greyed, route-less entries with a tooltip; they never link to placeholder pages.
-- Use the domain's German terms consistently: Verfügbarkeit (page for availability entries, called Einschränkung, and wishes), Abwesenheit (native TimeOffice absence), Zuordnungen (dated unit assignments), Mindestbesetzung, Wochenmuster, Dienstplan.
+- Use the domain's German terms consistently: Verfügbarkeit (page for availability entries, called Einschränkung, and wishes), Abwesenheit (native TimeOffice absence), Zuordnungen (dated unit assignments), Mindestbesetzung, Wochenmuster, Dienstplan. The solver's relative gap is the _Optimalitätslücke_; never call it just "Lücke", which reads as missing staff.
 - Unsaved edits are marked per field, not only by a page-wide notice, with a cue beyond colour (border weight, bold digits) and an accessible description; saving or resetting clears the marks.
 - Optional technical detail (solver settings, weights, bounds, the weekly pattern) sits in a collapsed `Disclosure`; required results and diagnostics stay visible.
+- Cards of one page share one width (`max-w-5xl` on **Prüfen**, `max-w-3xl` on **Erstellen**); wide grids use the full width.
 - A page-local choice such as the employee or station lives in the URL next to the selection (`employee=`, `station=`).
 - A failed save shows the error and keeps the user's input; success is shown only after the API confirmed the write.
 - Tables hold plain text; badges are only for short lists such as units. Employee lists show the ID before the name and stay sorted by name.

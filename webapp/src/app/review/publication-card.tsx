@@ -92,7 +92,7 @@ export function PublicationCard({
   const kept = "Abwesenheiten, Wünsche und andere Pläne bleiben unverändert.";
 
   return (
-    <Card aria-label="Veröffentlichung" className="max-w-3xl">
+    <Card aria-label="Veröffentlichung" className="max-w-5xl">
       <CardHeader>
         <CardTitle>Veröffentlichen</CardTitle>
         <CardDescription>

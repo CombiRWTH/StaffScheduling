@@ -75,7 +75,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
       <div className="space-y-6">
         {"error" in current && <LoadError title="Dienstplan nicht geladen" message={current.error} />}
         {"review" in current && !review && (
-          <Card className="max-w-3xl border-dashed shadow-none">
+          <Card className="max-w-5xl border-dashed shadow-none">
             <CardHeader>
               <CardTitle>Kein Dienstplan zur Prüfung</CardTitle>
               <CardDescription>
@@ -86,7 +86,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
           </Card>
         )}
         {review && own && !matches && (
-          <Card className="max-w-3xl">
+          <Card className="max-w-5xl">
             <CardHeader>
               <CardTitle>Anderer Planungsumfang</CardTitle>
               <CardDescription>
