@@ -5,7 +5,7 @@ TimeOffice is an external roster database whose schema and terms we do not contr
 ## Considered Options
 
 - **Reader classes, row models and separate mappers per table** (the imported structure). Rejected: each layer mapped one-to-one onto the next, and the row models re-checked what the domain models already check.
-- **An ORM or repository layer.** Rejected: the adapter only runs a few fixed, read-only SELECTs against a schema we do not own; mapped entities would expose TimeOffice structure without removing any SQL.
+- **An ORM or repository layer.** Rejected: the adapter only runs a few fixed, read-only SELECTs against a schema we do not own; mapped entities would expose TimeOffice structure without removing any SQL. Its later writes are equally fixed statements: key-scoped saves to the project tables and, since [0009](0009-publish-marked-duties-into-timeoffice-target-plans.md), the publication of marked duties into target plans.
 
 ## Consequences
 
