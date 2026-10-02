@@ -13,7 +13,7 @@ from app.domain import Assignment, SchedulingDataset
 from app.solver.diagnostics import SolverDiagnostic
 from app.solver.model.candidates import CandidateModel
 from app.solver.model.constraints import HARD_RULES
-from app.solver.model.objectives import minimize
+from app.solver.model.objectives import set_objective
 from app.solver.models import ObjectiveWeights
 
 
@@ -39,5 +39,5 @@ def build_model(dataset: SchedulingDataset) -> ScheduleModel:
     model = CandidateModel(dataset)
     for rule in HARD_RULES:
         rule(model)
-    weights = minimize(model)
+    weights = set_objective(model)
     return ScheduleModel(model.cp, model.candidates, weights, tuple(model.diagnostics))

@@ -6,14 +6,12 @@ value it can take. The weights make one unit of a higher tier outweigh any possi
 lower tiers together, so the solver's objective value equals the check's weighted total.
 """
 
-from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import date as Date
 from datetime import timedelta
 
 from app.domain import POLICY, SHIFT_ORDER, WORKED_DAYS_WINDOW, ShiftType, dates_between
-from app.solver.model.candidates import CandidateModel, Expr, Slot
+from app.solver.model.candidates import CandidateModel, Expr, by_day
 from app.solver.models import ObjectiveWeights
 
 # CP-SAT reports objective values as floats; staying below 2**53 keeps every weighted total exact.
@@ -39,9 +37,7 @@ def six_day_windows(model: CandidateModel) -> Term:
     """Fully worked six-day windows, each counted on its last day inside the month."""
     events: list[Expr] = []
     for slots in model.timelines.values():
-        worked: defaultdict[Date, list[Slot]] = defaultdict(list)
-        for slot in slots:
-            worked[slot.day].append(slot)
+        worked = by_day(slots)
         for day in model.month.dates:
             window = [day - timedelta(days=offset) for offset in range(WORKED_DAYS_WINDOW)]
             if not all(worked[d] for d in window):
@@ -64,13 +60,10 @@ def backward_transitions(model: CandidateModel) -> Term:
     ranks = sorted(set(SHIFT_ORDER.values()))
     events: list[Expr] = []
     for slots in model.timelines.values():
-        by_day: defaultdict[Date, list[Slot]] = defaultdict(list)
-        for slot in slots:
-            if slot.shift.type in SHIFT_ORDER:
-                by_day[slot.day].append(slot)
+        ranked_by_day = by_day(slot for slot in slots if slot.shift.type in SHIFT_ORDER)
         last: dict[int, Expr] = dict.fromkeys(ranks, 0)
         for day in dates_between(model.month.start - timedelta(days=POLICY.preceding_context_days), model.month.end):
-            ranked = {rank: [s for s in by_day[day] if SHIFT_ORDER[s.shift.type] == rank] for rank in ranks}
+            ranked = {rank: [s for s in ranked_by_day[day] if SHIFT_ORDER[s.shift.type] == rank] for rank in ranks}
             if day not in model.month:
                 if worked := [rank for rank in ranks if ranked[rank]]:
                     last = {rank: int(rank == worked[-1]) for rank in ranks}
@@ -79,9 +72,9 @@ def backward_transitions(model: CandidateModel) -> Term:
             for rank in ranks:
                 for earlier_rank in ranks:
                     if earlier_rank > rank and ranked[rank]:
-                        events.append(model.both(on[rank], last[earlier_rank]))
+                        events.append(model.logical_and(on[rank], last[earlier_rank]))
             any_ranked = sum(on.values(), 0)
-            last = {rank: on[rank] + model.unless(last[rank], any_ranked) for rank in ranks}
+            last = {rank: on[rank] + model.and_not(last[rank], any_ranked) for rank in ranks}
     return Term(sum(events, 0), len(events))
 
 
@@ -117,8 +110,8 @@ OBJECTIVES: tuple[Tier, ...] = (
 )
 
 
-def minimize(model: CandidateModel) -> ObjectiveWeights:
-    """Set the weighted objective of every tier; raises ValueError if it could exceed exact integers."""
+def set_objective(model: CandidateModel) -> ObjectiveWeights:
+    """Minimize the weighted tiers and return their weights; raises ValueError if they could exceed exact integers."""
     weighted: list[Expr] = []
     weights: dict[str, int] = {}
     # The largest weighted total of all lower tiers.

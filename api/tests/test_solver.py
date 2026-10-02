@@ -28,12 +28,14 @@ from app.domain import (
     CheckStatus,
     PlanningMonth,
     ScheduleCheck,
+    ScheduleScores,
     SchedulingDataset,
     StaffLevel,
     check_schedule,
 )
 from app.settings import Settings
-from app.solver.models import Solution, SolutionStatus
+from app.solver.model.objectives import OBJECTIVES
+from app.solver.models import ObjectiveWeights, Solution, SolutionStatus
 from app.solver.service import SolverService
 
 pytestmark = pytest.mark.integration
@@ -72,6 +74,12 @@ def only(employee_id: int, allowed: dict[int, tuple[int, ...]]) -> list[Availabi
         else away(employee_id, day, AvailabilityType.UNAVAILABLE)
         for day in JANUARY.dates
     ]
+
+
+def test_objective_tiers_are_the_reported_weights_and_scores_in_priority_order() -> None:
+    names = [tier.name for tier in OBJECTIVES]
+    assert names == list(ObjectiveWeights.model_fields)
+    assert set(names) <= set(ScheduleScores.model_fields) | set(ScheduleScores.model_computed_fields)
 
 
 def test_a_solved_month_is_accepted_and_its_objective_is_the_checked_weighted_total() -> None:

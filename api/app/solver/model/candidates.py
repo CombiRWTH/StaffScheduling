@@ -6,7 +6,8 @@ timeline over real duty times. Approved availability and each shift's own work a
 decide which candidates exist at all; every other rule is a constraint in `constraints.py`.
 """
 
-from collections.abc import Sequence
+from collections import defaultdict
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date as Date
 from datetime import timedelta
@@ -98,7 +99,7 @@ class CandidateModel:
             0,
         )
 
-    def both(self, a: Expr, b: Expr) -> Expr:
+    def logical_and(self, a: Expr, b: Expr) -> Expr:
         """A 0/1 expression that is 1 exactly when both 0/1 expressions are."""
         if is_constant(a, 0) or is_constant(b, 0):
             return 0
@@ -110,7 +111,7 @@ class CandidateModel:
         self.cp.add(both >= a + b - 1)
         return both
 
-    def unless(self, kept: Expr, reset: Expr) -> Expr:
+    def and_not(self, kept: Expr, reset: Expr) -> Expr:
         """A 0/1 expression that is `kept` while `reset` is 0, and 0 when it is 1."""
         if is_constant(kept, 0) or is_constant(reset, 0):
             return kept
@@ -176,6 +177,14 @@ class CandidateModel:
         allowed = all(shift.shift_id in shift_ids for shift_ids in restrictions)
         before_free = shift.type == ShiftType.NIGHT and any(e.availability_type in APPROVED_FREE for e in on_following)
         return allowed and not blocked & BLOCKING_AVAILABILITY and not before_free
+
+
+def by_day(slots: Iterable[Slot]) -> defaultdict[Date, list[Slot]]:
+    """The slots grouped by their start date."""
+    grouped: defaultdict[Date, list[Slot]] = defaultdict(list)
+    for slot in slots:
+        grouped[slot.day].append(slot)
+    return grouped
 
 
 def is_constant(expr: Expr, value: int) -> bool:

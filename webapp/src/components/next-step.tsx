@@ -2,10 +2,12 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { PlanningScope } from "@/lib/scope";
 import { selectionSearch } from "@/lib/selection";
-import { steps } from "@/lib/steps";
+import { type Step, steps } from "@/lib/steps";
 
-/** Every step but the last; the review ends the sequence with its own actions. */
-type StepWithNext = Exclude<(typeof steps)[number]["href"], "/review">;
+/** Every step but the last, which ends the sequence with its own actions. */
+type StepWithNext = typeof steps extends readonly [...infer Leading extends Step[], Step]
+  ? Leading[number]["href"]
+  : never;
 
 /** A link to the step after the page's own one, keeping the selection. */
 export function NextStep({ after, scope }: { after: StepWithNext; scope: PlanningScope }) {

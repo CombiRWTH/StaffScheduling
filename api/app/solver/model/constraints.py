@@ -14,7 +14,7 @@ from ortools.sat.python import cp_model
 
 from app.domain import POLICY, ShiftType, dates_between, is_working_day
 from app.domain.demand import DemandKey
-from app.solver.model.candidates import CandidateModel, Expr, Slot, is_constant
+from app.solver.model.candidates import CandidateModel, Expr, Slot, by_day, is_constant
 
 type Constraint = Callable[[CandidateModel], None]
 
@@ -22,11 +22,8 @@ type Constraint = Callable[[CandidateModel], None]
 def one_duty_per_day(model: CandidateModel) -> None:
     """At most one duty per employee and start date, across all stations and qualifications."""
     for slots in model.timelines.values():
-        by_day: defaultdict[Date, list[cp_model.IntVar]] = defaultdict(list)
-        for slot in slots:
-            by_day[slot.day].extend(slot.variables)
-        for variables in by_day.values():
-            model.cp.add_at_most_one(variables)
+        for day_slots in by_day(slots).values():
+            model.cp.add_at_most_one(variable for slot in day_slots for variable in slot.variables)
 
 
 def rest(model: CandidateModel) -> None:
@@ -168,8 +165,4 @@ HARD_RULES: tuple[Constraint, ...] = (
 
 
 def _nights(slots: list[Slot]) -> defaultdict[Date, list[Slot]]:
-    nights: defaultdict[Date, list[Slot]] = defaultdict(list)
-    for slot in slots:
-        if slot.shift.type == ShiftType.NIGHT:
-            nights[slot.day].append(slot)
-    return nights
+    return by_day(slot for slot in slots if slot.shift.type == ShiftType.NIGHT)
