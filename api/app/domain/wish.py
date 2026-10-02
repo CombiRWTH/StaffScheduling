@@ -16,6 +16,10 @@ class WishType(StrEnum):
     PREFERRED_SHIFT = "preferred_shift"
 
 
+# Wishes for time off; the others ask for a duty. Generation scores the two groups apart.
+FREE_WISHES = frozenset({WishType.FREE_DAY, WishType.FREE_SHIFT})
+
+
 class WishEntry(SchedulingBaseModel):
     """What a wish asks for, without saying whose or when."""
 
@@ -34,7 +38,10 @@ class WishEntry(SchedulingBaseModel):
 
 
 class Wish(WishEntry):
-    """An employee's soft preference for one date; at most one per employee and date."""
+    """An employee's soft preference for one date at any station; at most one per employee and date.
+
+    Generation considers it below gaps and health and above the monthly balance; it never binds.
+    """
 
     employee_id: EmployeeId
     date: Date

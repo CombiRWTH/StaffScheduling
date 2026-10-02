@@ -35,6 +35,9 @@ from app.domain import (
     Shift,
     ShiftType,
     StaffLevel,
+    Wish,
+    WishStatus,
+    WishType,
     check_schedule,
     duty_times,
 )
@@ -150,6 +153,70 @@ def test_a_shortfall_is_accepted_only_as_exactly_its_declared_gap() -> None:
     )
     assert rules(two, filled) == set()
     assert {finding.rule for finding in check_schedule(two, filled, [gap(1)]).findings} == {Rule.STAFFING}
+
+
+def wish(day: int, kind: WishType, shift_: Shift | None = None, employee_id: int = 1) -> Wish:
+    return Wish(employee_id=employee_id, date=jan(day), type=kind, shift_id=shift_.shift_id if shift_ else None)
+
+
+def outcomes(data: SchedulingDataset, assignments: list[Assignment]) -> list[WishStatus]:
+    return [row.status for row in check_schedule(data, assignments).wishes]
+
+
+def test_wishes_are_granted_denied_or_not_grantable_at_their_boundaries() -> None:
+    free_day, free_early = wish(10, WishType.FREE_DAY), wish(10, WishType.FREE_SHIFT, EARLY)
+    data = dataset(memberships=member(1), accounts=[account(1, 555)], wishes=[free_day])
+    # A night from the evening before touches the free day; a late duty the day before does not.
+    assert outcomes(data, [duty(1, jan(9), NIGHT)]) == [WishStatus.DENIED]
+    assert outcomes(data, [duty(1, jan(9), LATE)]) == [WishStatus.GRANTED]
+    shift_data = dataset(memberships=member(1), accounts=[account(1, 420)], wishes=[free_early])
+    assert outcomes(shift_data, [duty(1, jan(10), EARLY)]) == [WishStatus.DENIED]
+    assert outcomes(shift_data, [duty(1, jan(10), LATE)]) == [WishStatus.GRANTED]
+
+    # A preferred shift is fulfilled at any station: here at the jumper pool employee's replacement station.
+    wishes = [wish(10, WishType.PREFERRED_SHIFT, EARLY), wish(11, WishType.PREFERRED_DAY)]
+    pool = dataset(
+        memberships=member(1, home=JUMPER_POOL, replacements=[SOUTH]), accounts=[account(1, 420)], wishes=wishes
+    )
+    assert outcomes(pool, [duty(1, jan(10), EARLY, unit=SOUTH)]) == [WishStatus.GRANTED, WishStatus.DENIED]
+    assert outcomes(pool, [duty(1, jan(10), LATE, unit=SOUTH)]) == [WishStatus.DENIED, WishStatus.DENIED]
+    assert outcomes(pool, [duty(1, jan(11), LATE, unit=SOUTH)]) == [WishStatus.DENIED, WishStatus.GRANTED]
+
+    # Binding availability, a missing station membership and a context night make wishes ungrantable.
+    blocked = dataset(
+        memberships=[*member(1), *member(2, home=JUMPER_POOL)],
+        accounts=[account(1, 0), account(2, 0)],
+        availability=[away(1, jan(10)), away(1, jan(11), AvailabilityType.AVAILABLE_ONLY, (LATE.shift_id,))],
+        wishes=[
+            wish(10, WishType.PREFERRED_DAY),
+            wish(11, WishType.PREFERRED_SHIFT, EARLY),
+            wish(1, WishType.FREE_DAY),
+            wish(10, WishType.PREFERRED_DAY, employee_id=2),
+        ],
+        context_duties=[duty(1, date(2025, 12, 31), NIGHT)],
+    )
+    check = check_schedule(blocked, [])
+    assert [row.status for row in check.wishes] == [WishStatus.NOT_GRANTABLE] * 4
+    assert check.wish_counts == {WishStatus.GRANTED: 0, WishStatus.DENIED: 0, WishStatus.NOT_GRANTABLE: 4}
+    assert check.scores.wish_cost == 0
+
+
+def test_the_wish_cost_grows_cubically_per_employee_and_group() -> None:
+    data = dataset(
+        memberships=[*member(1), *member(2)],
+        accounts=[account(1, 0), account(2, 0)],
+        wishes=[
+            wish(5, WishType.PREFERRED_DAY),
+            wish(6, WishType.PREFERRED_DAY),
+            wish(7, WishType.FREE_DAY),
+            wish(5, WishType.PREFERRED_DAY, employee_id=2),
+        ],
+    )
+    check = check_schedule(data, [duty(1, jan(7), EARLY)])
+
+    # Employee 1: two preferred denials cost 1 + 8, the free denial 1 apart; employee 2's one denial 1.
+    assert check.scores.wish_cost == 9 + 1 + 1
+    assert check.wish_counts[WishStatus.DENIED] == 4
 
 
 def test_a_jumper_pool_employee_cannot_cover_both_stations_at_once() -> None:

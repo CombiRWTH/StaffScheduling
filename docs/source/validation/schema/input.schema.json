@@ -461,6 +461,14 @@
           "title": "Availability",
           "type": "array"
         },
+        "wishes": {
+          "description": "Soft preferences of the month; generation considers them, they never bind.",
+          "items": {
+            "$ref": "#/$defs/Wish"
+          },
+          "title": "Wishes",
+          "type": "array"
+        },
         "monthly_work_accounts": {
           "items": {
             "$ref": "#/$defs/MonthlyWorkAccount"
@@ -480,6 +488,7 @@
         "employees",
         "planning_unit_memberships",
         "availability",
+        "wishes",
         "monthly_work_accounts",
         "context"
       ],
@@ -549,6 +558,55 @@
         "mfa"
       ],
       "title": "StaffLevel",
+      "type": "string"
+    },
+    "Wish": {
+      "additionalProperties": false,
+      "description": "An employee's soft preference for one date at any station; at most one per employee and date.\n\nGeneration considers it below gaps and health and above the monthly balance; it never binds.",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/WishType"
+        },
+        "shift_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shift Id"
+        },
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "employee_id",
+        "date"
+      ],
+      "title": "Wish",
+      "type": "object"
+    },
+    "WishType": {
+      "enum": [
+        "free_day",
+        "free_shift",
+        "preferred_day",
+        "preferred_shift"
+      ],
+      "title": "WishType",
       "type": "string"
     },
     "WorkCredit": {

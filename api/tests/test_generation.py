@@ -20,6 +20,9 @@ from app.domain import (
     SchedulingDataset,
     ShiftType,
     StaffLevel,
+    Wish,
+    WishEntry,
+    WishType,
 )
 from app.main import app
 from app.settings import Settings
@@ -84,6 +87,7 @@ def read_nothing(**_: object) -> SchedulingDataset:
         employees=(),
         planning_unit_memberships=(),
         availability=(),
+        wishes=(),
         monthly_work_accounts=(),
         context=ScheduleContext(covered_from=JANUARY.start, covered_until=JANUARY.end),
     )
@@ -135,6 +139,23 @@ def test_failed_solve_and_failed_input_release_the_lock() -> None:
     rejecting = Generation(read_input=read_nothing, solve=solve, on_solved=Review().generated)
     assert rejecting.start(REQUEST).state == JobState.RUNNING
     finished(rejecting)
+
+
+def test_generation_input_carries_the_month_wishes_of_station_and_jumper_pool_employees() -> None:
+    source = InspectionSource()
+    save_demand(source)
+    early = WishEntry(type=WishType.PREFERRED_SHIFT, shift_id=EARLY)
+    source.service.set_wish(employee_id=1, day=date(2026, 1, 12), entry=early)
+    source.service.set_wish(employee_id=2, day=date(2026, 1, 13), entry=WishEntry(type=WishType.FREE_DAY))
+    source.service.set_wish(employee_id=2, day=date(2026, 2, 2), entry=WishEntry(type=WishType.FREE_DAY))
+
+    dataset = source.service.read_generation_input(planning_unit_ids=(101,), planning_month=JANUARY)
+
+    # Employee 1 belongs to the jumper pool; February's wish is outside the month.
+    assert dataset.wishes == (
+        Wish(employee_id=1, date=date(2026, 1, 12), **early.model_dump()),
+        Wish(employee_id=2, date=date(2026, 1, 13), type=WishType.FREE_DAY),
+    )
 
 
 def test_generation_input_reads_absences_and_only_trusted_context_duties() -> None:

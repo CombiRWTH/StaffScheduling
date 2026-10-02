@@ -135,17 +135,20 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
       ].join(", "),
     ]),
   );
-  // Staffing per station and shift: required and assigned counts per date over all qualifications.
-  const staffing = new Map<string, { required: number; assigned: number; levels: string[] }>();
+  // Staffing per station and shift: required and assigned counts per date over all qualifications. A cell is
+  // short when any qualification is, because staff of another qualification never fill its gap.
+  const staffing = new Map<string, { required: number; assigned: number; short: boolean; levels: string[] }>();
   for (const row of tables.staffing) {
     const at = staffingKey(row.planning_unit_id, row.shift_id, row.date);
     const cell = staffing.get(at) ?? {
       required: 0,
       assigned: 0,
+      short: false,
       levels: [],
     };
     cell.required += row.required_count;
     cell.assigned += row.assigned_count;
+    cell.short ||= row.assigned_count < row.required_count;
     cell.levels.push(`${STAFF_LEVEL_LABELS[row.staff_level]} ${row.assigned_count}/${row.required_count}`);
     staffing.set(at, cell);
   }
@@ -281,7 +284,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                               className={cn(
                                 "border-b border-l p-1 text-center tabular-nums",
                                 weekend(day) && "bg-muted",
-                                cell && cell.assigned < cell.required && "font-semibold text-destructive",
+                                cell?.short && "font-semibold text-destructive",
                               )}
                             >
                               {cell && `${cell.assigned}/${cell.required}`}

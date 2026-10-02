@@ -19,6 +19,7 @@ from app.domain import (
     Shift,
     ShiftType,
     StaffLevel,
+    Wish,
     WorkCredit,
     WorkSegment,
 )
@@ -131,6 +132,7 @@ def dataset(
     accounts: Iterable[MonthlyWorkAccount],
     demand: Iterable[DemandRequirement] = (),
     availability: Iterable[Availability] = (),
+    wishes: Iterable[Wish] = (),
     shifts: Iterable[Shift] = CATALOG,
     month: PlanningMonth = JANUARY,
     context_duties: Iterable[Assignment] = (),
@@ -157,6 +159,7 @@ def dataset(
         ),
         planning_unit_memberships=memberships,
         availability=tuple(availability),
+        wishes=tuple(wishes),
         monthly_work_accounts=tuple(accounts),
         context=ScheduleContext(
             covered_from=month.start - timedelta(days=covered_days_before),

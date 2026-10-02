@@ -35,6 +35,9 @@ from app.domain import (
     SchedulingDataset,
     Shift,
     StaffLevel,
+    Wish,
+    WishStatus,
+    WishType,
     check_schedule,
 )
 from app.settings import Settings
@@ -218,6 +221,60 @@ def test_a_jumper_pool_employee_cannot_fill_both_stations_on_one_date() -> None:
 
     assert len(solution.assignments) == len(solution.gaps) == 1
     assert checked(solution).status == CheckStatus.ACCEPTED
+
+
+def wish(day: int, kind: WishType, shift_: Shift | None = None, employee_id: int = 1) -> Wish:
+    return Wish(employee_id=employee_id, date=jan(day), type=kind, shift_id=shift_.shift_id if shift_ else None)
+
+
+def test_fairness_spreads_unavoidable_denials_even_against_the_balance() -> None:
+    # Both want January 5 and 6 off, and each day needs one of them. Employee 1's account alone would
+    # take both duties; the cubic cost spreads the denials 1 + 1 instead of 2 + 0, although employee 2's
+    # zero target is then exceeded by a duty.
+    data = dataset(
+        memberships=[*member(1), *member(2)],
+        accounts=[account(1, 840), account(2, 0)],
+        demand=[need(jan(5), EARLY), need(jan(6), EARLY)],
+        wishes=[wish(day, WishType.FREE_DAY, employee_id=employee) for employee in (1, 2) for day in (5, 6)],
+    )
+    solution = solve(data)
+
+    assert {row.employee_id for row in solution.assignments} == {1, 2}
+    assert checked(solution).scores.wish_cost == 2
+    assert checked(solution).scores.balance_deviation_minutes == 420
+    assert stages_are_scores(solution)
+
+
+def test_health_events_outweigh_a_wish() -> None:
+    # A preferred early on January 12 would step back from the required late of January 10.
+    data = dataset(
+        memberships=member(1),
+        accounts=[account(1, 435)],
+        demand=[need(jan(10), LATE)],
+        wishes=[wish(12, WishType.PREFERRED_SHIFT, EARLY)],
+    )
+    solution = solve(data)
+
+    assert [row.status for row in checked(solution).wishes] == [WishStatus.DENIED]
+    assert checked(solution).scores.backward_transitions == 0
+    assert stages_are_scores(solution)
+
+
+def test_a_jumper_pool_wish_is_granted_at_a_station_and_an_ungrantable_one_costs_nothing() -> None:
+    # Without wishes the zero target keeps the jumper pool employee free; the wished late is worked at
+    # South, the only station they may work at. The vacation day's wish cannot be granted.
+    data = dataset(
+        memberships=member(1, home=JUMPER_POOL, replacements=[SOUTH]),
+        accounts=[account(1, 0)],
+        availability=[away(1, jan(6))],
+        wishes=[wish(5, WishType.PREFERRED_SHIFT, LATE), wish(6, WishType.PREFERRED_DAY)],
+    )
+    solution = solve(data)
+
+    assert solution.assignments == (duty(1, jan(5), LATE, unit=SOUTH),)
+    assert [row.status for row in checked(solution).wishes] == [WishStatus.GRANTED, WishStatus.NOT_GRANTABLE]
+    assert checked(solution).scores.wish_cost == 0
+    assert stages_are_scores(solution)
 
 
 def test_a_month_needs_every_account_before_it_solves() -> None:

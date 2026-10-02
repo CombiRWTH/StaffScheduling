@@ -9,7 +9,7 @@ from inspection_fixture import InspectionSource
 from app.api.generation import get_generation
 from app.api.review import get_review
 from app.api.shared import get_planning_source
-from app.domain import DemandCell, MonthlyDemand, PlanningMonth, SchedulingDataset, StaffLevel
+from app.domain import DemandCell, MonthlyDemand, PlanningMonth, SchedulingDataset, StaffLevel, WishEntry, WishType
 from app.main import app
 from app.settings import get_settings
 from app.solver.generation import Generation
@@ -61,6 +61,13 @@ source.service.save_demand(
         ),
     )
 )
+# June wishes: Team Two's free June 5 is denied because the station needs them; the MFA's preferred
+# June 10 can be granted; Jumper Three has no station membership, so their preferred June 11 cannot.
+source.service.set_wish(employee_id=2, day=june.start.replace(day=5), entry=WishEntry(type=WishType.FREE_DAY))
+for employee_id, day in ((1, 10), (3, 11)):
+    source.service.set_wish(
+        employee_id=employee_id, day=june.start.replace(day=day), entry=WishEntry(type=WishType.PREFERRED_DAY)
+    )
 # Configuration and roster writes for this employee and station fail, so the browser can check failed saves.
 source.failing_ids = {3, 102}
 

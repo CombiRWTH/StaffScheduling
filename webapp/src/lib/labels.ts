@@ -10,6 +10,7 @@ import type {
   SolutionStatus,
   Stage,
   StaffLevel,
+  WishStatus,
   WishType,
 } from "@/lib/types";
 
@@ -33,6 +34,13 @@ export const WISH_LABELS: Record<WishType, string> = {
   free_shift: "Schicht frei",
   preferred_day: "Wunschtag",
   preferred_shift: "Wunschschicht",
+};
+
+/** What a schedule made of a wish. */
+export const WISH_STATUS_LABELS: Record<WishStatus, string> = {
+  granted: "erfüllt",
+  denied: "nicht erfüllt",
+  not_grantable: "nicht erfüllbar",
 };
 
 /** What the solver found, with a short explanation. */
@@ -63,6 +71,7 @@ export function solverStatusText(status: SolutionStatus) {
 export const OBJECTIVE_LABELS: Record<Stage["name"], string> = {
   gaps: "Lücken",
   health_events: "Gesundheitsereignisse",
+  wish_cost: "Wunschkosten (Fairness)",
   six_day_windows: "Sechs-Tage-Folgen",
   backward_transitions: "Rückwärtswechsel",
   balance_deviation_minutes: "Abweichung der Monatskonten (Minuten)",

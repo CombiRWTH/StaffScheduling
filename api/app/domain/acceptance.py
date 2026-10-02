@@ -24,6 +24,7 @@ from app.domain.duty import DutyTimes, duty_times
 from app.domain.monthly_work_account import MonthlyWorkAccount
 from app.domain.rules import APPROVED_FREE, BLOCKING_AVAILABILITY, POLICY
 from app.domain.shift import Shift, ShiftType
+from app.domain.wish import FREE_WISHES, Wish, WishType
 
 # The forward shift order of the health objective; other shift types have no position in it.
 SHIFT_ORDER = {ShiftType.EARLY: 0, ShiftType.LATE: 1, ShiftType.NIGHT: 2}
@@ -89,6 +90,8 @@ class ScheduleScores(SchedulingBaseModel):
     """Required slots that no assignment fills, recomputed from the assignments."""
     six_day_windows: int
     backward_transitions: int
+    wish_cost: int
+    """Denied grantable wishes, free and preferred apart per employee: the k-th denial costs k³."""
     balance_deviation_minutes: int
     surplus_intermediate_duties: int
 
@@ -98,6 +101,20 @@ class ScheduleScores(SchedulingBaseModel):
         return self.six_day_windows + self.backward_transitions
 
 
+class WishStatus(StrEnum):
+    """GRANTED: the schedule fulfils the wish. DENIED: it does not, though some schedule could.
+    NOT_GRANTABLE: binding availability, eligibility, the shift's own work pattern or a trusted
+    context duty rule out every schedule that would fulfil it; it costs nothing."""
+
+    GRANTED = "granted"
+    DENIED = "denied"
+    NOT_GRANTABLE = "not_grantable"
+
+
+class WishOutcome(Wish):
+    status: WishStatus
+
+
 class ScheduleCheck(SchedulingBaseModel):
     status: CheckStatus
     rules: tuple[Rule, ...]
@@ -105,6 +122,13 @@ class ScheduleCheck(SchedulingBaseModel):
     findings: tuple[Finding, ...]
     not_assessed: tuple[NotAssessed, ...]
     scores: ScheduleScores
+    wishes: tuple[WishOutcome, ...]
+    """Every wish of the input in its order, with what the schedule made of it."""
+
+    @computed_field
+    @property
+    def wish_counts(self) -> dict[WishStatus, int]:
+        return {status: sum(row.status == status for row in self.wishes) for status in WishStatus}
 
 
 @dataclass(frozen=True, slots=True)
@@ -157,12 +181,14 @@ def check_schedule(
         if any(row.blocking for row in check.not_assessed)
         else CheckStatus.ACCEPTED
     )
+    wishes = check.wishes(timelines)
     return ScheduleCheck(
         status=status,
         rules=ASSESSED,
         findings=tuple(check.findings),
         not_assessed=tuple(check.not_assessed),
-        scores=check.scores(duties, timelines),
+        scores=check.scores(duties, timelines, wishes),
+        wishes=wishes,
     )
 
 
@@ -279,29 +305,33 @@ class _Check:
                 self.fail(Rule.ONE_DUTY_PER_DAY, message, employee_id=employee_id, date=day)
 
     def availability(self, duties: list[_Duty]) -> None:
-        """Blocking availability on any date a duty touches, every allowed-shift restriction of its start
-        date (several narrow, never widen) and no night before an approved free date."""
         for duty in duties:
-            row = duty.assignment
-            following = row.date + timedelta(days=1)
-            for day in (row.date, following):
-                if not duty.times.touches(day):
-                    continue
-                for entry in self.dataset.availability_on(row.employee_id, day):
-                    if entry.availability_type in BLOCKING_AVAILABILITY:
-                        self.fail(
-                            Rule.AVAILABILITY, f"The duty overlaps {entry.availability_type.value} on {day}.", row
-                        )
-            for entry in self.dataset.availability_on(row.employee_id, row.date):
-                if entry.availability_type == AvailabilityType.AVAILABLE_ONLY and row.shift_id not in (
-                    entry.shift_ids or ()
-                ):
-                    self.fail(Rule.AVAILABILITY, f"Only other shifts are allowed on {row.date}.", row)
-            if duty.shift.type == ShiftType.NIGHT and any(
-                entry.availability_type in APPROVED_FREE
-                for entry in self.dataset.availability_on(row.employee_id, following)
-            ):
-                self.fail(Rule.AVAILABILITY, f"A night duty may not precede the approved free day {following}.", row)
+            for problem in self.availability_problems(duty.assignment.employee_id, duty.assignment.date, duty.shift):
+                self.fail(Rule.AVAILABILITY, problem, duty.assignment)
+
+    def availability_problems(self, employee_id: int, day: Date, shift: Shift) -> list[str]:
+        """Blocking availability on any date the duty touches, every allowed-shift restriction of its start
+        date (several narrow, never widen) and no night before an approved free date."""
+        times = duty_times(day, shift)
+        following = day + timedelta(days=1)
+        problems = [
+            f"The duty overlaps {entry.availability_type.value} on {touched}."
+            for touched in (day, following)
+            if times.touches(touched)
+            for entry in self.dataset.availability_on(employee_id, touched)
+            if entry.availability_type in BLOCKING_AVAILABILITY
+        ]
+        problems.extend(
+            f"Only other shifts are allowed on {day}."
+            for entry in self.dataset.availability_on(employee_id, day)
+            if entry.availability_type == AvailabilityType.AVAILABLE_ONLY
+            and shift.shift_id not in (entry.shift_ids or ())
+        )
+        if shift.type == ShiftType.NIGHT and any(
+            entry.availability_type in APPROVED_FREE for entry in self.dataset.availability_on(employee_id, following)
+        ):
+            problems.append(f"A night duty may not precede the approved free day {following}.")
+        return problems
 
     def monthly_balance(self, duties: list[_Duty]) -> None:
         tolerance = POLICY.balance_tolerance_minutes
@@ -438,7 +468,46 @@ class _Check:
             else:
                 free.remove(match)
 
-    def scores(self, duties: list[_Duty], timelines: dict[int, list[_Duty]]) -> ScheduleScores:
+    def possible(self, employee_id: int, day: Date, shift: Shift) -> bool:
+        """Whether some station could receive this duty: an active membership, availability and the
+        shift's own work pattern allow it; the other rules depend on the rest of the schedule."""
+        return (
+            any(
+                m.employee_id == employee_id and m.planning_unit_id in self.dataset.station_ids and m.active_on(day)
+                for m in self.dataset.planning_unit_memberships
+            )
+            and not self.availability_problems(employee_id, day, shift)
+            and _daily_work_problem(duty_times(day, shift)) is None
+        )
+
+    def wishes(self, timelines: dict[int, list[_Duty]]) -> tuple[WishOutcome, ...]:
+        """Each wish as granted, denied or not grantable.
+
+        A free day is broken by any duty touching the date, also a night from the evening before; a free
+        shift by that shift starting on it. A preferred day or shift is fulfilled by such a duty starting
+        on the date at any station.
+        """
+        outcomes: list[WishOutcome] = []
+        for wish in self.dataset.wishes:
+            timeline = timelines[wish.employee_id]
+            starting = [duty for duty in timeline if duty.assignment.date == wish.date]
+            wished = [shift for shift in self.dataset.shifts if wish.shift_id in (None, shift.shift_id)]
+            match wish.type:
+                case WishType.FREE_DAY:
+                    touching = [duty for duty in timeline if duty.times.touches(wish.date)]
+                    granted, grantable = not touching, all(duty.in_month for duty in touching)
+                case WishType.FREE_SHIFT:
+                    granted, grantable = all(duty.shift.shift_id != wish.shift_id for duty in starting), True
+                case WishType.PREFERRED_DAY | WishType.PREFERRED_SHIFT:
+                    granted = any(duty.shift.shift_id in {shift.shift_id for shift in wished} for duty in starting)
+                    grantable = any(self.possible(wish.employee_id, wish.date, shift) for shift in wished)
+            status = WishStatus.GRANTED if granted else WishStatus.DENIED if grantable else WishStatus.NOT_GRANTABLE
+            outcomes.append(WishOutcome(**wish.model_dump(), status=status))
+        return tuple(outcomes)
+
+    def scores(
+        self, duties: list[_Duty], timelines: dict[int, list[_Duty]], wishes: tuple[WishOutcome, ...]
+    ) -> ScheduleScores:
         """The objective tiers; backward steps compare with ranked duties from the preceding context days on."""
         lookback = self.month.start - timedelta(days=POLICY.preceding_context_days)
         six_day = backward = 0
@@ -459,10 +528,14 @@ class _Check:
         intermediate = Counter(
             duty.assignment.demand_key for duty in duties if duty.shift.type == ShiftType.INTERMEDIATE
         )
+        denied = Counter(
+            (row.employee_id, row.type in FREE_WISHES) for row in wishes if row.status == WishStatus.DENIED
+        )
         return ScheduleScores(
             gaps=sum(self.missing(duties).values()),
             six_day_windows=six_day,
             backward_transitions=backward,
+            wish_cost=sum((count * (count + 1) // 2) ** 2 for count in denied.values()),
             balance_deviation_minutes=sum(abs(balance) for _, balance in self.balances(duties)),
             surplus_intermediate_duties=sum(max(0, count - required[key]) for key, count in intermediate.items()),
         )

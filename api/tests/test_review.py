@@ -179,7 +179,7 @@ def test_bundle_files_carry_every_field_and_read_back() -> None:
     assert again.result.input.sha256 == bundle.result.input.sha256
     document = json.loads(files[INPUT_FILE])
     assert set(document) == {"format_version", "timezone", "calendar", "dataset"}
-    # The canonical dataset only: no plan, wish, special capability or derived field.
+    # The canonical dataset only: no plan, special capability or derived field.
     assert set(document["dataset"]) == {
         "planning_month",
         "planning_units",
@@ -188,6 +188,7 @@ def test_bundle_files_carry_every_field_and_read_back() -> None:
         "employees",
         "planning_unit_memberships",
         "availability",
+        "wishes",
         "monthly_work_accounts",
         "context",
     }

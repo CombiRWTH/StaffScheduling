@@ -57,21 +57,28 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   const gaps = summary(page).getByRole("region", { name: "Lücken" });
   await expect(gaps).toContainText("1 unbesetzte Pflichtstelle (Lücken)");
   await expect(gaps).toContainText("05.06.2026 · Example Station North · F · Fachkraft: 1 von 2 fehlen");
+  // Wishes never bind: the review counts and lists what the schedule made of each.
+  const wishes = summary(page).getByRole("region", { name: "Wünsche" });
+  await expect(wishes).toContainText("Wünsche: 1 erfüllt · 1 nicht erfüllt · 1 nicht erfüllbar");
+  await expect(wishes).toContainText("05.06.2026 · Example Team Two · Freier Tag: nicht erfüllt");
+  await expect(wishes).toContainText("11.06.2026 · Example Jumper Three · Wunschtag: nicht erfüllbar");
   // Solver internals and obligations beyond the month are technical detail, collapsed until opened.
   const details = summary(page).getByText("Technische Details");
   await expect(summary(page).getByText("Stufe 1: Lücken")).toBeHidden();
   // Keyboard users open the collapsed section like any other control.
   await details.press("Enter");
   await expect(summary(page).getByText("Stufe 1: Lücken")).toBeVisible();
-  await expect(summary(page).getByText("Stufe 4: Überzählige Zwischendienste")).toBeVisible();
+  await expect(summary(page).getByText("Stufe 3: Wunschkosten (Fairness)")).toBeVisible();
+  await expect(summary(page).getByText("Stufe 5: Überzählige Zwischendienste")).toBeVisible();
   await expect(summary(page)).toContainText("Freie Sonntage im Jahr");
 
   const grid = page.getByLabel("Dienstplan", { exact: true });
   await expect(grid.getByRole("rowheader", { name: /Example Jumper Three/ })).toBeVisible();
   await expect(grid.getByText("Besetzung Example Station North")).toBeVisible();
-  // June 6 needs one professional in the early shift, the solver may assign more; June 5 stays short by its gap.
+  // June 6 needs one professional in the early shift, the solver may assign more; June 5 stays short by its gap,
+  // also when the MFA works that early, which another qualification cannot fill.
   await expect(grid.getByText(/^[1-9]\/1$/)).toHaveCount(1);
-  await expect(grid.getByText("1/2", { exact: true })).toHaveClass(/text-destructive/);
+  await expect(grid.locator('td[title*="Fachkraft 1/2"]')).toHaveClass(/text-destructive/);
   // The jumper-pool MFA's duties at the station are transfers; the station employee works at home.
   const mfa = grid.getByRole("row", { name: /Example MFA One/ });
   const team = grid.getByRole("row", { name: /Example Team Two/ });

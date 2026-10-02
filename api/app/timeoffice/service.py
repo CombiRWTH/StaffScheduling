@@ -88,7 +88,10 @@ class TimeOfficeService:
             demands = tuple(project_tables.read_demand(connection, unit_id, planning_month) for unit_id in selected)
             employee_ids = [row.employee_id for row in inspection.employees]
             context = self._read_context(connection, planning_month, employee_ids, shifts)
-        return build_scheduling_dataset(inspection=inspection, shifts=shifts, demands=demands, context=context)
+            wishes = project_tables.read_wishes(connection, employee_ids, planning_month)
+        return build_scheduling_dataset(
+            inspection=inspection, shifts=shifts, demands=demands, context=context, wishes=wishes
+        )
 
     def list_employees(
         self, *, planning_unit_ids: tuple[int, ...], planning_month: PlanningMonth

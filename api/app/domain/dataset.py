@@ -17,6 +17,7 @@ from app.domain.monthly_work_account import MonthlyWorkAccount
 from app.domain.planning_month import PlanningMonth
 from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership, PlanningUnitType
 from app.domain.shift import Shift
+from app.domain.wish import Wish
 
 
 class SchedulingDataset(SchedulingBaseModel):
@@ -34,6 +35,8 @@ class SchedulingDataset(SchedulingBaseModel):
     employees: tuple[Employee, ...]
     planning_unit_memberships: tuple[PlanningUnitMembership, ...]
     availability: tuple[Availability, ...]
+    wishes: tuple[Wish, ...]
+    """Soft preferences of the month; generation considers them, they never bind."""
     monthly_work_accounts: tuple[MonthlyWorkAccount, ...]
     context: ScheduleContext
 
@@ -65,6 +68,14 @@ class SchedulingDataset(SchedulingBaseModel):
         for row in self.availability:
             if row.employee_id not in employee_ids or row.date not in month:
                 raise ValueError("Availability of an unknown employee or outside the planning month.")
+        wish_keys = [(row.employee_id, row.date) for row in self.wishes]
+        if len(set(wish_keys)) != len(wish_keys):
+            raise ValueError("More than one wish for one employee and date.")
+        for row in self.wishes:
+            if row.employee_id not in employee_ids or row.date not in month:
+                raise ValueError("Wish of an unknown employee or outside the planning month.")
+            if row.shift_id is not None and row.shift_id not in shift_ids:
+                raise ValueError("Wish for an unknown shift.")
         self._validate_context(set(employee_ids), shift_ids)
         # Every possible duty must have unambiguous local times, so the run cannot fail on them later.
         for day in month.dates:
@@ -112,11 +123,12 @@ def build_scheduling_dataset(
     shifts: tuple[Shift, ...],
     demands: tuple[MonthlyDemand | None, ...],
     context: ScheduleContext,
+    wishes: tuple[Wish, ...],
 ) -> SchedulingDataset:
     """The full-month generation input of a validated inspection; every selected station needs saved demand.
 
     The selected stations are the only assignable units; associated jumper pools stay origin context.
-    Wishes are not an input: the agreed examples contain no soft employee preferences.
+    `wishes` are those of the inspected employees, jumper pool members included, in the month.
     """
     selected = inspection.selected_station_ids
     saved = {demand.planning_unit_id: demand for demand in demands if demand is not None}
@@ -139,6 +151,7 @@ def build_scheduling_dataset(
             if membership.planning_unit_id in unit_ids
         ),
         availability=tuple(entry for row in inspection.employees for entry in row.availability),
+        wishes=wishes,
         monthly_work_accounts=tuple(row.account for row in inspection.employees),
         context=context,
     )

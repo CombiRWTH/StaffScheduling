@@ -7,6 +7,8 @@ from app.domain.acceptance import (
     Rule,
     ScheduleCheck,
     ScheduleScores,
+    WishOutcome,
+    WishStatus,
     check_schedule,
 )
 from app.domain.assignment import Assignment
@@ -42,7 +44,7 @@ from app.domain.publication import PublicationProblem, PublicationRejected, Publ
 from app.domain.rules import POLICY, RulePolicy
 from app.domain.schedule import DutyRow, EmployeeRow, GapRow, ScheduleTables, StaffingRow, schedule_tables
 from app.domain.shift import Shift, ShiftId, ShiftOption, ShiftType, WorkSegment
-from app.domain.wish import Wish, WishEntry, WishType
+from app.domain.wish import FREE_WISHES, Wish, WishEntry, WishType
 
 __all__ = [
     "DutyRow",
@@ -58,6 +60,8 @@ __all__ = [
     "Rule",
     "ScheduleCheck",
     "ScheduleScores",
+    "WishOutcome",
+    "WishStatus",
     "SHIFT_ORDER",
     "WORKED_DAYS_WINDOW",
     "PositiveId",
@@ -97,6 +101,7 @@ __all__ = [
     "RulePolicy",
     "DemandRequirement",
     "Gap",
+    "FREE_WISHES",
     "Wish",
     "WishEntry",
     "WishType",

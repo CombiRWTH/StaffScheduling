@@ -102,6 +102,14 @@ class CandidateModel:
             0,
         )
 
+    def any_of(self, variables: Sequence[cp_model.IntVar]) -> Expr:
+        """A 0/1 expression that is 1 exactly when one of the variables is."""
+        if len(variables) <= 1:
+            return sum(variables, 0)
+        any_ = self.cp.new_bool_var("any")
+        self.cp.add_max_equality(any_, variables)
+        return any_
+
     def logical_and(self, a: Expr, b: Expr) -> Expr:
         """A 0/1 expression that is 1 exactly when both 0/1 expressions are."""
         if is_constant(a, 0) or is_constant(b, 0):

@@ -5,11 +5,12 @@ expression that equals what the schedule check scores for every schedule the har
 only an optimal one, so each stage's value is the check's score of the schedule it returns.
 """
 
+from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
 
-from app.domain import POLICY, SHIFT_ORDER, WORKED_DAYS_WINDOW, ShiftType, dates_between
+from app.domain import FREE_WISHES, POLICY, SHIFT_ORDER, WORKED_DAYS_WINDOW, ShiftType, WishType, dates_between
 from app.solver.model.candidates import CandidateModel, Expr, by_day
 
 type Term = Callable[[CandidateModel], Expr]
@@ -73,6 +74,40 @@ def backward_transitions(model: CandidateModel) -> Expr:
     return sum(events, 0)
 
 
+def wish_cost(model: CandidateModel) -> Expr:
+    """Denied grantable wishes, free and preferred apart per employee: the k-th denial costs k³.
+
+    The convex cost spreads denials over employees. Its strikes are ordered booleans, so the first S
+    of them are set for S denials and the cost is exact for every schedule. A wish that no candidate
+    can grant (a trusted context duty touches a free day, no candidate for a preferred one) costs nothing.
+    """
+    denials: defaultdict[tuple[int, bool], list[Expr]] = defaultdict(list)
+    for wish in model.dataset.wishes:
+        slots = model.timelines[wish.employee_id]
+        starting = [slot for slot in slots if slot.day == wish.date and wish.shift_id in (None, slot.shift.shift_id)]
+        match wish.type:
+            case WishType.FREE_DAY:
+                touching = [slot for slot in slots if slot.times.touches(wish.date)]
+                if any(slot.fixed for slot in touching):
+                    continue
+                denied = model.any_of([variable for slot in touching for variable in slot.variables])
+            case WishType.FREE_SHIFT:
+                denied = model.any_of([variable for slot in starting for variable in slot.variables])
+            case WishType.PREFERRED_DAY | WishType.PREFERRED_SHIFT:
+                if not starting:
+                    continue
+                denied = 1 - model.any_of([variable for slot in starting for variable in slot.variables])
+        denials[(wish.employee_id, wish.type in FREE_WISHES)].append(denied)
+    costs: list[Expr] = []
+    for denied in denials.values():
+        strikes = [model.cp.new_bool_var("strike") for _ in denied]
+        model.cp.add(sum(strikes) == sum(denied, 0))
+        for lower, higher in zip(strikes, strikes[1:], strict=False):
+            model.cp.add(lower >= higher)
+        costs.append(sum(k**3 * strike for k, strike in enumerate(strikes, start=1)))
+    return sum(costs, 0)
+
+
 def balance_deviation(model: CandidateModel) -> Expr:
     """The sum of every employee's absolute monthly balance in minutes."""
     tolerance = POLICY.balance_tolerance_minutes
@@ -100,6 +135,7 @@ def surplus_intermediate(model: CandidateModel) -> Expr:
 OBJECTIVES: tuple[Tier, ...] = (
     Tier("gaps", (gaps,)),
     Tier("health_events", (six_day_windows, backward_transitions)),
+    Tier("wish_cost", (wish_cost,)),
     Tier("balance_deviation_minutes", (balance_deviation,)),
     Tier("surplus_intermediate_duties", (surplus_intermediate,), reward=True),
 )

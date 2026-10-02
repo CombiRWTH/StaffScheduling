@@ -462,6 +462,14 @@
         },
         "scores": {
           "$ref": "#/$defs/ScheduleScores"
+        },
+        "wishes": {
+          "description": "Every wish of the input in its order, with what the schedule made of it.",
+          "items": {
+            "$ref": "#/$defs/WishOutcome"
+          },
+          "title": "Wishes",
+          "type": "array"
         }
       },
       "required": [
@@ -469,7 +477,8 @@
         "rules",
         "findings",
         "not_assessed",
-        "scores"
+        "scores",
+        "wishes"
       ],
       "title": "ScheduleCheck",
       "type": "object"
@@ -491,6 +500,11 @@
           "title": "Backward Transitions",
           "type": "integer"
         },
+        "wish_cost": {
+          "description": "Denied grantable wishes, free and preferred apart per employee: the k-th denial costs k³.",
+          "title": "Wish Cost",
+          "type": "integer"
+        },
         "balance_deviation_minutes": {
           "title": "Balance Deviation Minutes",
           "type": "integer"
@@ -504,6 +518,7 @@
         "gaps",
         "six_day_windows",
         "backward_transitions",
+        "wish_cost",
         "balance_deviation_minutes",
         "surplus_intermediate_duties"
       ],
@@ -658,6 +673,68 @@
       ],
       "title": "StageReport",
       "type": "object"
+    },
+    "WishOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/WishType"
+        },
+        "shift_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shift Id"
+        },
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/WishStatus"
+        }
+      },
+      "required": [
+        "type",
+        "employee_id",
+        "date",
+        "status"
+      ],
+      "title": "WishOutcome",
+      "type": "object"
+    },
+    "WishStatus": {
+      "description": "GRANTED: the schedule fulfils the wish. DENIED: it does not, though some schedule could.\nNOT_GRANTABLE: binding availability, eligibility, the shift's own work pattern or a trusted\ncontext duty rule out every schedule that would fulfil it; it costs nothing.",
+      "enum": [
+        "granted",
+        "denied",
+        "not_grantable"
+      ],
+      "title": "WishStatus",
+      "type": "string"
+    },
+    "WishType": {
+      "enum": [
+        "free_day",
+        "free_shift",
+        "preferred_day",
+        "preferred_shift"
+      ],
+      "title": "WishType",
+      "type": "string"
     }
   },
   "additionalProperties": false,

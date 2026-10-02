@@ -60,7 +60,7 @@ export interface WishEntry {
   shift_id: number | null;
 }
 
-interface Wish extends WishEntry {
+export interface Wish extends WishEntry {
   employee_id: number;
   date: string;
 }
@@ -209,10 +209,16 @@ export interface ScheduleCheck {
     six_day_windows: number;
     backward_transitions: number;
     health_events: number;
+    wish_cost: number;
     balance_deviation_minutes: number;
     surplus_intermediate_duties: number;
   };
+  /** Every wish of the input with what the schedule made of it; wishes never bind. */
+  wishes: (Wish & { status: WishStatus })[];
+  wish_counts: Record<WishStatus, number>;
 }
+
+export type WishStatus = "granted" | "denied" | "not_grantable";
 
 export interface Solution {
   status: SolutionStatus;
