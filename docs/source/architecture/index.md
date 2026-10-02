@@ -19,8 +19,8 @@ For developers and technical reviewers tracing responsibilities and data flow. T
 │   │   ├── main.py           # FastAPI construction and runtime lifespan
 │   │   ├── settings.py       # environment and secret loading
 │   │   ├── api/              # HTTP routes only
-│   │   ├── domain/           # canonical models, rules, inspection and the schedule check
-│   │   ├── solver/           # CP-SAT model, solve service and the generation job (generation.py)
+│   │   ├── domain/           # canonical models, rules, inspection, schedule check and tables
+│   │   ├── solver/           # CP-SAT model, solve service, generation job, review and portable bundles
 │   │   └── timeoffice/       # adapter: TimeOfficeService facade; queries.py, project_tables.py, facts.py inside
 │   ├── sql/                  # explicit setup of the project tables
 │   ├── tests/

@@ -7,3 +7,6 @@ pnpm-lock.yaml
 *.tsbuildinfo
 playwright-report/
 test-results/
+# Generated portable bundles and their schema keep the bytes their digests and checks compare.
+examples/
+**/validation/schema/

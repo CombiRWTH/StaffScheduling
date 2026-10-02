@@ -42,6 +42,8 @@ The card _Letzte Generierung_ shows the job's month and stations and three separ
 
 Below them are the counts of generated shifts, diagnostics, rule violations and items not assessed, and the affected rules by name. _Nicht bewertet … (über den Monat hinaus)_ lists obligations that a month cannot decide, such as annual free Sundays; they do not prevent acceptance. _(fehlende Eingaben)_ means a check promised for the month had no input and the schedule is not accepted. Nothing is published automatically.
 
+With a found schedule, **Dienstplan prüfen** opens its [review](review.md): every duty, finding, account and the downloads.
+
 If the job runs well beyond its time limit, the page stops refreshing and asks you to reload; if it stays on **Läuft**, check the API log. For **Keine Lösung möglich**, read the diagnostics in the job (`GET /generation`): a message such as "needs 2 professional … but only 0 can work it" names the station, date and shift whose demand no employee can cover after availability and the context duties are taken into account. Then check that day's staffing demand, availability, memberships and context duties. For **Fehlgeschlagen**, check the API log; the page deliberately shows no internal error text.
 
 ## Restart and concurrency behavior

@@ -8,20 +8,23 @@ The FastAPI application is `api/app/main.py`. With Compose running, open <http:/
 
 Consult OpenAPI for exact bodies and responses.
 
-| Route                                | Methods     | Current behavior                                                       |
-| ------------------------------------ | ----------- | ---------------------------------------------------------------------- |
-| `/status`                            | GET         | Process liveness without a TimeOffice query                            |
-| `/planning/options`                  | GET         | Named stations with unique full-month targets                          |
-| `/employees`                         | GET         | Complete canonical combined month/station/jumper pool inspection       |
-| `/planning/employees`                | GET         | The selection's employees by ID and name, without monthly accounts     |
-| `/availability`                      | GET         | One employee's month: native absences, availability, wishes and shifts |
-| `/availability/{employee_id}/{date}` | PUT, DELETE | Replace or delete that employee's availability on that date            |
-| `/wishes/{employee_id}/{date}`       | PUT, DELETE | Replace or delete that employee's wish on that date                    |
-| `/demand`                            | GET, PUT    | Read or replace the dated staffing demand of one station month         |
-| `/demand/pattern`                    | POST        | Expand a weekly pattern into the month's dated demand; saves nothing   |
-| `/generation`                        | POST, GET   | Start a full-month generation; read the latest job                     |
+| Route                                | Methods     | Current behavior                                                        |
+| ------------------------------------ | ----------- | ----------------------------------------------------------------------- |
+| `/status`                            | GET         | Process liveness without a TimeOffice query                             |
+| `/planning/options`                  | GET         | Named stations with unique full-month targets                           |
+| `/employees`                         | GET         | Complete canonical combined month/station/jumper pool inspection        |
+| `/planning/employees`                | GET         | The selection's employees by ID and name, without monthly accounts      |
+| `/availability`                      | GET         | One employee's month: native absences, availability, wishes and shifts  |
+| `/availability/{employee_id}/{date}` | PUT, DELETE | Replace or delete that employee's availability on that date             |
+| `/wishes/{employee_id}/{date}`       | PUT, DELETE | Replace or delete that employee's wish on that date                     |
+| `/demand`                            | GET, PUT    | Read or replace the dated staffing demand of one station month          |
+| `/demand/pattern`                    | POST        | Expand a weekly pattern into the month's dated demand; saves nothing    |
+| `/generation`                        | POST, GET   | Start a full-month generation; read the latest job                      |
+| `/review`                            | GET         | The schedule under review with its check and readable tables            |
+| `/review/import`                     | POST        | Validate an uploaded `input`/`result` pair and review it                |
+| `/review/files/{name}`               | GET         | Download `input.json`, `result.json`, `schedule.csv` or `employees.csv` |
 
-Review and publication have no endpoints yet.
+Publication has no endpoints yet.
 
 Next's `GET /api/health` makes a server-side request to API `/status`: it returns healthy only for a valid API liveness response, or `503` if the API is unavailable. Database availability is separate. Direct TimeOffice failures return `503` with sanitized `detail`, `integration: timeoffice` and the failed `stage`. See the [read-only diagnostic](../getting-started/installation.md#database-configuration).
 
@@ -55,6 +58,16 @@ The input is the `SchedulingDataset` built by `TimeOfficeService.read_generation
 
 One `Generation` object (`api/app/solver/generation.py`) owns the process-local lock, the single background worker and the latest job; the lock is released on success and failure. Jobs are not persisted. Run one API process.
 
+## Review, import and download
+
+One `Review` object (`api/app/solver/review.py`) holds the schedule under review in memory: every generation that finds a schedule replaces it before its job reports `completed`, and so does a valid import. A generation without a schedule and a rejected import leave it unchanged; a restart forgets it.
+
+`GET /review` returns `404` without a schedule, otherwise `source` (`generation`, `import`), `received_at`, the `planning_month`, `planning_units`, `shifts` and `calendar` of the input, the `solution` and `tables`: `duties`, `employees` and `staffing` (required against assigned count per station, date, shift and qualification). The duty and employee rows are the rows of the CSV files.
+
+`POST /review/import` takes multipart files `input` and `result`. It returns the new review, or `422` with `detail` and `problem`: `malformed` (not JSON, schema violation, unknown field, other format version or calendar), `mismatch` (the result names another input digest or month), `no_schedule`, `references` (assignments of unknown employees, stations or shifts, outside the month or duplicated) or `check` (other rule settings, or a stored check that differs from the independent re-check). Validation runs in the worker thread pool.
+
+`GET /review/files/{name}` returns the file as an attachment (`application/json` or `text/csv; charset=utf-8`), or `404` without a schedule. `input.json` keeps the exact bytes its digest names. The format is described under [bundle files](../validation/examples.md#bundle-files); `ScheduleBundle` (`api/app/solver/bundle.py`) owns parsing, pairing, re-checking and rendering, so imports, downloads and the [example commands](../validation/examples.md#run-without-timeoffice) share one implementation.
+
 ## Side effects
 
-Only the configuration PUT/DELETE routes write, and only to the [project tables](timeoffice.md#project-tables). Generation writes nothing. No route creates tables or writes TimeOffice roster, plan or account rows.
+Only the configuration PUT/DELETE routes write, and only to the [project tables](timeoffice.md#project-tables). Generation, review and import write nothing; downloads are rendered in memory. No route creates tables or writes TimeOffice roster, plan or account rows.

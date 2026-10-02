@@ -4,13 +4,13 @@ Start through the [quickstart](../getting-started/quickstart.md), then open <htt
 
 ## What you can use this guide for
 
-For staff administrators using the application: choose the month and units, inspect employees, configure availability and staffing, generate schedules, review or exchange files, then publish or clear assignments. Each procedure will explain what to do, what result to expect and how to recover from a failure. Selection, configuration and generation are checked with controlled browser flows; review, file exchange and publication remain outlines until their acceptance checks pass.
+For staff administrators using the application: choose the month and units, inspect employees, configure availability and staffing, generate schedules, review or exchange files, then publish or clear assignments. Each procedure will explain what to do, what result to expect and how to recover from a failure. Selection, configuration, generation, review and file exchange are checked with controlled browser flows; publication remains an outline until its acceptance checks pass.
 
 ## Planning concepts
 
 The backend models a calendar month, planning units, dated staffing demand, employees and valid unit memberships. Availability entries are binding; wishes are preferences that generation does not consider yet. Work accounts use minutes. The [domain reference](../architecture/domain.md) describes the source-defined contract.
 
-The home page, employee inspection and monthly configuration (Verfügbarkeit, Mindestbesetzung) are implemented. The sidebar lists every other planning area greyed out as not yet supported.
+The home page, employee inspection, monthly configuration (Verfügbarkeit, Mindestbesetzung), generation (Erstellen) and review (Prüfen) are implemented. The sidebar lists every other planning area greyed out as not yet supported.
 
 ## Find an operation
 
@@ -22,4 +22,4 @@ These pages are outlines to fill as each operation is verified. Their headings d
 4. [Review, import and export](review.md).
 5. [Publish or clear a scope](publication.md).
 
-The [API reference](../architecture/api.md) describes current route definitions. The [example guide](../validation/examples.md) reserves the reproduction instructions for accepted files once they exist.
+The [API reference](../architecture/api.md) describes current route definitions. The [example guide](../validation/examples.md) describes the bundle files and the commands that solve and validate them without TimeOffice.

@@ -126,6 +126,18 @@ _Avoid_: audit, validation (when meaning input validation)
 A generated candidate that passed the schedule check with no violation and no missing promised input.
 _Avoid_: optimal schedule, final plan
 
+**Schedule under review** (Dienstplan zur Prüfung):
+The latest generated or validly imported schedule that the review shows and offers for download; kept only until the API restarts, never saved or published by that.
+_Avoid_: saved schedule, library entry
+
+**Portable bundle**:
+The four files of one monthly run: `input.json`, `result.json` paired to it by the SHA-256 digest of its bytes, and the derived `schedule.csv` and `employees.csv`; readable and checkable without TimeOffice.
+_Avoid_: case, export folder, legacy JSON
+
+**Origin** (Herkunft):
+The employee's home station or jumper pool on a duty's date, as opposed to the station where the duty is worked.
+_Avoid_: source unit, pool (alone)
+
 **Published schedule**:
 An accepted schedule written to the roster system for its stations and month.
 _Avoid_: exported schedule, inserted plan
