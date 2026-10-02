@@ -51,6 +51,17 @@ Jobs are lost on API restart. Monthly runs are independent; the coordinated six-
 
 The pair passed the same validation as an import. A single month cannot show the sequence checks; they are covered by the offline tests until the six accepted months exist. Messages of findings and the API's import details are English; the webapp names import problems in German. The review is lost on API restart and is not a saved library.
 
+The redesigned pages were checked read-only against the same prepared database through the running Compose webapp at revision `22d1c6c` (page loads only; no write was triggered):
+
+| Check                                           | Expected                                          | Actual                                                                                                             |
+| ----------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| All six pages for January 2026, BSP-A and BSP-B | `200`, no webapp or API errors                    | `200` each; logs clean                                                                                             |
+| **Mitarbeiter**, details of one employee        | Accounts in hours, no raw IDs or provenance       | 57 employees; _Soll 163:48 h_, credits _7:48 h · Genehmigte Abwesenheit_                                           |
+| **Erstellen** with the latest January job       | Headline, fact row and review link                | _Dienstplan erstellt, Regeln eingehalten_, 1072 duties, **Dienstplan prüfen**                                      |
+| **Prüfen** summary and grid                     | Status line, actions; transfers marked with codes | _Regeln eingehalten · Kann veröffentlicht werden_; 143 transfers, codes BSP-A/BSP-B on one line; no truncated name |
+
+Live publication and clear through the redesigned confirmation panels were not repeated; their backend behaviour is unchanged and the panels are covered by the offline browser flows.
+
 ## Publication and clear
 
 Publication writes the accepted schedule under review into the stations' target plans and clear removes it ([procedure](../user-guide/publication.md), [storage](../architecture/timeoffice.md#publication)). Live check on 2026-10-02 against the prepared test database, one writer, through the running Compose API and webapp. Before and after every step the target plans' rows were counted by kind, and all roster rows outside the example plans and the example plans' absence and context rows were checksummed:
