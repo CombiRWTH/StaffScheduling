@@ -22,6 +22,7 @@ from app.domain.dataset import SchedulingDataset
 from app.domain.demand import DemandKey, Gap
 from app.domain.duty import DutyTimes, duty_times
 from app.domain.monthly_work_account import MonthlyWorkAccount
+from app.domain.planning_unit import home_unit_id
 from app.domain.rules import APPROVED_FREE, BLOCKING_AVAILABILITY, POLICY
 from app.domain.shift import Shift, ShiftType
 from app.domain.wish import FREE_WISHES, Wish, WishType
@@ -90,6 +91,8 @@ class ScheduleScores(SchedulingBaseModel):
     """Required slots that no assignment fills, recomputed from the assignments."""
     six_day_windows: int
     backward_transitions: int
+    station_transfers: int
+    """Duties of employees whose origin that date is a station, worked at another station."""
     wish_cost: int
     """Denied grantable wishes, free and preferred apart per employee: the k-th denial costs k³."""
     balance_deviation_minutes: int
@@ -531,10 +534,17 @@ class _Check:
         denied = Counter(
             (row.employee_id, row.type in FREE_WISHES) for row in wishes if row.status == WishStatus.DENIED
         )
+        memberships = self.dataset.planning_unit_memberships
+        transfers = 0
+        for duty in duties:
+            row = duty.assignment
+            home = home_unit_id(memberships, row.employee_id, row.date)
+            transfers += home in self.dataset.station_ids and home != row.planning_unit_id
         return ScheduleScores(
             gaps=sum(self.missing(duties).values()),
             six_day_windows=six_day,
             backward_transitions=backward,
+            station_transfers=transfers,
             wish_cost=sum((count * (count + 1) // 2) ** 2 for count in denied.values()),
             balance_deviation_minutes=sum(abs(balance) for _, balance in self.balances(duties)),
             surplus_intermediate_duties=sum(max(0, count - required[key]) for key, count in intermediate.items()),

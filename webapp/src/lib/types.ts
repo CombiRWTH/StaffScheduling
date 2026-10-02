@@ -209,6 +209,7 @@ export interface ScheduleCheck {
     six_day_windows: number;
     backward_transitions: number;
     health_events: number;
+    station_transfers: number;
     wish_cost: number;
     balance_deviation_minutes: number;
     surplus_intermediate_duties: number;

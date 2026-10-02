@@ -71,6 +71,7 @@ export function solverStatusText(status: SolutionStatus) {
 export const OBJECTIVE_LABELS: Record<Stage["name"], string> = {
   gaps: "Lücken",
   health_events: "Gesundheitsereignisse",
+  station_transfers: "Einsätze anderer Station",
   wish_cost: "Wunschkosten (Fairness)",
   six_day_windows: "Sechs-Tage-Folgen",
   backward_transitions: "Rückwärtswechsel",

@@ -73,8 +73,8 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   // Keyboard users open the collapsed section like any other control.
   await details.press("Enter");
   await expect(summary(page).getByText("Stufe 1: Lücken")).toBeVisible();
-  await expect(summary(page).getByText("Stufe 3: Wunschkosten (Fairness)")).toBeVisible();
-  await expect(summary(page).getByText("Stufe 5: Überzählige Zwischendienste")).toBeVisible();
+  await expect(summary(page).getByText("Stufe 4: Wunschkosten (Fairness)")).toBeVisible();
+  await expect(summary(page).getByText("Stufe 6: Überzählige Zwischendienste")).toBeVisible();
   await expect(summary(page)).toContainText("Freie Sonntage im Jahr");
 
   const grid = page.getByLabel("Dienstplan", { exact: true });

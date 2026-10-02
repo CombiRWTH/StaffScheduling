@@ -277,6 +277,38 @@ def test_a_jumper_pool_wish_is_granted_at_a_station_and_an_ungrantable_one_costs
     assert stages_are_scores(solution)
 
 
+def test_health_events_outweigh_a_station_transfer() -> None:
+    # South's early of January 12 would step its own employee 2 back from the late of January 10; North's
+    # employee 1 may work at South through a replacement membership. The balance alone prefers employee 2.
+    data = dataset(
+        memberships=[*member(1, replacements=[SOUTH]), *member(2, home=SOUTH)],
+        accounts=[account(1, 0), account(2, 435 + 420)],
+        demand=[need(jan(10), LATE, unit=SOUTH), need(jan(12), EARLY, unit=SOUTH)],
+    )
+    solution = solve(data)
+
+    assert duty(1, jan(12), EARLY, unit=SOUTH) in solution.assignments
+    assert (checked(solution).scores.backward_transitions, checked(solution).scores.station_transfers) == (0, 1)
+    assert stages_are_scores(solution)
+
+
+def test_a_station_transfer_is_never_made_to_grant_a_wish() -> None:
+    # South's own employee 2 wants January 5 off; North's employee 1 could take the early by a transfer, which
+    # the wish and the balance would both prefer.
+    data = dataset(
+        memberships=[*member(1, replacements=[SOUTH]), *member(2, home=SOUTH)],
+        accounts=[account(1, 420), account(2, 0)],
+        demand=[need(jan(5), EARLY, unit=SOUTH)],
+        wishes=[wish(5, WishType.FREE_DAY, employee_id=2)],
+    )
+    solution = solve(data)
+
+    assert duty(2, jan(5), EARLY, unit=SOUTH) in solution.assignments
+    assert checked(solution).scores.station_transfers == 0
+    assert [row.status for row in checked(solution).wishes] == [WishStatus.DENIED]
+    assert stages_are_scores(solution)
+
+
 def test_a_month_needs_every_account_before_it_solves() -> None:
     memberships = [*member(1), *member(2)]
     with pytest.raises(ValueError, match="exactly one monthly account"):

@@ -500,6 +500,11 @@
           "title": "Backward Transitions",
           "type": "integer"
         },
+        "station_transfers": {
+          "description": "Duties of employees whose origin that date is a station, worked at another station.",
+          "title": "Station Transfers",
+          "type": "integer"
+        },
         "wish_cost": {
           "description": "Denied grantable wishes, free and preferred apart per employee: the k-th denial costs k³.",
           "title": "Wish Cost",
@@ -518,6 +523,7 @@
         "gaps",
         "six_day_windows",
         "backward_transitions",
+        "station_transfers",
         "wish_cost",
         "balance_deviation_minutes",
         "surplus_intermediate_duties"

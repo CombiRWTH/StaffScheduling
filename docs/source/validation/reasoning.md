@@ -26,9 +26,10 @@ Hard rules are what a schedule must satisfy to be usable: staffing (or a declare
 
 1. **Gaps.** Staffing is the only hard rule that may be relaxed, and only by a gap: an unfilled required slot reported next to the assignments, so the hospital can request guest staff instead of receiving no schedule at all. Every other rule stays hard, so an honest `infeasible` remains possible. As the top tier, a schedule without gaps always wins where one exists.
 2. **Health events.** Health beats preference: no wish is granted at the cost of a six-day run or a backward shift step.
-3. **Wishes**, fairly. A wish beats balance minutes inside the hard ±460-minute band.
-4. **Monthly balance deviation**, in minutes.
-5. **Additional intermediate duties**, as a reward.
+3. **Station transfers.** Jumping is allowed in general: a station member may work at another station through a replacement membership (Ersatz), and the jumper pool exists for it. A station member's duty at another station is counted and minimized, so the jumper pool is preferred and an organisational transfer is never made merely to grant a wish. Jumper pool duties never count.
+4. **Wishes**, fairly. A wish beats balance minutes inside the hard ±460-minute band.
+5. **Monthly balance deviation**, in minutes.
+6. **Additional intermediate duties**, as a reward.
 
 Earlier legacy objectives (assignment-count balancing, overtime-only penalties, block-length and weekend rewards, weighted wish scores, intermediate-shift hierarchy) were removed because they were arbitrary or duplicated a hard rule.
 
@@ -38,7 +39,7 @@ Rules use actual duty times instead of shift-code pairs: a late shift ending at 
 
 ## Objective units and trade-offs
 
-Gaps are counts of missing employee-shifts, health events are counts, the wish cost is a fairness cost of denied wishes, the balance is minutes and the intermediate reward is a count of duties. The stages make the order strict without converting units: one gap more is never traded for any number of health improvements, one health event never for any wish, one unit of wish cost never for any balance improvement, and one minute of balance never for any number of extra intermediate duties. Consequently an extra intermediate duty is planned only when it does not worsen anyone's balance, and a wish can make an employee work against their balance only inside the hard band. The automated solver tests check every adjacent pair with schedules that differ at the boundary.
+Gaps are counts of missing employee-shifts, health events and station transfers are counts, the wish cost is a fairness cost of denied wishes, the balance is minutes and the intermediate reward is a count of duties. The stages make the order strict without converting units: one gap more is never traded for any number of health improvements, one health event never for any station transfer, one station transfer never for any wish, one unit of wish cost never for any balance improvement, and one minute of balance never for any number of extra intermediate duties. Consequently an extra intermediate duty is planned only when it does not worsen anyone's balance, and a wish can make an employee work against their balance only inside the hard band. The automated solver tests check every adjacent pair with schedules that differ at the boundary.
 
 ## Fair wish satisfaction
 

@@ -219,6 +219,17 @@ def test_the_wish_cost_grows_cubically_per_employee_and_group() -> None:
     assert check.wish_counts[WishStatus.DENIED] == 4
 
 
+def test_station_transfers_count_station_members_at_other_stations_only() -> None:
+    data = dataset(
+        memberships=[*member(1, replacements=[SOUTH]), *member(2, home=JUMPER_POOL, replacements=[NORTH, SOUTH])],
+        accounts=[account(1, 840), account(2, 420)],
+    )
+    schedule = [duty(1, jan(5), EARLY), duty(1, jan(6), EARLY, unit=SOUTH), duty(2, jan(5), EARLY, unit=SOUTH)]
+
+    # Only the station member's replacement duty counts; jumper pool duties are never station transfers.
+    assert check_schedule(data, schedule).scores.station_transfers == 1
+
+
 def test_a_jumper_pool_employee_cannot_cover_both_stations_at_once() -> None:
     data = dataset(memberships=member(1, home=JUMPER_POOL, replacements=[NORTH, SOUTH]), accounts=[account(1, 840)])
     found = rules(data, [duty(1, jan(12), EARLY, unit=NORTH), duty(1, jan(12), EARLY, unit=SOUTH)])

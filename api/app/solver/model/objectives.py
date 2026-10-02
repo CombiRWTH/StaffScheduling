@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 from app.domain import FREE_WISHES, POLICY, SHIFT_ORDER, WORKED_DAYS_WINDOW, ShiftType, WishType, dates_between
+from app.domain.planning_unit import home_unit_id
 from app.solver.model.candidates import CandidateModel, Expr, by_day
 
 type Term = Callable[[CandidateModel], Expr]
@@ -74,6 +75,20 @@ def backward_transitions(model: CandidateModel) -> Expr:
     return sum(events, 0)
 
 
+def station_transfers(model: CandidateModel) -> Expr:
+    """Candidates of employees whose origin that date is a station, at another station; never jumper pool duties."""
+    memberships, stations = model.dataset.planning_unit_memberships, model.dataset.station_ids
+    return sum(
+        (
+            variable
+            for duty, variable in model.candidates.items()
+            if (home := home_unit_id(memberships, duty.employee_id, duty.date)) in stations
+            and home != duty.planning_unit_id
+        ),
+        0,
+    )
+
+
 def wish_cost(model: CandidateModel) -> Expr:
     """Denied grantable wishes, free and preferred apart per employee: the k-th denial costs k³.
 
@@ -135,6 +150,7 @@ def surplus_intermediate(model: CandidateModel) -> Expr:
 OBJECTIVES: tuple[Tier, ...] = (
     Tier("gaps", (gaps,)),
     Tier("health_events", (six_day_windows, backward_transitions)),
+    Tier("station_transfers", (station_transfers,)),
     Tier("wish_cost", (wish_cost,)),
     Tier("balance_deviation_minutes", (balance_deviation,)),
     Tier("surplus_intermediate_duties", (surplus_intermediate,), reward=True),

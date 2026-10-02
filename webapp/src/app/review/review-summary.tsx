@@ -124,6 +124,7 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
                   "Gesundheitsereignisse",
                   `${check.scores.health_events} (${check.scores.six_day_windows} Sechs-Tage-Folgen, ${check.scores.backward_transitions} Rückwärtswechsel)`,
                 ],
+                ["Einsätze anderer Station", String(check.scores.station_transfers)],
                 ["Wunschkosten (Fairness)", String(check.scores.wish_cost)],
                 ["Abweichung der Monatskonten", formatHours(check.scores.balance_deviation_minutes)],
                 ["Überzählige Zwischendienste", String(check.scores.surplus_intermediate_duties)],

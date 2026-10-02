@@ -26,7 +26,7 @@ To fill a month quickly, open **Wochenmuster anwenden**. Enter counts for Monday
 
 ## Objective order
 
-There are no weight settings. Generation optimizes gaps, health, wishes, monthly accounts and intermediate duties strictly in this order, one after the other; see the [solver reference](../architecture/solver.md#objective). The order is fixed in code.
+There are no weight settings. Generation optimizes gaps, health, station transfers, wishes, monthly accounts and intermediate duties strictly in this order, one after the other; see the [solver reference](../architecture/solver.md#objective). The order is fixed in code.
 
 ## Save scope and validation failures
 
