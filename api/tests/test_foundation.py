@@ -56,6 +56,10 @@ def test_shared_engine_has_verified_tls_and_sanitizes_login_and_query(monkeypatc
         assert "Encrypt=yes" in connection_string
         assert "TrustServerCertificate=no" in connection_string
         assert connect.call_args.kwargs["timeout"] == 5
+        trusting = create_db_engine(settings.model_copy(update={"db_trust_server_certificate": True}))
+        with pytest.raises(TimeOfficeUnavailable), trusting.connect():
+            pass
+        assert "Encrypt=yes;TrustServerCertificate=yes" in connect.call_args.args[0]
         # Invoke the same engine error boundary used by SQLAlchemy for DBAPI query failures.
         with pytest.raises(TimeOfficeUnavailable, match="permissions"):
             engine.dialect.dispatch.handle_error(MagicMock())

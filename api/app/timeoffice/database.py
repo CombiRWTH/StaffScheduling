@@ -39,7 +39,7 @@ def create_db_engine(settings: Settings) -> Engine:
     """Create a lazy engine with bounded login/query waits and sanitized failures.
 
     All adapter queries share this connection boundary.
-    Encryption and certificate verification are mandatory.
+    Encryption is mandatory; the server certificate is verified unless `DB_TRUST_SERVER_CERTIFICATE` opts out.
     """
     url = URL.create(
         drivername="mssql+pyodbc",
@@ -48,7 +48,11 @@ def create_db_engine(settings: Settings) -> Engine:
         host=settings.db_server,
         port=settings.db_port,
         database=settings.db_name,
-        query={"driver": settings.db_driver, "Encrypt": "yes", "TrustServerCertificate": "no"},
+        query={
+            "driver": settings.db_driver,
+            "Encrypt": "yes",
+            "TrustServerCertificate": "yes" if settings.db_trust_server_certificate else "no",
+        },
     )
     engine = create_engine(url, hide_parameters=True, pool_timeout=settings.db_timeout_seconds)
 

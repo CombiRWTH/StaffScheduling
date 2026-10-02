@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     db_user: str = ""
     db_password: SecretStr = SecretStr("")
     db_timeout_seconds: int = Field(default=5, ge=1, le=30)
+    # Accept the server's certificate without verification; only for a known server with a self-signed one.
+    db_trust_server_certificate: bool = False
 
     # Solver
     solver_max_time_seconds: float = Field(default=30, gt=0, allow_inf_nan=False)
