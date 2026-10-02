@@ -15,7 +15,7 @@ export function AccountTable({ review }: { review: ScheduleReview }) {
   );
 
   return (
-    <Card aria-label="Monatskonten" className="max-w-5xl">
+    <Card aria-label="Monatskonten">
       <CardHeader>
         <CardTitle>Monatskonten</CardTitle>
         <CardDescription>

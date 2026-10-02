@@ -20,20 +20,27 @@ async function generateJune(page: Page) {
   await page.getByRole("link", { name: "Dienstplan prüfen" }).click();
 }
 
+/** Download one file of the schedule under review through the Herunterladen menu. */
 async function download(page: Page, name: string) {
-  const [file] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name }).click()]);
+  await page.getByRole("button", { name: "Herunterladen" }).click();
+  const menu = page.getByRole("dialog", { name: "Herunterladen" });
+  const [file] = await Promise.all([page.waitForEvent("download"), menu.getByRole("link", { name }).click()]);
+  await page.keyboard.press("Escape");
   expect(file.suggestedFilename()).toBe(name);
   return readFile((await file.path())!, "utf8");
 }
 
+/** Import a pair through the Importieren popover; it closes only when the import succeeded. */
 async function upload(page: Page, input: string, result: string) {
-  await page
+  const form = page.getByRole("dialog", { name: "Importieren" });
+  if (!(await form.isVisible())) await page.getByRole("button", { name: "Importieren" }).click();
+  await form
     .getByLabel("input.json")
     .setInputFiles({ name: "input.json", mimeType: "application/json", buffer: Buffer.from(input) });
-  await page
+  await form
     .getByLabel("result.json")
     .setInputFiles({ name: "result.json", mimeType: "application/json", buffer: Buffer.from(result) });
-  await page.getByRole("button", { name: "Importieren" }).click();
+  await form.getByRole("button", { name: "Dateien importieren" }).click();
 }
 
 test("a generated schedule is reviewed with its check, staffing and accounts, and downloads its bundle", async ({
@@ -42,16 +49,18 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   await generateJune(page);
   await expect(page).toHaveURL(JUNE);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Dienstplan prüfen");
-  await expect(summary(page)).toContainText("Juni 2026 (01.06.2026–30.06.2026) · Example Station North · Generiert");
+  await expect(summary(page).getByRole("heading")).toHaveText("Juni 2026 · Example Station North");
+  await expect(summary(page)).toContainText("Generiert");
   await expect(summary(page)).toContainText("Regeln eingehalten");
-  await expect(summary(page)).toContainText("Freie Sonntage im Jahr");
-  await expect(summary(page)).toContainText("über den Monat hinaus");
-  await expect(summary(page)).toContainText("Optimalitätslücke");
-  // Solver settings and bounds are optional detail, collapsed until opened.
-  await expect(summary(page).getByText("Gewichte")).toBeHidden();
+  await expect(summary(page)).toContainText("Kann veröffentlicht werden");
+  // Solver internals and obligations beyond the month are technical detail, collapsed until opened.
+  const details = summary(page).getByText("Technische Details");
+  await expect(summary(page).getByText("Optimalitätslücke")).toBeHidden();
   // Keyboard users open the collapsed section like any other control.
-  await summary(page).getByText("Solver-Details").press("Enter");
+  await details.press("Enter");
+  await expect(summary(page).getByText("Optimalitätslücke")).toBeVisible();
   await expect(summary(page).getByText("Gewichte")).toBeVisible();
+  await expect(summary(page)).toContainText("Freie Sonntage im Jahr");
 
   const grid = page.getByLabel("Dienstplan", { exact: true });
   await expect(grid.getByRole("rowheader", { name: /Example Jumper Three/ })).toBeVisible();
@@ -62,18 +71,14 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   const mfa = grid.getByRole("row", { name: /Example MFA One/ });
   const team = grid.getByRole("row", { name: /Example Team Two/ });
   await expect(mfa.locator("[data-placement=transfer]").first()).toBeVisible();
-  await expect(mfa.getByText("Springer", { exact: true }).first()).toBeVisible();
   await expect(mfa.getByText(/Herkunft Example Jumper Pool, Einsatz außerhalb der Herkunft/).first()).toBeAttached();
   await expect(team.locator("[data-placement=home]").first()).toBeVisible();
   await expect(team.locator("[data-placement=transfer]")).toHaveCount(0);
-  // With one station selected, duties name no station; the origin line still names the jumper pool.
-  await expect(mfa.locator("[data-placement] div", { hasText: "Example Station North" })).toHaveCount(0);
+  // The employee column names the origin; with one station selected, no duty repeats a unit name.
+  await expect(mfa.getByRole("rowheader")).toContainText("Example Jumper Pool");
+  await expect(grid.locator("[data-placement] div")).toHaveCount(0);
+  await expect(grid.getByRole("button", { name: "Kompakt" })).toHaveCount(0);
   await expect(grid.getByLabel("Legende")).toContainText("Einsatz außerhalb der Herkunft");
-  await grid.getByRole("button", { name: "Kompakt" }).click();
-  // Compact cells keep the dashed border and tag; the origin stays in the accessible text.
-  await expect(mfa.locator("[data-placement=transfer]").first()).toBeVisible();
-  await expect(mfa.getByText("Springer", { exact: true })).toHaveCount(0);
-  await expect(grid.getByRole("button", { name: "Kompakt" })).toHaveAttribute("aria-pressed", "true");
   await grid.getByLabel("Mitarbeiter im Dienstplan suchen").fill("Three");
   await expect(grid.getByRole("rowheader", { name: /Example Team Two/ })).toBeHidden();
 
@@ -103,6 +108,8 @@ test("a downloaded pair is imported; a rejected pair names its reason and keeps 
   const result = await download(page, "result.json");
 
   await upload(page, input, result);
+  // A successful import closes its popover and replaces the review.
+  await expect(page.getByRole("dialog", { name: "Importieren" })).toBeHidden();
   await expect(summary(page)).toContainText("Importiert");
   const imported = await summary(page).textContent();
 
@@ -183,7 +190,6 @@ test("a duty without a dated membership has an unknown origin and an eligibility
   const team = grid.getByRole("row", { name: /Example Team Two/ });
   await expect(team.locator("[data-placement=unknown]")).toHaveCount(1);
   await expect(team.locator("[data-placement=unknown]")).toContainText("Herkunft unbekannt");
-  await expect(team.locator("[data-placement=unknown]")).toContainText("Herkunft ?");
   await expect(grid.getByLabel("Legende")).toContainText("Herkunft unbekannt");
 });
 

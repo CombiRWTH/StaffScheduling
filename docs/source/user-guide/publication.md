@@ -6,18 +6,18 @@ Return to the [documentation overview](index.md).
 
 ## Confirm accepted result and target scope
 
-The card _Veröffentlichen_ on **Prüfen** names the selected stations and month, the scope it writes to. Publishing is offered only when
+Publication is one action in the review's summary card on **Prüfen**; it writes to the selected stations and month. **In TimeOffice veröffentlichen** is offered only when
 
 - the schedule under review belongs to exactly this selection (otherwise **Zu diesem Umfang wechseln** selects the schedule's own scope), and
 - its independent check is **Regeln eingehalten** (accepted). For a rejected or incompletely checked schedule the card says that only an accepted schedule can be published.
 
 Each selected station needs one TimeOffice target plan for the month, the same plan the [selection](selection.md) offers.
 
-The review itself does not show whether its schedule is published: only the card's message after a confirmed publication or clear reports it, and that message is gone after a reload.
+The review itself does not show whether its schedule is published: only the message under the actions after a confirmed publication or clear reports it, and that message is gone after a reload.
 
 ## Publish assignments
 
-1. Select **In TimeOffice veröffentlichen**. The card asks for confirmation and names the stations, the month and the number of duties. **Abbrechen** changes nothing.
+1. Select **In TimeOffice veröffentlichen**. A confirmation panel names the stations, the month and the number of duties. **Abbrechen** (or Esc) changes nothing.
 2. Select **Veröffentlichen bestätigen**.
 
 The backend replaces the duties previously published in the stations' target plans with the reviewed duties. A jumper pool employee's duty goes into the plan of the station where it is worked. Published duties carry the note `StaffScheduling` in TimeOffice; absences, TimeOffice wishes, duties entered in TimeOffice and every other plan stay unchanged. Success reads _Veröffentlicht: N Dienste geschrieben und gelesen, M bisherige ersetzt_; it appears only after TimeOffice committed the change and the written duties were read back identical to the schedule.
@@ -29,7 +29,7 @@ Publishing again replaces the earlier publication. A schedule without duties is 
 Clearing is maintenance and does not need a schedule under review.
 
 1. Select the month and stations in the header.
-2. Under _Wartung_, select **Veröffentlichte Dienste entfernen**. The card names the exact stations and month; **Abbrechen** changes nothing.
+2. On **Prüfen**, select **Veröffentlichte Dienste entfernen**, also offered without a schedule under review. A confirmation panel names the exact stations and month; **Abbrechen** (or Esc) changes nothing.
 3. Select **Entfernen bestätigen**.
 
 All published duties of those station months are removed; absences, wishes, duties entered in TimeOffice and other plans stay. Success reads _Entfernt: N veröffentlichte Dienste_. There is no empty publication: a schedule without duties is refused, so clearing is always this explicit action.

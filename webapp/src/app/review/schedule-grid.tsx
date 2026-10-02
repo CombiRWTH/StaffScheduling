@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { ArrowRightLeft, Maximize, Minimize, Search } from "lucide-react";
+import { Maximize, Minimize, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,26 @@ const clock = (timestamp: string) => timestamp.slice(11, 16);
 // Where a duty is worked relative to the employee's dated origin.
 type Placement = "home" | "transfer" | "unknown";
 // The dashed border of a transfer, in the cell's text color; shared by cells and legend.
+// The employee column's text: one line each, as wide as needed up to a cap that is smaller on narrow screens.
+const NAME_CELL = "max-w-36 truncate whitespace-nowrap md:max-w-56";
 const TRANSFER_BORDER = "outline-2 -outline-offset-2 outline-dashed outline-current";
+
+/**
+ * Short labels for the selected stations, so a transfer cell can name its station: a short name as is, a longer
+ * one by its initials; full names when initials would collide.
+ */
+function stationCodes(stations: { planning_unit_id: number; display_name: string }[]) {
+  const code = (name: string) =>
+    name.length <= 6
+      ? name
+      : name
+          .split(/[\s-]+/)
+          .map((word) => word[0]?.toUpperCase() ?? "")
+          .join("");
+  const codes = stations.map((unit) => code(unit.display_name));
+  const distinct = new Set(codes).size === codes.length;
+  return new Map(stations.map((unit, index) => [unit.planning_unit_id, distinct ? codes[index] : unit.display_name]));
+}
 
 /** The backend leaves the origin empty only for a duty on a date without any membership. */
 function placement(duty: DutyRow): Placement {
@@ -50,14 +69,14 @@ function dutyTitle(duty: DutyRow) {
   ].join(" · ");
 }
 
-/** The corner tag of a duty outside its origin: a transfer, or an origin the backend could not date. */
-function PlacementTag({ kind }: { kind: Exclude<Placement, "home"> }) {
+/** The corner tag of a duty whose origin the backend could not date. */
+function UnknownOriginTag() {
   return (
     <span
       aria-hidden
       className="absolute -right-1.5 -top-1.5 flex size-3 items-center justify-center rounded-full border border-foreground bg-background text-[8px] font-bold leading-none text-foreground"
     >
-      {kind === "transfer" ? <ArrowRightLeft className="size-2" strokeWidth={3} /> : "?"}
+      ?
     </span>
   );
 }
@@ -65,7 +84,6 @@ function PlacementTag({ kind }: { kind: Exclude<Placement, "home"> }) {
 /** Employees by date with their duties, absences and findings, and each station's staffing per shift. */
 export function ScheduleGrid({ review }: { review: ScheduleReview }) {
   const [search, setSearch] = useState("");
-  const [compact, setCompact] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const container = useRef<HTMLDivElement>(null);
 
@@ -78,6 +96,13 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
   const { tables, calendar } = review;
   const units = new Map(review.planning_units.map((unit) => [unit.planning_unit_id, unit]));
   const stations = review.planning_units.filter((unit) => unit.type === "station");
+  // Only with several stations does a transfer cell say where it is worked.
+  const codes = stations.length > 1 ? stationCodes(stations) : null;
+  const codeLegend = codes
+    ? stations
+        .filter((unit) => codes.get(unit.planning_unit_id) !== unit.display_name)
+        .map((unit) => `${codes.get(unit.planning_unit_id)} = ${unit.display_name}`)
+    : [];
   const shifts = new Map(review.shifts.map((shift) => [shift.shift_id, shift]));
   const duties = new Map(tables.duties.map((row) => [key(row.employee_id, row.date), row]));
   const availability = new Map<string, Availability[]>();
@@ -126,7 +151,6 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
       tables.staffing.some((row) => row.planning_unit_id === stationId && row.shift_id === shift.shift_id),
     );
   const weekend = (day: (typeof calendar)[number]) => day.weekday >= 6 || day.public_holiday !== null;
-  const cellWidth = compact ? "min-w-7" : "min-w-11";
 
   function toggleFullscreen() {
     if (document.fullscreenElement) void document.exitFullscreen();
@@ -154,9 +178,6 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                 className="pl-9"
               />
             </div>
-            <Button variant="outline" aria-pressed={compact} onClick={() => setCompact(!compact)}>
-              Kompakt
-            </Button>
             <Button variant="outline" onClick={toggleFullscreen}>
               {fullscreen ? <Minimize /> : <Maximize />}
               {fullscreen ? "Vollbild beenden" : "Vollbild"}
@@ -167,16 +188,14 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
             <table className="border-collapse text-xs">
               <thead>
                 <tr>
-                  <th className="sticky left-0 z-10 min-w-56 border-b bg-background p-2 text-left font-medium">
-                    Mitarbeiter
-                  </th>
+                  <th className="sticky left-0 z-10 border-b bg-background p-2 text-left font-medium">Mitarbeiter</th>
                   {calendar.map((day) => (
                     <th
                       key={day.date}
                       title={day.public_holiday ?? undefined}
                       className={cn(
                         "border-b border-l p-1 text-center font-medium",
-                        cellWidth,
+                        "min-w-12",
                         weekend(day) && "bg-muted",
                       )}
                     >
@@ -189,9 +208,18 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
               <tbody>
                 {employees.map((employee) => (
                   <tr key={employee.employee_id}>
-                    <th scope="row" className="sticky left-0 z-10 border-b bg-background p-2 text-left font-normal">
-                      <span className="text-muted-foreground">{employee.employee_id}</span> {employee.employee_name}
-                      <div className="text-muted-foreground">{homes(employee)}</div>
+                    <th
+                      scope="row"
+                      className="sticky left-0 z-10 whitespace-nowrap border-b bg-background p-2 text-left font-normal"
+                    >
+                      {/* The column fits its longest name up to a cap; longer names are cut, the full text on hover. */}
+                      <div
+                        title={`${employee.employee_id} ${employee.employee_name} · ${homes(employee)}`}
+                        className={NAME_CELL}
+                      >
+                        <span className="text-muted-foreground">{employee.employee_id}</span> {employee.employee_name}
+                      </div>
+                      <div className={cn(NAME_CELL, "text-muted-foreground")}>{homes(employee)}</div>
                     </th>
                     {calendar.map((day) => {
                       const duty = duties.get(key(employee.employee_id, day.date));
@@ -207,7 +235,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                           )}
                         >
                           {duty ? (
-                            <DutyCell duty={duty} compact={compact} showStation={stations.length > 1} />
+                            <DutyCell duty={duty} station={codes?.get(duty.planning_unit_id)} />
                           ) : absent.length ? (
                             <span
                               title={absent
@@ -276,18 +304,16 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                 </span>
               ))}
             <span className="flex items-center gap-1.5">
-              <span className={cn("relative mr-1 inline-block size-3 rounded", SHIFT_COLORS.other, TRANSFER_BORDER)}>
-                <PlacementTag kind="transfer" />
-              </span>
-              Einsatz außerhalb der Herkunft des Tages: „Springer“ aus dem Springerpool, „aus …“ von einer anderen
-              Station
+              <span className={cn("inline-block size-3 rounded", SHIFT_COLORS.other, TRANSFER_BORDER)} />
+              Einsatz außerhalb der Herkunft des Tages{codes && ", mit der Station des Einsatzes"}
             </span>
             <span className="flex items-center gap-1.5">
               <span className={cn("relative mr-1 inline-block size-3 rounded", SHIFT_COLORS.other)}>
-                <PlacementTag kind="unknown" />
+                <UnknownOriginTag />
               </span>
               Herkunft unbekannt
             </span>
+            {codeLegend.length > 0 && <span>{codeLegend.join(", ")}</span>}
             <span>Grund oder Kürzel (U, FB, Fr, nur …): Abwesenheit oder Einschränkung</span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block size-3 rounded ring-2 ring-inset ring-destructive" />
@@ -305,26 +331,21 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
   );
 }
 
-/** One duty: its shift code and color, and where it is worked; a transfer gets a dashed border and a tag. */
-function DutyCell({ duty, compact, showStation }: { duty: DutyRow; compact: boolean; showStation: boolean }) {
+/**
+ * One duty: its shift code and color. The employee column names the origin, so only a duty worked outside it is
+ * marked: a dashed border, and with several stations the code of the station where it is worked.
+ */
+function DutyCell({ duty, station }: { duty: DutyRow; station?: string }) {
   const kind = placement(duty);
-  const origin =
-    kind === "home"
-      ? null
-      : kind === "unknown"
-        ? "Herkunft ?"
-        : duty.origin_unit_type === "jumper_pool"
-          ? "Springer"
-          : `aus ${duty.origin_unit_name}`;
   return (
     <div
       title={dutyTitle(duty)}
       data-placement={kind}
-      // A tagged duty keeps its tag in the right padding, so it never covers the shift code.
+      // An unknown origin keeps its tag in the right padding, so it never covers the shift code.
       className={cn(
         "relative rounded px-1 py-0.5",
         SHIFT_COLORS[duty.shift_type],
-        origin && "pr-3",
+        kind === "unknown" && "pr-3",
         kind === "transfer" && TRANSFER_BORDER,
       )}
     >
@@ -333,15 +354,14 @@ function DutyCell({ duty, compact, showStation }: { duty: DutyRow; compact: bool
         {dutyTitle(duty)}
         {kind === "transfer" && ", Einsatz außerhalb der Herkunft"}
       </span>
-      {kind !== "home" && <PlacementTag kind={kind} />}
-      {!compact && showStation && (
-        <div aria-hidden className="truncate text-[10px] opacity-80">
-          {duty.planning_unit_name}
-        </div>
-      )}
-      {!compact && origin && (
-        <div aria-hidden className="max-w-16 truncate text-[10px] opacity-80">
-          {origin}
+      {kind === "unknown" && <UnknownOriginTag />}
+      {station && kind === "transfer" && (
+        // A short code such as "BSP-A" stays on one line; only a full name (when codes collide) may wrap.
+        <div
+          aria-hidden
+          className={cn("text-[10px] leading-tight opacity-80", station.length <= 6 && "whitespace-nowrap")}
+        >
+          {station}
         </div>
       )}
     </div>

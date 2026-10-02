@@ -52,7 +52,7 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
         </div>
       )}
 
-      <div className="max-w-3xl space-y-6">
+      <div className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Neue Generierung</CardTitle>

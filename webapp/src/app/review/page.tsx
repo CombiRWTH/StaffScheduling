@@ -2,15 +2,14 @@ import Link from "next/link";
 import { LoadError } from "@/components/load-error";
 import { PageHeader } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getReview } from "@/lib/api";
+import { Card, CardContent } from "@/components/ui/card";
+import { REVIEW_FILES, getReview } from "@/lib/api";
 import { monthLabel } from "@/lib/labels";
 import { loadPlanningScope, type PlanningScope, type ScopeSearchParams } from "@/lib/scope";
 import { selectionMonth, selectionSearch } from "@/lib/selection";
 import type { ScheduleReview } from "@/lib/types";
 import { AccountTable } from "./account-table";
-import { ImportForm } from "./import-form";
-import { PublicationCard } from "./publication-card";
+import { ReviewActions } from "./review-actions";
 import { ReviewSummary } from "./review-summary";
 import { ScheduleGrid } from "./schedule-grid";
 import type { Metadata } from "next";
@@ -33,7 +32,7 @@ function isSelected(own: ReturnType<typeof reviewScope>, scope: PlanningScope, s
   );
 }
 
-/** The publication card's scope: the selected stations and month, and the review if it is theirs. */
+/** The actions' scope: the selected stations and month, and the review if it is theirs. */
 function publicationScope(scope: PlanningScope, selected: Set<number>, review: ScheduleReview | null) {
   const [year, month] = scope.month.split("-").map(Number);
   return {
@@ -63,62 +62,60 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
   const own = review && reviewScope(review);
   const selected = new Set(scope.stationIds);
   const matches = own !== null && isSelected(own, scope, selected);
+  const actions = (
+    <ReviewActions {...publicationScope(scope, selected, matches ? review : null)} files={REVIEW_FILES} />
+  );
 
   return (
     <div className="py-6">
       <PageHeader
         title="Dienstplan prüfen"
         parent={{ href: "/", label: "Übersicht" }}
-        description="Den zuletzt generierten oder importierten Dienstplan prüfen und herunterladen."
+        description="Den zuletzt generierten oder importierten Dienstplan prüfen und veröffentlichen."
         scope={scope}
       />
       <div className="space-y-6">
         {"error" in current && <LoadError title="Dienstplan nicht geladen" message={current.error} />}
-        {"review" in current && !review && (
-          <Card className="max-w-5xl border-dashed shadow-none">
-            <CardHeader>
-              <CardTitle>Kein Dienstplan zur Prüfung</CardTitle>
-              <CardDescription>
-                Einen Dienstplan generieren oder input.json und result.json importieren. Der Plan wird nur bis zum
-                Neustart des Backends vorgehalten.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        )}
-        {review && own && !matches && (
-          <Card className="max-w-5xl">
-            <CardHeader>
-              <CardTitle>Anderer Planungsumfang</CardTitle>
-              <CardDescription>
-                Der Dienstplan zur Prüfung gehört zu{" "}
-                {monthLabel(review.planning_month.year, review.planning_month.month).name} ·{" "}
-                {own.stations.map((unit) => unit.display_name).join(", ")}.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link
-                className={buttonVariants({ variant: "outline" })}
-                href={`/review${selectionSearch(
-                  own.month,
-                  own.stations.map((unit) => unit.planning_unit_id),
-                )}`}
-              >
-                Zu diesem Umfang wechseln
-              </Link>
-            </CardContent>
-          </Card>
-        )}
-        {review && matches && (
+        {review && matches ? (
           <>
-            <ReviewSummary review={review} />
+            <ReviewSummary review={review} actions={actions} />
             <ScheduleGrid review={review} />
             <AccountTable review={review} />
           </>
+        ) : (
+          <Card className={review ? undefined : "border-dashed shadow-none"}>
+            <CardContent className="flex flex-wrap items-start justify-between gap-4 text-sm">
+              {review && own ? (
+                <div className="space-y-2">
+                  <h2 className="text-lg font-semibold">Anderer Planungsumfang</h2>
+                  <p className="text-muted-foreground">
+                    Der Dienstplan zur Prüfung gehört zu{" "}
+                    {monthLabel(review.planning_month.year, review.planning_month.month).name} ·{" "}
+                    {own.stations.map((unit) => unit.display_name).join(", ")}.
+                  </p>
+                  <Link
+                    className={buttonVariants({ variant: "outline" })}
+                    href={`/review${selectionSearch(
+                      own.month,
+                      own.stations.map((unit) => unit.planning_unit_id),
+                    )}`}
+                  >
+                    Zu diesem Umfang wechseln
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <h2 className="text-lg font-semibold">Kein Dienstplan zur Prüfung</h2>
+                  <p className="text-muted-foreground">
+                    Einen Dienstplan generieren oder input.json und result.json importieren. Der Plan wird nur bis zum
+                    Neustart des Backends vorgehalten.
+                  </p>
+                </div>
+              )}
+              {actions}
+            </CardContent>
+          </Card>
         )}
-        {scope.stationIds.length > 0 && (
-          <PublicationCard {...publicationScope(scope, selected, matches ? review : null)} />
-        )}
-        <ImportForm />
       </div>
     </div>
   );
