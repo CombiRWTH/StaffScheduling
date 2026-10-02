@@ -6,7 +6,7 @@ from typing import Annotated, Protocol
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from app.domain import (
-    Availability,
+    AvailabilityEntry,
     DemandConfiguration,
     EmployeeCalendar,
     InvalidSelection,
@@ -15,7 +15,7 @@ from app.domain import (
     PlanningMonth,
     PlanningOptions,
     PositiveId,
-    Wish,
+    WishEntry,
 )
 
 router = APIRouter()
@@ -32,13 +32,9 @@ class PlanningSource(Protocol):
 
     def get_employee_calendar(self, *, employee_id: int, planning_month: PlanningMonth) -> EmployeeCalendar: ...
 
-    def save_availability(self, availability: Availability) -> None: ...
+    def set_availability(self, *, employee_id: int, day: date, entry: AvailabilityEntry | None) -> None: ...
 
-    def delete_availability(self, *, employee_id: int, day: date) -> None: ...
-
-    def save_wish(self, wish: Wish) -> None: ...
-
-    def delete_wish(self, *, employee_id: int, day: date) -> None: ...
+    def set_wish(self, *, employee_id: int, day: date, entry: WishEntry | None) -> None: ...
 
     def get_demand(self, *, planning_unit_id: int, planning_month: PlanningMonth) -> DemandConfiguration: ...
 

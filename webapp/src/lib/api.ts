@@ -1,13 +1,13 @@
 import "server-only";
 import type {
-  Availability,
+  AvailabilityEntry,
   DemandConfiguration,
   EmployeeCalendar,
   MonthlyDemand,
   PatternRequirement,
   PlanningInspection,
   PlanningOptions,
-  Wish,
+  WishEntry,
 } from "@/lib/types";
 
 const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
@@ -67,20 +67,20 @@ export function getEmployeeCalendar(month: string, employeeId: number) {
   return request<EmployeeCalendar>("GET", "/availability", { params, invalid: INVALID_ENTRY });
 }
 
-export function putAvailability({ employee_id, date, ...entry }: Omit<Availability, "source">) {
-  return request<Availability>("PUT", `/availability/${employee_id}/${date}`, { body: entry, invalid: INVALID_ENTRY });
+/** Replace the employee's availability on that date; `null` removes it. */
+export function setAvailability(employeeId: number, date: string, entry: AvailabilityEntry | null) {
+  const path = `/availability/${employeeId}/${date}`;
+  return entry
+    ? request<void>("PUT", path, { body: entry, invalid: INVALID_ENTRY })
+    : request<void>("DELETE", path, { invalid: INVALID_ENTRY });
 }
 
-export function deleteAvailability(employeeId: number, date: string) {
-  return request<void>("DELETE", `/availability/${employeeId}/${date}`, { invalid: INVALID_ENTRY });
-}
-
-export function putWish({ employee_id, date, ...entry }: Wish) {
-  return request<Wish>("PUT", `/wishes/${employee_id}/${date}`, { body: entry, invalid: INVALID_ENTRY });
-}
-
-export function deleteWish(employeeId: number, date: string) {
-  return request<void>("DELETE", `/wishes/${employeeId}/${date}`, { invalid: INVALID_ENTRY });
+/** Replace the employee's wish on that date; `null` removes it. */
+export function setWish(employeeId: number, date: string, entry: WishEntry | null) {
+  const path = `/wishes/${employeeId}/${date}`;
+  return entry
+    ? request<void>("PUT", path, { body: entry, invalid: INVALID_ENTRY })
+    : request<void>("DELETE", path, { invalid: INVALID_ENTRY });
 }
 
 const INVALID_DEMAND = "Mindestbesetzung ungültig. Station, Datum, Schichten und Anzahlen prüfen.";

@@ -39,23 +39,30 @@ export interface WorkCredit {
 
 export type AvailabilityType = "unavailable" | "vacation" | "training" | "free_day" | "available_only";
 
-/** A date on which an employee must not be planned, or only for `shift_ids`. */
-export interface Availability {
-  employee_id: number;
-  date: string;
+/** What an employee's availability on one date is; `shift_ids` only for `available_only`. */
+export interface AvailabilityEntry {
   availability_type: AvailabilityType;
   shift_ids: number[] | null;
   reason: string | null;
+}
+
+/** A date on which an employee must not be planned, or only for `shift_ids`. */
+export interface Availability extends AvailabilityEntry {
+  employee_id: number;
+  date: string;
   source: string | null;
 }
 
 export type WishType = "free_day" | "free_shift" | "preferred_day" | "preferred_shift";
 
-export interface Wish {
-  employee_id: number;
-  date: string;
+export interface WishEntry {
   type: WishType;
   shift_id: number | null;
+}
+
+export interface Wish extends WishEntry {
+  employee_id: number;
+  date: string;
 }
 
 export interface ShiftOption {

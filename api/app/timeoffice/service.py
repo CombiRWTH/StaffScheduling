@@ -4,6 +4,7 @@ from sqlalchemy import Connection, Engine
 
 from app.domain import (
     Availability,
+    AvailabilityEntry,
     DemandConfiguration,
     EmployeeCalendar,
     InvalidSelection,
@@ -13,6 +14,7 @@ from app.domain import (
     PlanningOptions,
     PlanningUnitType,
     Wish,
+    WishEntry,
     build_inspection,
     inspection_employee_ids,
     month_calendar,
@@ -95,29 +97,25 @@ class TimeOfficeService:
                 shifts=queries.read_shift_options(connection, self._facts),
             )
 
-    def save_availability(self, availability: Availability) -> None:
-        """Replace the project availability of exactly this employee and date."""
-        self._require_shifts(availability.shift_ids or ())
-        with self._engine.begin() as connection:
-            self._require_employee(connection, availability.employee_id, _month_of(availability.date))
-            project_tables.replace_availability(connection, availability)
-
-    def delete_availability(self, *, employee_id: int, day: date) -> None:
+    def set_availability(self, *, employee_id: int, day: date, entry: AvailabilityEntry | None) -> None:
+        """Replace the project availability of exactly this employee and date; `None` removes it."""
+        self._require_shifts(entry.shift_ids or () if entry else ())
         with self._engine.begin() as connection:
             self._require_employee(connection, employee_id, _month_of(day))
             project_tables.delete_availability(connection, employee_id, day)
+            if entry:
+                project_tables.insert_availability(
+                    connection, Availability(employee_id=employee_id, date=day, **entry.model_dump())
+                )
 
-    def save_wish(self, wish: Wish) -> None:
-        """Replace the wish of exactly this employee and date."""
-        self._require_shifts(() if wish.shift_id is None else (wish.shift_id,))
-        with self._engine.begin() as connection:
-            self._require_employee(connection, wish.employee_id, _month_of(wish.date))
-            project_tables.replace_wish(connection, wish)
-
-    def delete_wish(self, *, employee_id: int, day: date) -> None:
+    def set_wish(self, *, employee_id: int, day: date, entry: WishEntry | None) -> None:
+        """Replace the wish of exactly this employee and date; `None` removes it."""
+        self._require_shifts((entry.shift_id,) if entry and entry.shift_id else ())
         with self._engine.begin() as connection:
             self._require_employee(connection, employee_id, _month_of(day))
             project_tables.delete_wish(connection, employee_id, day)
+            if entry:
+                project_tables.insert_wish(connection, Wish(employee_id=employee_id, date=day, **entry.model_dump()))
 
     def get_demand(self, *, planning_unit_id: int, planning_month: PlanningMonth) -> DemandConfiguration:
         """The saved dated demand of one station month (None if never saved), with its calendar and shifts."""

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AVAILABILITY_LABELS, WEEKDAYS, WISH_LABELS, formatDate } from "@/lib/labels";
 import type { Availability, AvailabilityType, EmployeeCalendar, ShiftOption, WishType } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { removeAvailability, removeWish, saveAvailability, saveWish, type SaveResult } from "./actions";
+import { saveAvailability, saveWish, type SaveResult } from "./actions";
 
 const NONE = "none";
 
@@ -180,9 +180,7 @@ function AvailabilityForm({
   function submit() {
     if (type === NONE) return;
     run(() =>
-      saveAvailability({
-        employee_id: employeeId,
-        date,
+      saveAvailability(employeeId, date, {
         availability_type: type,
         shift_ids: type === "available_only" ? shiftIds : null,
         reason: reason.trim() || null,
@@ -241,7 +239,7 @@ function AvailabilityForm({
             disabled={pending}
             onClick={() =>
               run(
-                () => removeAvailability(employeeId, date),
+                () => saveAvailability(employeeId, date, null),
                 () => setType(NONE),
               )
             }
@@ -274,9 +272,7 @@ function WishForm({
   function submit() {
     if (type === NONE) return;
     run(() =>
-      saveWish({
-        employee_id: employeeId,
-        date,
+      saveWish(employeeId, date, {
         type,
         shift_id: needsShift && shiftId ? Number(shiftId) : null,
       }),
@@ -328,7 +324,7 @@ function WishForm({
             disabled={pending}
             onClick={() =>
               run(
-                () => removeWish(employeeId, date),
+                () => saveWish(employeeId, date, null),
                 () => setType(NONE),
               )
             }

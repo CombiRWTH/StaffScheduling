@@ -75,8 +75,7 @@ def read_availability(
     )
 
 
-def replace_availability(connection: Connection, availability: Availability) -> None:
-    delete_availability(connection, availability.employee_id, availability.date)
+def insert_availability(connection: Connection, availability: Availability) -> None:
     connection.execute(
         text(
             """
@@ -123,8 +122,7 @@ def read_wishes(connection: Connection, employee_ids: Sequence[int], month: Plan
     )
 
 
-def replace_wish(connection: Connection, wish: Wish) -> None:
-    delete_wish(connection, wish.employee_id, wish.date)
+def insert_wish(connection: Connection, wish: Wish) -> None:
     connection.execute(
         text(
             """

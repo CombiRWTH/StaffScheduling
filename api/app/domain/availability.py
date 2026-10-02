@@ -4,7 +4,7 @@ from typing import Self
 
 from pydantic import model_validator
 
-from app.domain.core import SchedulingBaseModel
+from app.domain.core import NonEmptyStr, SchedulingBaseModel
 from app.domain.employee import EmployeeId
 from app.domain.planning_month import PlanningMonth
 from app.domain.shift import ShiftId, ShiftOption
@@ -21,18 +21,11 @@ class AvailabilityType(StrEnum):
     AVAILABLE_ONLY = "available_only"
 
 
-class Availability(SchedulingBaseModel):
-    """A date on which an employee must not be planned, or only for the listed shifts.
+class AvailabilityEntry(SchedulingBaseModel):
+    """What an employee's availability on one date is, without saying whose or when."""
 
-    Availability always binds planning; soft preferences are a `Wish`.
-    """
-
-    employee_id: EmployeeId
-    date: Date
     availability_type: AvailabilityType
-
-    reason: str | None = None
-    source: str | None = None
+    reason: NonEmptyStr | None = None
 
     # Only used for AVAILABLE_ONLY. For absences/blockers this stays None.
     shift_ids: tuple[ShiftId, ...] | None = None
@@ -49,6 +42,17 @@ class Availability(SchedulingBaseModel):
             raise ValueError(f"{self.availability_type} availability must not define shift_ids.")
 
         return self
+
+
+class Availability(AvailabilityEntry):
+    """A date on which an employee must not be planned, or only for the listed shifts.
+
+    Availability always binds planning; soft preferences are a `Wish`.
+    """
+
+    employee_id: EmployeeId
+    date: Date
+    source: str | None = None
 
 
 class EmployeeCalendar(SchedulingBaseModel):

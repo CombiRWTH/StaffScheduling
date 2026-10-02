@@ -7,9 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { STAFF_LEVEL_LABELS, WEEKDAYS, formatDate } from "@/lib/labels";
-import type { DayType, DemandConfiguration, DemandRequirement, StaffLevel } from "@/lib/types";
+import type { DayType, DemandConfiguration, StaffLevel } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { expandPattern, saveDemand } from "./actions";
+import { countAt, gridOf, requirementsOf, sameGrid, withCount, withLevelFrom, type DemandGrid } from "./demand-grid";
 
 const LEVELS = Object.keys(STAFF_LEVEL_LABELS) as StaffLevel[];
 const DAY_TYPES: Array<{ type: DayType; label: string }> = [
@@ -20,21 +21,6 @@ const DAY_TYPES: Array<{ type: DayType; label: string }> = [
   { type: "holiday", label: "Feiertag" },
 ];
 
-/** Required counts keyed by date, shift and qualification; absent keys require nobody. */
-type Counts = Record<string, number>;
-const key = (date: string, shiftId: number, level: StaffLevel) => `${date}|${shiftId}|${level}`;
-
-function toCounts(requirements: DemandRequirement[]): Counts {
-  return Object.fromEntries(
-    requirements.map((row) => [key(row.date, row.shift_id, row.staff_level), row.required_count]),
-  );
-}
-
-function sameCounts(left: Counts, right: Counts) {
-  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
-  return [...keys].every((cell) => (left[cell] ?? 0) === (right[cell] ?? 0));
-}
-
 function parseCount(value: string) {
   const count = Number(value);
   return Number.isInteger(count) && count >= 0 ? count : 0;
@@ -42,36 +28,25 @@ function parseCount(value: string) {
 
 export function StaffingEditor({ month, configuration }: { month: string; configuration: DemandConfiguration }) {
   const { calendar, shifts, planning_unit_id: stationId } = configuration;
-  const [saved, setSaved] = useState<Counts>(() => toCounts(configuration.demand?.requirements ?? []));
-  const [counts, setCounts] = useState<Counts>(saved);
+  const [saved, setSaved] = useState<DemandGrid>(() => gridOf(configuration.demand?.requirements ?? []));
+  const [grid, setGrid] = useState<DemandGrid>(saved);
   const [level, setLevel] = useState<StaffLevel>("professional");
   const [isSaved, setIsSaved] = useState(configuration.demand !== null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, startTransition] = useTransition();
-  const dirty = !sameCounts(counts, saved);
+  const dirty = !sameGrid(grid, saved);
 
   function setCount(date: string, shiftId: number, value: string) {
-    setCounts((current) => ({ ...current, [key(date, shiftId, level)]: parseCount(value) }));
+    setGrid((current) => withCount(current, date, shiftId, level, parseCount(value)));
     setMessage(null);
   }
 
   function save() {
-    const requirements = Object.entries(counts)
-      .filter(([, count]) => count > 0)
-      .map(([cell, required_count]) => {
-        const [date, shiftId, staffLevel] = cell.split("|");
-        return {
-          planning_unit_id: stationId,
-          date,
-          shift_id: Number(shiftId),
-          staff_level: staffLevel as StaffLevel,
-          required_count,
-        };
-      });
+    const requirements = requirementsOf(grid, stationId);
     startTransition(async () => {
       const result = await saveDemand(month, stationId, requirements);
       if (result.ok) {
-        setSaved(counts);
+        setSaved(grid);
         setIsSaved(true);
         setMessage({ ok: true, text: "Mindestbesetzung gespeichert." });
       } else {
@@ -107,7 +82,7 @@ export function StaffingEditor({ month, configuration }: { month: string; config
         </div>
         <div className="flex items-center gap-2">
           {dirty && <span className="text-sm text-muted-foreground">Ungespeicherte Änderungen</span>}
-          <Button variant="outline" disabled={!dirty || pending} onClick={() => setCounts(saved)}>
+          <Button variant="outline" disabled={!dirty || pending} onClick={() => setGrid(saved)}>
             Zurücksetzen
           </Button>
           <Button disabled={pending || (!dirty && isSaved)} onClick={save}>
@@ -127,12 +102,11 @@ export function StaffingEditor({ month, configuration }: { month: string; config
       <PatternCard
         month={month}
         stationId={stationId}
-        calendar={calendar}
         shifts={shifts}
         level={level}
-        counts={counts}
+        grid={grid}
         onApply={(next) => {
-          setCounts(next);
+          setGrid(next);
           setMessage(null);
         }}
       />
@@ -172,7 +146,7 @@ export function StaffingEditor({ month, configuration }: { month: string; config
                         min={0}
                         max={99}
                         aria-label={`${shift.code} am ${formatDate(day.date)}`}
-                        value={counts[key(day.date, shift.shift_id, level)] ?? 0}
+                        value={countAt(grid, day.date, shift.shift_id, level)}
                         onChange={(event) => setCount(day.date, shift.shift_id, event.target.value)}
                         className="mx-auto w-16 text-center"
                       />
@@ -192,22 +166,20 @@ export function StaffingEditor({ month, configuration }: { month: string; config
 function PatternCard({
   month,
   stationId,
-  calendar,
   shifts,
   level,
-  counts,
+  grid,
   onApply,
 }: {
   month: string;
   stationId: number;
-  calendar: DemandConfiguration["calendar"];
   shifts: DemandConfiguration["shifts"];
   level: StaffLevel;
-  counts: Counts;
-  onApply: (counts: Counts) => void;
+  grid: DemandGrid;
+  onApply: (grid: DemandGrid) => void;
 }) {
   const [pattern, setPattern] = useState<Record<string, number>>({});
-  const [preview, setPreview] = useState<{ next: Counts; changed: string[] } | null>(null);
+  const [preview, setPreview] = useState<{ grid: DemandGrid; changedDates: string[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [previewing, startPreview] = useTransition();
 
@@ -227,21 +199,7 @@ function PatternCard({
         setError(result.error);
         return;
       }
-      const expanded = toCounts(result.requirements);
-      const next = { ...counts };
-      for (const day of calendar) {
-        for (const shift of shifts)
-          next[key(day.date, shift.shift_id, level)] = expanded[key(day.date, shift.shift_id, level)] ?? 0;
-      }
-      const changed = calendar
-        .map((day) => day.date)
-        .filter((date) =>
-          shifts.some(
-            (shift) =>
-              (next[key(date, shift.shift_id, level)] ?? 0) !== (counts[key(date, shift.shift_id, level)] ?? 0),
-          ),
-        );
-      setPreview({ next, changed });
+      setPreview(withLevelFrom(grid, gridOf(result.requirements), level));
     });
   }
 
@@ -302,17 +260,17 @@ function PatternCard({
           </p>
         )}
         {preview &&
-          (preview.changed.length ? (
+          (preview.changedDates.length ? (
             <div role="region" aria-label="Vorschau" className="space-y-2 rounded-md border p-3 text-sm">
               <p>
-                {preview.changed.length} Tage werden ersetzt:{" "}
-                {preview.changed.map((date) => formatDate(date).slice(0, 6)).join(", ")}
+                {preview.changedDates.length} Tage werden ersetzt:{" "}
+                {preview.changedDates.map((date) => formatDate(date).slice(0, 6)).join(", ")}
               </p>
               <div className="flex gap-2">
                 <Button
                   size="sm"
                   onClick={() => {
-                    onApply(preview.next);
+                    onApply(preview.grid);
                     setPreview(null);
                   }}
                 >

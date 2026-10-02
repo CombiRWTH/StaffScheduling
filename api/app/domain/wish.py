@@ -16,11 +16,9 @@ class WishType(StrEnum):
     PREFERRED_SHIFT = "preferred_shift"
 
 
-class Wish(SchedulingBaseModel):
-    """An employee's soft preference for one date; at most one per employee and date."""
+class WishEntry(SchedulingBaseModel):
+    """What a wish asks for, without saying whose or when."""
 
-    employee_id: EmployeeId
-    date: Date
     type: WishType
     shift_id: ShiftId | None = None
 
@@ -33,3 +31,10 @@ class Wish(SchedulingBaseModel):
             raise ValueError(f"{self.type} wish must not define shift_id.")
 
         return self
+
+
+class Wish(WishEntry):
+    """An employee's soft preference for one date; at most one per employee and date."""
+
+    employee_id: EmployeeId
+    date: Date

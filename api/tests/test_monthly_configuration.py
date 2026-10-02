@@ -9,7 +9,7 @@ from inspection_fixture import InspectionSource
 
 from app.api.planning import get_planning_source
 from app.domain import (
-    Availability,
+    AvailabilityEntry,
     AvailabilityType,
     DayType,
     DemandPattern,
@@ -19,7 +19,7 @@ from app.domain import (
     PatternRequirement,
     PlanningMonth,
     StaffLevel,
-    Wish,
+    WishEntry,
     WishType,
     expand_pattern,
     month_calendar,
@@ -45,20 +45,24 @@ def client(source: InspectionSource) -> Iterator[httpx.Client]:
         app.dependency_overrides.clear()
 
 
-def availability(employee_id: int, day: int, **fields: object) -> Availability:
-    return Availability.model_validate(
-        {"employee_id": employee_id, "date": date(2026, 1, day), "availability_type": "unavailable", **fields}
-    )
+def save(source: InspectionSource, employee_id: int, day: int, **fields: object) -> None:
+    entry = AvailabilityEntry.model_validate({"availability_type": "unavailable", **fields})
+    source.service.set_availability(employee_id=employee_id, day=date(2026, 1, day), entry=entry)
+
+
+def wish(source: InspectionSource, employee_id: int, day: int, **fields: object) -> None:
+    entry = WishEntry.model_validate(fields) if fields else None
+    source.service.set_wish(employee_id=employee_id, day=date(2026, 1, day), entry=entry)
 
 
 def test_availability_writes_touch_only_their_employee_and_date(source: InspectionSource) -> None:
     service = source.service
-    service.save_availability(availability(1, 5, availability_type="available_only", shift_ids=(EARLY, LATE)))
-    service.save_availability(availability(1, 6, reason="Fortbildung extern"))
-    service.save_availability(availability(2, 5))
+    save(source, 1, 5, availability_type="available_only", shift_ids=(EARLY, LATE))
+    save(source, 1, 6, reason="Fortbildung extern")
+    save(source, 2, 5)
 
-    service.save_availability(availability(1, 5, availability_type="vacation"))
-    service.delete_availability(employee_id=1, day=date(2026, 1, 6))
+    save(source, 1, 5, availability_type="vacation")
+    service.set_availability(employee_id=1, day=date(2026, 1, 6), entry=None)
 
     calendar = service.get_employee_calendar(employee_id=1, planning_month=JANUARY)
     assert [(row.date.day, row.availability_type) for row in calendar.availability] == [(5, AvailabilityType.VACATION)]
@@ -77,41 +81,41 @@ def test_availability_writes_touch_only_their_employee_and_date(source: Inspecti
 
 
 def test_reason_and_shifts_survive_read_back(source: InspectionSource) -> None:
-    saved = availability(3, 9, availability_type="available_only", shift_ids=(NIGHT,), reason="Nur Nacht")
-    source.service.save_availability(saved)
+    save(source, 3, 9, availability_type="available_only", shift_ids=(NIGHT,), reason="Nur Nacht")
     [read] = source.service.get_employee_calendar(employee_id=3, planning_month=JANUARY).availability
-    assert read.model_dump(exclude={"source"}) == saved.model_dump(exclude={"source"})
+    assert (read.date, read.shift_ids, read.reason) == (date(2026, 1, 9), (NIGHT,), "Nur Nacht")
 
 
 def test_wishes_are_separate_from_availability(source: InspectionSource) -> None:
     service = source.service
-    service.save_availability(availability(1, 7))
-    service.save_wish(Wish(employee_id=1, date=date(2026, 1, 7), type=WishType.FREE_SHIFT, shift_id=NIGHT))
-    service.save_wish(Wish(employee_id=1, date=date(2026, 1, 7), type=WishType.PREFERRED_DAY))
+    save(source, 1, 7)
+    wish(source, 1, 7, type=WishType.FREE_SHIFT, shift_id=NIGHT)
+    wish(source, 1, 7, type=WishType.PREFERRED_DAY)
     calendar = service.get_employee_calendar(employee_id=1, planning_month=JANUARY)
     assert [(row.date.day, row.type) for row in calendar.wishes] == [(7, WishType.PREFERRED_DAY)]
     assert [row.date.day for row in calendar.availability] == [7]
 
-    service.delete_wish(employee_id=1, day=date(2026, 1, 7))
+    wish(source, 1, 7)
     calendar = service.get_employee_calendar(employee_id=1, planning_month=JANUARY)
     assert calendar.wishes == ()
     assert [row.date.day for row in calendar.availability] == [7]
 
 
 def test_invalid_or_failed_writes_leave_saved_entries_unchanged(source: InspectionSource) -> None:
-    service = source.service
-    service.save_availability(availability(1, 5))
+    save(source, 1, 5)
     before = source.tables["StaffSchedulingAvailability"].copy()
 
     with pytest.raises(InvalidSelection, match="no planning membership"):
-        service.save_availability(availability(999, 5))
+        save(source, 999, 5)
     with pytest.raises(InvalidSelection, match="Unknown shift"):
-        service.save_availability(availability(1, 5, availability_type="available_only", shift_ids=(42,)))
+        save(source, 1, 5, availability_type="available_only", shift_ids=(42,))
     with pytest.raises(InvalidSelection, match="Unknown shift"):
-        service.save_wish(Wish(employee_id=1, date=date(2026, 1, 5), type=WishType.FREE_SHIFT, shift_id=42))
+        wish(source, 1, 5, type=WishType.FREE_SHIFT, shift_id=42)
     source.failing_ids = {1}
     with pytest.raises(TimeOfficeUnavailable):
-        service.save_availability(availability(1, 5, availability_type="vacation"))
+        save(source, 1, 5, availability_type="vacation")
+    with pytest.raises(TimeOfficeUnavailable):
+        source.service.set_availability(employee_id=1, day=date(2026, 1, 5), entry=None)
 
     assert source.tables["StaffSchedulingAvailability"] == before
 

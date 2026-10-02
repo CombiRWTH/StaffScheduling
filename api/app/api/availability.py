@@ -3,23 +3,10 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Path, Response, status
-from fastapi.exceptions import RequestValidationError
-from pydantic import ValidationError
+from fastapi import APIRouter, Path, status
 
 from app.api.planning import Month, Source, Year, planning_errors
-from app.domain import (
-    Availability,
-    AvailabilityType,
-    EmployeeCalendar,
-    NonEmptyStr,
-    PlanningMonth,
-    PositiveId,
-    SchedulingBaseModel,
-    ShiftId,
-    Wish,
-    WishType,
-)
+from app.domain import AvailabilityEntry, EmployeeCalendar, PlanningMonth, PositiveId, WishEntry
 
 router = APIRouter()
 
@@ -27,17 +14,6 @@ EmployeePath = Annotated[PositiveId, Path()]
 
 INVALID = "Invalid entry: use a planned employee, a valid date and reference shifts."
 INCOMPLETE = "Availability data is incomplete. Verify memberships, absence codes and reference shifts."
-
-
-class AvailabilityEntry(SchedulingBaseModel):
-    availability_type: AvailabilityType
-    shift_ids: tuple[ShiftId, ...] | None = None
-    reason: NonEmptyStr | None = None
-
-
-class WishEntry(SchedulingBaseModel):
-    type: WishType
-    shift_id: ShiftId | None = None
 
 
 @router.get("/availability")
@@ -49,36 +25,28 @@ def get_employee_calendar(employee_id: PositiveId, year: Year, month: Month, sou
 
 
 @router.put("/availability/{employee_id}/{day}")
-def put_availability(employee_id: EmployeePath, day: date, entry: AvailabilityEntry, source: Source) -> Availability:
+def put_availability(
+    employee_id: EmployeePath, day: date, entry: AvailabilityEntry, source: Source
+) -> AvailabilityEntry:
     with planning_errors(invalid=INVALID, incomplete=INCOMPLETE):
-        try:
-            availability = Availability(employee_id=employee_id, date=day, **entry.model_dump())
-        except ValidationError as error:
-            raise RequestValidationError(error.errors()) from error
-        source.save_availability(availability)
-        return availability
+        source.set_availability(employee_id=employee_id, day=day, entry=entry)
+    return entry
 
 
 @router.delete("/availability/{employee_id}/{day}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_availability(employee_id: EmployeePath, day: date, source: Source) -> Response:
+def delete_availability(employee_id: EmployeePath, day: date, source: Source) -> None:
     with planning_errors(invalid=INVALID, incomplete=INCOMPLETE):
-        source.delete_availability(employee_id=employee_id, day=day)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+        source.set_availability(employee_id=employee_id, day=day, entry=None)
 
 
 @router.put("/wishes/{employee_id}/{day}")
-def put_wish(employee_id: EmployeePath, day: date, entry: WishEntry, source: Source) -> Wish:
+def put_wish(employee_id: EmployeePath, day: date, entry: WishEntry, source: Source) -> WishEntry:
     with planning_errors(invalid=INVALID, incomplete=INCOMPLETE):
-        try:
-            wish = Wish(employee_id=employee_id, date=day, **entry.model_dump())
-        except ValidationError as error:
-            raise RequestValidationError(error.errors()) from error
-        source.save_wish(wish)
-        return wish
+        source.set_wish(employee_id=employee_id, day=day, entry=entry)
+    return entry
 
 
 @router.delete("/wishes/{employee_id}/{day}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_wish(employee_id: EmployeePath, day: date, source: Source) -> Response:
+def delete_wish(employee_id: EmployeePath, day: date, source: Source) -> None:
     with planning_errors(invalid=INVALID, incomplete=INCOMPLETE):
-        source.delete_wish(employee_id=employee_id, day=day)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+        source.set_wish(employee_id=employee_id, day=day, entry=None)
