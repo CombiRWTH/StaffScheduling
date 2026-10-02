@@ -125,3 +125,11 @@ To plan an existing TimeOffice unit, check each item with read-only queries firs
 8. **Verify.** Open Mitarbeiter for the unit and month: a complete inspection, or the first source error to resolve.
 
 A unit fails loudly rather than partially: one unmapped profession, missing target or orphan credit rejects the whole selection.
+
+## Limitations
+
+- **Wishes and availability live only in the project tables.** Wishes or blocks entered in TimeOffice (`Wunschdienst` rows) are not imported, and wishes and availability entered in the app are not visible in TimeOffice. TimeOffice offers no equivalent that keeps their meaning, so there is no synchronization in either direction.
+- **Context duties must match a reference shift exactly.** A trusted context duty's segments must equal those of one of the four reference shifts. Variant shifts that share a code (for example another `F` or `S` row of `TDienste`) are not mapped, so roster history using them stops generation instead of being guessed.
+- **Duties outside the configured stations are not seen.** Generation ignores an employee's in-month duties in other units or plans; publishing then refuses the conflict instead. A known case is employee 791's native duties in the June target plan of `PE 77` on 2026-06-08..12, which project availability blocks. Context duties come only from the configured stations, so rest against a duty in another unit at the month edge is not checked.
+- **No Sunday history is read.** The annual minimum of employment-free Sundays is not assessed.
+- **Some mappings are assumptions.** In `facts.py`, profession `-` as trainee, Servicekraft as professional, Praktikant as assistant, and the absence codes `AZV`, `K`, `TB` and `SO` as unavailable are unverified; they are marked there.

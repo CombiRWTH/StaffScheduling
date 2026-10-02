@@ -38,14 +38,12 @@ STATION_79_ID = 79
 JUMPER_POOL_408_ID = 408
 
 # TDienste.Prim values of the reduced reference shifts; the only shift IDs the planning model uses.
-# There are 2 Prim for the Early Shift: 1113 and 3000
-EARLY_SHIFT_ID = 1113
-# There are 3 Prim for the Late Shift: 1605, 2011, and 3002
-LATE_SHIFT_ID = 1605
-# There are 3 Prim for the Night Shift: 1690, 2449, and 3001
-NIGHT_SHIFT_ID = 1690
-# Ist die Intermediate Shift T(1410) oder Z(1453)?
-INTERMEDIATE_SHIFT_ID = 1453
+# Other rows share the codes (F 3000; S 2449, 3001; N 2011, 3002) and the day shift T (1410) is not one;
+# roster rows with them are not reference duties, so a trusted context duty using one stops generation.
+EARLY_SHIFT_ID = 1113  # F
+LATE_SHIFT_ID = 1605  # S
+NIGHT_SHIFT_ID = 1690  # N
+INTERMEDIATE_SHIFT_ID = 1453  # Z
 
 
 @dataclass(frozen=True, slots=True)
@@ -101,7 +99,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "81393-011": StaffLevel.PROFESSIONAL,  # Stationsleiter/in - Pflegedienst
         "82102-002": StaffLevel.PROFESSIONAL,  # Altenpfleger/in
         "EX-81302-028": StaffLevel.PROFESSIONAL,  # EX-Pflegefachmann/-frau
-        # Legacy classified this as Fachkraft.
+        # Unverified assumption carried over from the earlier classification.
         "63302-045": StaffLevel.PROFESSIONAL,  # Servicekraft
         # Hilfskraft / support
         "81102-001": StaffLevel.ASSISTANT,  # Arzthelfer/in
@@ -113,7 +111,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "81301-018": StaffLevel.ASSISTANT,  # Stationshilfe
         "81302-014": StaffLevel.ASSISTANT,  # Pflegeassistent/in
         "BFD": StaffLevel.ASSISTANT,  # Bundesfreiwilligendienst
-        # Legacy classified this as Hilfskraft.
+        # Unverified assumption carried over from the earlier classification.
         "Pra": StaffLevel.ASSISTANT,  # Praktikant/-in
         # Ausbildung / Praktikum
         "A-31342-005": StaffLevel.TRAINEE,  # A-Notfallsanitäter
@@ -123,7 +121,8 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "A-81302-016": StaffLevel.TRAINEE,  # A-Pflegefachkraft Kinderkrankenpflege
         "A-81302-018": StaffLevel.TRAINEE,  # A-Pflegefachkraft Krankenpflege
         "A-81302-019": StaffLevel.TRAINEE,  # A-Pflegefachkraft Altenpflege
-        "-": StaffLevel.TRAINEE,  # Später herausfinden was das für eine Profession ist
+        # Unverified assumption: the code names no profession.
+        "-": StaffLevel.TRAINEE,
     }
 )
 
@@ -151,24 +150,23 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     availability_type_by_absence_code=MappingProxyType(
         {
             "U": AvailabilityType.VACATION,  # Urlaub
-            "ZU": AvailabilityType.VACATION,  # Zustatzurlaub
-            # Conservative hard blockers until TimeOffice/domain semantics are confirmed.
+            "ZU": AvailabilityType.VACATION,  # Zusatzurlaub
             "SC": AvailabilityType.UNAVAILABLE,  # Schulung
             "EZ": AvailabilityType.UNAVAILABLE,  # Elternzeit
             "RE": AvailabilityType.UNAVAILABLE,  # Reha
             "FI": AvailabilityType.UNAVAILABLE,  # Freistellung
-            "AZV": AvailabilityType.UNAVAILABLE,  # Arbeitszeitverkürzung - vermutlich unavailable
-            "K": AvailabilityType.UNAVAILABLE,  # Vermutlich Krank
-            "TB": AvailabilityType.UNAVAILABLE,  # Ungeklärt
-            "SO": AvailabilityType.UNAVAILABLE,  # Ungeklärt
             "KK": AvailabilityType.UNAVAILABLE,  # Krank
+            # Unverified assumptions: meanings unknown, so they block the whole day.
+            "AZV": AvailabilityType.UNAVAILABLE,  # presumably Arbeitszeitverkürzung
+            "K": AvailabilityType.UNAVAILABLE,  # presumably Krank
+            "TB": AvailabilityType.UNAVAILABLE,
+            "SO": AvailabilityType.UNAVAILABLE,
         }
     ),
     ignored_availability_absence_codes=frozenset(
         {
-            # Existing roster free/reduction markers.
-            # They must not block solve-from-scratch.
-            "FR",  # geplanter Freier Tag - Soll der als Urlaub oder unavailable gehändelt werden
+            # A planned free day of an existing roster; a schedule made from scratch plans free days itself.
+            "FR",  # geplanter freier Tag
         }
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,
