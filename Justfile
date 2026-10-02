@@ -1,74 +1,83 @@
-IMAGE_NAME := "staff-scheduling-api"
-PORT := "8000"
-
-# Shared Docker args for dev commands
-DOCKER_DEV_ARGS := "--env-file .env -v $PWD/src:/app/src -v $PWD/tests:/app/tests -v $PWD/found_solutions:/app/found_solutions -v $PWD/processed_solutions:/app/processed_solutions" + " -p " + PORT + ":8000"
-
 _default:
     just --list
 
-sync:
-    uv sync --all-extras
+# Install host dependencies for IDE support and dependency maintenance.
+install:
+    cd api && uv sync --frozen
+    cd webapp && pnpm install --frozen-lockfile
+    cd webapp && pnpm exec playwright install chromium
+    cd api && uv run --frozen pre-commit install
 
-lint *args:
-    uv run ruff check . {{args}}
+# Warn about tools that are missing or differ from the project pins; fail if the password file is missing.
+precheck:
+    #!/usr/bin/env bash
+    check_version() {
+        local found
+        [[ -n $2 ]] || { echo "Warning: could not read the pinned $1 version." >&2; return; }
+        found=$("$1" --version 2>/dev/null) || { echo "Warning: $1 not found; native development needs $1 $2." >&2; return; }
+        [[ $found =~ [0-9]+(\.[0-9]+)+ && ${BASH_REMATCH[0]} == "$2" ]] || echo "Warning: $found found; this project uses $2." >&2
+    }
+    docker compose version >/dev/null 2>&1 || echo "Warning: Docker with Compose not found; just run needs it." >&2
+    python=$(<api/.python-version)
+    check_version "{{just_executable()}}" "$(sed -n '/just-version:/{s/.*"\(.*\)"/\1/p;q;}' .github/workflows/ci.yml)"
+    check_version uv "$(sed -n 's/^required-version = "==\(.*\)"/\1/p' api/pyproject.toml)"
+    check_version "python${python%.*}" "$python"
+    check_version node "$(sed -n 's/.*"node": "\(.*\)".*/\1/p' webapp/package.json)"
+    check_version pnpm "$(sed -n 's/.*"packageManager": "pnpm@\(.*\)".*/\1/p' webapp/package.json)"
+    file=${DB_PASSWORD_FILE:-.secrets/db_password}
+    [[ -f $file ]] || { echo "Missing $file; create it as described in the quickstart." >&2; exit 1; }
 
-format *args:
-    uv run ruff format . {{args}}
+format:
+    cd api && uv run --frozen ruff format .
+    cd webapp && pnpm exec prettier --write . ../docs/source ../docs/adr ../docs/mkdocs.yml ../README.md ../GLOSSARY.md ../compose.yaml ../.github ../.pre-commit-config.yaml --config .prettierrc.json
 
-typecheck *args:
-    uv run pyright . {{args}}
+format-check:
+    cd api && uv run --frozen ruff format --check .
+    cd webapp && pnpm exec prettier --check . ../docs/source ../docs/adr ../docs/mkdocs.yml ../README.md ../GLOSSARY.md ../compose.yaml ../.github ../.pre-commit-config.yaml --config .prettierrc.json
+
+lint:
+    cd api && uv run --frozen ruff check .
+    cd webapp && pnpm run lint
+
+quality:
+    cd webapp && pnpm run quality
+
+typecheck:
+    cd api && uv run --frozen pyright .
+    cd webapp && pnpm run typecheck
 
 test *args:
-    uv run pytest {{args}}
+    cd api && uv run --frozen python -m pytest {{args}}
 
-check: lint typecheck test
+test-browser:
+    cd webapp && pnpm run test:browser
+
+# Run every independent offline gate and retain a failure exit status.
+check:
+    @result=0; for task in format-check lint quality typecheck test test-browser build docs-check; do "{{just_executable()}}" "$task" || result=1; done; exit "$result"
 
 build:
-    docker build -t {{IMAGE_NAME}} .
+    cd webapp && pnpm run build
 
-run:
-    docker run --rm -it \
-        {{DOCKER_DEV_ARGS}} \
-        {{IMAGE_NAME}} \
-        uv run \
-            fastapi dev \
-            src/scheduling/api/app.py \
-            --host 0.0.0.0 --port 8000
+run: precheck
+    docker compose up --build --wait
 
-debug:
-    docker run --rm -it \
-        {{DOCKER_DEV_ARGS}} \
-        -p 5678:5678 \
-        {{IMAGE_NAME}} \
-        uv run \
-            python -m debugpy \
-            --listen 0.0.0.0:5678 \
-            --wait-for-client \
-            -m fastapi dev \
-            src/scheduling/api/app.py \
-            --host 0.0.0.0 --port 8000
+stop:
+    docker compose down
 
-docker-shell:
-    docker run --rm -it \
-        {{DOCKER_DEV_ARGS}} \
-        {{IMAGE_NAME}} \
-        bash
+logs:
+    docker compose logs --follow
 
-health:
-    curl http://localhost:{{PORT}}/health
+docs:
+    uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs serve --dev-addr 127.0.0.1:8001
 
-# Starts the container in the background and keeps it alive
-up:
-    docker run -d --name {{IMAGE_NAME}}-dev \
-        {{DOCKER_DEV_ARGS}} \
-        {{IMAGE_NAME}} \
-        tail -f /dev/null
+docs-check:
+    uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs build --strict
 
-# Runs a command inside the running container
-exec *args:
-    docker exec -it {{IMAGE_NAME}}-dev uv run {{args}}
+# Explicit read-only external integration diagnostics; services must already be running.
+connectivity:
+    docker compose exec -T api python -m app.timeoffice.database
 
-# Stops the background container
-down:
-    docker stop {{IMAGE_NAME}}-dev && docker rm {{IMAGE_NAME}}-dev
+# Only tests explicitly marked for the authorized external test database.
+test-timeoffice:
+    cd api && uv run --frozen python -m pytest -m timeoffice

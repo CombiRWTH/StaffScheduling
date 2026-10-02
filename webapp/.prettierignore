@@ -1,0 +1,11 @@
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+pnpm-lock.yaml
+*.tsbuildinfo
+playwright-report/
+test-results/
+# The generated bundle schemas keep the bytes the example tests compare.
+**/validation/schema/

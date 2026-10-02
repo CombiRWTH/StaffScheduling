@@ -1,28 +1,47 @@
-exclude: ^legacy/
-
 repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.7.2
+    rev: 0.12.21
     hooks:
       - id: uv-lock
+        args: [--directory, api, --check]
+        files: ^api/(pyproject\.toml|uv\.lock)$
+      - id: uv-lock
+        name: Documentation tooling lock
+        args: [--directory, docs, --check]
+        files: ^docs/(pyproject\.toml|uv\.lock)$
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
+    rev: v6.0.0
     hooks:
       - id: check-json
       - id: check-yaml
-        exclude: mkdocs.yml
+        args: [--allow-multiple-documents]
+        exclude: ^docs/mkdocs\.yml$
       - id: check-yaml
         args: [--unsafe]
-        files: mkdocs.yml
+        files: ^docs/mkdocs\.yml$
+      - id: check-merge-conflict
+        args: [--assume-in-merge]
       - id: detect-private-key
       - id: debug-statements
+        language_version: python3.14
       - id: end-of-file-fixer
-      - id: pretty-format-json
-        args: [ '--autofix' ]
       - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.8
+    rev: v0.16.10
     hooks:
-      - id: ruff
-        args: [ --fix ]
+      - id: ruff-check
+        files: ^api/
       - id: ruff-format
+        files: ^api/
+        args: [--check]
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Prettier check
+        entry: node webapp/node_modules/prettier/bin/prettier.cjs --check --config webapp/.prettierrc.json --ignore-path webapp/.prettierignore
+        language: system
+        types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css]
+        # The paths `just format-check` checks; data folders in the root stay out.
+        files: ^(webapp/|docs/source/|docs/adr/|docs/mkdocs\.yml$|README\.md$|GLOSSARY\.md$|compose\.yaml$|\.github/|\.pre-commit-config\.yaml$)
+        exclude: ^webapp/pnpm-lock\.yaml$

@@ -1,0 +1,656 @@
+{
+  "$defs": {
+    "Assignment": {
+      "additionalProperties": false,
+      "description": "One employee's duty: a shift starting on `date` at a station.\n\n`staff_level` is the qualification the duty is credited as towards demand; it comes from the\nemployee's membership at that station, which can differ from their employee-level qualification.\nIts key is (employee_id, date, planning_unit_id, shift_id).",
+      "properties": {
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "planning_unit_id": {
+          "exclusiveMinimum": 0,
+          "title": "Planning Unit Id",
+          "type": "integer"
+        },
+        "shift_id": {
+          "exclusiveMinimum": 0,
+          "title": "Shift Id",
+          "type": "integer"
+        },
+        "staff_level": {
+          "$ref": "#/$defs/StaffLevel"
+        }
+      },
+      "required": [
+        "employee_id",
+        "date",
+        "planning_unit_id",
+        "shift_id",
+        "staff_level"
+      ],
+      "title": "Assignment",
+      "type": "object"
+    },
+    "CheckStatus": {
+      "description": "ACCEPTED: every promised rule was checked and holds. REJECTED: a hard rule is violated.\nINCOMPLETE: no violation was found, but a promised check lacked its input.",
+      "enum": [
+        "accepted",
+        "rejected",
+        "incomplete"
+      ],
+      "title": "CheckStatus",
+      "type": "string"
+    },
+    "DiagnosticSeverity": {
+      "enum": [
+        "info",
+        "warning",
+        "error"
+      ],
+      "title": "DiagnosticSeverity",
+      "type": "string"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "description": "One hard-rule violation of the schedule.",
+      "properties": {
+        "rule": {
+          "$ref": "#/$defs/Rule"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "employee_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Employee Id"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        },
+        "planning_unit_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Planning Unit Id"
+        },
+        "shift_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shift Id"
+        }
+      },
+      "required": [
+        "rule",
+        "message"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "InputReference": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "const": "input.json",
+          "title": "File",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "Hex SHA-256 of the exact bytes of the input file.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "sha256"
+      ],
+      "title": "InputReference",
+      "type": "object"
+    },
+    "NotAssessed": {
+      "additionalProperties": false,
+      "description": "A rule the input cannot decide, with the exact window and gap; never a pass.\n\nA blocking gap concerns a check promised for the month and prevents acceptance; a non-blocking one\nnames a longer-term or later obligation that this month's input cannot contain.",
+      "properties": {
+        "rule": {
+          "$ref": "#/$defs/Rule"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "blocking": {
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "employee_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Employee Id"
+        }
+      },
+      "required": [
+        "rule",
+        "reason",
+        "blocking",
+        "start",
+        "end"
+      ],
+      "title": "NotAssessed",
+      "type": "object"
+    },
+    "ObjectiveReport": {
+      "additionalProperties": false,
+      "description": "CP-SAT's objective of the returned schedule and the best bound it proved.\n\n`value` equals the weighted total of the independently computed scores in the schedule check;\na time-limited FEASIBLE schedule can be improved by up to the gap.",
+      "properties": {
+        "value": {
+          "title": "Value",
+          "type": "integer"
+        },
+        "best_bound": {
+          "title": "Best Bound",
+          "type": "number"
+        }
+      },
+      "required": [
+        "value",
+        "best_bound"
+      ],
+      "title": "ObjectiveReport",
+      "type": "object"
+    },
+    "ObjectiveWeights": {
+      "additionalProperties": false,
+      "description": "Dominance coefficients of the three objective tiers, derived from the input's bounds.\n\nOne unit of a higher tier outweighs any possible change of all lower tiers together.",
+      "properties": {
+        "health_events": {
+          "title": "Health Events",
+          "type": "integer"
+        },
+        "balance_deviation_minutes": {
+          "title": "Balance Deviation Minutes",
+          "type": "integer"
+        },
+        "surplus_intermediate_duties": {
+          "title": "Surplus Intermediate Duties",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "health_events",
+        "balance_deviation_minutes",
+        "surplus_intermediate_duties"
+      ],
+      "title": "ObjectiveWeights",
+      "type": "object"
+    },
+    "PlanningMonth": {
+      "additionalProperties": false,
+      "properties": {
+        "year": {
+          "maximum": 2200,
+          "minimum": 2000,
+          "title": "Year",
+          "type": "integer"
+        },
+        "month": {
+          "maximum": 12,
+          "minimum": 1,
+          "title": "Month",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "year",
+        "month"
+      ],
+      "title": "PlanningMonth",
+      "type": "object"
+    },
+    "Rule": {
+      "enum": [
+        "input",
+        "staffing",
+        "eligibility",
+        "one_duty_per_day",
+        "availability",
+        "monthly_balance",
+        "work_and_breaks",
+        "work_average",
+        "rest",
+        "consecutive_nights",
+        "night_recovery",
+        "replacement_rest",
+        "annual_free_sundays"
+      ],
+      "title": "Rule",
+      "type": "string"
+    },
+    "RulePolicy": {
+      "additionalProperties": false,
+      "description": "Hard-rule parameters of the ordinary adult baseline; no hospital or AVR exception is selected.\n\nEvery run reports the policy it used. Sources: ArbZG §§3-6 and 11 for work, breaks, rest and\nreplacement rest; BAuA night-work guidance, adopted as project policy, for nights and recovery;\nthe problem statement for the monthly balance of ±7.67 hours.",
+      "properties": {
+        "balance_tolerance_minutes": {
+          "default": 460,
+          "title": "Balance Tolerance Minutes",
+          "type": "integer"
+        },
+        "min_rest_minutes": {
+          "default": 660,
+          "title": "Min Rest Minutes",
+          "type": "integer"
+        },
+        "max_consecutive_nights": {
+          "default": 3,
+          "title": "Max Consecutive Nights",
+          "type": "integer"
+        },
+        "night_recovery_minutes": {
+          "default": 2880,
+          "title": "Night Recovery Minutes",
+          "type": "integer"
+        },
+        "max_daily_work_minutes": {
+          "default": 600,
+          "title": "Max Daily Work Minutes",
+          "type": "integer"
+        },
+        "average_daily_work_minutes": {
+          "default": 480,
+          "title": "Average Daily Work Minutes",
+          "type": "integer"
+        },
+        "short_break_after_minutes": {
+          "default": 360,
+          "title": "Short Break After Minutes",
+          "type": "integer"
+        },
+        "short_break_minutes": {
+          "default": 30,
+          "title": "Short Break Minutes",
+          "type": "integer"
+        },
+        "long_break_after_minutes": {
+          "default": 540,
+          "title": "Long Break After Minutes",
+          "type": "integer"
+        },
+        "long_break_minutes": {
+          "default": 45,
+          "title": "Long Break Minutes",
+          "type": "integer"
+        },
+        "min_break_part_minutes": {
+          "default": 15,
+          "title": "Min Break Part Minutes",
+          "type": "integer"
+        },
+        "max_uninterrupted_work_minutes": {
+          "default": 360,
+          "title": "Max Uninterrupted Work Minutes",
+          "type": "integer"
+        },
+        "sunday_replacement_days": {
+          "default": 13,
+          "title": "Sunday Replacement Days",
+          "type": "integer"
+        },
+        "holiday_replacement_days": {
+          "default": 55,
+          "title": "Holiday Replacement Days",
+          "type": "integer"
+        },
+        "preceding_context_days": {
+          "default": 5,
+          "title": "Preceding Context Days",
+          "type": "integer"
+        },
+        "following_context_days": {
+          "default": 3,
+          "title": "Following Context Days",
+          "type": "integer"
+        }
+      },
+      "title": "RulePolicy",
+      "type": "object"
+    },
+    "RunConfiguration": {
+      "additionalProperties": false,
+      "description": "The effective settings of one solve, recorded for reproduction.",
+      "properties": {
+        "policy": {
+          "$ref": "#/$defs/RulePolicy"
+        },
+        "weights": {
+          "$ref": "#/$defs/ObjectiveWeights"
+        },
+        "timeout_seconds": {
+          "title": "Timeout Seconds",
+          "type": "number"
+        },
+        "search_workers": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Search Workers"
+        },
+        "random_seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Random Seed"
+        }
+      },
+      "required": [
+        "policy",
+        "weights",
+        "timeout_seconds",
+        "search_workers",
+        "random_seed"
+      ],
+      "title": "RunConfiguration",
+      "type": "object"
+    },
+    "RuntimeVersions": {
+      "additionalProperties": false,
+      "description": "The runtime that solved; the lockfiles and the commit identify the rest of the software.",
+      "properties": {
+        "python": {
+          "title": "Python",
+          "type": "string"
+        },
+        "ortools": {
+          "title": "Ortools",
+          "type": "string"
+        },
+        "pydantic": {
+          "title": "Pydantic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "python",
+        "ortools",
+        "pydantic"
+      ],
+      "title": "RuntimeVersions",
+      "type": "object"
+    },
+    "ScheduleCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/CheckStatus"
+        },
+        "rules": {
+          "description": "The rules evaluated; anything else is listed in `not_assessed`.",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "title": "Rules",
+          "type": "array"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "not_assessed": {
+          "items": {
+            "$ref": "#/$defs/NotAssessed"
+          },
+          "title": "Not Assessed",
+          "type": "array"
+        },
+        "scores": {
+          "$ref": "#/$defs/ScheduleScores"
+        }
+      },
+      "required": [
+        "status",
+        "rules",
+        "findings",
+        "not_assessed",
+        "scores"
+      ],
+      "title": "ScheduleCheck",
+      "type": "object"
+    },
+    "ScheduleScores": {
+      "additionalProperties": false,
+      "description": "The raw objective tiers, highest priority first; see the solver documentation for their weights.",
+      "properties": {
+        "six_day_windows": {
+          "title": "Six Day Windows",
+          "type": "integer"
+        },
+        "backward_transitions": {
+          "title": "Backward Transitions",
+          "type": "integer"
+        },
+        "balance_deviation_minutes": {
+          "title": "Balance Deviation Minutes",
+          "type": "integer"
+        },
+        "surplus_intermediate_duties": {
+          "title": "Surplus Intermediate Duties",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "six_day_windows",
+        "backward_transitions",
+        "balance_deviation_minutes",
+        "surplus_intermediate_duties"
+      ],
+      "title": "ScheduleScores",
+      "type": "object"
+    },
+    "Solution": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SolutionStatus"
+        },
+        "configuration": {
+          "$ref": "#/$defs/RunConfiguration"
+        },
+        "wall_time_seconds": {
+          "title": "Wall Time Seconds",
+          "type": "number"
+        },
+        "assignments": {
+          "default": [],
+          "description": "Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `objective` and `check`.",
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "title": "Assignments",
+          "type": "array"
+        },
+        "objective": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ObjectiveReport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "check": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ScheduleCheck"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "diagnostics": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SolverDiagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status",
+        "configuration",
+        "wall_time_seconds"
+      ],
+      "title": "Solution",
+      "type": "object"
+    },
+    "SolutionStatus": {
+      "description": "What CP-SAT found. OPTIMAL and FEASIBLE yield a candidate schedule; whether it is acceptable is\nthe separate schedule check. INFEASIBLE is proven, UNKNOWN means neither a schedule nor a proof\nwithin the time limit, MODEL_INVALID a modelling error.",
+      "enum": [
+        "optimal",
+        "feasible",
+        "infeasible",
+        "model_invalid",
+        "unknown"
+      ],
+      "title": "SolutionStatus",
+      "type": "string"
+    },
+    "SolverDiagnostic": {
+      "additionalProperties": false,
+      "description": "Something the model build or solve noticed, such as a demand no candidate can cover.\n\nDiagnostics explain a solver result; whether a schedule holds the rules is the schedule check.",
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/DiagnosticSeverity"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "SolverDiagnostic",
+      "type": "object"
+    },
+    "StaffLevel": {
+      "description": "Reduced staffing level used by demand and solver logic.\n\nThis is mapped from TimeOffice source data such as Berufe/Qualis.\nThe solver should depend on this enum, not on raw TimeOffice IDs.",
+      "enum": [
+        "professional",
+        "assistant",
+        "trainee",
+        "mfa"
+      ],
+      "title": "StaffLevel",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "result.json: the solution of the paired input, with its effective configuration and schedule check.",
+  "properties": {
+    "format_version": {
+      "const": 1,
+      "title": "Format Version",
+      "type": "integer"
+    },
+    "planning_month": {
+      "$ref": "#/$defs/PlanningMonth"
+    },
+    "input": {
+      "$ref": "#/$defs/InputReference"
+    },
+    "solution": {
+      "$ref": "#/$defs/Solution"
+    },
+    "versions": {
+      "$ref": "#/$defs/RuntimeVersions"
+    }
+  },
+  "required": [
+    "format_version",
+    "planning_month",
+    "input",
+    "solution",
+    "versions"
+  ],
+  "title": "ScheduleResult",
+  "type": "object"
+}

@@ -1,0 +1,169 @@
+name: CI
+
+on:
+  push:
+    branches: [main, handin-readiness]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    # main's branch protection requires a check with this exact name; keep it when editing this job.
+    name: Pre-commit Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.21"
+          enable-cache: true
+          cache-dependency-glob: api/uv.lock
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: api/.python-version
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: webapp/package.json
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
+        with:
+          just-version: "1.58.0"
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@12.8.1 --allow-scripts=pnpm
+      - name: Install frozen native tools and Git hook
+        run: just install
+      - name: Check every tracked file with Git hooks
+        run: uv run --project api --frozen pre-commit run --all-files
+      - name: Run shared lint, quality and type checks
+        run: just lint quality typecheck
+
+  tests:
+    name: Offline API tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.21"
+          enable-cache: true
+          cache-dependency-glob: api/uv.lock
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: api/.python-version
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
+        with:
+          just-version: "1.58.0"
+      - name: Install ODBC driver manager for pyodbc imports
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends unixodbc
+      - name: Install frozen API dependencies
+        run: uv sync --directory api --frozen
+      - name: Run all offline tests, including integration-marked tests
+        run: just test
+
+  webapp:
+    name: Webapp production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: webapp/package.json
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@12.8.1 --allow-scripts=pnpm
+      - name: Install frozen webapp dependencies
+        run: pnpm --dir webapp install --frozen-lockfile
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
+        with:
+          just-version: "1.58.0"
+      - name: Build Next.js, including its type gate
+        run: just build
+
+  browser:
+    name: Offline staff-admin browser flows
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.21"
+          enable-cache: true
+          cache-dependency-glob: api/uv.lock
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: api/.python-version
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: webapp/package.json
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
+        with:
+          just-version: "1.58.0"
+      - name: Install native tools and browser
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends unixodbc
+          npm install --global pnpm@12.8.1 --allow-scripts=pnpm
+          uv sync --directory api --frozen
+          pnpm --dir webapp install --frozen-lockfile
+          pnpm --dir webapp exec playwright install --with-deps chromium
+      - name: Run controlled browser flows through Next.js and FastAPI
+        run: just test-browser
+
+  containers:
+    name: Compose images
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate Compose and build both images without database credentials
+        run: |
+          docker compose config --quiet
+          docker compose build
+      - name: Check API image ODBC imports and driver
+        run: >-
+          docker run --rm staff-scheduling-api
+          python -c "import pyodbc; assert 'ODBC Driver 18 for SQL Server' in pyodbc.drivers()"
+
+  docs:
+    name: Documentation build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.21"
+          enable-cache: true
+          cache-dependency-glob: docs/uv.lock
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: api/.python-version
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
+        with:
+          just-version: "1.58.0"
+      - name: Build the independent docs project strictly
+        run: just docs-check

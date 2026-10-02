@@ -1,0 +1,57 @@
+[project]
+name = "scheduling"
+version = "0.1.0"
+description = ""
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "fastapi[standard]==0.142.2",
+    "ortools==9.15.6755",
+    "SQLAlchemy==2.1.1",
+    "pyodbc==5.3.0",
+    "pydantic==2.13.5",
+    "pydantic-settings==2.15.0",
+    "holidays==0.105",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit==4.6.2",
+    "pyright==1.1.414",
+    "ruff==0.16.10",
+    "pytest==9.1.1",
+]
+
+[tool.uv]
+package = false
+required-version = "==0.12.21"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "B", "W", "I", "C4", "PT", "UP", "FAST", "S", "PTH",
+    "RUF001", "RUF002", "RUF003", "RUF005", "RUF006", "RUF008", "RUF012", "RUF013",
+    "SIM105", "SIM108", "SIM110", "SIM115", "SIM117",
+    "TRY201", "TRY203", "TRY300",
+    "D201", "D202", "D204", "D206", "D207", "D208", "D210", "D214", "D215", "D300", "D301", "D417",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.pyright]
+typeCheckingMode = "strict"
+reportUnusedVariable = "warning"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not timeoffice and not reproduction'"
+markers = [
+    "integration: offline tests that run the solver or cross module boundaries",
+    "timeoffice: tests requiring an explicitly declared external test database",
+    "reproduction: tests that solve the committed example inputs again; minutes, run on request"
+]

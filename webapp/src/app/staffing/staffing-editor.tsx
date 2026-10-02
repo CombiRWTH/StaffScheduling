@@ -1,0 +1,298 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { STAFF_LEVEL_LABELS, WEEKDAYS, formatDate } from "@/lib/labels";
+import type { DayType, DemandConfiguration, StaffLevel } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { expandPattern, saveDemand } from "./actions";
+import {
+  MAX_REQUIRED_COUNT,
+  cellsOf,
+  countAt,
+  gridOf,
+  isValidCount,
+  parseCount,
+  sameGrid,
+  withCount,
+  withLevelFrom,
+  type DemandGrid,
+} from "./demand-grid";
+
+const LEVELS = Object.keys(STAFF_LEVEL_LABELS) as StaffLevel[];
+// Count inputs are centered under their shift heading; spinners would push the digits off-center.
+const COUNT_INPUT =
+  "mx-auto w-16 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
+const DAY_TYPES: Array<{ type: DayType; label: string }> = [
+  ...(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const).map((type, index) => ({
+    type,
+    label: WEEKDAYS[index],
+  })),
+  { type: "holiday", label: "Feiertag" },
+];
+
+export function StaffingEditor({ month, configuration }: { month: string; configuration: DemandConfiguration }) {
+  const { calendar, shifts, planning_unit_id: stationId } = configuration;
+  const [saved, setSaved] = useState<DemandGrid>(() => gridOf(configuration.demand?.cells ?? []));
+  const [grid, setGrid] = useState<DemandGrid>(saved);
+  const [level, setLevel] = useState<StaffLevel>("professional");
+  const [isSaved, setIsSaved] = useState(configuration.demand !== null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pending, startTransition] = useTransition();
+  const dirty = !sameGrid(grid, saved);
+
+  function setCount(date: string, shiftId: number, value: string) {
+    setGrid((current) => withCount(current, date, shiftId, level, parseCount(value)));
+    setMessage(null);
+  }
+
+  function save() {
+    startTransition(async () => {
+      const result = await saveDemand(month, stationId, cellsOf(grid));
+      if (result.ok) {
+        setSaved(grid);
+        setIsSaved(true);
+        setMessage({ ok: true, text: "Mindestbesetzung gespeichert." });
+      } else {
+        setMessage({ ok: false, text: `${result.error} Änderungen wurden nicht gespeichert.` });
+      }
+    });
+  }
+
+  return (
+    <div className="space-y-4">
+      {!isSaved && (
+        <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+          Für diesen Monat ist noch keine Mindestbesetzung gespeichert.
+        </p>
+      )}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div role="tablist" aria-label="Qualifikation" className="flex gap-1 rounded-lg bg-muted p-1">
+          {LEVELS.map((value) => (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={level === value}
+              onClick={() => setLevel(value)}
+              className={cn(
+                "rounded-md px-3 py-1 text-sm",
+                level === value ? "bg-background font-medium shadow-sm" : "text-muted-foreground",
+              )}
+            >
+              {STAFF_LEVEL_LABELS[value]}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          {dirty && <span className="text-sm text-muted-foreground">Ungespeicherte Änderungen</span>}
+          <Button variant="outline" disabled={!dirty || pending} onClick={() => setGrid(saved)}>
+            Zurücksetzen
+          </Button>
+          <Button disabled={pending || (!dirty && isSaved)} onClick={save}>
+            Speichern
+          </Button>
+        </div>
+      </div>
+      {message && (
+        <p
+          role={message.ok ? "status" : "alert"}
+          className={cn("text-sm", message.ok ? "text-green-700" : "text-destructive")}
+        >
+          {message.text}
+        </p>
+      )}
+
+      <PatternCard
+        month={month}
+        stationId={stationId}
+        shifts={shifts}
+        level={level}
+        grid={grid}
+        onApply={(next) => {
+          setGrid(next);
+          setMessage(null);
+        }}
+      />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{STAFF_LEVEL_LABELS[level]} je Tag</CardTitle>
+          <CardDescription>
+            Ganze Zahlen von 0 bis {MAX_REQUIRED_COUNT}; leer oder 0 bedeutet: keine Mindestbesetzung.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Datum</TableHead>
+                <TableHead>Feiertag</TableHead>
+                {shifts.map((shift) => (
+                  <TableHead key={shift.shift_id} className="text-center">
+                    {shift.code}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {calendar.map((day) => (
+                <TableRow key={day.date} className={cn((day.weekday > 5 || day.public_holiday) && "bg-muted/40")}>
+                  <TableCell className="whitespace-nowrap">
+                    {WEEKDAYS[day.weekday - 1]} {formatDate(day.date)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{day.public_holiday}</TableCell>
+                  {shifts.map((shift) => (
+                    <TableCell key={shift.shift_id} className="text-center">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={MAX_REQUIRED_COUNT}
+                        aria-label={`${shift.code} am ${formatDate(day.date)}`}
+                        aria-invalid={!isValidCount(countAt(grid, day.date, shift.shift_id, level))}
+                        value={countAt(grid, day.date, shift.shift_id, level)}
+                        onChange={(event) => setCount(day.date, shift.shift_id, event.target.value)}
+                        className={COUNT_INPUT}
+                      />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/** Previews a weekly pattern via the backend calendar and applies it to the unsaved grid only after confirmation. */
+function PatternCard({
+  month,
+  stationId,
+  shifts,
+  level,
+  grid,
+  onApply,
+}: {
+  month: string;
+  stationId: number;
+  shifts: DemandConfiguration["shifts"];
+  level: StaffLevel;
+  grid: DemandGrid;
+  onApply: (grid: DemandGrid) => void;
+}) {
+  const [pattern, setPattern] = useState<Record<string, number>>({});
+  const [preview, setPreview] = useState<{ grid: DemandGrid; changedDates: string[] } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [previewing, startPreview] = useTransition();
+
+  function showPreview() {
+    const cells = DAY_TYPES.flatMap(({ type }) =>
+      shifts.map((shift) => ({
+        day_type: type,
+        shift_id: shift.shift_id,
+        staff_level: level,
+        required_count: pattern[`${level}|${type}|${shift.shift_id}`] ?? 0,
+      })),
+    );
+    startPreview(async () => {
+      setError(null);
+      const result = await expandPattern(month, stationId, cells);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setPreview(withLevelFrom(grid, gridOf(result.cells), level));
+    });
+  }
+
+  return (
+    <details className="group rounded-xl border bg-card">
+      <summary className="cursor-pointer list-none px-6 py-4 font-semibold">
+        <span className="mr-2 inline-block transition-transform group-open:rotate-90">›</span>Wochenmuster anwenden
+      </summary>
+      <div className="space-y-3 px-6 pb-6">
+        <p className="text-sm text-muted-foreground">
+          Muster für {STAFF_LEVEL_LABELS[level]} auf alle Tage dieses Monats übertragen. Feiertage (NRW) nutzen die
+          Zeile Feiertag. Das Muster wird nicht gespeichert und gilt nicht für andere Monate.
+        </p>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Tag</TableHead>
+              {shifts.map((shift) => (
+                <TableHead key={shift.shift_id} className="text-center">
+                  {shift.code}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {DAY_TYPES.map(({ type, label }) => (
+              <TableRow key={type}>
+                <TableCell>{label}</TableCell>
+                {shifts.map((shift) => (
+                  <TableCell key={shift.shift_id} className="text-center">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={MAX_REQUIRED_COUNT}
+                      aria-label={`Muster ${shift.code} ${label}`}
+                      aria-invalid={!isValidCount(pattern[`${level}|${type}|${shift.shift_id}`] ?? 0)}
+                      value={pattern[`${level}|${type}|${shift.shift_id}`] ?? 0}
+                      onChange={(event) => {
+                        setPattern((current) => ({
+                          ...current,
+                          [`${level}|${type}|${shift.shift_id}`]: parseCount(event.target.value),
+                        }));
+                        setPreview(null);
+                      }}
+                      className={COUNT_INPUT}
+                    />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        <Button variant="outline" disabled={previewing} onClick={showPreview}>
+          Vorschau
+        </Button>
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+        {preview &&
+          (preview.changedDates.length ? (
+            <div role="region" aria-label="Vorschau" className="space-y-2 rounded-md border p-3 text-sm">
+              <p>
+                {preview.changedDates.length} Tage werden ersetzt:{" "}
+                {preview.changedDates.map((date) => formatDate(date).slice(0, 6)).join(", ")}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    onApply(preview.grid);
+                    setPreview(null);
+                  }}
+                >
+                  Übernehmen
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setPreview(null)}>
+                  Verwerfen
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Das Muster ändert keinen Tag.</p>
+          ))}
+      </div>
+    </details>
+  );
+}

@@ -1,0 +1,58 @@
+name: staff-scheduling
+
+services:
+  api:
+    build: ./api
+    command: [fastapi, dev, app/main.py, --host, 0.0.0.0, --port, "8000"]
+    env_file: .env
+    environment:
+      SECRETS_DIR: /run/secrets
+    secrets:
+      - db_password
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${API_PORT:-8000}:8000"
+    volumes:
+      - ./api/app:/project/api/app
+      - ${DATA_DIR:-./data}:/project/data
+    healthcheck:
+      test:
+        [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/status', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  webapp:
+    build: ./webapp
+    command: [sh, -c, "pnpm install --frozen-lockfile && exec pnpm run dev --hostname 0.0.0.0"]
+    environment:
+      API_URL: http://api:8000
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${WEBAPP_PORT:-3000}:3000"
+    volumes:
+      - ./webapp:/app
+      - webapp-dependencies:/app/node_modules
+      - webapp-build:/app/.next
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/api/health', {signal: AbortSignal.timeout(5000)}).then(r => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+secrets:
+  db_password:
+    file: ${DB_PASSWORD_FILE:-./.secrets/db_password}
+
+volumes:
+  webapp-dependencies:
+  webapp-build:

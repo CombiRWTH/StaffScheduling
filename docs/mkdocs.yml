@@ -1,0 +1,78 @@
+site_name: Staff Scheduling
+docs_dir: source
+site_dir: site
+site_url: https://combirwth.github.io/StaffScheduling/
+repo_url: https://github.com/CombiRWTH/StaffScheduling/
+repo_name: CombiRWTH/StaffScheduling
+
+nav:
+  - Home: index.md
+  - Try it:
+      - Quickstart: getting-started/quickstart.md
+      - Installation: getting-started/installation.md
+  - Use the app:
+      - user-guide/index.md
+      - Select and inspect: user-guide/selection.md
+      - Configure monthly inputs: user-guide/configuration.md
+      - Generate schedules: user-guide/generation.md
+      - Review, import and export: user-guide/review.md
+      - Publish and clear: user-guide/publication.md
+  - Understand the system:
+      - architecture/index.md
+      - Domain model: architecture/domain.md
+      - API contracts: architecture/api.md
+      - Solver: architecture/solver.md
+      - TimeOffice adapter: architecture/timeoffice.md
+  - Develop:
+      - Checks and tooling: development/checks.md
+      - Testing: development/testing.md
+      - Documentation: development/documentation.md
+  - Validate:
+      - validation/index.md
+      - Reasoning and requirements: validation/reasoning.md
+      - Examples and reproduction: validation/examples.md
+
+theme:
+  name: material
+  language: en
+  font: false
+  features:
+    - navigation.indexes
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: teal
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: teal
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+plugins:
+  - search:
+      lang: en
+
+validation:
+  links:
+    anchors: warn
