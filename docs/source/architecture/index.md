@@ -1,6 +1,6 @@
 # Architecture and contracts
 
-The repository contains a Python API, a Next.js webapp and one MkDocs documentation project. FastAPI owns the canonical scheduling domain and solver; TimeOffice-specific SQL, identifiers and translations stay in its adapter. The selection/employee slice uses direct canonical server reads; remaining imported views still contain compatibility code.
+The repository contains a Python API, a Next.js webapp and one MkDocs documentation project. FastAPI owns the canonical scheduling domain and solver; TimeOffice-specific SQL, identifiers and translations stay in its adapter. Selection, monthly configuration and generation are rebuilt on canonical API reads and writes; no imported compatibility views remain.
 
 ## Who this section serves
 
@@ -76,7 +76,7 @@ The solver engine depends only on `domain/`. `main.py` connects it to the adapte
 | Runtime/dependency pins             | service manifests/locks, Dockerfiles and consuming workflow/tool settings      |
 | Documentation                       | `docs/source/` and `docs/mkdocs.yml`                                           |
 
-Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. Domain terms are defined in the repository's `GLOSSARY.md`; decisions that are hard to reverse are recorded in `docs/adr/` (for example, why the webapp was rebuilt rather than adapted, why TimeOffice sits behind one service, and why monthly configuration lives in project tables). The [limitations](../validation/index.md) page records remaining compatibility work.
+Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. Domain terms are defined in the repository's `GLOSSARY.md`; decisions that are hard to reverse are recorded in `docs/adr/` (for example, why the webapp was rebuilt rather than adapted, why TimeOffice sits behind one service, why monthly configuration lives in project tables, and why generation jobs live in one API process). The [limitations](../validation/index.md) page records remaining compatibility work.
 
 ## Selection and inspection boundary
 

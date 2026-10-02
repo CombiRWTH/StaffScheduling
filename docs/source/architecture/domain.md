@@ -6,7 +6,7 @@ This reference describes inspected source definitions. Connected database behavi
 
 ## SchedulingDataset
 
-One `SchedulingDataset` aggregates a `PlanningMonth` and tuples of planning units, plans, shifts, dated staffing requirements, employees, memberships, Sunday work history, wishes, assignments, availability and monthly accounts. The solver consumes it; no adapter currently builds one, and aggregate dataset validation is not implemented.
+One `SchedulingDataset` aggregates a `PlanningMonth` and tuples of planning units, plans, shifts, dated staffing requirements, employees, memberships, Sunday work history, wishes, assignments, availability and monthly accounts. The solver consumes it. `build_scheduling_dataset` (`dataset.py`) builds one from a validated employee inspection, the timed reference shifts and the saved demand of each selected station: it refuses a station without saved demand, keeps only the selected stations and their associated pools, and leaves wishes, existing assignments and plans empty. `staffing_role` (`shift.py`) makes the intermediate shift optional coverage and every other shift part of the minimum.
 
 | Concept                     | Meaning and important fields                                                                           |
 | --------------------------- | ------------------------------------------------------------------------------------------------------ |

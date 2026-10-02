@@ -4,7 +4,7 @@ Start through the [quickstart](../getting-started/quickstart.md), then open <htt
 
 ## What you can use this guide for
 
-For staff administrators using the application: choose the month and units, inspect employees, configure availability and staffing, generate schedules, review or exchange files, then publish or clear assignments. Each procedure will explain what to do, what result to expect and how to recover from a failure. These procedures remain outlines until their acceptance checks pass.
+For staff administrators using the application: choose the month and units, inspect employees, configure availability and staffing, generate schedules, review or exchange files, then publish or clear assignments. Each procedure will explain what to do, what result to expect and how to recover from a failure. Selection, configuration and generation are checked with controlled browser flows; review, file exchange and publication remain outlines until their acceptance checks pass.
 
 ## Planning concepts
 
