@@ -1,4 +1,4 @@
-import { Disclosure } from "@/components/disclosure";
+import { CARD_DISCLOSURE, Disclosure } from "@/components/disclosure";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { WISH_LABELS, WISH_STATUS_LABELS, formatDate } from "@/lib/labels";
 import type { ScheduleReview, WishStatus } from "@/lib/types";
@@ -21,6 +21,7 @@ export function WishTable({ review }: { review: ScheduleReview }) {
   return (
     <section aria-label="Wünsche">
       <Disclosure
+        className={CARD_DISCLOSURE}
         title={`Wünsche: ${counts.granted} erfüllt · ${counts.denied} nicht erfüllt · ${counts.not_grantable} nicht erfüllbar`}
       >
         <p className="text-muted-foreground">

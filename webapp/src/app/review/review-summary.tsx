@@ -18,7 +18,6 @@ import {
   solverStatusText,
 } from "@/lib/labels";
 import type { CheckStatus, ScheduleReview } from "@/lib/types";
-import { WishTable } from "./wish-table";
 
 const SOURCES: Record<ScheduleReview["source"], string> = { generation: "Generiert", import: "Importiert" };
 const TIME = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "short", timeStyle: "short" });
@@ -87,18 +86,17 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
               {missing} {missing === 1 ? "unbesetzte Pflichtstelle" : "unbesetzte Pflichtstellen"} (Lücken)
             </p>
             <p className="text-muted-foreground">
-              Kein einsetzbarer Mitarbeiter ist frei; für diese Schichten Gastpersonal anfragen.
+              Kein einsetzbarer Mitarbeiter ist frei; für diese Schichten Gastpersonal anfragen. Im Dienstplan unter
+              Besetzung rot markiert.
             </p>
             <BulletList
               items={tables.gaps.map(
                 (row) =>
-                  `${formatDate(row.date)} · ${row.planning_unit_name} · ${row.shift_code} · ${STAFF_LEVEL_LABELS[row.staff_level]}: ${row.missing_count} von ${row.required_count} fehlen`,
+                  `${formatDate(row.date)} · ${row.planning_unit_name} · ${row.shift_code} · ${STAFF_LEVEL_LABELS[row.staff_level]}: ${row.missing_count} ${row.missing_count === 1 ? "fehlt" : "fehlen"} (benötigt ${row.required_count})`,
               )}
             />
           </section>
         )}
-
-        <WishTable review={review} />
 
         <Disclosure title="Technische Details">
           <div className="grid gap-6 md:grid-cols-2">

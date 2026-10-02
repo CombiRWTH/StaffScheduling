@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CARD_DISCLOSURE, Disclosure } from "@/components/disclosure";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { STAFF_LEVEL_LABELS, formatHours } from "@/lib/labels";
 import type { ScheduleReview } from "@/lib/types";
@@ -15,14 +15,11 @@ export function AccountTable({ review }: { review: ScheduleReview }) {
   );
 
   return (
-    <Card aria-label="Monatskonten">
-      <CardHeader>
-        <CardTitle>Monatskonten</CardTitle>
-        <CardDescription>
+    <section aria-label="Monatskonten">
+      <Disclosure className={CARD_DISCLOSURE} title={`Monatskonten (${employees.length} Mitarbeiter)`}>
+        <p className="text-sm text-muted-foreground">
           Saldo = Geplant + Gutschriften − Soll; zulässig sind ±{formatHours(tolerance)}.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
         <Table>
           <TableHeader>
             <TableRow>
@@ -56,7 +53,7 @@ export function AccountTable({ review }: { review: ScheduleReview }) {
             ))}
           </TableBody>
         </Table>
-      </CardContent>
-    </Card>
+      </Disclosure>
+    </section>
   );
 }

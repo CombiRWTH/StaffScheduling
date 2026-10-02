@@ -27,6 +27,12 @@ const AVAILABILITY_SHORT: Record<Availability["availability_type"], string> = {
 };
 
 const key = (employeeId: number, date: string) => `${employeeId}|${date}`;
+// Native absences come from TimeOffice with their absence code as the reason.
+const TIMEOFFICE_ABSENCE = "TimeOffice absence";
+/** What an employee-date without a duty shows: a native absence's TimeOffice code (such as `U` or `SC`), else the
+ * entry's short code; a project entry's free-text reason stays in the tooltip. */
+const availabilityText = (row: Availability) =>
+  row.source === TIMEOFFICE_ABSENCE && row.reason ? row.reason : AVAILABILITY_SHORT[row.availability_type];
 const staffingKey = (stationId: number, shiftId: number, date: string) => `${stationId}|${shiftId}|${date}`;
 /** `HH:MM` of an offset timestamp: its Europe/Berlin wall-clock time. */
 const clock = (timestamp: string) => timestamp.slice(11, 16);
@@ -37,6 +43,8 @@ type Placement = "home" | "transfer" | "unknown";
 const NAME_CELL = "max-w-36 truncate whitespace-nowrap md:max-w-56";
 // The dashed border of a transfer, in the cell's text color; shared by cells and legend.
 const TRANSFER_BORDER = "outline-2 -outline-offset-2 outline-dashed outline-current";
+// A staffing cell with a gap: tinted and in bold red, shared by cells and legend.
+const GAP_CELL = "bg-destructive/10 font-semibold text-destructive";
 
 /**
  * Short labels for the selected stations, so a transfer cell can name its station: a short name as is, a longer
@@ -135,20 +143,29 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
       ].join(", "),
     ]),
   );
-  // Staffing per station and shift: required and assigned counts per date over all qualifications. A cell is
-  // short when any qualification is, because staff of another qualification never fill its gap.
-  const staffing = new Map<string, { required: number; assigned: number; short: boolean; levels: string[] }>();
+  // Staffing per station, shift and date: the required count, the assigned staff (with demand only those of the
+  // required qualifications, which others never fill; the tooltip lists everyone) and the gap: the slots missing
+  // per qualification.
+  const staffing = new Map<
+    string,
+    { required: number; assigned: number; credited: number; missing: number; levels: string[]; gaps: string[] }
+  >();
   for (const row of tables.staffing) {
     const at = staffingKey(row.planning_unit_id, row.shift_id, row.date);
     const cell = staffing.get(at) ?? {
       required: 0,
       assigned: 0,
-      short: false,
+      credited: 0,
+      missing: 0,
       levels: [],
+      gaps: [],
     };
     cell.required += row.required_count;
     cell.assigned += row.assigned_count;
-    cell.short ||= row.assigned_count < row.required_count;
+    if (row.required_count > 0) cell.credited += row.assigned_count;
+    const missing = Math.max(0, row.required_count - row.assigned_count);
+    cell.missing += missing;
+    if (missing) cell.gaps.push(`${missing} ${STAFF_LEVEL_LABELS[row.staff_level]}`);
     cell.levels.push(`${STAFF_LEVEL_LABELS[row.staff_level]} ${row.assigned_count}/${row.required_count}`);
     staffing.set(at, cell);
   }
@@ -157,6 +174,21 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
       tables.staffing.some((row) => row.planning_unit_id === stationId && row.shift_id === shift.shift_id),
     );
   const weekend = (day: (typeof calendar)[number]) => day.weekday >= 6 || day.public_holiday !== null;
+
+  // The legend explains only marks that this schedule actually shows.
+  const shownTypes = new Set(tables.duties.map((row) => row.shift_type));
+  const anyTransfer = tables.duties.some((row) => placement(row) === "transfer");
+  const anyUnknown = tables.duties.some((row) => placement(row) === "unknown");
+  const availabilityLegend = new Map<string, string>();
+  for (const [at, rows] of availability) {
+    if (duties.has(at)) continue;
+    const label = AVAILABILITY_LABELS[rows[0].availability_type];
+    availabilityLegend.set(
+      availabilityText(rows[0]),
+      rows[0].source === TIMEOFFICE_ABSENCE ? `Abwesenheit in TimeOffice (${label})` : label,
+    );
+  }
+  const anyGap = [...staffing.values()].some((cell) => cell.missing > 0);
 
   function toggleFullscreen() {
     if (document.fullscreenElement) void document.exitFullscreen();
@@ -252,7 +284,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                                 .join(", ")}
                               className="text-muted-foreground"
                             >
-                              {absent[0].reason ?? AVAILABILITY_SHORT[absent[0].availability_type]}
+                              {availabilityText(absent[0])}
                             </span>
                           ) : null}
                         </td>
@@ -280,14 +312,24 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                           return (
                             <td
                               key={day.date}
-                              title={cell?.levels.join(", ")}
+                              title={
+                                cell &&
+                                [
+                                  cell.gaps.length > 0 &&
+                                    `Lücke: ${cell.gaps.join(", ")} ${cell.missing === 1 ? "fehlt" : "fehlen"}`,
+                                  cell.levels.join(", "),
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")
+                              }
                               className={cn(
                                 "border-b border-l p-1 text-center tabular-nums",
                                 weekend(day) && "bg-muted",
-                                cell?.short && "font-semibold text-destructive",
+                                cell?.missing && GAP_CELL,
                               )}
                             >
-                              {cell && `${cell.assigned}/${cell.required}`}
+                              {cell && `${cell.required ? cell.credited : cell.assigned}/${cell.required}`}
+                              {cell?.missing ? <div className="text-[10px] leading-tight">−{cell.missing}</div> : null}
                             </td>
                           );
                         })}
@@ -302,34 +344,52 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
 
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground" aria-label="Legende">
             {(Object.keys(SHIFT_TYPE_LABELS) as ShiftType[])
-              .filter((type) => review.shifts.some((shift) => shift.type === type))
+              .filter((type) => shownTypes.has(type))
               .map((type) => (
                 <span key={type} className="flex items-center gap-1.5">
                   <span className={cn("inline-block size-3 rounded", SHIFT_COLORS[type])} />
                   {SHIFT_TYPE_LABELS[type]}
                 </span>
               ))}
-            <span className="flex items-center gap-1.5">
-              <span className={cn("inline-block size-3 rounded", SHIFT_COLORS.other, TRANSFER_BORDER)} />
-              Einsatz außerhalb der Herkunft{codes && "; das Kürzel nennt die Station"}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className={cn("relative mr-1 inline-block size-3 rounded", SHIFT_COLORS.other)}>
-                <UnknownOriginTag />
+            {anyTransfer && (
+              <span className="flex items-center gap-1.5">
+                <span className={cn("inline-block size-3 rounded", SHIFT_COLORS.other, TRANSFER_BORDER)} />
+                Einsatz außerhalb der Herkunft{codes && " (Kürzel: Station des Einsatzes)"}
               </span>
-              Herkunft unbekannt
-            </span>
-            {codeLegend.length > 0 && <span>{codeLegend.join(", ")}</span>}
-            <span>{Object.values(AVAILABILITY_SHORT).join(", ")} oder Grund: Abwesenheit oder Einschränkung</span>
+            )}
+            {anyTransfer && codeLegend.length > 0 && <span>{codeLegend.join(", ")}</span>}
+            {anyUnknown && (
+              <span className="flex items-center gap-1.5">
+                <span className={cn("relative mr-1 inline-block size-3 rounded", SHIFT_COLORS.other)}>
+                  <UnknownOriginTag />
+                </span>
+                Herkunft unbekannt
+              </span>
+            )}
+            {[...availabilityLegend]
+              .sort(([a], [b]) => a.localeCompare(b, "de-DE"))
+              .map(([text, label]) => (
+                <span key={text}>
+                  <span className="font-medium text-foreground">{text}</span> {label}
+                </span>
+              ))}
+            {findings.size > 0 && (
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block size-3 rounded ring-2 ring-inset ring-destructive" />
+                Regelverstoß
+              </span>
+            )}
             <span className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded ring-2 ring-inset ring-destructive" />
-              Regelverstoß
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded bg-muted" />
+              <span className="inline-block size-3 rounded border bg-muted" />
               Wochenende oder Feiertag
             </span>
-            <span>Besetzung: zugeteilt/benötigt, rot bei Unterbesetzung</span>
+            <span>Besetzung: eingeteilt/benötigt</span>
+            {anyGap && (
+              <span className="flex items-center gap-1.5">
+                <span className={cn("inline-block rounded px-1 text-[10px]", GAP_CELL)}>−1</span>
+                Lücke: unbesetzte Pflichtstellen, Gastpersonal anfragen
+              </span>
+            )}
           </div>
         </div>
       </CardContent>

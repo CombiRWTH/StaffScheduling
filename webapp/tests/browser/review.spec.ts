@@ -56,9 +56,9 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   // Required slots nobody can fill are listed prominently, apart from the duties.
   const gaps = summary(page).getByRole("region", { name: "Lücken" });
   await expect(gaps).toContainText("1 unbesetzte Pflichtstelle (Lücken)");
-  await expect(gaps).toContainText("05.06.2026 · Example Station North · F · Fachkraft: 1 von 2 fehlen");
+  await expect(gaps).toContainText("05.06.2026 · Example Station North · F · Fachkraft: 1 fehlt (benötigt 2)");
   // Wishes never bind: the review counts and lists what the schedule made of each.
-  const wishes = summary(page).getByRole("region", { name: "Wünsche" });
+  const wishes = page.getByRole("region", { name: "Wünsche" });
   const wishTitle = wishes.getByText("Wünsche: 1 erfüllt · 1 nicht erfüllt · 1 nicht erfüllbar");
   // The table stays collapsed until opened.
   await expect(wishes.getByRole("table")).toBeHidden();
@@ -83,7 +83,9 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   // June 6 needs one professional in the early shift, the solver may assign more; June 5 stays short by its gap,
   // also when the MFA works that early, which another qualification cannot fill.
   await expect(grid.getByText(/^[1-9]\/1$/)).toHaveCount(1);
-  await expect(grid.locator('td[title*="Fachkraft 1/2"]')).toHaveClass(/text-destructive/);
+  const gapCell = grid.locator('td[title^="Lücke: 1 Fachkraft fehlt"]');
+  await expect(gapCell).toHaveText("1/2−1");
+  await expect(gapCell).toHaveClass(/text-destructive/);
   // The jumper-pool MFA's duties at the station are transfers; the station employee works at home.
   const mfa = grid.getByRole("row", { name: /Example MFA One/ });
   const team = grid.getByRole("row", { name: /Example Team Two/ });
@@ -95,12 +97,20 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   await expect(mfa.getByRole("rowheader")).toContainText("Example Jumper Pool");
   await expect(mfa.getByRole("cell").getByText("Example Station North", { exact: true })).toHaveCount(0);
   await expect(grid.getByRole("button", { name: "Kompakt" })).toHaveCount(0);
-  await expect(grid.getByLabel("Legende")).toContainText("Einsatz außerhalb der Herkunft");
+  // The legend explains exactly the marks this schedule shows: transfers and the June 5 gap, but no finding.
+  const legend = grid.getByLabel("Legende");
+  await expect(legend).toContainText("Einsatz außerhalb der Herkunft");
+  await expect(legend).toContainText("Lücke: unbesetzte Pflichtstellen");
+  await expect(legend).not.toContainText("Regelverstoß");
+  await expect(legend).not.toContainText("Herkunft unbekannt");
   await grid.getByLabel("Mitarbeiter im Dienstplan suchen").fill("Three");
   await expect(grid.getByRole("rowheader", { name: /Example Team Two/ })).toBeHidden();
 
-  // Every participant has an account row, also without duties.
-  await expect(page.getByLabel("Monatskonten").getByRole("row")).toHaveCount(4);
+  // Every participant has an account row, also without duties; the accounts are collapsed until opened.
+  const accounts = page.getByRole("region", { name: "Monatskonten" });
+  await expect(accounts.getByRole("table")).toBeHidden();
+  await accounts.getByText("Monatskonten (3 Mitarbeiter)").click();
+  await expect(accounts.getByRole("row")).toHaveCount(4);
 
   const schedule = await download(page, "schedule.csv");
   expect(schedule.split("\n")[0]).toBe(

@@ -12,6 +12,7 @@ import { AccountTable } from "./account-table";
 import { ReviewActions } from "./review-actions";
 import { ReviewSummary } from "./review-summary";
 import { ScheduleGrid } from "./schedule-grid";
+import { WishTable } from "./wish-table";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Dienstplan prüfen · Schichtplan Manager" };
@@ -73,6 +74,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
         {review && matches ? (
           <>
             <ReviewSummary review={review} actions={actions} />
+            <WishTable review={review} />
             <ScheduleGrid review={review} />
             <AccountTable review={review} />
           </>
