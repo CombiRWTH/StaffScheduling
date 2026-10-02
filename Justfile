@@ -79,5 +79,6 @@ connectivity:
     docker compose exec -T api python -m app.timeoffice.database
 
 # Only tests explicitly marked for the authorized external test database, in the API image with its ODBC driver.
-test-timeoffice:
-    docker compose run --build --rm --no-deps -v ./api/tests:/project/api/tests:ro -e TIMEOFFICE_PREPARATION api python -m pytest -p no:cacheprovider -m timeoffice
+# plaene/ is writable for the example generation, which runs only with PLAENE_GENERATION=write.
+test-timeoffice *args:
+    docker compose run --build --rm --no-deps -v ./api/tests:/project/api/tests:ro -v ./plaene:/project/plaene -e TIMEOFFICE_PREPARATION -e PLAENE_GENERATION api python -m pytest -p no:cacheprovider -m timeoffice {{args}}

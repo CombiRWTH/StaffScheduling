@@ -300,6 +300,10 @@ interface EmployeeRow {
   employee_id: number;
   employee_name: string;
   staff_level: StaffLevel;
+  /** Home station or jumper pool on the first date of the month that has one. */
+  home_unit_id: number | null;
+  home_unit_name: string | null;
+  home_unit_type: PlanningUnit["type"] | null;
   planning_month: string;
   target_minutes: number;
   credited_minutes: number;

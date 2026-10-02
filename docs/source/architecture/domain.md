@@ -37,7 +37,7 @@ For exact fields and validators, read the model modules. [API schemas](api.md) d
 
 ## Schedule tables
 
-`schedule.py` turns a dataset and its assignments into `ScheduleTables`, the readable rows that review and the CSV files share: a `DutyRow` per assignment (labels, ISO weekday, public-holiday flag, Europe/Berlin start and end with offset, paid minutes, credited qualification and origin), an `EmployeeRow` per participant also without duties (target, credited, generated minutes, balance, memberships, availability and credits) and a `StaffingRow` per station, date, shift and qualification that is required or assigned. The origin is the employee's home station or jumper pool on the duty date (`home_unit_id`); more than one active home raises instead of guessing.
+`schedule.py` turns a dataset and its assignments into `ScheduleTables`, the readable rows that review and the CSV files share: a `DutyRow` per assignment (labels, ISO weekday, public-holiday flag, Europe/Berlin start and end with offset, paid minutes, credited qualification and origin), an `EmployeeRow` per participant also without duties (home station or jumper pool of the first date that has one, target, credited, generated minutes, balance, memberships, availability and credits) and a `StaffingRow` per station, date, shift and qualification that is required or assigned. The origin is the employee's home station or jumper pool on the duty date (`home_unit_id`); more than one active home raises instead of guessing.
 
 ## Complete employee inspection
 

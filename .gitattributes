@@ -1,2 +1,4 @@
 # Treat project documentation as documentation in GitHub language statistics.
 docs/** linguist-documentation
+# The example bundles keep the exact bytes that their digests and the example tests compare.
+plaene/** -text

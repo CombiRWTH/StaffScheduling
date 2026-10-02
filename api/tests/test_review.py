@@ -145,7 +145,8 @@ def test_duty_origin_is_the_home_unit_of_its_date() -> None:
     replacement = member(1, home=JUMPER_POOL, replacements=(NORTH,))[1]
     data = dataset(memberships=(before, after, replacement), accounts=(account(1, 0),))
 
-    home, transfer = schedule_tables(data, (duty(1, jan(15), EARLY), duty(1, jan(16), EARLY))).duties
+    tables = schedule_tables(data, (duty(1, jan(15), EARLY), duty(1, jan(16), EARLY)))
+    home, transfer = tables.duties
 
     assert (home.planning_unit_id, home.origin_unit_id) == (NORTH, NORTH)
     assert (transfer.planning_unit_id, transfer.origin_unit_id, transfer.origin_unit_type) == (
@@ -153,6 +154,8 @@ def test_duty_origin_is_the_home_unit_of_its_date() -> None:
         JUMPER_POOL,
         "jumper_pool",
     )
+    # The employee's month names the home of its first date; the memberships cell holds both intervals.
+    assert (tables.employees[0].home_unit_id, tables.employees[0].home_unit_type) == (NORTH, "station")
 
 
 def test_tables_follow_the_clock_change_and_mark_public_holidays() -> None:
@@ -239,6 +242,11 @@ def test_bundle_files_carry_every_field_and_read_back() -> None:
     employees = csv_rows(files[EMPLOYEES_FILE])
     assert [row["employee_id"] for row in employees] == ["1", "2", "3"]
     jumper = employees[1]
+    assert (jumper["home_unit_id"], jumper["home_unit_name"], jumper["home_unit_type"]) == (
+        str(JUMPER_POOL),
+        "Jumper pool",
+        "jumper_pool",
+    )
     assert (jumper["planning_month"], jumper["target_minutes"], jumper["generated_minutes"]) == (
         "2026-01",
         "555",

@@ -58,6 +58,11 @@ class EmployeeRow(SchedulingBaseModel):
     employee_name: str
     staff_level: StaffLevel
     """Employee-level qualification; each duty states the qualification it is credited as."""
+    home_unit_id: int | None
+    """The employee's home station or jumper pool on the first date of the month that has one; `memberships`
+    holds every interval. Empty only for an employee without membership all month."""
+    home_unit_name: str | None
+    home_unit_type: PlanningUnitType | None
     planning_month: str
     """`YYYY-MM`."""
     target_minutes: int
@@ -150,13 +155,20 @@ def schedule_tables(dataset: SchedulingDataset, assignments: Iterable[Assignment
     for row in assignments:
         generated[row.employee_id] += shifts[row.shift_id].net_work_minutes
     rows: list[EmployeeRow] = []
+    month_dates = dataset.planning_month.dates
     for account in sorted(dataset.monthly_work_accounts, key=lambda row: row.employee_id):
         employee = employees[account.employee_id]
+        homes = (home_unit_id(dataset.planning_unit_memberships, employee.employee_id, day) for day in month_dates)
+        home_id = next((unit_id for unit_id in homes if unit_id is not None), None)
+        home = units[home_id] if home_id is not None else None
         rows.append(
             EmployeeRow(
                 employee_id=employee.employee_id,
                 employee_name=employee.display_name,
                 staff_level=employee.staff_level,
+                home_unit_id=home.planning_unit_id if home else None,
+                home_unit_name=home.display_name if home else None,
+                home_unit_type=home.type if home else None,
                 planning_month=dataset.planning_month.label,
                 target_minutes=account.target_minutes,
                 credited_minutes=account.credited_minutes,
