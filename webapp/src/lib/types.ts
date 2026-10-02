@@ -321,4 +321,4 @@ export interface PublicationResult {
 }
 
 /** Why the backend refused to publish the schedule under review. */
-export type PublicationProblem = "changed" | "not_accepted" | "conflict";
+export type PublicationProblem = "changed" | "not_accepted" | "conflict" | "read_back";

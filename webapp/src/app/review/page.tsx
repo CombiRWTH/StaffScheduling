@@ -25,8 +25,7 @@ function reviewScope(review: ScheduleReview) {
 }
 
 /** Whether the review's own scope is exactly the selected month and stations. */
-function isSelected(own: ReturnType<typeof reviewScope>, scope: PlanningScope) {
-  const selected = new Set(scope.stationIds);
+function isSelected(own: ReturnType<typeof reviewScope>, scope: PlanningScope, selected: Set<number>) {
   return (
     own.month === scope.month &&
     own.stations.length === selected.size &&
@@ -35,9 +34,8 @@ function isSelected(own: ReturnType<typeof reviewScope>, scope: PlanningScope) {
 }
 
 /** The publication card's scope: the selected stations and month, and the review if it is theirs. */
-function publicationScope(scope: PlanningScope, review: ScheduleReview | null) {
+function publicationScope(scope: PlanningScope, selected: Set<number>, review: ScheduleReview | null) {
   const [year, month] = scope.month.split("-").map(Number);
-  const selected = new Set(scope.stationIds);
   return {
     month: scope.month,
     monthName: monthLabel(year, month).name,
@@ -63,7 +61,8 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
   ]);
   const review = "review" in current ? current.review : null;
   const own = review && reviewScope(review);
-  const matches = own !== null && isSelected(own, scope);
+  const selected = new Set(scope.stationIds);
+  const matches = own !== null && isSelected(own, scope, selected);
 
   return (
     <div className="py-6">
@@ -116,7 +115,9 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
             <AccountTable review={review} />
           </>
         )}
-        {scope.stationIds.length > 0 && <PublicationCard {...publicationScope(scope, matches ? review : null)} />}
+        {scope.stationIds.length > 0 && (
+          <PublicationCard {...publicationScope(scope, selected, matches ? review : null)} />
+        )}
         <ImportForm />
       </div>
     </div>

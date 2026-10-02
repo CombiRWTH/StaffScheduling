@@ -103,6 +103,10 @@ export function PublicationCard({
       <CardContent className="space-y-6 text-sm">
         {!review ? (
           <p className="text-muted-foreground">Zum Veröffentlichen den Dienstplan dieser Auswahl prüfen.</p>
+        ) : review.duties === 0 ? (
+          <p className="text-muted-foreground">
+            Ein Dienstplan ohne Dienste wird nicht veröffentlicht; veröffentlichte Dienste entfernt die Wartung.
+          </p>
         ) : review.accepted ? (
           <ConfirmedAction
             label="In TimeOffice veröffentlichen"

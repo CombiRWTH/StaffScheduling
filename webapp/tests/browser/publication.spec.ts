@@ -1,13 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // The offline API (api/tests/browser_server.py) publishes into an in-memory TimeOffice roster. June at
-// Station North is accepted; June at Station South lacks trusted context, so its check is incomplete.
+// Station North is accepted; Station South alone lacks trusted context, so its check is incomplete. Both
+// stations together are accepted, but every roster write at Station South fails like a database error.
 
 const API = "http://127.0.0.1:18080";
 const card = (page: Page) => page.getByLabel("Veröffentlichung");
 
 /** Generate June for one station and open its review; the station name tells the new job from the previous one. */
-async function generate(page: Page, station: { id: number; name: string }) {
+async function generate(page: Page, station: { id: string; name: string }) {
   await page.goto(`/generation?month=2026-06&stations=${station.id}`);
   await page.getByLabel("Maximale Laufzeit (Sekunden)").fill("30");
   await page.getByRole("button", { name: "Starten" }).click();
@@ -18,7 +19,7 @@ async function generate(page: Page, station: { id: number; name: string }) {
 }
 
 test("an accepted schedule is published and cleared only after confirming the named scope", async ({ page }) => {
-  await generate(page, { id: 101, name: "Example Station North" });
+  await generate(page, { id: "101", name: "Example Station North" });
   const publication = card(page);
   const count = Number(
     await page.getByLabel("Dienstplan zur Prüfung").locator('dt:text-is("Dienste") + dd').textContent(),
@@ -69,8 +70,25 @@ test("a schedule replaced after loading the page is refused, not published", asy
   await expect(publication.getByRole("status")).toHaveCount(0);
 });
 
+test("a failed publication says nothing changed, and nothing did", async ({ page }) => {
+  await generate(page, { id: "101,102", name: "Example Station North, Example Station South" });
+  const publication = card(page);
+  await publication.getByRole("button", { name: "In TimeOffice veröffentlichen" }).click();
+  await publication.getByRole("button", { name: "Veröffentlichen bestätigen" }).click();
+  await expect(publication.getByRole("alert")).toHaveText(
+    "TimeOffice-Abfrage fehlgeschlagen. Datenbankschema und Berechtigungen prüfen. Nichts wurde geändert.",
+  );
+  await expect(publication.getByRole("status")).toHaveCount(0);
+
+  // The rolled-back write left no duty of either station to clear.
+  const clear = publication.getByRole("group", { name: "Veröffentlichte Dienste entfernen", exact: true });
+  await clear.getByRole("button", { name: "Veröffentlichte Dienste entfernen" }).click();
+  await clear.getByRole("button", { name: "Entfernen bestätigen" }).click();
+  await expect(clear.getByRole("status")).toHaveText("Entfernt: 0 veröffentlichte Dienste.");
+});
+
 test("a schedule the check did not accept cannot be published", async ({ page }) => {
-  await generate(page, { id: 102, name: "Example Station South" });
+  await generate(page, { id: "102", name: "Example Station South" });
   await expect(page.getByLabel("Dienstplan zur Prüfung")).toContainText("Unvollständig");
   const publication = card(page);
   await expect(publication).toContainText("Nur ein angenommener Dienstplan kann veröffentlicht werden.");
