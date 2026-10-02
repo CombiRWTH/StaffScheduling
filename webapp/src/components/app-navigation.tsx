@@ -5,27 +5,15 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  CalendarHeart,
-  CalendarCheck,
-  CalendarPlus,
-  FileText,
-  type LucideIcon,
-  Menu,
-  Repeat,
-  UserCog,
-  Users,
-  X,
-} from "lucide-react";
+import { CalendarHeart, CalendarCheck, CalendarPlus, type LucideIcon, Menu, UserCog, Users, X } from "lucide-react";
 import { type AreaColor, areaColors } from "@/lib/area-colors";
 import { selectionSearch } from "@/lib/selection";
 import { cn } from "@/lib/utils";
 
-/** Links without `href` are discoverable but not yet supported by the canonical backend. */
 interface NavigationLink {
   label: string;
   icon: LucideIcon;
-  href?: string;
+  href: string;
   /** What the entry covers, shown as a tooltip. */
   hint?: string;
   /** Highlight of the current entry, matching the area's home card. */
@@ -45,13 +33,6 @@ const navigationSections: Array<{ label: string; links: NavigationLink[] }> = [
         color: areaColors.availability,
       },
       { href: "/staffing", label: "Mindestbesetzung", icon: UserCog, color: areaColors.staffing },
-    ],
-  },
-  {
-    label: "Wiederkehrend",
-    links: [
-      { label: "Verfügbarkeit", icon: Repeat, hint: "Wiederkehrende Wünsche und Einschränkungen" },
-      { label: "Vorlagen", icon: FileText },
     ],
   },
   {
@@ -101,37 +82,24 @@ function SidebarContent({ search, isActive, onClose, showCloseButton = false }: 
           {navigationSections.map(({ label, links }) => (
             <section key={label} className="flex flex-col gap-0.5">
               <h2 className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</h2>
-              {links.map(({ href, label: linkLabel, icon: Icon, hint, color }) =>
-                !href ? (
-                  <div
-                    key={linkLabel}
-                    aria-disabled="true"
-                    title={hint ? `${hint} – noch nicht unterstützt` : "Noch nicht unterstützt"}
-                    className="flex h-8 cursor-not-allowed items-center gap-2.5 rounded-md px-3 text-sm text-muted-foreground/60"
-                  >
+              {links.map(({ href, label: linkLabel, icon: Icon, hint, color }) => (
+                <Button
+                  key={href}
+                  variant="ghost"
+                  asChild
+                  className={cn(
+                    "h-8 w-full justify-start gap-2.5 px-3 font-normal",
+                    isActive(href)
+                      ? cn("font-medium", color?.navActive ?? "bg-sidebar-accent text-sidebar-accent-foreground")
+                      : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  )}
+                >
+                  <Link href={`${href}${search}`} onClick={onClose} title={hint}>
                     <Icon className="h-4 w-4 shrink-0" />
                     <span className="truncate">{linkLabel}</span>
-                    <span className="sr-only">(noch nicht unterstützt)</span>
-                  </div>
-                ) : (
-                  <Button
-                    key={href}
-                    variant="ghost"
-                    asChild
-                    className={cn(
-                      "h-8 w-full justify-start gap-2.5 px-3 font-normal",
-                      isActive(href)
-                        ? cn("font-medium", color?.navActive ?? "bg-sidebar-accent text-sidebar-accent-foreground")
-                        : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                    )}
-                  >
-                    <Link href={`${href}${search}`} onClick={onClose} title={hint}>
-                      <Icon className="h-4 w-4 shrink-0" />
-                      <span className="truncate">{linkLabel}</span>
-                    </Link>
-                  </Button>
-                ),
-              )}
+                  </Link>
+                </Button>
+              ))}
             </section>
           ))}
         </nav>

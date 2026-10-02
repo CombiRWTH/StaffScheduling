@@ -10,7 +10,7 @@ For staff administrators using the application: choose the month and units, insp
 
 The backend models a calendar month, planning units, dated staffing demand, employees and valid unit memberships. Availability entries are binding; wishes are preferences that generation does not consider yet. Work accounts use minutes. The [domain reference](../architecture/domain.md) describes the source-defined contract.
 
-The home page, employee inspection, monthly configuration (Verfügbarkeit, Mindestbesetzung), generation (Erstellen) and review (Prüfen) are implemented. The sidebar lists every other planning area greyed out as not yet supported.
+The home page, employee inspection, monthly configuration (Verfügbarkeit, Mindestbesetzung), generation (Erstellen) and review (Prüfen) are the planning areas; the sidebar links each of them.
 
 ## Find an operation
 
