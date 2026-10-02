@@ -1,4 +1,4 @@
-# Staff scheduling
+# Glossary
 
 Monthly shift planning for hospital stations and their jumper pools: inspecting who can be planned, generating a schedule and publishing it to the hospital's roster system. German labels are the terms shown in the webapp.
 

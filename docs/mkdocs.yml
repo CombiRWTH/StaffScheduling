@@ -24,6 +24,7 @@ nav:
       - API contracts: architecture/api.md
       - Solver: architecture/solver.md
       - TimeOffice adapter: architecture/timeoffice.md
+      - Glossary: glossary.md
   - Develop:
       - Checks and tooling: development/checks.md
       - Testing: development/testing.md

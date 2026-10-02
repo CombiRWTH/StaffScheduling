@@ -16,7 +16,7 @@ The home page routes readers by purpose. Organize content by the question it ans
 
 User-guide outlines are arranged in the planning task order, architecture follows the system boundaries, and validation separates reasoning from executed proof. The home page showcases only checked behavior and routes future example results to their evidence.
 
-Use the terms in the root `GLOSSARY.md`; add a term there when one is resolved. Record a decision as a short ADR in `docs/adr/` only when it is hard to reverse, surprising without context and the result of a real trade-off. Keep installation in one place and link to it. Extend an existing page when it fits; add a page only when readers need a separate topic. Outline pages reserve sections without claiming that the feature works. Fill or reorganize them as verified behavior develops. Optional unsupported controls do not need a full guide.
+Use the terms in the [glossary](../glossary.md) (`docs/source/glossary.md`); add a term there when one is resolved. Record a decision as a short ADR in `docs/adr/` only when it is hard to reverse, surprising without context and the result of a real trade-off. Keep installation in one place and link to it. Extend an existing page when it fits; add a page only when readers need a separate topic. Outline pages reserve sections without claiming that the feature works. Fill or reorganize them as verified behavior develops. Optional unsupported controls do not need a full guide.
 
 ## Evidence and accuracy
 

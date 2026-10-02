@@ -43,5 +43,5 @@ repos:
         language: system
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css]
         # The paths `just format-check` checks; data folders in the root stay out.
-        files: ^(webapp/|docs/source/|docs/adr/|docs/mkdocs\.yml$|README\.md$|GLOSSARY\.md$|compose\.yaml$|\.github/|\.pre-commit-config\.yaml$)
+        files: ^(webapp/|docs/source/|docs/adr/|docs/mkdocs\.yml$|README\.md$|compose\.yaml$|\.github/|\.pre-commit-config\.yaml$)
         exclude: ^webapp/pnpm-lock\.yaml$
