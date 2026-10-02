@@ -23,7 +23,7 @@ The webapp is a plain Next.js App Router project. The home page, canonical month
 | `PUT` then `DELETE /availability/…` and `/wishes/…`                | Saved, read back, removed; tables empty afterwards  | `200`, read back, `204`; both tables empty |
 | `PUT /availability/…` for an employee outside the configured units | Rejected                                            | `422`                                      |
 
-Unrelated units, employees, plans and roster rows and the legacy project tables were counted before and after preparation and are unchanged.
+Unrelated units, employees, plans and roster rows, and the two older project tables the API no longer reads (`StaffSchedulingMinimalStaffing`, `StaffSchedulingObjectiveWeights`), were counted before and after preparation and are unchanged.
 
 ## Solver and publication
 
@@ -37,7 +37,7 @@ The latest executed offline suite reports **135 passed and nine failed**: seven 
 
 Webapp strict TypeScript and the native production build pass. The fourteen controlled browser scenarios (selection/inspection, unavailable/incomplete reads, back navigation, unsupported areas, year entry and the January default, mobile navigation, availability edit/reload/delete with wishes, failed availability save, demand save/reload/reset/pattern, invalid count, failed demand save, generation without result or with incomplete input, a running generation across navigation with busy rejection, infeasible versus failed runs) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
 
-Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint reports no findings. React Doctor passes with visible warnings: pnpm install hardening and the standard shadcn `ui/` variant exports. `just check` now runs all independent offline gates, including browser flows, production build and docs, and retains a failing exit status. It remains red for the nine solver failures.
+Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint reports no findings. React Doctor passes with visible warnings: pnpm install hardening and the standard shadcn `ui/` variant exports. `just check` runs all independent offline gates, including browser flows, production build and docs, and retains a failing exit status. It remains red for the nine solver failures.
 
 ## Retired material
 

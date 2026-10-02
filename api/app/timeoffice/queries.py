@@ -266,7 +266,10 @@ def _read_absence_credits(
         employee_id, day, code = orphan[0]
         raise ValueError(f"TimeOffice credit for employee_id={employee_id} on {day} has no {code!r} absence.")
     booking_days = {day.date for day in month_calendar(month) if day.weekday <= 5 and not day.public_holiday}
-    credited = {key for key in absent if key[1] in booking_days and key[2] in code_by_account.values()}
+    credited_codes = set(code_by_account.values())
+    credited = {
+        (employee_id, day, code) for employee_id, day, code in absent if day in booking_days and code in credited_codes
+    }
     if unbooked := sorted(credited - booked):
         employee_id, day, code = unbooked[0]
         raise ValueError(f"TimeOffice absence {code!r} of employee_id={employee_id} on {day} has no credit booking.")

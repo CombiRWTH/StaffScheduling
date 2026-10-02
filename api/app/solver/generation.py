@@ -15,8 +15,8 @@ from app.solver.models import Solution
 
 logger = logging.getLogger(__name__)
 
-# Bounds a mistyped timeout; real monthly runs stay far below an hour.
-# Solver search limits; below the minimum a month of the example size cannot be searched meaningfully.
+# Solver search limits: below the minimum a month of the example size cannot be searched meaningfully;
+# the maximum bounds a mistyped value, as real monthly runs stay far below an hour.
 MIN_TIMEOUT_SECONDS = 30
 MAX_TIMEOUT_SECONDS = 3600
 

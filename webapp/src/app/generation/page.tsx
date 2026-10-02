@@ -74,21 +74,13 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
               <div className="space-y-1.5">
                 <dt className="text-muted-foreground">Berücksichtigt</dt>
                 <dd>
-                  <ul className="list-disc space-y-0.5 pl-5">
-                    {USED.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
+                  <BulletList items={USED} />
                 </dd>
               </div>
               <div className="space-y-1.5">
                 <dt className="text-muted-foreground">Nicht berücksichtigt</dt>
                 <dd>
-                  <ul className="list-disc space-y-0.5 pl-5">
-                    {NOT_USED.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
+                  <BulletList items={NOT_USED} />
                 </dd>
               </div>
             </dl>
@@ -112,5 +104,15 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
         )}
       </div>
     </div>
+  );
+}
+
+function BulletList({ items }: { items: string[] }) {
+  return (
+    <ul className="list-disc space-y-0.5 pl-5">
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
   );
 }
