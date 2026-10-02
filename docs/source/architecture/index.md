@@ -36,12 +36,11 @@ For developers and technical reviewers tracing responsibilities and data flow. T
 │   ├── package.json
 │   ├── pnpm-lock.yaml
 │   └── pnpm-workspace.yaml   # single-package settings/build approvals
-├── docs/
-│   ├── source/               # documentation content
-│   ├── mkdocs.yml
-│   ├── pyproject.toml
-│   └── uv.lock
-└── data/                     # persistent runtime files; empty on checkout
+└── docs/
+    ├── source/               # documentation content
+    ├── mkdocs.yml
+    ├── pyproject.toml
+    └── uv.lock
 ```
 
 Service Dockerfiles live alongside their manifests. Generated environments, dependencies, `docs/site/`, webapp build output, secrets and runtime data are ignored. There is no root Node workspace or Python package.

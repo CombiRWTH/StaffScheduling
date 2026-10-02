@@ -25,6 +25,6 @@ Health checks establish service liveness. Database operations need network/crede
 - [Glossary](GLOSSARY.md) of domain terms and [architecture decision records](docs/adr/)
 - [API](docs/source/architecture/api.md), [domain](docs/source/architecture/domain.md), [solver](docs/source/architecture/solver.md), [TimeOffice](docs/source/architecture/timeoffice.md)
 
-`api/`, `webapp/` and `docs/` have separate manifests/locks; `data/` holds ignored runtime files. Development services use Compose with hot reload. Optional native tools support IDEs and quality checks via `just install` and `just check`; follow the installation guide for their prerequisites.
+`api/`, `webapp/` and `docs/` have separate manifests/locks. Development services use Compose with hot reload. Optional native tools support IDEs and quality checks via `just install` and `just check`; follow the installation guide for their prerequisites.
 
 [Online documentation](https://combirwth.github.io/StaffScheduling/) is published from main. `just docs` serves the local checkout at <http://localhost:8001>; `just docs-check` builds strictly using the independent docs environment.

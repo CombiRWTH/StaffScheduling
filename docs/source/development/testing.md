@@ -55,6 +55,6 @@ With services running, `just connectivity` performs only configuration/ODBC/DNS/
 
 ## Linux and clean-checkout checks
 
-The foundation was built and exercised in Docker Desktop Linux arm64 containers on macOS, including ODBC Driver 18 imports, HTTP connectivity and reload. A Linux amd64 API image also passed build/import/ODBC checks. These are container/platform checks, not an actual Linux-host run. Hosted CI and the prepared laptop's Linux startup, output permissions, VPN/firewall and live database acceptance remain final verification gates.
+The foundation was built and exercised in Docker Desktop Linux arm64 containers on macOS, including ODBC Driver 18 imports, HTTP connectivity and reload. A Linux amd64 API image also passed build/import/ODBC checks. These are container/platform checks, not an actual Linux-host run. Hosted CI and the prepared laptop's Linux startup, VPN/firewall and live database acceptance remain final verification gates.
 
 CI's image job builds both images without credentials. To repeat foundation verification on a Linux host, frozen-install native tools, run `just check`, retain every failing result, and run the read-only diagnostic separately with authorized configuration. The production webapp build and the final clean-checkout system/data checks remain separate acceptance evidence.

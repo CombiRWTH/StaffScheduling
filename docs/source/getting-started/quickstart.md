@@ -48,4 +48,4 @@ just logs
 just stop
 ```
 
-Stopping preserves files in `data/` and the dependency/build volumes. If startup fails, follow [troubleshooting](installation.md#troubleshooting).
+Stopping preserves the dependency/build volumes. If startup fails, follow [troubleshooting](installation.md#troubleshooting).

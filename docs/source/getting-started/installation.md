@@ -32,7 +32,7 @@ git clone https://github.com/CombiRWTH/StaffScheduling.git
 cd StaffScheduling
 ```
 
-Alternatively, extract the provided source archive. Keep `.env`, `compose.yaml`, `api/`, `webapp/` and `data/` together. The repository contains both services; no second frontend checkout or installer is needed.
+Alternatively, extract the provided source archive. Keep `.env`, `compose.yaml`, `api/` and `webapp/` together. The repository contains both services; no second frontend checkout or installer is needed.
 
 ## Database configuration
 
@@ -76,13 +76,11 @@ just logs
 just stop
 ```
 
-`data/` is the API's persistent runtime directory, mapped to `/project/data/`, and initially contains only `.gitkeep`. Nothing writes to it yet; later export bundles will. Runtime files are ignored and survive container shutdown.
-
-Named volumes hold webapp dependencies and Next build output. Do not delete `data/` as a troubleshooting step. `just stop` is sufficient for ordinary shutdown.
+Named volumes hold webapp dependencies and Next build output. `just stop` is sufficient for ordinary shutdown.
 
 The current Compose setup runs development servers and exposes their ports on the host. A production deployment, authentication and TLS termination are outside this setup; it is intended for the prepared development/test environment.
 
-## Laptop ports and output permissions
+## Laptop ports
 
 For a prepared laptop needing LAN access, deliberately bind the development services and choose free host ports:
 
@@ -90,9 +88,7 @@ For a prepared laptop needing LAN access, deliberately bind the development serv
 BIND_ADDRESS=0.0.0.0 API_PORT=8000 WEBAPP_PORT=3000 just run
 ```
 
-Use the laptop's address in the browser. Its VPN/firewall must allow both the SQL connection and the intended client access. Keep loopback defaults for local use. Separate checkouts/projects can set `COMPOSE_PROJECT_NAME`, ports and `DATA_DIR`; `DB_PASSWORD_FILE` selects a private password file. Keep machine-specific overrides in your shell environment, rather than committing them. These are Compose settings, not `NEXT_PUBLIC_` browser configuration.
-
-Linux bind mounts preserve numeric ownership. The current containers run as root; prepare `data/` as your user and check host readability after writing. If it is owned by another user, arrange narrowly scoped ownership correction; do not use `chmod 777`. Stop/recreation preserves host data; removing the webapp dependency/build volumes is separate from removing data.
+Use the laptop's address in the browser. Its VPN/firewall must allow both the SQL connection and the intended client access. Keep loopback defaults for local use. Separate checkouts/projects can set `COMPOSE_PROJECT_NAME` and ports; `DB_PASSWORD_FILE` selects a private password file. Keep machine-specific overrides in your shell environment, rather than committing them. These are Compose settings, not `NEXT_PUBLIC_` browser configuration.
 
 ## Optional native developer setup
 

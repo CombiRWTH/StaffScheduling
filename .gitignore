@@ -68,8 +68,6 @@ node_modules/
 out/
 *.tsbuildinfo
 next-env.d.ts
-/data/*
-!/data/.gitkeep
 
 # Optional webapp deployment and test output
 .vercel/
