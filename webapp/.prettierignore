@@ -9,4 +9,6 @@ playwright-report/
 test-results/
 # Generated portable bundles and their schema keep the bytes their digests and checks compare.
 examples/
+# Generated plan exports are data files and keep the bytes they were exported with.
+plaene/
 **/validation/schema/
