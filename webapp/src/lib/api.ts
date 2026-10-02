@@ -5,6 +5,7 @@ import type {
   DemandConfiguration,
   EmployeeCalendar,
   EmployeeSummary,
+  GenerationJob,
   MonthlyDemand,
   PatternRequirement,
   PlanningInspection,
@@ -17,11 +18,26 @@ const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
 const INVALID_SELECTION = "Ungültige Auswahl. Nur Stationen mit Planungsziel für diesen Monat wählen.";
 const INCOMPLETE = "Daten unvollständig. Stationen, Zuordnungen, Konten und Monatsnachweise prüfen.";
 
-/** One API call; failures become German messages, `invalid` describing a 422 for this call. */
+/** A failed API call: a German message for the user and the HTTP status for callers that handle one. */
+class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status?: number,
+  ) {
+    super(message);
+  }
+}
+
+/** One API call; failures become `ApiError`s, `invalid` and `incomplete` describing a 422 and 409 for this call. */
 async function request<T>(
   method: "GET" | "PUT" | "POST" | "DELETE",
   path: string,
-  { params, body, invalid = INVALID_SELECTION }: { params?: URLSearchParams; body?: unknown; invalid?: string } = {},
+  {
+    params,
+    body,
+    invalid = INVALID_SELECTION,
+    incomplete = INCOMPLETE,
+  }: { params?: URLSearchParams; body?: unknown; invalid?: string; incomplete?: string } = {},
 ): Promise<T> {
   let response: Response;
   try {
@@ -33,12 +49,21 @@ async function request<T>(
       signal: AbortSignal.timeout(10_000),
     });
   } catch {
-    throw new Error("Backend nicht erreichbar. Verbindung und Einrichtung prüfen.");
+    throw new ApiError("Backend nicht erreichbar. Verbindung und Einrichtung prüfen.");
   }
-  if (response.status === 422) throw new Error(invalid);
-  if (response.status === 409) throw new Error(INCOMPLETE);
-  if (!response.ok) throw new Error("Backend oder TimeOffice nicht verfügbar. Verbindung und Einrichtung prüfen.");
+  if (response.status === 422) throw new ApiError(invalid, 422);
+  if (response.status === 409) throw new ApiError(incomplete, 409);
+  if (!response.ok) throw new ApiError(await unavailableMessage(response), response.status);
   return response.status === 204 ? (undefined as T) : response.json();
+}
+
+/** A failed TimeOffice query (schema, permissions) is told apart from an unreachable backend or database. */
+async function unavailableMessage(response: Response) {
+  const body = await response.json().catch(() => null);
+  if (body?.integration === "timeoffice" && body.stage === "query") {
+    return "TimeOffice-Abfrage fehlgeschlagen. Datenbankschema und Berechtigungen prüfen.";
+  }
+  return "Backend oder TimeOffice nicht verfügbar. Verbindung und Einrichtung prüfen.";
 }
 
 /** The `YYYY-MM` selection month as the API's year and month numbers. */
@@ -110,6 +135,38 @@ export function putDemand(month: string, stationId: number, cells: DemandCell[])
 export function previewPattern(month: string, stationId: number, cells: PatternRequirement[]) {
   const body = { planning_unit_id: stationId, planning_month: planningMonth(month), cells };
   return request<MonthlyDemand>("POST", "/demand/pattern", { body, invalid: INVALID_DEMAND });
+}
+
+const INVALID_GENERATION = "Generierung ungültig. Stationen mit Planungsziel und eine Laufzeit von 1–3600 s wählen.";
+const INCOMPLETE_GENERATION =
+  "Eingaben unvollständig. Mindestbesetzung jeder Station speichern und Mitarbeiterdaten prüfen.";
+
+/** Validate the full month's input and start solving it; the job runs on in the backend. */
+export async function startGeneration(month: string, stationIds: number[], timeoutSeconds: number) {
+  const body = { planning_unit_ids: stationIds, planning_month: planningMonth(month), timeout_seconds: timeoutSeconds };
+  try {
+    return await request<GenerationJob>("POST", "/generation", {
+      body,
+      invalid: INVALID_GENERATION,
+      incomplete: INCOMPLETE_GENERATION,
+    });
+  } catch (error) {
+    // 423: the backend solves one generation at a time.
+    if (error instanceof ApiError && error.status === 423) {
+      throw new ApiError("Es läuft bereits eine Generierung. Nach ihrem Ende erneut starten.", 423);
+    }
+    throw error;
+  }
+}
+
+/** The latest generation since the API started, or `null` if there is none (also after a restart). */
+export async function getLatestGeneration(): Promise<GenerationJob | null> {
+  try {
+    return await request<GenerationJob>("GET", "/generation");
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
 }
 
 export async function isApiHealthy() {

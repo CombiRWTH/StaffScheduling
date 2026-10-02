@@ -152,3 +152,36 @@ export interface PlanningInspection {
   planning_units: PlanningUnit[];
   employees: Employee[];
 }
+
+export type SolutionStatus = "optimal" | "feasible" | "infeasible" | "model_invalid" | "unknown";
+
+export type Severity = "info" | "warning" | "error";
+
+export interface GeneratedAssignment {
+  employee_id: number;
+  planning_unit_id: number | null;
+  date: string;
+  shift_id: number;
+  assignment_type: "planned" | "external" | "generated";
+}
+
+export interface Solution {
+  status: SolutionStatus;
+  assignments: GeneratedAssignment[];
+  diagnostics: { code: string; severity: Severity; message: string }[];
+  /** Post-solve findings of the implemented rules; not an independent schedule check. */
+  audit: { findings: { code: string; severity: Severity; message: string }[] };
+}
+
+/** One generation run: `state` is the job's progress, `solution.status` what the solver found. */
+export interface GenerationJob {
+  job_id: string;
+  request: { planning_unit_ids: number[]; planning_month: PlanningMonth; timeout_seconds: number };
+  state: "running" | "completed" | "failed";
+  started_at: string;
+  finished_at: string | null;
+  solution: Solution | null;
+  error: string | null;
+  /** No independent schedule check exists yet. */
+  acceptance: "not_assessed";
+}

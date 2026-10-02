@@ -45,6 +45,7 @@ const areas: Area[] = [
     title: "Dienstplan erstellen",
     description: "Einen Dienstplan für den gewählten Monat und die Stationen generieren",
     icon: CalendarPlus,
+    href: "/generation",
     color: areaColors.createRoster.icon,
   },
   {

@@ -106,9 +106,9 @@ test("a subpage links back to the overview with the selection kept", async ({ pa
 test("unsupported areas are visible but not navigable", async ({ page }) => {
   await page.goto("/");
   const unsupported = page.locator('nav [aria-disabled="true"]');
-  await expect(unsupported).toHaveCount(4);
-  await expect(page.getByRole("navigation").getByRole("link")).toHaveCount(3);
-  await expect(page.getByText("Noch nicht unterstützt", { exact: true })).toHaveCount(2);
+  await expect(unsupported).toHaveCount(3);
+  await expect(page.getByRole("navigation").getByRole("link")).toHaveCount(4);
+  await expect(page.getByText("Noch nicht unterstützt", { exact: true })).toHaveCount(1);
 });
 
 test("year entry keeps the month, a missing or invalid month defaults to January", async ({ page }) => {
@@ -137,7 +137,7 @@ test("mobile navigation opens, keeps the selection and closes", async ({ page })
   await page.getByRole("button", { name: "Navigation öffnen" }).click();
   const link = page.getByRole("navigation").getByRole("link", { name: "Mitarbeiter" });
   await expect(link).toHaveAttribute("href", "/employees?month=2026-01&stations=101");
-  await expect(page.locator('nav [aria-disabled="true"]').filter({ visible: true })).toHaveCount(4);
+  await expect(page.locator('nav [aria-disabled="true"]').filter({ visible: true })).toHaveCount(3);
   await link.click();
   await expect(page).toHaveURL(/\/employees\?month=2026-01&stations=101/);
   await expect(page.getByRole("button", { name: "Navigation öffnen" })).toBeVisible();
