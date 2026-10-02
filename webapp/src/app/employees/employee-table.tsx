@@ -54,7 +54,7 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
             {formatMonth(inspection.planning_month.start)} · {stations}
           </CardDescription>
           <p className="text-xs text-muted-foreground">
-            Nur Lesen. Springerpool-Herkunft und Einsatzberechtigung auf einer Station sind getrennte Angaben.
+            Springerpool-Herkunft und Einsatzberechtigung auf einer Station sind getrennte Angaben.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
