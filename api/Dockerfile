@@ -1,6 +1,7 @@
 FROM python:3.14.7-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     PATH="/project/api/.venv/bin:$PATH"
