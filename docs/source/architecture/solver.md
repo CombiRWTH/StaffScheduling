@@ -4,14 +4,14 @@ One run solves exactly one full calendar month for the selected stations with OR
 
 ## Modules
 
-| Module                 | Responsibility                                                                                                       |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `domain/duty.py`       | `duty_times(date, shift)`: a duty's Europe/Berlin start, end and work segments as UTC instants                       |
-| `domain/rules.py`      | `RulePolicy`: every hard-rule parameter, the context days a month needs and which dates need replacement rest        |
-| `domain/acceptance.py` | `check_schedule(dataset, assignments)`: every hard rule and the three objective scores, from actual assignments      |
-| `solver/model.py`      | `build_model(dataset)`: candidate variables, every hard rule as constraints and the weighted objective               |
-| `solver/service.py`    | `SolverService.solve(dataset, timeout)`: build, validate, solve, extract the schedule and run `check_schedule` on it |
-| `solver/generation.py` | The transient generation job around one solve; see [API generation](api.md#generation)                               |
+| Module                 | Responsibility                                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `domain/duty.py`       | `duty_times(date, shift)`: a duty's Europe/Berlin start, end and work segments as UTC instants                                           |
+| `domain/rules.py`      | `RulePolicy`: every hard-rule parameter, the context days a month needs and which dates need replacement rest                            |
+| `domain/acceptance.py` | `check_schedule(dataset, assignments)`: every hard rule and the three objective scores, from actual assignments                          |
+| `solver/model/`        | `build_model(dataset)`: the candidates, each rule of `HARD_RULES` and the tiers of `OBJECTIVES`; see [model structure](#model-structure) |
+| `solver/service.py`    | `SolverService.solve(dataset, timeout)`: build, validate, solve, extract the schedule and run `check_schedule` on it                     |
+| `solver/generation.py` | The transient generation job around one solve; see [API generation](api.md#generation)                                                   |
 
 `check_schedule` never sees solver variables. It recomputes duty times, accounts and sequences from the `SchedulingDataset` and the assignments, so it judges a solver result and any other assignment list alike. Solver and check implement every rule separately; they share only `RulePolicy` and the duty times of `duty.py`, so an error in one implementation shows as a disagreement with the other.
 
@@ -82,6 +82,30 @@ Replacement rest and the work average are decided within the month, so they neve
 
 `POST /generation` passes the requested `timeout_seconds` as the search limit; the other settings apply unchanged and are reported in `configuration`. A fixed seed alone does not make parallel search reproducible. Set settings in root `.env` for Compose and recreate the API after changes.
 
-## Changing a rule
+## Model structure
 
-Change the parameter in `RulePolicy`, or the rule in both places: as a constraint in `solver/model.py` and independently in `domain/acceptance.py`. Add a discriminating boundary example to `api/tests/test_schedule_check.py` and, where the model encodes it, a production solve to `api/tests/test_solver.py`. Keep domain inputs independent of TimeOffice and run the [shared checks](../development/checks.md).
+`build_model` is the only entry point; `SolverService` and the tests call nothing else. Inside `solver/model/`, each rule and each objective term is one function, listed in one tuple, so it can be read, changed and tested on its own:
+
+| File             | Holds                                                                                                                                                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `candidates.py`  | `CandidateModel`: the CP-SAT model, one variable per candidate, every employee's `timelines` of candidate and fixed context `Slot`s ordered by start, the diagnostics, and helpers for limits over slots (`at_most`), monthly balances and 0/1 products |
+| `constraints.py` | One function `(model) -> None` per hard rule and `HARD_RULES`, their order                                                                                                                                                                              |
+| `objectives.py`  | One function `(model) -> Term` per objective term, `OBJECTIVES` (the tiers, highest priority first, each naming its terms) and `minimize`, which derives the weights and sets the objective                                                             |
+
+Availability and the work and break pattern of a single duty decide which candidates exist, in `candidates.py`; they are not constraints. Staffing and the balance band come last in `HARD_RULES`, because their diagnostics and balances skip the candidates that context duties rule out in the rules before them.
+
+## Adding or changing a hard rule
+
+Change the parameter in `RulePolicy`, or the rule in both places. In the model, a rule about a single duty filters candidates in `candidates.py`; any other rule is a function in `constraints.py` added to `HARD_RULES`. Use `model.at_most` for limits over slots, so context duties count as worked and the staffing diagnostic sees what they rule out. Implement the rule again, independently, in `domain/acceptance.py` with its own `Rule` member. Add a discriminating boundary example to `api/tests/test_schedule_check.py` and, where the model encodes it, a production solve to `api/tests/test_solver.py`. Keep domain inputs independent of TimeOffice and run the [shared checks](../development/checks.md).
+
+## Adding an objective
+
+An objective is a term the solver minimizes (or, as a reward, maximizes) after every hard rule holds. Health events, for example, are one tier of two terms, six-day windows and backward transitions, both counts weighted alike.
+
+1. **Define the score.** State what is counted, its unit (a count of events or duties, or minutes), whether it is a penalty or a reward, and its priority among the tiers. A new concern of the same unit and priority as an existing tier becomes a term of that tier; otherwise it is a new tier. Record the reasoning in [reasoning and requirements](../validation/reasoning.md).
+2. **Score it independently.** Add the field to `ScheduleScores` in `domain/acceptance.py` and compute it in the check's `scores` from assignments and context alone, never from solver variables. A tier of several terms is a computed field, like `health_events`.
+3. **Model the term.** Add a function `(model: CandidateModel) -> Term` to `objectives.py`. Its expression must equal the check's score exactly for every schedule that keeps the hard rules: not a bound or a relaxation, or the reported objective stops matching the check. Loop over `model.timelines` per employee; fixed context slots count as worked (`slot.expr` is 1). `Term.bound` is the largest value the expression can take in this month; it should be tight, because it sets the weights above it.
+4. **Place it.** Add the function to a tier's terms in `OBJECTIVES`, or add a new `Tier` at its priority, named exactly like its new `ObjectiveWeights` field in `solver/models.py`. Mark a reward with `reward=True`.
+5. **Check the weights.** `minimize` gives the lowest tier weight 1 and every higher tier 1 more than the largest weighted total of all tiers below it, so one unit of a higher tier always outweighs them. It raises `ValueError` when the largest possible total could reach 2⁵³, the limit of exact objective values. Build the largest example month and confirm the weights stay well below it.
+6. **Report it.** The weights appear in `configuration.weights` and the score in `check.scores` of every API response and portable `result.json`. Run the API tests once to rewrite the published [result schema](../validation/schema/result.schema.json) and commit it; update `webapp/src/lib/types.ts`, the review's **Technische Details**, the [objective section](#objective) above and the [example file reference](../validation/examples.md). Bundles from before the change no longer re-check identically, so regenerate committed examples.
+7. **Verify it.** Add a boundary example of the score to `api/tests/test_schedule_check.py`. In `api/tests/test_solver.py`, extend `weighted_total` so every solve still proves objective value = checked weighted total, and add two-schedule boundary tests against the neighbouring tiers, like the existing ones for health over balance and balance over intermediate duties: one unit of the higher tier must outweigh the most the lower one can change.

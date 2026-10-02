@@ -1,6 +1,6 @@
 # Use the application
 
-Start through the [quickstart](../getting-started/quickstart.md), then open <http://localhost:3000>. Service startup has been checked; the complete staff-admin planning workflow has not. Consult [current limitations](../validation/index.md) before treating visible controls or generated files as supported operations.
+Start the services with `just run` as described in the [quickstart](../getting-started/quickstart.md), then open <http://localhost:3000>. Every step below passes controlled browser flows on fictional data; [current limitations](../validation/index.md) record which steps were also run against the prepared test database and what is not supported.
 
 ## What you can use this guide for
 
@@ -10,7 +10,16 @@ For staff administrators using the application: choose the month and units, insp
 
 The backend models a calendar month, planning units, dated staffing demand, employees and valid unit memberships. Availability entries are binding; wishes are preferences that generation does not consider yet. Work accounts are stored in minutes and shown in hours and minutes (for example _160:00 h_). The [domain reference](../architecture/domain.md) describes the source-defined contract.
 
-The overview (**Übersicht**) welcomes you with a short introduction and links every planning area: employee inspection, monthly configuration (Verfügbarkeit, Mindestbesetzung), generation (Erstellen) and review (Prüfen). The sidebar links the overview and each area.
+## Planning steps
+
+The overview (**Übersicht**) welcomes you with a short introduction and lists the planning steps in their usual order: **Schritt 1 Mitarbeiter**, **Schritt 2 Verfügbarkeit**, **Schritt 3 Mindestbesetzung**, **Schritt 4 Dienstplan erstellen** and **Schritt 5 Dienstplan prüfen**. Each card opens its page with the selected month and stations.
+
+1. Choose month and stations in the planning selection beside the title of any page.
+2. Open **Schritt 1** on the overview. The pages of steps 1 to 3 end with a link such as **Weiter mit Schritt 2: Verfügbarkeit**, which keeps the selection. Unsaved availability or demand edits are not kept when you leave a page; save them first.
+3. On **Dienstplan erstellen**, start the run. When a schedule was found, **Dienstplan prüfen** opens the review.
+4. On **Dienstplan prüfen**, review the schedule, then download it or publish it to TimeOffice. Publication and clear each need their own confirmation; nothing is published automatically.
+
+The steps are a suggestion, not a lock: the sidebar and the back arrow before every page title reach any page at any time, and each page works with the selection in the URL. Recurring availability, templates, a file library, schedule comparison and optimization settings are not part of the application.
 
 ## Find an operation
 

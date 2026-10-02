@@ -11,7 +11,7 @@ Return to the [documentation overview](index.md).
 3. Open the **Stationen** list and tick one or more stations; the button shows how many are selected (for example **2 Stationen**), and its accessible name lists them. Then open **Mitarbeiter**; the arrow before its title returns to the overview with the same selection. The URL carries `month=YYYY-MM&stations=ID,ID`; the selection is retained across navigation. A jumper pool is context, never a selectable demand destination.
 4. Use the refresh button (**Stationen aktualisieren**) to reload stations and the current page. On a month change, still-available stations remain selected; stations without a target in the new month are removed.
 
-Changing month/stations replaces the displayed inspection, including filters/details. While the next inspection loads, a loading message replaces the old table. No local case files or successful old-scope results substitute for unavailable source data. Employee inspection is independent of the retired workflow's case lock.
+Changing month/stations replaces the displayed inspection, including filters/details. While the next inspection loads, a loading message replaces the old table. No result of an earlier selection substitutes for unavailable source data.
 
 ## Inspect employees and memberships
 
