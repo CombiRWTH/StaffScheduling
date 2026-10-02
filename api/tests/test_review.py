@@ -42,7 +42,7 @@ from app.solver.bundle import (
     to_json,
 )
 from app.solver.generation import Generation
-from app.solver.models import ObjectiveReport, Solution, SolutionStatus
+from app.solver.models import Solution, SolutionStatus, StageReport
 from app.solver.review import Review
 from app.solver.service import SolverService
 
@@ -75,7 +75,7 @@ def found(data: SchedulingDataset, assignments: tuple[Assignment, ...]) -> Solut
         configuration=CONFIGURATION,
         wall_time_seconds=1.5,
         assignments=assignments,
-        objective=ObjectiveReport(value=0, best_bound=0),
+        stages=(StageReport(name="health_events", status=SolutionStatus.OPTIMAL, value=0, best_bound=0),),
         check=check_schedule(data, assignments),
     )
 
@@ -268,7 +268,7 @@ def _edit(content: bytes, change: Callable[[dict[str, Any]], None]) -> bytes:
     ("file", "change", "problem", "message"),
     [
         (INPUT_FILE, None, BundleProblem.MALFORMED, "input.json is invalid at top level"),
-        (INPUT_FILE, _set("format_version", 2), BundleProblem.MALFORMED, "format_version"),
+        (INPUT_FILE, _set("format_version", 1), BundleProblem.MALFORMED, "format_version"),
         (INPUT_FILE, _set("dataset.plan_id", 7), BundleProblem.MALFORMED, "plan_id: Extra inputs"),
         (INPUT_FILE, _set("calendar.0.public_holiday", None), BundleProblem.MALFORMED, "NRW calendar"),
         (INPUT_FILE, _set("dataset.monthly_work_accounts.2.target_minutes", 60), BundleProblem.MISMATCH, "another"),

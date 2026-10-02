@@ -12,8 +12,8 @@ import {
   SOLVER_STATUS,
   checkGaps,
   diagnosticHints,
-  formatGap,
   formatSearchTime,
+  formatStages,
   monthLabel,
   solverStatusText,
 } from "@/lib/labels";
@@ -107,7 +107,7 @@ function technicalFacts(job: GenerationJob): [string, string][] {
     ["Job-ID", job.job_id],
     ["Solver-Status", solution ? solverStatusText(solution.status) : "Kein Ergebnis"],
     ["Suchzeit", solution ? formatSearchTime(solution.wall_time_seconds, limit) : `bis ${limit} s`],
-    ["Optimalitätslücke", formatGap(solution?.objective ?? null)],
+    ["Zielstufen", formatStages(solution?.stages ?? [])],
   ];
 }
 

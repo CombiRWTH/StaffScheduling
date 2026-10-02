@@ -83,7 +83,7 @@ class NotAssessed(SchedulingBaseModel):
 
 
 class ScheduleScores(SchedulingBaseModel):
-    """The raw objective tiers, highest priority first; see the solver documentation for their weights."""
+    """The raw objective tiers, highest priority first; each solver stage reports one of them."""
 
     six_day_windows: int
     backward_transitions: int

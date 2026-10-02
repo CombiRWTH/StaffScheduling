@@ -1,7 +1,7 @@
 from enum import StrEnum
-from typing import Self
+from typing import Literal, Self
 
-from pydantic import computed_field, model_validator
+from pydantic import model_validator
 
 from app.domain import Assignment, RulePolicy, ScheduleCheck, SchedulingBaseModel
 from app.solver.diagnostics import SolverDiagnostic
@@ -23,41 +23,27 @@ class SolutionStatus(StrEnum):
 FOUND = frozenset({SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE})
 
 
-class ObjectiveWeights(SchedulingBaseModel):
-    """Dominance coefficients of the three objective tiers, derived from the input's bounds.
-
-    One unit of a higher tier outweighs any possible change of all lower tiers together.
-    """
-
-    health_events: int
-    balance_deviation_minutes: int
-    surplus_intermediate_duties: int
-
-
 class RunConfiguration(SchedulingBaseModel):
     """The effective settings of one solve, recorded for reproduction."""
 
     policy: RulePolicy
-    weights: ObjectiveWeights
     timeout_seconds: float
+    """The total solver time of all stages."""
     search_workers: int | None
     random_seed: int | None
 
 
-class ObjectiveReport(SchedulingBaseModel):
-    """CP-SAT's objective of the returned schedule and the best bound it proved.
+class StageReport(SchedulingBaseModel):
+    """One objective tier's stage: the tier's value in the returned schedule and the bound CP-SAT proved.
 
-    `value` equals the weighted total of the independently computed scores in the schedule check;
-    a time-limited FEASIBLE schedule can be improved by up to the gap.
+    `value` equals the tier's field in the independent schedule check. OPTIMAL proves the value is the
+    best possible after every higher tier; FEASIBLE means the stage's time ended first.
     """
 
+    name: str
+    status: Literal[SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE]
     value: int
     best_bound: float
-
-    @computed_field
-    @property
-    def relative_gap(self) -> float:
-        return abs(self.value - self.best_bound) / max(1.0, abs(self.value))
 
 
 class Solution(SchedulingBaseModel):
@@ -65,8 +51,9 @@ class Solution(SchedulingBaseModel):
     configuration: RunConfiguration
     wall_time_seconds: float
     assignments: tuple[Assignment, ...] = ()
-    """Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `objective` and `check`."""
-    objective: ObjectiveReport | None = None
+    """Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `stages` and `check`."""
+    stages: tuple[StageReport, ...] = ()
+    """Every objective tier in solving order. The status is OPTIMAL exactly when every stage is."""
     check: ScheduleCheck | None = None
     diagnostics: tuple[SolverDiagnostic, ...] = ()
 
@@ -77,8 +64,12 @@ class Solution(SchedulingBaseModel):
 
     @model_validator(mode="after")
     def validate_schedule(self) -> Self:
-        if self.found != (self.objective is not None and self.check is not None):
-            raise ValueError("A found schedule, and only a found one, has an objective and a schedule check.")
+        if self.found != (bool(self.stages) and self.check is not None):
+            raise ValueError("A found schedule, and only a found one, has stages and a schedule check.")
+        if self.found and (self.status == SolutionStatus.OPTIMAL) != all(
+            stage.status == SolutionStatus.OPTIMAL for stage in self.stages
+        ):
+            raise ValueError("A solution is optimal exactly when every stage is.")
         if self.assignments and not self.found:
             raise ValueError("Only a found schedule has assignments.")
         return self

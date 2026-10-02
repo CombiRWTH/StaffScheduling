@@ -1,8 +1,10 @@
-"""Production solves of small months: every hard rule is modelled, the objective tiers keep their order."""
+"""Production solves of small months: every hard rule is modelled, the objective stages keep their order."""
 
 from datetime import date
+from typing import Any
 
 import pytest
+from ortools.sat.python import cp_model
 from scheduling import (
     EARLY,
     INTERMEDIATE,
@@ -35,7 +37,7 @@ from app.domain import (
 )
 from app.settings import Settings
 from app.solver.model.objectives import OBJECTIVES
-from app.solver.models import ObjectiveWeights, Solution, SolutionStatus
+from app.solver.models import Solution, SolutionStatus
 from app.solver.service import SolverService
 
 pytestmark = pytest.mark.integration
@@ -52,18 +54,12 @@ def checked(solution: Solution) -> ScheduleCheck:
     return solution.check
 
 
-def objective(solution: Solution) -> int:
-    assert solution.objective is not None
-    return solution.objective.value
-
-
-def weighted_total(solution: Solution) -> int:
-    scores, weights = checked(solution).scores, solution.configuration.weights
-    return (
-        weights.health_events * scores.health_events
-        + weights.balance_deviation_minutes * scores.balance_deviation_minutes
-        - weights.surplus_intermediate_duties * scores.surplus_intermediate_duties
-    )
+def stages_are_scores(solution: Solution) -> bool:
+    """Whether every stage, in tier order, reports the checked score of its tier."""
+    scores = checked(solution).scores
+    return [(stage.name, stage.value) for stage in solution.stages] == [
+        (tier.name, getattr(scores, tier.name)) for tier in OBJECTIVES
+    ]
 
 
 def only(employee_id: int, allowed: dict[int, tuple[int, ...]]) -> list[Availability]:
@@ -76,13 +72,13 @@ def only(employee_id: int, allowed: dict[int, tuple[int, ...]]) -> list[Availabi
     ]
 
 
-def test_objective_tiers_are_the_reported_weights_and_scores_in_priority_order() -> None:
+def test_objective_tiers_are_checked_scores() -> None:
     names = [tier.name for tier in OBJECTIVES]
-    assert names == list(ObjectiveWeights.model_fields)
+    assert len(set(names)) == len(names)
     assert set(names) <= set(ScheduleScores.model_fields) | set(ScheduleScores.model_computed_fields)
 
 
-def test_a_solved_month_is_accepted_and_its_objective_is_the_checked_weighted_total() -> None:
+def test_a_solved_month_is_accepted_and_every_stage_is_its_checked_score() -> None:
     weekdays = [jan(day) for day in range(5, 10)]
     data = dataset(
         memberships=[
@@ -101,12 +97,41 @@ def test_a_solved_month_is_accepted_and_its_objective_is_the_checked_weighted_to
 
     assert solution.status == SolutionStatus.OPTIMAL
     assert checked(solution).status == CheckStatus.ACCEPTED
-    assert solution.objective is not None
-    assert objective(solution) == weighted_total(solution) == round(solution.objective.best_bound)
+    assert stages_are_scores(solution)
+    assert all(stage.status == SolutionStatus.OPTIMAL for stage in solution.stages)
+    assert all(stage.value == round(stage.best_bound) for stage in solution.stages)
     # The jumper pool employee is credited as the assistant their station membership makes them.
     assert duty(3, jan(6), EARLY, unit=SOUTH, level=StaffLevel.ASSISTANT) in solution.assignments
     # The check is independent: removing a duty the model needed is caught.
     assert check_schedule(data, solution.assignments[1:]).status == CheckStatus.REJECTED
+
+
+def test_a_later_stage_without_time_keeps_the_previous_schedule_as_feasible(monkeypatch: pytest.MonkeyPatch) -> None:
+    budgets: list[float] = []
+
+    class FirstStageOnly(cp_model.CpSolver):
+        def solve(
+            self, model: cp_model.CpModel, solution_callback: cp_model.CpSolverSolutionCallback | None = None
+        ) -> Any:
+            budgets.append(self.parameters.max_time_in_seconds)
+            if len(budgets) > 1:
+                self.parameters.max_time_in_seconds = 0
+            return super().solve(model, solution_callback)
+
+    monkeypatch.setattr(cp_model, "CpSolver", FirstStageOnly)
+    data = dataset(
+        memberships=[*member(1), *member(2)],
+        accounts=[account(1, 5 * 420), account(2, 5 * 435)],
+        demand=[need(jan(day), shift_) for day in range(5, 10) for shift_ in (EARLY, LATE)],
+    )
+    solution = SOLVER.solve(data, timeout=30)
+
+    # Each stage gets the time left divided by the stages left.
+    assert budgets[0] == pytest.approx(30 / len(OBJECTIVES), rel=0.01)
+    assert solution.status == SolutionStatus.FEASIBLE
+    assert [stage.status for stage in solution.stages[1:]] == [SolutionStatus.FEASIBLE] * (len(OBJECTIVES) - 1)
+    assert checked(solution).status == CheckStatus.ACCEPTED
+    assert stages_are_scores(solution)
 
 
 def test_trusted_context_constrains_the_first_days_of_the_month() -> None:
@@ -133,7 +158,7 @@ def test_unmet_demand_is_infeasible_and_diagnosed() -> None:
     solution = solve(data)
 
     assert solution.status == SolutionStatus.INFEASIBLE
-    assert (solution.assignments, solution.check, solution.objective) == ((), None, None)
+    assert (solution.assignments, solution.check, solution.stages) == ((), None, ())
     assert [row.code for row in solution.diagnostics] == ["staffing.too_few_candidates"]
 
 
@@ -200,7 +225,7 @@ def test_health_events_outweigh_the_monthly_balance(extra_late_day: int, worked:
     assert (duty(1, jan(extra_late_day), LATE) in solution.assignments) == worked
     assert checked(solution).scores.backward_transitions == 0
     assert checked(solution).scores.balance_deviation_minutes == (0 if worked else 435)
-    assert objective(solution) == weighted_total(solution)
+    assert stages_are_scores(solution)
 
 
 @pytest.mark.parametrize(("short_by", "intermediate"), [(172, False), (173, True)])
@@ -217,4 +242,4 @@ def test_the_balance_outweighs_extra_intermediate_duties(short_by: int, intermed
 
     assert (extra in solution.assignments) == intermediate
     assert checked(solution).scores.surplus_intermediate_duties == int(intermediate)
-    assert objective(solution) == weighted_total(solution)
+    assert stages_are_scores(solution)

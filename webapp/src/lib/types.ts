@@ -220,7 +220,16 @@ export interface Solution {
   diagnostics: { code: string; severity: Severity; message: string }[];
   /** Present with a found schedule only. */
   check: ScheduleCheck | null;
-  objective: { value: number; best_bound: number; relative_gap: number } | null;
+  /** Every objective tier in solving order; `status` is optimal exactly when every stage is. */
+  stages: Stage[];
+}
+
+/** One objective tier's stage: its value in the schedule (the check's score) and CP-SAT's proven bound. */
+export interface Stage {
+  name: keyof ScheduleCheck["scores"];
+  status: "optimal" | "feasible";
+  value: number;
+  best_bound: number;
 }
 
 /** One generation run: `state` is the job's progress, `solution.status` what the solver found. */
@@ -288,7 +297,6 @@ interface StaffingRow {
 /** The effective settings of one solve; `policy` holds the rule parameters in minutes and days. */
 interface RunConfiguration {
   policy: { balance_tolerance_minutes: number } & Record<string, number>;
-  weights: { health_events: number; balance_deviation_minutes: number; surplus_intermediate_duties: number };
   timeout_seconds: number;
   search_workers: number | null;
   random_seed: number | null;
@@ -302,12 +310,8 @@ export interface ScheduleReview {
   planning_units: PlanningUnit[];
   shifts: Shift[];
   calendar: CalendarDay[];
-  /** Always a found schedule: it has its objective and check. */
-  solution: Solution & {
-    check: ScheduleCheck;
-    configuration: RunConfiguration;
-    objective: NonNullable<Solution["objective"]>;
-  };
+  /** Always a found schedule: it has its stages and check. */
+  solution: Solution & { check: ScheduleCheck; configuration: RunConfiguration };
   tables: { duties: DutyRow[]; employees: EmployeeRow[]; staffing: StaffingRow[] };
 }
 

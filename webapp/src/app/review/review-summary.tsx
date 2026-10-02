@@ -9,9 +9,10 @@ import {
   RULES,
   checkGaps,
   formatDate,
-  formatGap,
+  OBJECTIVE_LABELS,
   formatHours,
   formatSearchTime,
+  formatStage,
   monthLabel,
   solverStatusText,
 } from "@/lib/labels";
@@ -19,7 +20,6 @@ import type { CheckStatus, ScheduleReview } from "@/lib/types";
 
 const SOURCES: Record<ScheduleReview["source"], string> = { generation: "Generiert", import: "Importiert" };
 const TIME = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "short", timeStyle: "short" });
-const NUMBER = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
 const TONES: Record<CheckStatus, Tone> = { accepted: "success", rejected: "error", incomplete: "warning" };
 
 /**
@@ -28,7 +28,7 @@ const TONES: Record<CheckStatus, Tone> = { accepted: "success", rejected: "error
  */
 export function ReviewSummary({ review, actions }: { review: ScheduleReview; actions: React.ReactNode }) {
   const { solution, tables } = review;
-  const { check, configuration, objective } = solution;
+  const { check, configuration } = solution;
   const period = monthLabel(review.planning_month.year, review.planning_month.month);
   const stations = review.planning_units.filter((unit) => unit.type === "station");
   const unitName = new Map(review.planning_units.map((unit) => [unit.planning_unit_id, unit.display_name]));
@@ -82,18 +82,16 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
               title="Solver"
               facts={[
                 ["Status", solverStatusText(solution.status)],
-                ["Optimalitätslücke", `${formatGap(objective)} (keine fehlende Besetzung)`],
                 ["Suchzeit", formatSearchTime(solution.wall_time_seconds, configuration.timeout_seconds)],
                 [
                   "Suchthreads",
                   configuration.search_workers === null ? "automatisch" : String(configuration.search_workers),
                 ],
                 ["Startwert", configuration.random_seed === null ? "keiner" : String(configuration.random_seed)],
-                ["Gewicht Gesundheit", String(configuration.weights.health_events)],
-                ["Gewicht Monatskonten", String(configuration.weights.balance_deviation_minutes)],
-                ["Gewicht Zwischendienste", String(configuration.weights.surplus_intermediate_duties)],
-                ["Zielwert", String(objective.value)],
-                ["Schranke", NUMBER.format(objective.best_bound)],
+                ...solution.stages.map((stage, index): [string, string] => [
+                  `Stufe ${index + 1}: ${OBJECTIVE_LABELS[stage.name]}`,
+                  formatStage(stage),
+                ]),
               ]}
             />
             <Facts

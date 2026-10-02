@@ -616,7 +616,7 @@
   "description": "input.json: everything one full-month run reads; no TimeOffice plan, wish or credential.",
   "properties": {
     "format_version": {
-      "const": 1,
+      "const": 2,
       "title": "Format Version",
       "type": "integer"
     },

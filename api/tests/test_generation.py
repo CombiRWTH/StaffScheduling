@@ -24,7 +24,8 @@ from app.domain import (
 from app.main import app
 from app.settings import Settings
 from app.solver.generation import Generation, GenerationBusy, GenerationJob, GenerationRequest, JobState
-from app.solver.models import ObjectiveWeights, RunConfiguration, Solution, SolutionStatus
+from app.solver.model.objectives import OBJECTIVES
+from app.solver.models import RunConfiguration, Solution, SolutionStatus
 from app.solver.review import Review
 from app.solver.service import SolverService
 
@@ -33,7 +34,6 @@ REQUEST = GenerationRequest(planning_unit_ids=(101,), planning_month=JANUARY, ti
 EARLY = 1113
 CONFIGURATION = RunConfiguration(
     policy=POLICY,
-    weights=ObjectiveWeights(health_events=1, balance_deviation_minutes=1, surplus_intermediate_duties=1),
     timeout_seconds=30,
     search_workers=None,
     random_seed=None,
@@ -260,7 +260,7 @@ def test_http_generation_solves_the_saved_month(
     assert solution["status"] in {"optimal", "feasible"}
     # A found schedule always carries the independent check, apart from the solver status.
     assert solution["check"]["status"] == "accepted"
-    assert solution["objective"]["value"] >= solution["objective"]["best_bound"]
+    assert [stage["name"] for stage in solution["stages"]] == [tier.name for tier in OBJECTIVES]
     assert solution["configuration"]["policy"]["balance_tolerance_minutes"] == 460
     for assignment in solution["assignments"]:
         assert assignment["planning_unit_id"] == 101

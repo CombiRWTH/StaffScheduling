@@ -55,11 +55,11 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   await expect(summary(page)).toContainText("Kann veröffentlicht werden");
   // Solver internals and obligations beyond the month are technical detail, collapsed until opened.
   const details = summary(page).getByText("Technische Details");
-  await expect(summary(page).getByText("Optimalitätslücke")).toBeHidden();
+  await expect(summary(page).getByText("Stufe 1: Gesundheitsereignisse")).toBeHidden();
   // Keyboard users open the collapsed section like any other control.
   await details.press("Enter");
-  await expect(summary(page).getByText("Optimalitätslücke")).toBeVisible();
-  await expect(summary(page).getByText("Gewicht Gesundheit")).toBeVisible();
+  await expect(summary(page).getByText("Stufe 1: Gesundheitsereignisse")).toBeVisible();
+  await expect(summary(page).getByText("Stufe 3: Überzählige Zwischendienste")).toBeVisible();
   await expect(summary(page)).toContainText("Freie Sonntage im Jahr");
 
   const grid = page.getByLabel("Dienstplan", { exact: true });

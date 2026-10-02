@@ -1,9 +1,8 @@
-"""The objective of a month: prioritized tiers with derived dominance weights.
+"""The objective of a month: prioritized tiers, solved one stage per tier in `OBJECTIVES` order.
 
-Each tier is named after its `ObjectiveWeights` and `ScheduleScores` field and sums one or more
-terms. A term is an exact model expression of what the schedule check scores, with the largest
-value it can take. The weights make one unit of a higher tier outweigh any possible change of all
-lower tiers together, so the solver's objective value equals the check's weighted total.
+Each tier is named after its `ScheduleScores` field and sums one or more terms. A term is a model
+expression that equals what the schedule check scores for every schedule the hard rules allow, not
+only an optimal one, so each stage's value is the check's score of the schedule it returns.
 """
 
 from collections.abc import Callable
@@ -12,28 +11,19 @@ from datetime import timedelta
 
 from app.domain import POLICY, SHIFT_ORDER, WORKED_DAYS_WINDOW, ShiftType, dates_between
 from app.solver.model.candidates import CandidateModel, Expr, by_day
-from app.solver.models import ObjectiveWeights
 
-# CP-SAT reports objective values as floats; staying below 2**53 keeps every weighted total exact.
-MAX_OBJECTIVE = 2**53
-
-
-@dataclass(frozen=True, slots=True)
-class Term:
-    expr: Expr
-    # The largest value `expr` can take.
-    bound: int
+type Term = Callable[[CandidateModel], Expr]
 
 
 @dataclass(frozen=True, slots=True)
 class Tier:
     name: str
-    terms: tuple[Callable[[CandidateModel], Term], ...]
+    terms: tuple[Term, ...]
     # A reward is maximized instead of minimized.
     reward: bool = False
 
 
-def six_day_windows(model: CandidateModel) -> Term:
+def six_day_windows(model: CandidateModel) -> Expr:
     """Fully worked six-day windows, each counted on its last day inside the month."""
     events: list[Expr] = []
     for slots in model.timelines.values():
@@ -48,10 +38,10 @@ def six_day_windows(model: CandidateModel) -> Term:
             for expr in exprs:
                 model.cp.add(event <= expr)
             events.append(event)
-    return Term(sum(events, 0), len(events))
+    return sum(events, 0)
 
 
-def backward_transitions(model: CandidateModel) -> Term:
+def backward_transitions(model: CandidateModel) -> Expr:
     """Successive early/late/night duties that step back in that order; off days do not reset it.
 
     The comparison starts with the preceding context days. `last[rank]` is 1 exactly when the most
@@ -75,11 +65,11 @@ def backward_transitions(model: CandidateModel) -> Term:
                         events.append(model.logical_and(on[rank], last[earlier_rank]))
             any_ranked = sum(on.values(), 0)
             last = {rank: on[rank] + model.and_not(last[rank], any_ranked) for rank in ranks}
-    return Term(sum(events, 0), len(events))
+    return sum(events, 0)
 
 
-def balance_deviation(model: CandidateModel) -> Term:
-    """The sum of every employee's absolute monthly balance in minutes, bounded by the hard balance band."""
+def balance_deviation(model: CandidateModel) -> Expr:
+    """The sum of every employee's absolute monthly balance in minutes."""
     tolerance = POLICY.balance_tolerance_minutes
     deviations: list[Expr] = []
     for account in model.dataset.monthly_work_accounts:
@@ -90,16 +80,15 @@ def balance_deviation(model: CandidateModel) -> Term:
         deviation = model.cp.new_int_var(0, tolerance, f"deviation_{account.employee_id}")
         model.cp.add_abs_equality(deviation, balance)
         deviations.append(deviation)
-    return Term(sum(deviations, 0), tolerance * len(deviations))
+    return sum(deviations, 0)
 
 
-def surplus_intermediate(model: CandidateModel) -> Term:
-    """Intermediate duties beyond the required ones; at most one per employee-day with such a candidate."""
+def surplus_intermediate(model: CandidateModel) -> Expr:
+    """Intermediate duties beyond the required ones."""
     intermediate = {s.shift_id for s in model.dataset.shifts if s.type == ShiftType.INTERMEDIATE}
     duties = [duty for duty in model.candidates if duty.shift_id in intermediate]
     required = sum(row.required_count for row in model.dataset.demand_requirements if row.shift_id in intermediate)
-    employee_days = {(duty.employee_id, duty.date) for duty in duties}
-    return Term(sum((model.candidates[duty] for duty in duties), 0) - required, len(employee_days))
+    return sum((model.candidates[duty] for duty in duties), 0) - required
 
 
 # The objective tiers, highest priority first.
@@ -110,19 +99,6 @@ OBJECTIVES: tuple[Tier, ...] = (
 )
 
 
-def set_objective(model: CandidateModel) -> ObjectiveWeights:
-    """Minimize the weighted tiers and return their weights; raises ValueError if they could exceed exact integers."""
-    weighted: list[Expr] = []
-    weights: dict[str, int] = {}
-    # The largest weighted total of all lower tiers.
-    lower = 0
-    for tier in reversed(OBJECTIVES):
-        terms = [term(model) for term in tier.terms]
-        weights[tier.name] = lower + 1
-        lower += weights[tier.name] * sum(term.bound for term in terms)
-        sign = -1 if tier.reward else 1
-        weighted.append(sign * weights[tier.name] * sum((term.expr for term in terms), 0))
-    if lower >= MAX_OBJECTIVE:
-        raise ValueError("The month is too large for exact objective weights.")
-    model.cp.minimize(sum(weighted, 0))
-    return ObjectiveWeights(**weights)
+def tier_objectives(model: CandidateModel) -> tuple[tuple[Tier, Expr], ...]:
+    """Every tier of `OBJECTIVES` with the sum of its terms, highest priority first."""
+    return tuple((tier, sum((term(model) for term in tier.terms), 0)) for tier in OBJECTIVES)

@@ -195,51 +195,6 @@
       "title": "NotAssessed",
       "type": "object"
     },
-    "ObjectiveReport": {
-      "additionalProperties": false,
-      "description": "CP-SAT's objective of the returned schedule and the best bound it proved.\n\n`value` equals the weighted total of the independently computed scores in the schedule check;\na time-limited FEASIBLE schedule can be improved by up to the gap.",
-      "properties": {
-        "value": {
-          "title": "Value",
-          "type": "integer"
-        },
-        "best_bound": {
-          "title": "Best Bound",
-          "type": "number"
-        }
-      },
-      "required": [
-        "value",
-        "best_bound"
-      ],
-      "title": "ObjectiveReport",
-      "type": "object"
-    },
-    "ObjectiveWeights": {
-      "additionalProperties": false,
-      "description": "Dominance coefficients of the three objective tiers, derived from the input's bounds.\n\nOne unit of a higher tier outweighs any possible change of all lower tiers together.",
-      "properties": {
-        "health_events": {
-          "title": "Health Events",
-          "type": "integer"
-        },
-        "balance_deviation_minutes": {
-          "title": "Balance Deviation Minutes",
-          "type": "integer"
-        },
-        "surplus_intermediate_duties": {
-          "title": "Surplus Intermediate Duties",
-          "type": "integer"
-        }
-      },
-      "required": [
-        "health_events",
-        "balance_deviation_minutes",
-        "surplus_intermediate_duties"
-      ],
-      "title": "ObjectiveWeights",
-      "type": "object"
-    },
     "PlanningMonth": {
       "additionalProperties": false,
       "properties": {
@@ -377,10 +332,8 @@
         "policy": {
           "$ref": "#/$defs/RulePolicy"
         },
-        "weights": {
-          "$ref": "#/$defs/ObjectiveWeights"
-        },
         "timeout_seconds": {
+          "description": "The total solver time of all stages.",
           "title": "Timeout Seconds",
           "type": "number"
         },
@@ -409,7 +362,6 @@
       },
       "required": [
         "policy",
-        "weights",
         "timeout_seconds",
         "search_workers",
         "random_seed"
@@ -486,7 +438,7 @@
     },
     "ScheduleScores": {
       "additionalProperties": false,
-      "description": "The raw objective tiers, highest priority first; see the solver documentation for their weights.",
+      "description": "The raw objective tiers, highest priority first; each solver stage reports one of them.",
       "properties": {
         "six_day_windows": {
           "title": "Six Day Windows",
@@ -529,23 +481,21 @@
         },
         "assignments": {
           "default": [],
-          "description": "Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `objective` and `check`.",
+          "description": "Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `stages` and `check`.",
           "items": {
             "$ref": "#/$defs/Assignment"
           },
           "title": "Assignments",
           "type": "array"
         },
-        "objective": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ObjectiveReport"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
+        "stages": {
+          "default": [],
+          "description": "Every objective tier in solving order. The status is OPTIMAL exactly when every stage is.",
+          "items": {
+            "$ref": "#/$defs/StageReport"
+          },
+          "title": "Stages",
+          "type": "array"
         },
         "check": {
           "anyOf": [
@@ -621,13 +571,47 @@
       ],
       "title": "StaffLevel",
       "type": "string"
+    },
+    "StageReport": {
+      "additionalProperties": false,
+      "description": "One objective tier's stage: the tier's value in the returned schedule and the bound CP-SAT proved.\n\n`value` equals the tier's field in the independent schedule check. OPTIMAL proves the value is the\nbest possible after every higher tier; FEASIBLE means the stage's time ended first.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "optimal",
+            "feasible"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "integer"
+        },
+        "best_bound": {
+          "title": "Best Bound",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "status",
+        "value",
+        "best_bound"
+      ],
+      "title": "StageReport",
+      "type": "object"
     }
   },
   "additionalProperties": false,
   "description": "result.json: the solution of the paired input, with its effective configuration and schedule check.",
   "properties": {
     "format_version": {
-      "const": 1,
+      "const": 2,
       "title": "Format Version",
       "type": "integer"
     },

@@ -35,7 +35,7 @@ from app.domain import (
 from app.domain.schedule import DutyRow, EmployeeRow
 from app.solver.models import Solution
 
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2
 INPUT_FILE: Final = "input.json"
 RESULT_FILE: Final = "result.json"
 SCHEDULE_FILE: Final = "schedule.csv"
@@ -46,7 +46,7 @@ type FileName = Literal["input.json", "result.json", "schedule.csv", "employees.
 class ScheduleInput(SchedulingBaseModel):
     """input.json: everything one full-month run reads; no TimeOffice plan, wish or credential."""
 
-    format_version: Literal[1]
+    format_version: Literal[2]
     timezone: Literal["Europe/Berlin"]
     calendar: tuple[CalendarDay, ...]
     """Every date of the month with its ISO weekday and NRW public holiday; must equal the application's."""
@@ -85,7 +85,7 @@ class RuntimeVersions(SchedulingBaseModel):
 class ScheduleResult(SchedulingBaseModel):
     """result.json: the solution of the paired input, with its effective configuration and schedule check."""
 
-    format_version: Literal[1]
+    format_version: Literal[2]
     planning_month: PlanningMonth
     input: InputReference
     solution: Solution
