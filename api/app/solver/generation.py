@@ -63,18 +63,23 @@ class Solve(Protocol):
     def __call__(self, dataset: SchedulingDataset, timeout: float) -> Solution: ...
 
 
+class OnSolved(Protocol):
+    def __call__(self, dataset: SchedulingDataset, solution: Solution) -> None: ...
+
+
 class Generation:
     """Start a generation and report the latest job.
 
     `start` reads and validates the input synchronously, so its errors reach the caller, then solves in
-    a background thread and returns the running job at once. While a job runs, `start` raises
-    `GenerationBusy`. Jobs live in this process only: a restart forgets them, and only one API process
-    may run because the lock is process-local.
+    a background thread and returns the running job at once. Every solution is handed to `on_solved`
+    before the job completes. While a job runs, `start` raises `GenerationBusy`. Jobs live in this
+    process only: a restart forgets them, and only one API process may run because the lock is process-local.
     """
 
-    def __init__(self, *, read_input: ReadInput, solve: Solve) -> None:
+    def __init__(self, *, read_input: ReadInput, solve: Solve, on_solved: OnSolved) -> None:
         self._read_input = read_input
         self._solve = solve
+        self._on_solved = on_solved
         self._lock = Lock()
         self._latest: GenerationJob | None = None
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="generation")
@@ -110,6 +115,7 @@ class Generation:
         finished = job.model_copy(update={"state": JobState.FAILED, "error": FAILED})
         try:
             solution = self._solve(dataset, job.request.timeout_seconds)
+            self._on_solved(dataset, solution)
             finished = job.model_copy(update={"state": JobState.COMPLETED, "solution": solution})
         except Exception:
             logger.exception("Generation failed: job_id=%s", job.job_id)

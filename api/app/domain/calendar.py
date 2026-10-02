@@ -27,8 +27,8 @@ class DayType(StrEnum):
 
 class CalendarDay(SchedulingBaseModel):
     date: Date
-    # ISO weekday, Monday=1 to Sunday=7; it stays the actual weekday on a public holiday.
     weekday: int = Field(ge=1, le=7)
+    """ISO weekday, Monday=1 to Sunday=7; it stays the actual weekday on a public holiday."""
     public_holiday: str | None = None
 
     @property

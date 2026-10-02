@@ -7,12 +7,14 @@ from fastapi import Request
 from inspection_fixture import InspectionSource
 
 from app.api.generation import get_generation
+from app.api.review import get_review
 from app.api.shared import get_planning_source
 from app.domain import DemandCell, MonthlyDemand, PlanningMonth, SchedulingDataset, StaffLevel
 from app.main import app
 from app.settings import get_settings
 from app.solver.generation import Generation
 from app.solver.models import Solution
+from app.solver.review import Review
 from app.solver.service import SolverService
 from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable
 
@@ -64,8 +66,12 @@ def browser_solve(dataset: SchedulingDataset, timeout: float) -> Solution:
     return solver.solve(dataset, timeout=min(timeout, 3))
 
 
-generation = Generation(read_input=source.service.read_generation_input, solve=browser_solve)
+review = Review()
+generation = Generation(
+    read_input=source.service.read_generation_input, solve=browser_solve, on_solved=review.generated
+)
 app.dependency_overrides[get_generation] = lambda: generation
+app.dependency_overrides[get_review] = lambda: review
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=18080)

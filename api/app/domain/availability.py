@@ -28,8 +28,8 @@ class AvailabilityEntry(SchedulingBaseModel):
     availability_type: AvailabilityType
     reason: NonEmptyStr | None = None
 
-    # Only used for AVAILABLE_ONLY. For absences/blockers this stays None.
     shift_ids: tuple[ShiftId, ...] | None = None
+    """The allowed shifts; only and required for AVAILABLE_ONLY."""
 
     @model_validator(mode="after")
     def validate_availability(self) -> Self:

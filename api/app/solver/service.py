@@ -6,7 +6,7 @@ from app.domain import POLICY, SchedulingDataset, check_schedule
 from app.settings import Settings
 from app.solver.diagnostics import DiagnosticSeverity, SolverDiagnostic
 from app.solver.model import build_model
-from app.solver.models import ObjectiveReport, RunConfiguration, Solution, SolutionStatus
+from app.solver.models import FOUND, ObjectiveReport, RunConfiguration, Solution, SolutionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class SolverService:
         if configuration.random_seed is not None:
             solver.parameters.random_seed = configuration.random_seed
         status = STATUS.get(solver.solve(built.model), SolutionStatus.UNKNOWN)
-        found = status in {SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE}
+        found = status in FOUND
         assignments = built.schedule(solver) if found else ()
         solution = Solution(
             status=status,

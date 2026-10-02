@@ -24,8 +24,8 @@ class MonthlyWorkAccount(SchedulingBaseModel):
     employee_id: EmployeeId
     target_minutes: NonNegativeInt
     actual_minutes: NonNegativeInt | None = None
-    # Dated credits of the month; empty means nothing is credited.
     credit_details: tuple[WorkCredit, ...] = ()
+    """Dated credits of the month; empty means nothing is credited."""
 
     @computed_field
     @property

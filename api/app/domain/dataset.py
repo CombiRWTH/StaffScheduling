@@ -15,7 +15,7 @@ from app.domain.employee import Employee
 from app.domain.inspection import PlanningInspection
 from app.domain.monthly_work_account import MonthlyWorkAccount
 from app.domain.planning_month import PlanningMonth
-from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership, PlanningUnitType
+from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership, PlanningUnitType, home_unit_id
 from app.domain.shift import Shift
 
 
@@ -46,8 +46,17 @@ class SchedulingDataset(SchedulingBaseModel):
             raise ValueError("Duplicate employee or shift identities.")
         if sorted(row.employee_id for row in self.monthly_work_accounts) != sorted(employee_ids):
             raise ValueError("Every employee requires exactly one monthly account.")
-        if any(row.employee_id not in employee_ids for row in self.planning_unit_memberships):
-            raise ValueError("Membership of an unknown employee.")
+        unit_ids = {row.planning_unit_id for row in self.planning_units}
+        if any(
+            row.employee_id not in employee_ids or row.planning_unit_id not in unit_ids
+            for row in self.planning_unit_memberships
+        ):
+            raise ValueError("Membership of an unknown employee or planning unit.")
+        for employee_id in employee_ids:  # raises unless every date with a membership has one home
+            for day in month.dates:
+                home_unit_id(self.planning_unit_memberships, employee_id, day)
+        if any(credit.date not in month for row in self.monthly_work_accounts for credit in row.credit_details):
+            raise ValueError("Work credit outside the planning month.")
         demand_keys = [row.demand_key for row in self.demand_requirements]
         if len(set(demand_keys)) != len(demand_keys):
             raise ValueError("Duplicate demand requirement.")

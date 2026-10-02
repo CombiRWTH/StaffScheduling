@@ -7,7 +7,7 @@ from app.domain.core import NonEmptyStr, SchedulingBaseModel
 from app.domain.employee import Employee, EmployeeId, StaffLevel
 from app.domain.monthly_work_account import MonthlyWorkAccount
 from app.domain.planning_month import PlanningMonth
-from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership, PlanningUnitType
+from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership, PlanningUnitType, home_unit_id
 
 
 class InvalidSelection(ValueError):
@@ -99,11 +99,8 @@ def build_inspection(
     inspected: list[EmployeeInspection] = []
     for employee in employees:
         employee_memberships = tuple(row for row in memberships if row.employee_id == employee.employee_id)
-        for day in planning_month.dates:
-            active = [row for row in employee_memberships if row.active_on(day)]
-            homes = {row.planning_unit_id for row in active if row.is_home}
-            if active and len(homes) != 1:
-                raise ValueError(f"Employee {employee.employee_id} requires one evidenced home origin on {day}.")
+        for day in planning_month.dates:  # raises unless every date with a membership has one home
+            home_unit_id(employee_memberships, employee.employee_id, day)
         account = accounts_by_id[employee.employee_id]
         if any(credit.date not in planning_month for credit in account.credit_details):
             raise ValueError("Credit date is outside the selected month.")

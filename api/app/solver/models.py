@@ -1,6 +1,7 @@
 from enum import StrEnum
+from typing import Self
 
-from pydantic import computed_field
+from pydantic import computed_field, model_validator
 
 from app.domain import Assignment, RulePolicy, ScheduleCheck, SchedulingBaseModel
 from app.solver.diagnostics import SolverDiagnostic
@@ -16,6 +17,10 @@ class SolutionStatus(StrEnum):
     INFEASIBLE = "infeasible"
     MODEL_INVALID = "model_invalid"
     UNKNOWN = "unknown"
+
+
+# The statuses that come with a candidate schedule.
+FOUND = frozenset({SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE})
 
 
 class ObjectiveWeights(SchedulingBaseModel):
@@ -59,8 +64,21 @@ class Solution(SchedulingBaseModel):
     status: SolutionStatus
     configuration: RunConfiguration
     wall_time_seconds: float
-    # Present only with a candidate schedule (OPTIMAL or FEASIBLE).
     assignments: tuple[Assignment, ...] = ()
+    """Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `objective` and `check`."""
     objective: ObjectiveReport | None = None
     check: ScheduleCheck | None = None
     diagnostics: tuple[SolverDiagnostic, ...] = ()
+
+    @property
+    def found(self) -> bool:
+        """Whether CP-SAT returned a candidate schedule."""
+        return self.status in FOUND
+
+    @model_validator(mode="after")
+    def validate_schedule(self) -> Self:
+        if self.found != (self.objective is not None and self.check is not None):
+            raise ValueError("A found schedule, and only a found one, has an objective and a schedule check.")
+        if self.assignments and not self.found:
+            raise ValueError("Only a found schedule has assignments.")
+        return self

@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from datetime import date as Date
 from enum import StrEnum
 from typing import Self
@@ -66,3 +67,18 @@ class PlanningUnitMembership(SchedulingBaseModel):
             raise ValueError("PlanningUnitMembership.valid_from must be before or equal to valid_until.")
 
         return self
+
+
+def home_unit_id(memberships: Iterable[PlanningUnitMembership], employee_id: int, day: Date) -> int | None:
+    """The employee's home station or jumper pool on `day`: their assignment origin.
+
+    None when the employee has no active membership that day; more than one active home is ambiguous
+    and raises ValueError, so an origin is never guessed.
+    """
+    active = [row for row in memberships if row.employee_id == employee_id and row.active_on(day)]
+    homes = {row.planning_unit_id for row in active if row.is_home}
+    if not active:
+        return None
+    if len(homes) != 1:
+        raise ValueError(f"Employee {employee_id} requires one evidenced home origin on {day}.")
+    return homes.pop()

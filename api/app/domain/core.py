@@ -10,6 +10,8 @@ class SchedulingBaseModel(BaseModel):
         frozen=True,
         extra="forbid",
         str_strip_whitespace=True,
+        # Docstrings below fields describe them in the generated JSON Schema.
+        use_attribute_docstrings=True,
     )
 
 

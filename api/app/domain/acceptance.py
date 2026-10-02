@@ -98,8 +98,8 @@ class ScheduleScores(SchedulingBaseModel):
 
 class ScheduleCheck(SchedulingBaseModel):
     status: CheckStatus
-    # The rules evaluated; anything else is listed in `not_assessed`.
     rules: tuple[Rule, ...]
+    """The rules evaluated; anything else is listed in `not_assessed`."""
     findings: tuple[Finding, ...]
     not_assessed: tuple[NotAssessed, ...]
     scores: ScheduleScores
