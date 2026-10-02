@@ -13,17 +13,47 @@ Follow the [quickstart](quickstart.md) for the shortest path. This guide covers 
 | Native webapp tools and Prettier hook | Node from `webapp/package.json` and its pinned pnpm version                                            |
 | Build/view documentation locally      | uv and the pinned Python                                                                               |
 
-[Docker Desktop](https://docs.docker.com/compose/install/) includes Engine and Compose on macOS, Windows and Linux. Linux users can install Engine and the Compose plugin separately. The daemon must be running; the user must be able to run Docker commands. On Windows, use Linux containers. The root just recipes need a POSIX shell, and `just precheck` uses Bash. They do not support the Windows Command Prompt or PowerShell. On Windows, run them from [Git Bash](https://git-scm.com/downloads/win) or [WSL](https://learn.microsoft.com/en-us/windows/wsl/install); with WSL, enable Docker Desktop's WSL integration. Windows use is untested.
+Running the services needs only Docker with Compose and just; the other tools are for native development. Install them for your system:
 
-Verify the prerequisites:
+??? note "macOS"
+
+    Install [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/), which includes Engine and Compose, and [just](https://just.systems/man/en/packages.html), for example with `brew install just`. Git comes with the Xcode command line tools (`xcode-select --install`).
+
+??? note "Linux"
+
+    Install [Docker Engine and the Compose plugin](https://docs.docker.com/engine/install/), or Docker Desktop, and [just](https://just.systems/man/en/packages.html) from your package manager or its prebuilt binaries. Allow your user to run Docker commands, for example through the [`docker` group](https://docs.docker.com/engine/install/linux-postinstall/).
+
+??? note "Windows"
+
+    Install [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) with Linux containers, and [just](https://just.systems/man/en/packages.html). The root just recipes need a POSIX shell, and `just precheck` uses Bash; they do not support the Command Prompt or PowerShell. Run them from [Git Bash](https://git-scm.com/downloads/win) or [WSL](https://learn.microsoft.com/en-us/windows/wsl/install); with WSL, enable Docker Desktop's WSL integration. Windows use is untested.
+
+The Docker daemon must be running. The first build needs internet access to fetch images, OS packages and locked dependencies. Docker images contain Python, Node, uv, pnpm and Microsoft's ODBC Driver 18; these do not need host installations for Compose startup. Dedicated Linux-host and connected database acceptance are still pending; see [limitations](../validation/index.md).
+
+## Verify the installation
+
+Check that the tools are found and that Docker can run a container:
+
+```sh
+git --version
+just --version
+docker --version
+docker compose version
+docker run --rm hello-world
+```
+
+The last command prints a greeting from Docker. After you [obtain the repository](#obtain-the-repository), check the project's own prerequisites from its root:
 
 ```sh
 just precheck
 ```
 
-It warns when Docker with Compose is missing, and when just, uv, `python3.14`, Node or pnpm are missing or differ from the versions pinned in the project files and CI. Only Docker and just are needed to run the services; the other tools are for native development, where the Git hook calls `python3.14` directly. Warnings do not stop it; it fails only if the password file is missing. `just run` runs it first.
+It warns when Docker with Compose is missing, and when just, uv, `python3.14`, Node or pnpm are missing or differ from the versions pinned in the project files and CI. The Git hook calls `python3.14` directly. Warnings do not stop it; it fails only if the [password file](#database-configuration) is missing. `just run` runs it first.
 
-The first build needs internet access to fetch images, OS packages and locked dependencies. Docker images contain Python, Node, uv, pnpm and Microsoft's ODBC Driver 18; these do not need host installations for Compose startup. Dedicated Linux-host and connected database acceptance are still pending; see [limitations](../validation/index.md).
+!!! tip "If a check fails"
+
+    - **`command not found`**: the tool is not installed or not on `PATH`. Open a new terminal after installing it; on Windows, use Git Bash or WSL.
+    - **`Cannot connect to the Docker daemon`**: start Docker Desktop, or the Docker service on Linux (`sudo systemctl start docker`).
+    - **`permission denied` on the Docker socket (Linux)**: add your user to the `docker` group, then log out and in again.
 
 ## Obtain the repository
 
@@ -124,9 +154,10 @@ uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs se
 
 ## Troubleshooting
 
+For missing commands and Docker daemon or permission errors, see [if a check fails](#verify-the-installation).
+
 | Symptom                                                    | Check or action                                                                                                      |
 | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Docker daemon unavailable                                  | Start Docker Desktop/Engine; verify `docker version`.                                                                |
 | `docker compose` unavailable or `--wait` unknown           | Install/update the Compose plugin using Docker's installation guide.                                                 |
 | Password file missing / settings validation error          | Run `just precheck`; check the exact `.secrets/db_password` path and root `.env`; inspect `docker compose logs api`. |
 | Port 3000 or 8000 already allocated                        | Stop the conflicting process or previous Compose instance, then retry.                                               |
