@@ -22,12 +22,12 @@ StaffSchedulingWeb is a [Next.js](https://nextjs.org/) application (App Router) 
 
 ### Architecture at a Glance
 
-```
-┌──────────────────────────────┐       HTTP / JSON         ┌──────────────────────────┐
-│   StaffSchedulingWeb         │  ◄──────────────────────► │   StaffScheduling API    │
-│   (Next.js Frontend)         │    /solve, /status, ...   │   (FastAPI Backend)      │
-│   Port 3000                  │                           │   Port 8000              │
-└──────────────────────────────┘                           └──────────────────────────┘
+```text
++--------------------------+        HTTP / JSON        +------------------------+
+|    StaffSchedulingWeb    | <-----------------------> |  StaffScheduling API   |
+|    (Next.js Frontend)    |   /solve, /status, ...    |   (FastAPI Backend)    |
+|        Port 3000         |                           |       Port 8000        |
++--------------------------+                           +------------------------+
 ```
 
 The frontend communicates exclusively through the REST endpoints documented in the [API section](./api.md). No direct database access is required from the web application — all database operations (fetch, insert, delete) are handled by the backend API.

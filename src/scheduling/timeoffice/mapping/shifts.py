@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 from datetime import datetime
 
@@ -5,6 +6,8 @@ from scheduling.domain import Shift
 from scheduling.domain.shift import ShiftId
 from scheduling.timeoffice.facts import TimeOfficeFacts, TimeOfficeReferenceShiftFact
 from scheduling.timeoffice.reading.shifts import TimeOfficeShiftRow
+
+logger = logging.getLogger(__name__)
 
 
 def map_shifts(rows: tuple[TimeOfficeShiftRow, ...], *, facts: TimeOfficeFacts) -> tuple[Shift, ...]:
@@ -120,11 +123,12 @@ def _check_reference_shift_code(
         )
 
     if source_shift_code != expected_code:
-        raise ValueError(
-            f"Unexpected TimeOffice shift code for {context}: "
-            f"source_shift_id={source_shift_id} "
-            f"expected_code={expected_code!r} "
-            f"actual_code={source_shift_code!r}."
+        logger.warning(
+            "Unexpected TimeOffice shift code for %s: source_shift_id=%s expected_code=%r actual_code=%r",
+            context,
+            source_shift_id,
+            expected_code,
+            source_shift_code,
         )
 
 

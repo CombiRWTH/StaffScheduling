@@ -15,6 +15,7 @@ class SolveRequest(SchedulingBaseModel):
     planning_unit_ids: tuple[int, ...]
     year: int = Field(ge=2000, le=2100)
     month: int = Field(ge=1, le=12)
+    timeout: int = Field(default=30, ge=1)
 
     def planning_month(self) -> PlanningMonth:
         return PlanningMonth(year=self.year, month=self.month)
