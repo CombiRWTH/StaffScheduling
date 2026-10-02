@@ -17,7 +17,7 @@ type DemandKey = tuple[PlanningUnitId, Date, ShiftId, StaffLevel]
 
 
 class DemandRequirement(SchedulingBaseModel):
-    """Hard minimum staffing demand for one planning unit, date, shift and staff level."""
+    """Minimum staffing demand for one planning unit, date, shift and staff level; an unfilled slot is a gap."""
 
     planning_unit_id: PlanningUnitId
     date: Date

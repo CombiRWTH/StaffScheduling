@@ -40,7 +40,7 @@ class WishEntry(SchedulingBaseModel):
 class Wish(WishEntry):
     """An employee's soft preference for one date at any station; at most one per employee and date.
 
-    Generation considers it below gaps and health and above the monthly balance; it never binds.
+    Generation considers it as one objective tier (see `OBJECTIVES`); it never binds.
     """
 
     employee_id: EmployeeId

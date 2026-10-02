@@ -139,11 +139,15 @@ def balance_deviation(model: CandidateModel) -> Expr:
 
 
 def surplus_intermediate(model: CandidateModel) -> Expr:
-    """Intermediate duties beyond the required ones."""
+    """Intermediate duties beyond the required ones, per demand row.
+
+    Each row's surplus `max(0, credited - required)` is `credited - required + gap`, so a gap never
+    offsets a surplus elsewhere; duties without a demand row count fully.
+    """
     intermediate = {s.shift_id for s in model.dataset.shifts if s.type == ShiftType.INTERMEDIATE}
-    duties = [duty for duty in model.candidates if duty.shift_id in intermediate]
-    required = sum(row.required_count for row in model.dataset.demand_requirements if row.shift_id in intermediate)
-    return sum((model.candidates[duty] for duty in duties), 0) - required
+    duties = sum((variable for duty, variable in model.candidates.items() if duty.shift_id in intermediate), 0)
+    rows = [row for row in model.dataset.demand_requirements if row.shift_id in intermediate]
+    return duties - sum(row.required_count for row in rows) + sum((model.gaps[row] for row in rows), 0)
 
 
 # The objective tiers, highest priority first.

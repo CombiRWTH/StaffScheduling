@@ -52,7 +52,10 @@ SOLVER = SolverService(Settings(solver_num_search_workers=1, solver_random_seed=
 
 
 def solve(data: SchedulingDataset) -> Solution:
-    return SOLVER.solve(data, timeout=20)
+    """A production solve whose every stage, when a schedule is found, reports the checked score of its tier."""
+    solution = SOLVER.solve(data, timeout=20)
+    assert solution.check is None or stages_are_scores(solution)
+    return solution
 
 
 def checked(solution: Solution) -> ScheduleCheck:
@@ -103,9 +106,8 @@ def test_a_solved_month_is_accepted_and_every_stage_is_its_checked_score() -> No
 
     assert solution.status == SolutionStatus.OPTIMAL
     assert checked(solution).status == CheckStatus.ACCEPTED
-    assert stages_are_scores(solution)
     assert all(stage.status == SolutionStatus.OPTIMAL for stage in solution.stages)
-    assert all(stage.value == round(stage.best_bound) for stage in solution.stages)
+    assert all(stage.best_bound is not None and stage.value == round(stage.best_bound) for stage in solution.stages)
     # The jumper pool employee is credited as the assistant their station membership makes them.
     assert duty(3, jan(6), EARLY, unit=SOUTH, level=StaffLevel.ASSISTANT) in solution.assignments
     # The check is independent: removing a duty the model needed is caught.
@@ -135,7 +137,9 @@ def test_a_later_stage_without_time_keeps_the_previous_schedule_as_feasible(monk
     # Each stage gets the time left divided by the stages left.
     assert budgets[0] == pytest.approx(30 / len(OBJECTIVES), rel=0.01)
     assert solution.status == SolutionStatus.FEASIBLE
-    assert [stage.status for stage in solution.stages[1:]] == [SolutionStatus.FEASIBLE] * (len(OBJECTIVES) - 1)
+    assert [(stage.status, stage.best_bound) for stage in solution.stages[1:]] == [(SolutionStatus.FEASIBLE, None)] * (
+        len(OBJECTIVES) - 1
+    )
     assert checked(solution).status == CheckStatus.ACCEPTED
     assert stages_are_scores(solution)
 
@@ -177,7 +181,6 @@ def test_unmet_demand_returns_exactly_the_missing_slots_as_gaps() -> None:
     assert solution.assignments == (duty(1, jan(5), EARLY, level=StaffLevel.MFA),)
     assert solution.gaps == (gap(jan(5), EARLY, level=StaffLevel.MFA),)
     assert checked(solution).status == CheckStatus.ACCEPTED
-    assert stages_are_scores(solution)
     assert [(row.code, row.severity) for row in solution.diagnostics] == [
         ("staffing.too_few_candidates", DiagnosticSeverity.WARNING)
     ]
@@ -194,7 +197,6 @@ def test_a_gap_is_never_traded_for_health_events() -> None:
 
     assert solution.gaps == ()
     assert checked(solution).scores.backward_transitions == 1
-    assert stages_are_scores(solution)
 
 
 def test_a_non_staffing_conflict_stays_infeasible() -> None:
@@ -242,7 +244,6 @@ def test_fairness_spreads_unavoidable_denials_even_against_the_balance() -> None
     assert {row.employee_id for row in solution.assignments} == {1, 2}
     assert checked(solution).scores.wish_cost == 2
     assert checked(solution).scores.balance_deviation_minutes == 420
-    assert stages_are_scores(solution)
 
 
 def test_health_events_outweigh_a_wish() -> None:
@@ -257,7 +258,6 @@ def test_health_events_outweigh_a_wish() -> None:
 
     assert [row.status for row in checked(solution).wishes] == [WishStatus.DENIED]
     assert checked(solution).scores.backward_transitions == 0
-    assert stages_are_scores(solution)
 
 
 def test_a_jumper_pool_wish_is_granted_at_a_station_and_an_ungrantable_one_costs_nothing() -> None:
@@ -274,7 +274,6 @@ def test_a_jumper_pool_wish_is_granted_at_a_station_and_an_ungrantable_one_costs
     assert solution.assignments == (duty(1, jan(5), LATE, unit=SOUTH),)
     assert [row.status for row in checked(solution).wishes] == [WishStatus.GRANTED, WishStatus.NOT_GRANTABLE]
     assert checked(solution).scores.wish_cost == 0
-    assert stages_are_scores(solution)
 
 
 def test_health_events_outweigh_a_station_transfer() -> None:
@@ -289,7 +288,6 @@ def test_health_events_outweigh_a_station_transfer() -> None:
 
     assert duty(1, jan(12), EARLY, unit=SOUTH) in solution.assignments
     assert (checked(solution).scores.backward_transitions, checked(solution).scores.station_transfers) == (0, 1)
-    assert stages_are_scores(solution)
 
 
 def test_a_station_transfer_is_never_made_to_grant_a_wish() -> None:
@@ -306,7 +304,6 @@ def test_a_station_transfer_is_never_made_to_grant_a_wish() -> None:
     assert duty(2, jan(5), EARLY, unit=SOUTH) in solution.assignments
     assert checked(solution).scores.station_transfers == 0
     assert [row.status for row in checked(solution).wishes] == [WishStatus.DENIED]
-    assert stages_are_scores(solution)
 
 
 def test_a_month_needs_every_account_before_it_solves() -> None:
@@ -363,7 +360,21 @@ def test_health_events_outweigh_the_monthly_balance(extra_late_day: int, worked:
     assert (duty(1, jan(extra_late_day), LATE) in solution.assignments) == worked
     assert checked(solution).scores.backward_transitions == 0
     assert checked(solution).scores.balance_deviation_minutes == (0 if worked else 435)
-    assert stages_are_scores(solution)
+
+
+def test_an_intermediate_gap_never_offsets_a_surplus() -> None:
+    # One employee cannot fill both intermediate slots of January 5; their intermediate duty of January 12,
+    # which no row requires, is still a surplus.
+    data = dataset(
+        memberships=member(1),
+        accounts=[account(1, 2 * 345)],
+        demand=[need(jan(5), INTERMEDIATE, count=2)],
+        availability=only(1, {5: (INTERMEDIATE.shift_id,), 12: (INTERMEDIATE.shift_id,)}),
+    )
+    solution = solve(data)
+
+    assert solution.gaps == (gap(jan(5), INTERMEDIATE),)
+    assert checked(solution).scores.surplus_intermediate_duties == 1
 
 
 @pytest.mark.parametrize(("short_by", "intermediate"), [(172, False), (173, True)])
@@ -380,4 +391,3 @@ def test_the_balance_outweighs_extra_intermediate_duties(short_by: int, intermed
 
     assert (extra in solution.assignments) == intermediate
     assert checked(solution).scores.surplus_intermediate_duties == int(intermediate)
-    assert stages_are_scores(solution)

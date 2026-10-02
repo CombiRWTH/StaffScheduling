@@ -330,7 +330,7 @@ def read_absences(
             date=day.date(),
             availability_type=facts.availability_type_by_absence_code[code],
             reason=code,
-            source="TimeOffice absence",
+            native_absence=True,
         )
         absences[absence] = None
     return tuple(absences)

@@ -53,7 +53,8 @@ class Availability(AvailabilityEntry):
 
     employee_id: EmployeeId
     date: Date
-    source: str | None = None
+    native_absence: bool = False
+    """An approved absence of the roster system, read-only here; its `reason` is the absence code."""
 
 
 class EmployeeCalendar(SchedulingBaseModel):

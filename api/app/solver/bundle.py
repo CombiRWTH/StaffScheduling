@@ -45,7 +45,7 @@ type FileName = Literal["input.json", "result.json", "schedule.csv", "employees.
 
 
 class ScheduleInput(SchedulingBaseModel):
-    """input.json: everything one full-month run reads; no TimeOffice plan, wish or credential."""
+    """input.json: everything one full-month run reads, wishes included; no TimeOffice plan or credential."""
 
     format_version: Literal[2]
     timezone: Literal["Europe/Berlin"]

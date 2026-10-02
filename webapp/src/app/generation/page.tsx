@@ -68,11 +68,11 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
             <div className="grid gap-4 border-t pt-3 text-muted-foreground sm:grid-cols-2">
               <div className="space-y-1.5">
                 <p className="font-medium text-foreground">Berücksichtigt</p>
-                <BulletList items={USED} />
+                <BulletList items={USED} label="Berücksichtigt" />
               </div>
               <div className="space-y-1.5">
                 <p className="font-medium text-foreground">Nicht berücksichtigt</p>
-                <BulletList items={NOT_USED} />
+                <BulletList items={NOT_USED} label="Nicht berücksichtigt" />
               </div>
             </div>
           </CardContent>

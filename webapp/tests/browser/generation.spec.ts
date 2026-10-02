@@ -20,6 +20,14 @@ test("no result before the first run; incomplete or invalid input starts nothing
   await expect(next.getByRole("heading")).toHaveText("September 2026 · Example Station North");
   await expect(next).toContainText("Ganzer Monat, 01.09.2026–30.09.2026");
   await expect(page.getByText(/Kein Ergebnis verfügbar/)).toBeVisible();
+  // What a run reads and what it ignores are two separate lists.
+  await expect(page.getByRole("list", { name: "Berücksichtigt" }).getByRole("listitem")).toContainText([
+    "Wünsche",
+    "Mindestbesetzung",
+  ]);
+  await expect(page.getByRole("list", { name: "Nicht berücksichtigt" }).getByRole("listitem")).toHaveText([
+    "bestehende Dienste im Dienstplan",
+  ]);
 
   await start(page, "/generation?month=2026-09&stations=101");
   await expect(page.getByText(/Mindestbesetzung jeder Station speichern.*keine Generierung gestartet/)).toBeVisible();

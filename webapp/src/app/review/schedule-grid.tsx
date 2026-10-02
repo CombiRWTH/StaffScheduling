@@ -27,12 +27,10 @@ const AVAILABILITY_SHORT: Record<Availability["availability_type"], string> = {
 };
 
 const key = (employeeId: number, date: string) => `${employeeId}|${date}`;
-// Native absences come from TimeOffice with their absence code as the reason.
-const TIMEOFFICE_ABSENCE = "TimeOffice absence";
 /** What an employee-date without a duty shows: a native absence's TimeOffice code (such as `U` or `SC`), else the
  * entry's short code; a project entry's free-text reason stays in the tooltip. */
 const availabilityText = (row: Availability) =>
-  row.source === TIMEOFFICE_ABSENCE && row.reason ? row.reason : AVAILABILITY_SHORT[row.availability_type];
+  row.native_absence && row.reason ? row.reason : AVAILABILITY_SHORT[row.availability_type];
 const staffingKey = (stationId: number, shiftId: number, date: string) => `${stationId}|${shiftId}|${date}`;
 /** `HH:MM` of an offset timestamp: its Europe/Berlin wall-clock time. */
 const clock = (timestamp: string) => timestamp.slice(11, 16);
@@ -143,9 +141,9 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
       ].join(", "),
     ]),
   );
-  // Staffing per station, shift and date: the required count, the assigned staff (with demand only those of the
-  // required qualifications, which others never fill; the tooltip lists everyone) and the gap: the slots missing
-  // per qualification.
+  // Staffing per station, shift and date: the required count, the filled slots (each qualification's staff up to its
+  // demand, as another qualification never fills it and a surplus never covers another's gap; the tooltip lists
+  // everyone), all assigned staff for cells without demand, and the gap: the slots missing per qualification.
   const staffing = new Map<
     string,
     { required: number; assigned: number; credited: number; missing: number; levels: string[]; gaps: string[] }
@@ -162,7 +160,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
     };
     cell.required += row.required_count;
     cell.assigned += row.assigned_count;
-    if (row.required_count > 0) cell.credited += row.assigned_count;
+    cell.credited += Math.min(row.assigned_count, row.required_count);
     const missing = Math.max(0, row.required_count - row.assigned_count);
     cell.missing += missing;
     if (missing) cell.gaps.push(`${missing} ${STAFF_LEVEL_LABELS[row.staff_level]}`);
@@ -179,14 +177,14 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
   const shownTypes = new Set(tables.duties.map((row) => row.shift_type));
   const anyTransfer = tables.duties.some((row) => placement(row) === "transfer");
   const anyUnknown = tables.duties.some((row) => placement(row) === "unknown");
-  const availabilityLegend = new Map<string, string>();
+  // Keyed by text and meaning: a native absence `U` and a project vacation `U` are two entries.
+  const availabilityLegend = new Map<string, [string, string]>();
   for (const [at, rows] of availability) {
     if (duties.has(at)) continue;
-    const label = AVAILABILITY_LABELS[rows[0].availability_type];
-    availabilityLegend.set(
-      availabilityText(rows[0]),
-      rows[0].source === TIMEOFFICE_ABSENCE ? `Abwesenheit in TimeOffice (${label})` : label,
-    );
+    const text = availabilityText(rows[0]);
+    const type = AVAILABILITY_LABELS[rows[0].availability_type];
+    const label = rows[0].native_absence ? `Abwesenheit in TimeOffice (${type})` : type;
+    availabilityLegend.set(`${text}|${label}`, [text, label]);
   }
   const anyGap = [...staffing.values()].some((cell) => cell.missing > 0);
 
@@ -329,7 +327,12 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                               )}
                             >
                               {cell && `${cell.required ? cell.credited : cell.assigned}/${cell.required}`}
-                              {cell?.missing ? <div className="text-[10px] leading-tight">−{cell.missing}</div> : null}
+                              {cell?.missing ? (
+                                <div className="text-[10px] leading-tight">
+                                  −{cell.missing}
+                                  <span className="sr-only">, Lücke: {cell.gaps.join(", ")}</span>
+                                </div>
+                              ) : null}
                             </td>
                           );
                         })}
@@ -342,7 +345,11 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
           </div>
           {!employees.length && <p className="text-sm text-muted-foreground">Kein Mitarbeiter passt zur Suche.</p>}
 
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground" aria-label="Legende">
+          <div
+            className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground"
+            role="group"
+            aria-label="Legende"
+          >
             {(Object.keys(SHIFT_TYPE_LABELS) as ShiftType[])
               .filter((type) => shownTypes.has(type))
               .map((type) => (
@@ -368,8 +375,8 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
             )}
             {[...availabilityLegend]
               .sort(([a], [b]) => a.localeCompare(b, "de-DE"))
-              .map(([text, label]) => (
-                <span key={text}>
+              .map(([at, [text, label]]) => (
+                <span key={at}>
                   <span className="font-medium text-foreground">{text}</span> {label}
                 </span>
               ))}

@@ -648,7 +648,7 @@
     },
     "StageReport": {
       "additionalProperties": false,
-      "description": "One objective tier's stage: the tier's value in the returned schedule and the bound CP-SAT proved.\n\n`value` equals the tier's field in the independent schedule check. OPTIMAL proves the value is the\nbest possible after every higher tier; FEASIBLE means the stage's time ended first.",
+      "description": "One objective tier's stage: the tier's value in the returned schedule and the bound CP-SAT proved.\n\n`value` equals the tier's field in the independent schedule check. OPTIMAL proves the value is the\nbest possible after every higher tier; FEASIBLE means the stage's time ended first. `best_bound` is\nNone when the stage found no schedule of its own and kept the previous one.",
       "properties": {
         "name": {
           "title": "Name",
@@ -667,8 +667,15 @@
           "type": "integer"
         },
         "best_bound": {
-          "title": "Best Bound",
-          "type": "number"
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Best Bound"
         }
       },
       "required": [
@@ -723,7 +730,7 @@
       "type": "object"
     },
     "WishStatus": {
-      "description": "GRANTED: the schedule fulfils the wish. DENIED: it does not, though some schedule could.\nNOT_GRANTABLE: binding availability, eligibility, the shift's own work pattern or a trusted\ncontext duty rule out every schedule that would fulfil it; it costs nothing.",
+      "description": "GRANTED: the schedule fulfils the wish. DENIED: it does not, and it costs.\nNOT_GRANTABLE: the inputs of its own date rule it out, so it costs nothing: for a preferred day or\nshift, binding availability, eligibility or the shift's own work pattern leave no duty to start; for\na free day, a trusted context duty touches the date. Rules across days, such as the rest after a\ncontext night, only deny a wish, since only a solve could tell whether they rule it out.",
       "enum": [
         "granted",
         "denied",

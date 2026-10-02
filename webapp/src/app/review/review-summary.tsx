@@ -17,11 +17,20 @@ import {
   monthLabel,
   solverStatusText,
 } from "@/lib/labels";
-import type { CheckStatus, ScheduleReview } from "@/lib/types";
+import type { CheckStatus, ObjectiveTier, ScheduleCheck, ScheduleReview } from "@/lib/types";
 
 const SOURCES: Record<ScheduleReview["source"], string> = { generation: "Generiert", import: "Importiert" };
 const TIME = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "short", timeStyle: "short" });
 const TONES: Record<CheckStatus, Tone> = { accepted: "success", rejected: "error", incomplete: "warning" };
+
+/** A tier's score, with the health events split into their terms and the balance also in hours. */
+function scoreText(scores: ScheduleCheck["scores"], tier: ObjectiveTier) {
+  if (tier === "health_events")
+    return `${scores.health_events} (${scores.six_day_windows} Sechs-Tage-Folgen, ${scores.backward_transitions} Rückwärtswechsel)`;
+  if (tier === "balance_deviation_minutes")
+    return `${scores.balance_deviation_minutes} (${formatHours(scores.balance_deviation_minutes)})`;
+  return String(scores[tier]);
+}
 
 /**
  * What a staff admin needs about the schedule under review: its scope, whether it may be used, why not, and the
@@ -86,8 +95,8 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
               {missing} {missing === 1 ? "unbesetzte Pflichtstelle" : "unbesetzte Pflichtstellen"} (Lücken)
             </p>
             <p className="text-muted-foreground">
-              Kein einsetzbarer Mitarbeiter ist frei; für diese Schichten Gastpersonal anfragen. Im Dienstplan unter
-              Besetzung rot markiert.
+              Kein einsetzbarer Mitarbeiter ist frei; für diese Schichten Gastpersonal anfragen. Im Dienstplan sind sie
+              unter „Besetzung“ rot markiert.
             </p>
             <BulletList
               items={tables.gaps.map(
@@ -118,17 +127,10 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
             />
             <Facts
               title="Bewertung"
-              facts={[
-                ["Lücken", String(check.scores.gaps)],
-                [
-                  "Gesundheitsereignisse",
-                  `${check.scores.health_events} (${check.scores.six_day_windows} Sechs-Tage-Folgen, ${check.scores.backward_transitions} Rückwärtswechsel)`,
-                ],
-                ["Einsätze anderer Station", String(check.scores.station_transfers)],
-                ["Wunschkosten (Fairness)", String(check.scores.wish_cost)],
-                ["Abweichung der Monatskonten", formatHours(check.scores.balance_deviation_minutes)],
-                ["Überzählige Zwischendienste", String(check.scores.surplus_intermediate_duties)],
-              ]}
+              facts={(Object.keys(OBJECTIVE_LABELS) as ObjectiveTier[]).map((tier) => [
+                OBJECTIVE_LABELS[tier],
+                scoreText(check.scores, tier),
+              ])}
             />
           </div>
           {inputs.later.length > 0 && (

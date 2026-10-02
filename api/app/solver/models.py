@@ -37,13 +37,14 @@ class StageReport(SchedulingBaseModel):
     """One objective tier's stage: the tier's value in the returned schedule and the bound CP-SAT proved.
 
     `value` equals the tier's field in the independent schedule check. OPTIMAL proves the value is the
-    best possible after every higher tier; FEASIBLE means the stage's time ended first.
+    best possible after every higher tier; FEASIBLE means the stage's time ended first. `best_bound` is
+    None when the stage found no schedule of its own and kept the previous one.
     """
 
     name: str
     status: Literal[SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE]
     value: int
-    best_bound: float
+    best_bound: float | None
 
 
 class Solution(SchedulingBaseModel):

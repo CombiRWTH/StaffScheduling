@@ -3,6 +3,7 @@ import { MONTHS, selectionMonth } from "@/lib/selection";
 import type {
   AvailabilityType,
   CheckStatus,
+  ObjectiveTier,
   Rule,
   ScheduleCheck,
   ShiftType,
@@ -67,26 +68,24 @@ export function solverStatusText(status: SolutionStatus) {
   return `${value} (${detail})`;
 }
 
-/** The objective tiers in the check's scores, named for the staff admin. */
-export const OBJECTIVE_LABELS: Record<Stage["name"], string> = {
+/** The objective tiers, highest priority first, named for the staff admin. */
+export const OBJECTIVE_LABELS: Record<ObjectiveTier, string> = {
   gaps: "Lücken",
   health_events: "Gesundheitsereignisse",
   station_transfers: "Einsätze anderer Station",
   wish_cost: "Wunschkosten (Fairness)",
-  six_day_windows: "Sechs-Tage-Folgen",
-  backward_transitions: "Rückwärtswechsel",
   balance_deviation_minutes: "Abweichung der Monatskonten (Minuten)",
   surplus_intermediate_duties: "Überzählige Zwischendienste",
 };
 
 /** One stage's value and whether it is proven best, e.g. "870 (Schranke 0, nicht nachgewiesen)". */
 export function formatStage(stage: Stage) {
-  return stage.status === "optimal"
-    ? `${stage.value} (optimal)`
-    : `${stage.value} (Schranke ${NUMBER.format(stage.best_bound)}, nicht nachgewiesen)`;
+  if (stage.status === "optimal") return `${stage.value} (optimal)`;
+  const bound = stage.best_bound === null ? "" : `Schranke ${NUMBER.format(stage.best_bound)}, `;
+  return `${stage.value} (${bound}nicht nachgewiesen)`;
 }
 
-/** How many objective stages proved their optimum, e.g. "2 von 3 optimal". */
+/** How many objective stages proved their optimum, e.g. "4 von 6 optimal". */
 export function formatStages(stages: Stage[]) {
   if (stages.length === 0) return "–";
   return `${stages.filter((stage) => stage.status === "optimal").length} von ${stages.length} optimal`;

@@ -84,7 +84,7 @@ function headline(job: GenerationJob): { tone: Tone; title: string; hint: string
   };
 }
 
-/** The fact row both audiences read: progress, time, solver, check and duty count. */
+/** The fact row both audiences read: progress, time, solver, check, duty and gap count. */
 function jobFacts(job: GenerationJob): [string, string][] {
   const { solution } = job;
   const running = job.state === "running";

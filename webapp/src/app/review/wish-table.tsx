@@ -1,4 +1,4 @@
-import { CARD_DISCLOSURE, Disclosure } from "@/components/disclosure";
+import { Disclosure } from "@/components/disclosure";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { WISH_LABELS, WISH_STATUS_LABELS, formatDate } from "@/lib/labels";
 import type { ScheduleReview, WishStatus } from "@/lib/types";
@@ -21,11 +21,12 @@ export function WishTable({ review }: { review: ScheduleReview }) {
   return (
     <section aria-label="Wünsche">
       <Disclosure
-        className={CARD_DISCLOSURE}
+        card
         title={`Wünsche: ${counts.granted} erfüllt · ${counts.denied} nicht erfüllt · ${counts.not_grantable} nicht erfüllbar`}
       >
-        <p className="text-muted-foreground">
-          Wünsche binden nicht; nicht erfüllbare widersprechen einer Verfügbarkeit oder Zuordnung.
+        <p className="text-sm text-muted-foreground">
+          Wünsche binden nicht. Nicht erfüllbar ist ein Wunsch, den Verfügbarkeit, Zuordnung, Schichtregeln oder ein
+          gesicherter Dienst an seinem Tag ausschließen.
         </p>
         <Table>
           <TableHeader>

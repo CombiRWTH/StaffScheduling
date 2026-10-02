@@ -84,7 +84,8 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   // also when the MFA works that early, which another qualification cannot fill.
   await expect(grid.getByText(/^[1-9]\/1$/)).toHaveCount(1);
   const gapCell = grid.locator('td[title^="Lücke: 1 Fachkraft fehlt"]');
-  await expect(gapCell).toHaveText("1/2−1");
+  // Screen readers hear which qualification is missing, which sighted users get by pointing.
+  await expect(gapCell).toHaveText("1/2−1, Lücke: 1 Fachkraft");
   await expect(gapCell).toHaveClass(/text-destructive/);
   // The jumper-pool MFA's duties at the station are transfers; the station employee works at home.
   const mfa = grid.getByRole("row", { name: /Example MFA One/ });
@@ -103,6 +104,8 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   await expect(legend).toContainText("Lücke: unbesetzte Pflichtstellen");
   await expect(legend).not.toContainText("Regelverstoß");
   await expect(legend).not.toContainText("Herkunft unbekannt");
+  // A native absence shows its TimeOffice code, explained as such.
+  await expect(legend).toContainText("U Abwesenheit in TimeOffice (Urlaub)");
   await grid.getByLabel("Mitarbeiter im Dienstplan suchen").fill("Three");
   await expect(grid.getByRole("rowheader", { name: /Example Team Two/ })).toBeHidden();
 

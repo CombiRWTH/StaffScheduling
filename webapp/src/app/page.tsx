@@ -33,12 +33,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             Hier planen Sie den Dienstplan Ihrer Stationen für einen ganzen Monat: Mitarbeiter ansehen, Verfügbarkeit
             und Mindestbesetzung pflegen, einen Dienstplan erstellen lassen, ihn prüfen und in TimeOffice
             veröffentlichen. Wählen Sie oben Monat und Stationen; jede Seite arbeitet mit dieser Auswahl. Die Karten
-            unten folgen der Reihenfolge eines Monats, jede Seite ist aber auch direkt erreichbar.
+            unten stehen in der üblichen Reihenfolge der Planung, jede Seite ist aber auch direkt erreichbar.
           </p>
         </div>
       </section>
 
-      <ol aria-label="Schritte" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <ol aria-label="Planungsseiten" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {steps.map(({ title, description, icon: Icon, href, color }) => (
           <li key={href}>
             <Link href={`${href}${search}`} className="block h-full rounded-xl">

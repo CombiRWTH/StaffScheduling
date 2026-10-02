@@ -130,7 +130,7 @@ test("the overview welcomes the user; the sidebar links it and only the implemen
 
 test("the overview lists the planning pages in order and keeps the selection", async ({ page }) => {
   await page.goto("/?month=2026-01&stations=101");
-  const steps = page.getByRole("list", { name: "Schritte" }).getByRole("link");
+  const steps = page.getByRole("list", { name: "Planungsseiten" }).getByRole("link");
   await expect(steps).toHaveText([
     /^Mitarbeiter/,
     /^Verfügbarkeit/,

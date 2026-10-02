@@ -105,9 +105,11 @@ class ScheduleScores(SchedulingBaseModel):
 
 
 class WishStatus(StrEnum):
-    """GRANTED: the schedule fulfils the wish. DENIED: it does not, though some schedule could.
-    NOT_GRANTABLE: binding availability, eligibility, the shift's own work pattern or a trusted
-    context duty rule out every schedule that would fulfil it; it costs nothing."""
+    """GRANTED: the schedule fulfils the wish. DENIED: it does not, and it costs.
+    NOT_GRANTABLE: the inputs of its own date rule it out, so it costs nothing: for a preferred day or
+    shift, binding availability, eligibility or the shift's own work pattern leave no duty to start; for
+    a free day, a trusted context duty touches the date. Rules across days, such as the rest after a
+    context night, only deny a wish, since only a solve could tell whether they rule it out."""
 
     GRANTED = "granted"
     DENIED = "denied"

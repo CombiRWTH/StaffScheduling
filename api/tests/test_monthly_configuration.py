@@ -74,10 +74,7 @@ def test_availability_writes_touch_only_their_employee_and_date(source: Inspecti
     assert [row.date.day for row in other.availability] == [5]
 
     inspected = service.inspect_employees(planning_unit_ids=(101,), planning_month=JANUARY).employees[0]
-    assert {(row.date.day, row.source) for row in inspected.availability} == {
-        (1, "TimeOffice absence"),
-        (5, "Project availability"),
-    }
+    assert {(row.date.day, row.native_absence) for row in inspected.availability} == {(1, True), (5, False)}
 
 
 def test_reason_and_shifts_survive_read_back(source: InspectionSource) -> None:

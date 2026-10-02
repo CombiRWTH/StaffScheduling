@@ -26,7 +26,7 @@ class SolverService:
     Each objective tier is one stage in priority order: it optimizes the tier within its share of
     the time, then fixes the value it reached and hands its schedule to the next stage as a hint.
     No lower tier can therefore buy back a unit of a higher one. Only the first stage can fail to
-    find a schedule; a later stage that finds nothing better keeps the previous schedule. The
+    find a schedule; a later stage that finds no schedule in its time keeps the previous one. The
     solution keeps CP-SAT's status apart from the independent schedule check of the final schedule.
     Build errors raise; the generation job reports them as failed.
     """
@@ -93,7 +93,7 @@ class SolverService:
         best: cp_model.CpSolver | None = None
         # Each stage's status and proven bound; its value is read from the final schedule, which a
         # later stage may still improve within the fixed limit when this stage was only feasible.
-        proven: list[tuple[Literal[SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE], float]] = []
+        proven: list[tuple[Literal[SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE], float | None]] = []
         for index, (tier, expr) in enumerate(built.tiers):
             if tier.reward:
                 model.maximize(expr)
@@ -103,11 +103,16 @@ class SolverService:
             status = STATUS.get(solver.solve(model), SolutionStatus.UNKNOWN)
             if status in FOUND:
                 best = solver
+                optimal = SolutionStatus.OPTIMAL if status == SolutionStatus.OPTIMAL else SolutionStatus.FEASIBLE
+                proven.append((optimal, solver.best_objective_bound))
             elif best is None:
                 return status, None, ()
-            # Without a schedule in the stage's time, the previous one stands, unproven for this tier.
-            optimal = SolutionStatus.OPTIMAL if status == SolutionStatus.OPTIMAL else SolutionStatus.FEASIBLE
-            proven.append((optimal, solver.best_objective_bound))
+            elif status == SolutionStatus.UNKNOWN:
+                # Without a schedule in the stage's time the previous one stands, with nothing proven.
+                proven.append((SolutionStatus.FEASIBLE, None))
+            else:
+                # The previous schedule satisfies everything this stage adds, so only a model error lands here.
+                raise RuntimeError(f"Stage {tier.name} returned {status.value} after a schedule was found.")
             value = best.value(expr)
             model.add(expr >= value if tier.reward else expr <= value)
             model.clear_hints()

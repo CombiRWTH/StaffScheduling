@@ -24,6 +24,7 @@ from app.domain import (
     GapRow,
     PlanningMonth,
     PlanningUnitMembership,
+    PublicationRequest,
     SchedulingDataset,
     StaffLevel,
     check_schedule,
@@ -300,6 +301,13 @@ def test_gaps_round_trip_and_an_undeclared_gap_is_no_bundle() -> None:
     assert imported.result.solution.gaps == (missing,)
     assert imported.check.status == CheckStatus.ACCEPTED
     assert imported.files == files
+    # Publication writes the duties only; a gap is never a duty.
+    review = Review()
+    shown = review.imported(files[INPUT_FILE], files[RESULT_FILE])
+    request = PublicationRequest(
+        planning_month=shown.planning_month, planning_unit_ids=shown.station_ids, received_at=shown.received_at
+    )
+    assert review.publishable(request) == (duty(2, jan(31), NIGHT),)
     # Without gaps the header stays.
     assert bundle_of(january(), JANUARY_DUTIES).files[GAPS_FILE].decode().splitlines() == [
         ",".join(GapRow.model_fields)

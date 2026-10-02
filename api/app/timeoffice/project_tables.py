@@ -20,8 +20,6 @@ from app.domain import (
 )
 from app.timeoffice.queries import select_rows
 
-PROJECT_AVAILABILITY_SOURCE = "Project availability"
-
 
 def read_availability(
     connection: Connection, employee_ids: Sequence[int], start: date, end: date
@@ -46,7 +44,6 @@ def read_availability(
             availability_type=row["availability_type"],
             shift_ids=None if row["shift_ids"] is None else tuple(json.loads(row["shift_ids"])),
             reason=row["reason"],
-            source=PROJECT_AVAILABILITY_SOURCE,
         )
         for row in rows
     )

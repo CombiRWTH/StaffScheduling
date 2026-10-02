@@ -85,17 +85,11 @@
           "title": "Date",
           "type": "string"
         },
-        "source": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Source"
+        "native_absence": {
+          "default": false,
+          "description": "An approved absence of the roster system, read-only here; its `reason` is the absence code.",
+          "title": "Native Absence",
+          "type": "boolean"
         }
       },
       "required": [
@@ -155,7 +149,7 @@
     },
     "DemandRequirement": {
       "additionalProperties": false,
-      "description": "Hard minimum staffing demand for one planning unit, date, shift and staff level.",
+      "description": "Minimum staffing demand for one planning unit, date, shift and staff level; an unfilled slot is a gap.",
       "properties": {
         "planning_unit_id": {
           "exclusiveMinimum": 0,
@@ -562,7 +556,7 @@
     },
     "Wish": {
       "additionalProperties": false,
-      "description": "An employee's soft preference for one date at any station; at most one per employee and date.\n\nGeneration considers it below gaps and health and above the monthly balance; it never binds.",
+      "description": "An employee's soft preference for one date at any station; at most one per employee and date.\n\nGeneration considers it as one objective tier (see `OBJECTIVES`); it never binds.",
       "properties": {
         "type": {
           "$ref": "#/$defs/WishType"
@@ -671,7 +665,7 @@
     }
   },
   "additionalProperties": false,
-  "description": "input.json: everything one full-month run reads; no TimeOffice plan, wish or credential.",
+  "description": "input.json: everything one full-month run reads, wishes included; no TimeOffice plan or credential.",
   "properties": {
     "format_version": {
       "const": 2,

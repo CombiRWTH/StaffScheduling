@@ -1,4 +1,4 @@
-"""The hard rules of a month as CP-SAT constraints, one function per rule.
+"""The hard rules of a month as CP-SAT constraints, one function per rule; staffing is relaxed by gaps.
 
 Each rule constrains the candidates of a `CandidateModel` and may add diagnostics. Approved
 availability and the work and break pattern of a single duty decide which candidates exist, so they

@@ -15,8 +15,9 @@ from app.solver.models import Solution
 
 logger = logging.getLogger(__name__)
 
-# Solver search limits: below the minimum a month of the example size cannot be searched meaningfully;
-# the maximum bounds a mistyped value, as real monthly runs stay far below an hour.
+# Solver search limits, shared by all objective stages: below the minimum the stages get too little time
+# to find a schedule, and the example months need far more (see the solver reference); the maximum
+# bounds a mistyped value, as real monthly runs stay far below an hour.
 MIN_TIMEOUT_SECONDS = 30
 MAX_TIMEOUT_SECONDS = 3600
 

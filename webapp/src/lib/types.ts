@@ -50,7 +50,8 @@ export interface AvailabilityEntry {
 export interface Availability extends AvailabilityEntry {
   employee_id: number;
   date: string;
-  source: string | null;
+  /** An approved TimeOffice absence, read-only here; its `reason` is the absence code. */
+  native_absence: boolean;
 }
 
 export type WishType = "free_day" | "free_shift" | "preferred_day" | "preferred_shift";
@@ -234,12 +235,24 @@ export interface Solution {
   stages: Stage[];
 }
 
-/** One objective tier's stage: its value in the schedule (the check's score) and CP-SAT's proven bound. */
+/** The objective tiers, highest priority first; each is a score of the check. */
+export type ObjectiveTier =
+  | "gaps"
+  | "health_events"
+  | "station_transfers"
+  | "wish_cost"
+  | "balance_deviation_minutes"
+  | "surplus_intermediate_duties";
+
+/**
+ * One objective tier's stage: its value in the schedule (the check's score) and CP-SAT's proven bound, null when
+ * the stage found no schedule in its time and kept the previous one.
+ */
 export interface Stage {
-  name: keyof ScheduleCheck["scores"];
+  name: ObjectiveTier;
   status: "optimal" | "feasible";
   value: number;
-  best_bound: number;
+  best_bound: number | null;
 }
 
 /** One generation run: `state` is the job's progress, `solution.status` what the solver found. */

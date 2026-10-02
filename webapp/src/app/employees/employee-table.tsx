@@ -209,7 +209,7 @@ function EmployeeDetails({
         {employee.availability.length ? (
           <ul className="space-y-1 text-sm">
             {employee.availability.map((row) => (
-              <li key={`${row.date}:${row.availability_type}:${row.reason}:${row.source}:${row.shift_ids}`}>
+              <li key={`${row.date}:${row.availability_type}:${row.reason}:${row.native_absence}:${row.shift_ids}`}>
                 {formatDate(row.date)} · {AVAILABILITY_LABELS[row.availability_type]}
                 {row.shift_ids && ` · ${row.shift_ids.map(shiftCode).join(", ")}`}
                 {row.reason && ` · ${row.reason}`}
