@@ -26,7 +26,7 @@ Hard rules are what a schedule must satisfy to be usable: staffing (or a declare
 
 1. **Gaps.** Staffing is the only hard rule that may be relaxed, and only by a gap: an unfilled required slot reported next to the assignments, so the hospital can request guest staff instead of receiving no schedule at all. Every other rule stays hard, so an honest `infeasible` remains possible. As the top tier, a schedule without gaps always wins where one exists.
 2. **Health events.** Health beats preference: no wish is granted at the cost of a six-day run or a backward shift step.
-3. **Station transfers.** Jumping is allowed in general: a station member may work at another station through a replacement membership (Ersatz), and the jumper pool exists for it. A station member's duty at another station is counted and minimized, so the jumper pool is preferred and an organisational transfer is never made merely to grant a wish. Jumper pool duties never count.
+3. **Station transfers.** Working at another station is allowed in general: a station member may work at another station through a replacement membership (Ersatz), and the jumper pool exists for it. A station member's duty at another station is counted and minimized, so the jumper pool is preferred and an organisational transfer is never made merely to grant a wish. Jumper pool duties never count.
 4. **Wishes**, fairly. A wish beats balance minutes inside the hard ±460-minute band.
 5. **Monthly balance deviation**, in minutes.
 6. **Additional intermediate duties**, as a reward.

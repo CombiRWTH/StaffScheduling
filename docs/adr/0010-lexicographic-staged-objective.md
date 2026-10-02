@@ -11,7 +11,7 @@ The solver optimizes the objective tiers of `OBJECTIVES` one CP-SAT stage at a t
 ## Consequences
 
 - A time-limited stage reports `feasible` with its proven bound. A later stage may still improve that tier within the fixed limit, so stage values are read from the final schedule.
-- Only the first stage can be `infeasible` or `unknown`. A later stage that finds nothing better keeps the previous schedule. The solution is `optimal` only if every stage is.
+- Only the first stage can be `infeasible` or `unknown`. A later stage that finds no schedule in its time keeps the previous one, `feasible` without a bound. The solution is `optimal` only if every stage is.
 - The top tier gets only part of the time. Live January needed 300 s instead of 120 s for good health scores.
 - Results report every stage instead of weights and one objective value. Portable format version 2 replaced version 1, and older bundles are not re-checked.
 - Reordering tiers is a code change to `OBJECTIVES`.

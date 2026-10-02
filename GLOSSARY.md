@@ -147,7 +147,7 @@ A duty worked at a station other than its origin on that date. A home change wit
 _Avoid_: loan, external duty
 
 **Station transfer** (Einsatz anderer Station):
-A transfer of an employee whose origin is a station; duties of jumper-pool employees are not station transfers.
+A duty worked at another station by an employee whose origin on that date is a station, through a replacement membership; duties of jumper-pool employees never count.
 _Avoid_: jumping, Ersatzeinsatz
 
 **Published schedule**:

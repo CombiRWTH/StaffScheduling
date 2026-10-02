@@ -8,23 +8,23 @@ The FastAPI application is `api/app/main.py`. With Compose running, open <http:/
 
 Consult OpenAPI for exact bodies and responses.
 
-| Route                                | Methods     | Current behavior                                                        |
-| ------------------------------------ | ----------- | ----------------------------------------------------------------------- |
-| `/status`                            | GET         | Process liveness without a TimeOffice query                             |
-| `/planning/options`                  | GET         | Named stations with unique full-month targets                           |
-| `/employees`                         | GET         | Complete canonical combined month/station/jumper pool inspection        |
-| `/planning/employees`                | GET         | The selection's employees by ID and name, without monthly accounts      |
-| `/availability`                      | GET         | One employee's month: native absences, availability, wishes and shifts  |
-| `/availability/{employee_id}/{date}` | PUT, DELETE | Replace or delete that employee's availability on that date             |
-| `/wishes/{employee_id}/{date}`       | PUT, DELETE | Replace or delete that employee's wish on that date                     |
-| `/demand`                            | GET, PUT    | Read or replace the dated staffing demand of one station month          |
-| `/demand/pattern`                    | POST        | Expand a weekly pattern into the month's dated demand; saves nothing    |
-| `/generation`                        | POST, GET   | Start a full-month generation; read the latest job                      |
-| `/review`                            | GET         | The schedule under review with its check and readable tables            |
-| `/review/import`                     | POST        | Validate an uploaded `input`/`result` pair and review it                |
-| `/review/files/{name}`               | GET         | Download `input.json`, `result.json`, `schedule.csv` or `employees.csv` |
-| `/publication`                       | POST        | Publish the accepted schedule under review to its stations' targets     |
-| `/publication`                       | DELETE      | Remove the published duties of the named stations' month                |
+| Route                                | Methods     | Current behavior                                                                    |
+| ------------------------------------ | ----------- | ----------------------------------------------------------------------------------- |
+| `/status`                            | GET         | Process liveness without a TimeOffice query                                         |
+| `/planning/options`                  | GET         | Named stations with unique full-month targets                                       |
+| `/employees`                         | GET         | Complete canonical combined month/station/jumper pool inspection                    |
+| `/planning/employees`                | GET         | The selection's employees by ID and name, without monthly accounts                  |
+| `/availability`                      | GET         | One employee's month: native absences, availability, wishes and shifts              |
+| `/availability/{employee_id}/{date}` | PUT, DELETE | Replace or delete that employee's availability on that date                         |
+| `/wishes/{employee_id}/{date}`       | PUT, DELETE | Replace or delete that employee's wish on that date                                 |
+| `/demand`                            | GET, PUT    | Read or replace the dated staffing demand of one station month                      |
+| `/demand/pattern`                    | POST        | Expand a weekly pattern into the month's dated demand; saves nothing                |
+| `/generation`                        | POST, GET   | Start a full-month generation; read the latest job                                  |
+| `/review`                            | GET         | The schedule under review with its check and readable tables                        |
+| `/review/import`                     | POST        | Validate an uploaded `input`/`result` pair and review it                            |
+| `/review/files/{name}`               | GET         | Download `input.json`, `result.json`, `schedule.csv`, `employees.csv` or `gaps.csv` |
+| `/publication`                       | POST        | Publish the accepted schedule under review to its stations' targets                 |
+| `/publication`                       | DELETE      | Remove the published duties of the named stations' month                            |
 
 Next's `GET /api/health` makes a server-side request to API `/status`: it returns healthy only for a valid API liveness response, or `503` if the API is unavailable. Database availability is separate. Direct TimeOffice failures return `503` with sanitized `detail`, `integration: timeoffice` and the failed `stage`. See the [read-only diagnostic](../getting-started/installation.md#database-configuration).
 
@@ -52,7 +52,7 @@ Malformed bodies, non-integer or out-of-range counts, an employee without member
 
 `POST /generation` takes `planning_unit_ids` (at least one station), `planning_month` (`year`, `month`) and `timeout_seconds` (30 to 3600; the total CP-SAT search limit of all objective stages). It reads and validates the whole month's input synchronously, then returns `202` with the running job while the solve continues in a background thread. Before any job exists it returns `422` for invalid bodies and selections (jumper pools, stations without a target plan), `409` for incomplete input (a station without saved demand, incomplete employee facts, missing shift times), sanitized `503` when TimeOffice is unavailable, and `423` while another generation runs.
 
-`GET /generation` returns the latest job since the API process started, or `404` when there is none, also after a restart. A job has `job_id`, the `request`, `state` (`running`, `completed`, `failed`), `started_at`/`finished_at`, and either `solution` (when completed) or a generic `error` (when failed; the exception is logged, not returned). `solution` carries the CP-SAT `status` (`optimal`, `feasible`, `infeasible`, `model_invalid`, `unknown`), the effective `configuration` (rule policy, timeout, workers, seed), `wall_time_seconds` and `diagnostics`. With a found schedule it also has the `assignments` (`employee_id`, `date`, `planning_unit_id`, `shift_id`, credited `staff_level`), the `gaps` (station, date, shift, qualification, `missing_count`), the `stages` (per objective tier `name`, `status`, `value`, `best_bound`) and the independent `check` (`status` `accepted`/`rejected`/`incomplete`, `findings`, `not_assessed`, `scores`, `wishes` with their outcomes and `wish_counts`); see [solver result](solver.md#result). `completed` with `infeasible` is a finished job without a schedule.
+`GET /generation` returns the latest job since the API process started, or `404` when there is none, also after a restart. A job has `job_id`, the `request`, `state` (`running`, `completed`, `failed`), `started_at`/`finished_at`, and either `solution` (when completed) or a generic `error` (when failed; the exception is logged, not returned). `solution` carries the CP-SAT `status` (`optimal`, `feasible`, `infeasible`, `model_invalid`, `unknown`), the effective `configuration` (rule policy, timeout, workers, seed), `wall_time_seconds` and `diagnostics`. With a found schedule it also has the `assignments` (`employee_id`, `date`, `planning_unit_id`, `shift_id`, credited `staff_level`), the `gaps` (station, date, shift, qualification, `missing_count`), the `stages` (per objective tier `name`, `status`, `value`, `best_bound`, `null` for a stage that found no schedule in its time) and the independent `check` (`status` `accepted`/`rejected`/`incomplete`, `findings`, `not_assessed`, `scores`, `wishes` with their outcomes and `wish_counts`); see [solver result](solver.md#result). `completed` with `infeasible` is a finished job without a schedule.
 
 The input is the `SchedulingDataset` built by `TimeOfficeService.read_generation_input`: the employee inspection of the selection, the reference shifts with work segments and paid minutes from `TDiensteSollzeiten`, the saved demand of each selected station and the trusted context around the month. Units are the selected stations and their associated jumper pools. Worked roster rows enter only from trusted context plans outside the month; other roster rows are read only as approved absences, so earlier output in the target plan never becomes input. The project wishes of every inspected employee, including jumper pool members, are part of the input; native TimeOffice wish rows are not.
 
@@ -62,7 +62,7 @@ One `Generation` object (`api/app/solver/generation.py`) owns the process-local 
 
 One `Review` object (`api/app/solver/review.py`) holds the schedule under review in memory: every generation that finds a schedule replaces it before its job reports `completed`, and so does a valid import. A generation without a schedule and a rejected import leave it unchanged; a restart forgets it.
 
-`GET /review` returns `404` without a schedule, otherwise `source` (`generation`, `import`), `received_at`, the `planning_month`, `planning_units`, `shifts` and `calendar` of the input, the `solution` and `tables`: `duties`, `employees` and `staffing` (required against assigned count per station, date, shift and qualification). The duty and employee rows are the rows of the CSV files.
+`GET /review` returns `404` without a schedule, otherwise `source` (`generation`, `import`), `received_at`, the `planning_month`, `planning_units`, `shifts` and `calendar` of the input, the `solution` and `tables`: `duties`, `employees`, `staffing` (required against assigned count per station, date, shift and qualification) and `gaps` (the staffing rows with missing slots, with station name and shift code). The duty, employee and gap rows are the rows of the CSV files.
 
 `POST /review/import` takes multipart files `input` and `result`. It returns the new review, or `422` with `detail` and `problem`: `malformed` (not JSON, schema violation, unknown field, other format version or calendar), `mismatch` (the result names another input digest or month), `no_schedule`, `policy` (solved with other rule settings), `references` (assignments of unknown employees, stations or shifts, outside the month or duplicated) or `check` (a stored check that differs from the independent re-check). Validation runs in the worker thread pool.
 

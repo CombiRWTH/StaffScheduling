@@ -14,7 +14,7 @@ Choose the month and stations, then open **Verfügbarkeit**. Pick an employee of
 
 The first day of the month is open for editing; click another day to switch. Change the entry and press **Einschränkung speichern** or **Wunsch speichern**. **Einschränkung entfernen** and **Wunsch entfernen** delete only that day's entry. An employee has at most one availability entry and one wish per day; saving replaces it.
 
-Generation considers wishes after gaps and health rules and before the monthly balance, spreading unavoidable denials fairly over employees; a wish never binds and always yields to an Einschränkung or absence. The page says so next to the wish form. The review shows what became of every wish; see [review](review.md#read-the-status-and-act-on-it).
+Generation considers wishes after gaps, health rules and station transfers and before the monthly balance, spreading unavoidable denials fairly over employees; a wish never binds and always yields to an Einschränkung or absence. The page says so next to the wish form. The review shows what became of every wish; see [review](review.md#read-the-status-and-act-on-it).
 
 ## Dated staffing requirements
 
