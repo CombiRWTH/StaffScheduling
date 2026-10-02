@@ -106,11 +106,20 @@ test("a subpage links back to the overview with the selection kept", async ({ pa
   await expect(page.getByRole("link", { name: /^Zurück zu/ })).toHaveCount(0);
 });
 
-test("the sidebar lists only the implemented areas, each a working link", async ({ page }) => {
-  await page.goto("/");
+test("the overview welcomes the user; the sidebar links it and only the implemented areas", async ({ page }) => {
+  await page.goto("/?month=2026-01&stations=101");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Übersicht");
+  await expect(page.getByRole("region", { name: "Willkommen beim Schichtplan Manager" })).toContainText(
+    "Wählen Sie oben Monat und Stationen",
+  );
   const navigation = page.getByRole("navigation");
   await expect(navigation.getByRole("heading")).toHaveText(["Planungsdaten", "Dienstplan"]);
+  await expect(navigation.getByRole("link", { name: "Übersicht" })).toHaveAttribute(
+    "href",
+    "/?month=2026-01&stations=101",
+  );
   await expect(navigation.getByRole("link")).toHaveText([
+    "Übersicht",
     "Mitarbeiter",
     "Verfügbarkeit",
     "Mindestbesetzung",
@@ -145,7 +154,7 @@ test("mobile navigation opens, keeps the selection and closes", async ({ page })
   await page.getByRole("button", { name: "Navigation öffnen" }).click();
   const link = page.getByRole("navigation").getByRole("link", { name: "Mitarbeiter" });
   await expect(link).toHaveAttribute("href", "/employees?month=2026-01&stations=101");
-  await expect(page.getByRole("navigation").getByRole("link").filter({ visible: true })).toHaveCount(5);
+  await expect(page.getByRole("navigation").getByRole("link").filter({ visible: true })).toHaveCount(6);
   await link.click();
   await expect(page).toHaveURL(/\/employees\?month=2026-01&stations=101/);
   await expect(page.getByRole("button", { name: "Navigation öffnen" })).toBeVisible();

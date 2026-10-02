@@ -5,7 +5,17 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CalendarHeart, CalendarCheck, CalendarPlus, type LucideIcon, Menu, UserCog, Users, X } from "lucide-react";
+import {
+  CalendarHeart,
+  CalendarCheck,
+  CalendarPlus,
+  House,
+  type LucideIcon,
+  Menu,
+  UserCog,
+  Users,
+  X,
+} from "lucide-react";
 import { type AreaColor, areaColors } from "@/lib/area-colors";
 import { selectionSearch } from "@/lib/selection";
 import { cn } from "@/lib/utils";
@@ -20,7 +30,9 @@ interface NavigationLink {
   color?: AreaColor;
 }
 
-const navigationSections: Array<{ label: string; links: NavigationLink[] }> = [
+// The first section has no heading: the overview sits above the planning areas.
+const navigationSections: Array<{ label?: string; links: NavigationLink[] }> = [
+  { links: [{ href: "/", label: "Übersicht", icon: House }] },
   {
     label: "Planungsdaten",
     links: [
@@ -80,8 +92,10 @@ function SidebarContent({ search, isActive, onClose, showCloseButton = false }: 
       <ScrollArea className="min-h-0 flex-1">
         <nav className="space-y-4 px-3 py-3">
           {navigationSections.map(({ label, links }) => (
-            <section key={label} className="flex flex-col gap-0.5">
-              <h2 className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</h2>
+            <section key={label ?? "overview"} className="flex flex-col gap-0.5">
+              {label && (
+                <h2 className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</h2>
+              )}
               {links.map(({ href, label: linkLabel, icon: Icon, hint, color }) => (
                 <Button
                   key={href}

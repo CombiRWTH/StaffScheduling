@@ -36,4 +36,4 @@ Connected prerequisites include read access to the configured TimeOffice tables,
 - Loading displays a status message. Incomplete targets, identities, memberships, account/credit evidence or duplicate source facts reject the complete inspection; no partial station table is displayed.
 - Backend/TimeOffice failures show a connection/setup message. Verify configuration, network/VPN, TLS and read permissions using [installation](../getting-started/installation.md#database-configuration), then refresh options/reopen the employee page. Errors expose no raw SQL rows or connection secrets.
 
-The sidebar groups **Planungsdaten** (Mitarbeiter, the monthly **Verfügbarkeit** with availability and wishes, **Mindestbesetzung**) and **Dienstplan** (**Erstellen** for [generation](generation.md), **Prüfen** for [review](review.md) and publication).
+The sidebar starts with **Übersicht** (the home page, also reached through the app name) and groups **Planungsdaten** (Mitarbeiter, the monthly **Verfügbarkeit** with availability and wishes, **Mindestbesetzung**) and **Dienstplan** (**Erstellen** for [generation](generation.md), **Prüfen** for [review](review.md) and publication).

@@ -8,7 +8,7 @@ Return to the [documentation overview](index.md).
 
 After a generation that found a schedule, _Letzte Generierung_ on **Erstellen** links to **Dienstplan prüfen** with the job's month and stations. A generation without a schedule (infeasible, no result in time, failed) leaves the previous schedule under review.
 
-The page always reviews one schedule, from top to bottom: its summary with the actions, the duty grid and the monthly accounts. The card _Dienstplan zur Prüfung_ names the month and stations, whether the schedule was generated or imported and when, and its number of duties. One status line says whether it may be used:
+The page always reviews one schedule, from top to bottom: its summary with the actions, the duty grid and the monthly accounts. The summary card is headed with the month and stations and names whether the schedule was generated or imported and when, and its number of duties. One status line says whether it may be used:
 
 - **Regeln eingehalten · Kann veröffentlicht werden**: the independent check accepted it.
 - **Regelverstöße**: the schedule breaks a rule and is not usable. A box below lists every finding with its rule, message, employee, date and station.
@@ -16,7 +16,7 @@ The page always reviews one schedule, from top to bottom: its summary with the a
 
 Only an accepted schedule is usable; any other one is a diagnosis. The check, not the solver, decides.
 
-Next to the status sit the actions: **In TimeOffice veröffentlichen** (only for an accepted schedule; see [publication](publication.md)), **Herunterladen**, **Importieren** and **Veröffentlichte Dienste entfernen**. Each opens a small panel; nothing changes until you confirm there.
+Next to the status sit the actions: **In TimeOffice veröffentlichen** (only for an accepted schedule; see [publication](publication.md)), **Herunterladen**, **Importieren** and **Veröffentlichte Dienste entfernen**. Each opens a small panel. **Herunterladen** lists the files; **Importieren** replaces the review only after **Dateien importieren** and a successful validation; publishing and removal change TimeOffice only after their confirmation button.
 
 If the header selection is another month or other stations, the page says so instead of showing the schedule as the selected one; **Zu diesem Umfang wechseln** selects the schedule's own scope. Without a schedule, the card offers import and removal only.
 
@@ -24,9 +24,9 @@ The collapsed section **Technische Details** is for diagnosing a run, not needed
 
 ## Inspect employee and unit schedules
 
-The card _Dienstplan_ lists every participating employee by date — ID, name and every home unit of the month — also employees without duties. A duty shows only its shift code in the shift colour (Früh, Zwischen, Spät, Nacht): the employee column already names where they belong. Pointing at a duty shows station, shift and times, credited qualification and origin, and screen readers read the same text.
+The card _Dienstplan_ lists every participating employee by date — ID, name and every home unit of the month, each on one line; a long name is cut and shown in full on pointing — also employees without duties. A duty shows only its shift code in the shift colour (Früh, Zwischen, Spät, Nacht): the employee column already names where they belong. Pointing at a duty shows station, shift and times, credited qualification and origin, and screen readers read the same text.
 
-Only a duty worked outside its origin — the employee's home station or jumper pool _on that date_, as the backend dates it — is highlighted as a transfer by a dashed border. With more than one station selected, a transfer also names the station where it is worked by a short code (a short name as is, a longer one by its initials, for example _ESN_); the legend lists the codes. A duty whose employee has no dated home is tagged **?** (_Herkunft unbekannt_); the check reports it as an eligibility finding. The comparison never uses the row's home units, so a home change within the month is shown per date. Absences and restrictions show their reason (for example `U`, `SC`); weekends and public holidays are shaded; a red frame marks an employee and date with a finding. Below, **Besetzung** gives for each station and shift the assigned against the required staff per date, red when short; pointing at a number splits it by qualification.
+Only a duty worked outside its origin — the employee's home station or jumper pool _on that date_, as the backend dates it — is highlighted as a transfer by a dashed border. With more than one station selected, a transfer also names the station where it is worked by a short code (a short name as is, a longer one by its initials, for example _ESN_; full names if two initials would be the same); the legend lists the codes. A duty whose employee has no dated home is tagged **?** (_Herkunft unbekannt_); the check reports it as an eligibility finding. The comparison never uses the row's home units, so a home change within the month is shown per date. Absences and restrictions show their reason (for example `U`, `SC`); weekends and public holidays are shaded; a red frame marks an employee and date with a finding. Below, **Besetzung** gives for each station and shift the assigned against the required staff per date, red when short; pointing at a number splits it by qualification.
 
 Search by name or ID, or open **Vollbild** (leave with the button or Esc). The legend under the table explains the marks. On narrow screens the grid scrolls horizontally; the employee column stays in place.
 

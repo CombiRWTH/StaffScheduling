@@ -22,8 +22,8 @@ Check the employee page for completeness first: generation reads the same facts 
 ## Start a full-month run
 
 1. Choose the month and one or more stations in the header.
-2. Open **Dienstplan erstellen**. The card _Neue Generierung_ names the month and stations it will plan (always the whole month) and, in one line, which inputs are and are not used.
-3. Next to **Starten**, enter the **maximale Laufzeit** in seconds (30–3600, default 30). This is the solver's search limit; reading the data and preparing the model come on top.
+2. Open **Dienstplan erstellen**. The start card is headed with the month and stations it will plan (always the whole month) and, in one line, which inputs are and are not used.
+3. Next to **Starten**, enter the **Maximale Laufzeit** in seconds (the field shows the unit _s_) (30–3600, default 30). This is the solver's search limit; reading the data and preparing the model come on top.
 4. Select **Starten**.
 
 The backend first reads and checks all inputs. If something is missing, a message appears under the start row and no job starts: an incomplete or unsaved input asks to save every station's staffing and to check the employee data; an invalid selection or time limit names what to choose; an unreachable TimeOffice or a failed TimeOffice query (schema, permissions) says so. Otherwise the job appears under _Letzte Generierung_ as running.
@@ -44,7 +44,7 @@ The card _Letzte Generierung_ names the job's month and stations and states its 
 | Keine Lösung innerhalb der Laufzeit             | Start again with a longer time limit.                                                                 |
 | Generierung fehlgeschlagen / Modell ungültig    | An unexpected error; details are in the API log. The page deliberately shows no internal error text.  |
 
-A row of facts follows: **Ablauf** (Läuft, Abgeschlossen, Fehlgeschlagen), **Zeit**, **Solver** (Optimale Lösung, Lösung gefunden, Keine Lösung möglich, Keine Lösung innerhalb der Laufzeit, Modell ungültig), **Prüfung** (Regeln eingehalten, Regelverstöße, Unvollständig geprüft, Kein Plan zu prüfen) and the number of **Dienste**.
+A row of facts follows: **Ablauf** (Läuft, Abgeschlossen, Fehlgeschlagen), **Zeit**, **Solver** (Wird berechnet …, Optimale Lösung, Lösung gefunden, Keine Lösung möglich, Keine Lösung innerhalb der Laufzeit, Modell ungültig, Kein Ergebnis), **Prüfung** (Wartet auf Plan, Regeln eingehalten, Regelverstöße, Unvollständig geprüft, Kein Plan zu prüfen) and the number of **Dienste**.
 
 When a run is not usable, the box **Hinweise** says why: the solver's warnings and errors, the violated rules with their counts and the rules that lacked input (_fehlende Eingaben_). For **Kein Dienstplan möglich**, a hint such as "needs 2 professional … but only 0 can work it" names the station, date and shift whose demand no employee can cover after availability and the context duties are taken into account; check that day's staffing demand, availability, memberships and context duties. Hints come from the backend in English.
 

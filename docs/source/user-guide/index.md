@@ -4,17 +4,17 @@ Start through the [quickstart](../getting-started/quickstart.md), then open <htt
 
 ## What you can use this guide for
 
-For staff administrators using the application: choose the month and units, inspect employees, configure availability and staffing, generate schedules, review or exchange files, then publish or clear assignments. Each procedure will explain what to do, what result to expect and how to recover from a failure. Selection, configuration, generation, review and file exchange are checked with controlled browser flows; publication remains an outline until its acceptance checks pass.
+For staff administrators using the application: choose the month and units, inspect employees, configure availability and staffing, generate schedules, review or exchange files, then publish or clear assignments. Each procedure explains what to do, what result to expect and how to recover from a failure. All of them are checked with controlled browser flows on fictional data; the [limitations](../validation/index.md) page records which were also run against the prepared test database.
 
 ## Planning concepts
 
-The backend models a calendar month, planning units, dated staffing demand, employees and valid unit memberships. Availability entries are binding; wishes are preferences that generation does not consider yet. Work accounts use minutes. The [domain reference](../architecture/domain.md) describes the source-defined contract.
+The backend models a calendar month, planning units, dated staffing demand, employees and valid unit memberships. Availability entries are binding; wishes are preferences that generation does not consider yet. Work accounts are stored in minutes and shown in hours and minutes (for example _160:00 h_). The [domain reference](../architecture/domain.md) describes the source-defined contract.
 
-The home page, employee inspection, monthly configuration (Verfügbarkeit, Mindestbesetzung), generation (Erstellen) and review (Prüfen) are the planning areas; the sidebar links each of them.
+The overview (**Übersicht**) welcomes you with a short introduction and links every planning area: employee inspection, monthly configuration (Verfügbarkeit, Mindestbesetzung), generation (Erstellen) and review (Prüfen). The sidebar links the overview and each area.
 
 ## Find an operation
 
-These pages are outlines to fill as each operation is verified. Their headings do not establish feature support.
+Follow the planning flow from top to bottom:
 
 1. [Select a month and inspect employees](selection.md).
 2. [Configure monthly inputs](configuration.md).

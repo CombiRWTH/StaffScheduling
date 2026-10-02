@@ -86,7 +86,7 @@ UI conventions for every page:
 
 - Pages render `PageHeader` with only a title and the planning selection, so the header stays the same height and alignment everywhere; what each page is for is said once, on the overview cards. Every page below the overview passes `parent`, which shows a back arrow before the title; it returns to the parent page and keeps the month/station selection.
 - The URL is the only selection state. A missing or invalid month means January of the current year; navigation links carry the selection.
-- The sidebar lists only implemented areas; there are no placeholder pages or disabled entries.
+- The sidebar links the overview (**Übersicht**) and only implemented areas; there are no placeholder pages or disabled entries. The overview opens with a short welcome for the staff admin; area descriptions live on its cards.
 - Use the domain's German terms consistently: Verfügbarkeit (page for availability entries, called Einschränkung, and wishes), Abwesenheit (native TimeOffice absence), Zuordnungen (dated unit assignments), Mindestbesetzung, Wochenmuster, Dienstplan, Herkunft (a duty's dated origin). The solver's relative gap is the _Optimalitätslücke_; never call it just "Lücke", which reads as missing staff.
 - Unsaved edits are marked per field, not only by a page-wide notice, with a cue beyond colour (border weight, bold digits) and an accessible description; saving or resetting clears the marks.
 - Markers never rely on colour or hover alone: pair a colour with a shape or text (a dashed border for a transfer), explain it in the legend and repeat details in screen-reader text.

@@ -82,6 +82,45 @@ function headline(job: GenerationJob): { tone: Tone; title: string; hint: string
   };
 }
 
+/** The fact row both audiences read: progress, time, solver, check and duty count. */
+function jobFacts(job: GenerationJob): [string, string][] {
+  const { solution } = job;
+  const running = job.state === "running";
+  const check = solution?.check;
+  const end = job.finished_at ? TIME.format(new Date(job.finished_at)) : "…";
+  return [
+    ["Ablauf", STATES[job.state]],
+    ["Zeit", `${TIME.format(new Date(job.started_at))} – ${end} Uhr`],
+    ["Solver", solution ? SOLVER_STATUS[solution.status][0] : running ? "Wird berechnet …" : "Kein Ergebnis"],
+    ["Prüfung", check ? CHECK_STATUS[check.status][0] : running ? "Wartet auf Plan" : "Kein Plan zu prüfen"],
+    ["Dienste", solution ? String(solution.assignments.length) : "–"],
+  ];
+}
+
+/** Why a run is not usable: solver warnings and errors, violated rules and missing inputs. */
+function jobHints(job: GenerationJob) {
+  const check = job.solution?.check;
+  return [
+    ...(job.solution?.diagnostics ?? []).filter((row) => row.severity !== "info").map((row) => row.message),
+    ...perRule(check?.findings ?? []).map((item) => `Verstoß – ${item}`),
+    ...perRule(check?.not_assessed.filter((row) => row.blocking) ?? []).map((item) => `${item} (fehlende Eingaben)`),
+  ];
+}
+
+/** Solver internals for diagnosing a run. */
+function technicalFacts(job: GenerationJob): [string, string][] {
+  const { solution } = job;
+  const limit = job.request.timeout_seconds;
+  const diagnostics = solution?.diagnostics ?? [];
+  return [
+    ["Job-ID", job.job_id],
+    ["Solver-Status", solution ? SOLVER_STATUS[solution.status].join(" – ") : "Kein Ergebnis"],
+    ["Suchzeit", solution ? `${NUMBER.format(solution.wall_time_seconds)} von ${limit} s` : `bis ${limit} s`],
+    ["Optimalitätslücke", solution?.objective ? `${NUMBER.format(solution.objective.relative_gap * 100)} %` : "–"],
+    ["Diagnosen", diagnostics.length ? diagnostics.map((row) => `${row.severity} ${row.code}`).join(", ") : "keine"],
+  ];
+}
+
 /**
  * The latest job: one sentence on the outcome for the staff admin, a compact fact row, the hints that explain a
  * failed or unusable run, and the solver internals collapsed for diagnosis.
@@ -94,31 +133,10 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
   const period = monthLabel(month.year, month.month);
   const { tone, title, hint } = headline(job);
   const { icon: Icon, className } = TONES[tone];
-  const times = `${TIME.format(new Date(job.started_at))} – ${
-    job.finished_at ? TIME.format(new Date(job.finished_at)) : "…"
-  } Uhr`;
-
-  const facts: [string, string][] = [
-    ["Ablauf", STATES[job.state]],
-    ["Zeit", times],
-    [
-      "Solver",
-      solution ? SOLVER_STATUS[solution.status][0] : job.state === "running" ? "Wird berechnet …" : "Kein Ergebnis",
-    ],
-    [
-      "Prüfung",
-      check ? CHECK_STATUS[check.status][0] : job.state === "running" ? "Wartet auf Plan" : "Kein Plan zu prüfen",
-    ],
-    ["Dienste", solution ? String(solution.assignments.length) : "–"],
-  ];
-  const blocking = check?.not_assessed.filter((row) => row.blocking) ?? [];
+  const facts = jobFacts(job);
+  const technical = technicalFacts(job);
+  const hints = jobHints(job);
   const later = check?.not_assessed.filter((row) => !row.blocking) ?? [];
-  const diagnostics = solution?.diagnostics ?? [];
-  const hints = [
-    ...diagnostics.filter((row) => row.severity !== "info").map((row) => row.message),
-    ...perRule(check?.findings ?? []).map((item) => `Verstoß – ${item}`),
-    ...perRule(blocking).map((item) => `${item} (fehlende Eingaben)`),
-  ];
 
   return (
     <Card aria-label="Letzte Generierung">
@@ -167,24 +185,7 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
         {(solution || job.state !== "running") && (
           <Disclosure title="Technische Details">
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
-              {[
-                ["Job-ID", job.job_id],
-                ["Solver-Status", solution ? SOLVER_STATUS[solution.status].join(" – ") : "Kein Ergebnis"],
-                [
-                  "Suchzeit",
-                  solution
-                    ? `${NUMBER.format(solution.wall_time_seconds)} von ${timeout_seconds} s`
-                    : `bis ${timeout_seconds} s`,
-                ],
-                [
-                  "Optimalitätslücke",
-                  solution?.objective ? `${NUMBER.format(solution.objective.relative_gap * 100)} %` : "–",
-                ],
-                [
-                  "Diagnosen",
-                  diagnostics.length ? diagnostics.map((row) => `${row.severity} ${row.code}`).join(", ") : "keine",
-                ],
-              ].map(([label, value]) => (
+              {technical.map(([label, value]) => (
                 <div key={label} className="contents">
                   <dt className="text-muted-foreground">{label}</dt>
                   <dd className="break-all tabular-nums">{value}</dd>
