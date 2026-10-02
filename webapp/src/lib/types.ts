@@ -167,12 +167,27 @@ export interface GeneratedAssignment {
 
 export type CheckStatus = "accepted" | "rejected" | "incomplete";
 
+export type Rule =
+  | "input"
+  | "staffing"
+  | "eligibility"
+  | "one_duty_per_day"
+  | "availability"
+  | "monthly_balance"
+  | "work_and_breaks"
+  | "work_average"
+  | "rest"
+  | "consecutive_nights"
+  | "night_recovery"
+  | "replacement_rest"
+  | "annual_free_sundays";
+
 /** The independent schedule check of a found schedule; computed by the backend, never here. */
 export interface ScheduleCheck {
   status: CheckStatus;
-  rules: string[];
-  findings: { rule: string; message: string; employee_id: number | null; date: string | null }[];
-  not_assessed: { rule: string; reason: string; blocking: boolean; start: string; end: string }[];
+  rules: Rule[];
+  findings: { rule: Rule; message: string; employee_id: number | null; date: string | null }[];
+  not_assessed: { rule: Rule; reason: string; blocking: boolean; start: string; end: string }[];
   scores: {
     six_day_windows: number;
     backward_transitions: number;

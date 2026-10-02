@@ -2,7 +2,7 @@ import { Info, LoaderCircle } from "lucide-react";
 import { BulletList } from "@/components/bullet-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { monthLabel } from "@/lib/labels";
-import type { CheckStatus, GenerationJob, PlanningUnit, ScheduleCheck, SolutionStatus } from "@/lib/types";
+import type { CheckStatus, GenerationJob, PlanningUnit, Rule, ScheduleCheck, SolutionStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { RefreshWhileRunning } from "./refresh-while-running";
 
@@ -29,7 +29,7 @@ const CHECK_STATUS: Record<CheckStatus, [string, string]> = {
 };
 
 /** German names of the checked rules, as the backend reports them. */
-const RULES: Record<string, string> = {
+const RULES: Record<Rule, string> = {
   input: "Ungültige Dienste",
   staffing: "Mindestbesetzung",
   eligibility: "Zuordnung und Qualifikation",
@@ -46,10 +46,10 @@ const RULES: Record<string, string> = {
 };
 
 /** Count per rule, e.g. "Ruhezeit: 2". */
-function perRule(rows: { rule: string }[]) {
-  const counts = new Map<string, number>();
+function perRule(rows: { rule: Rule }[]) {
+  const counts = new Map<Rule, number>();
   for (const row of rows) counts.set(row.rule, (counts.get(row.rule) ?? 0) + 1);
-  return [...counts].map(([rule, count]) => `${RULES[rule] ?? rule}: ${count}`);
+  return [...counts].map(([rule, count]) => `${RULES[rule]}: ${count}`);
 }
 
 function checkOutcome(check: ScheduleCheck | null | undefined, running: boolean): [string, string, string?] {
