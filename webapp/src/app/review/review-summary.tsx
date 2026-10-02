@@ -26,7 +26,11 @@ const TONES: Record<CheckStatus, Tone> = { accepted: "success", rejected: "error
 /** A tier's score, with the health events split into their terms and the balance also in hours. */
 function scoreText(scores: ScheduleCheck["scores"], tier: ObjectiveTier) {
   if (tier === "health_events")
-    return `${scores.health_events} (${scores.six_day_windows} Sechs-Tage-Folgen, ${scores.backward_transitions} Rückwärtswechsel)`;
+    return (
+      `${scores.health_events} (${scores.six_day_windows} Sechs-Tage-Folgen, ` +
+      `${scores.backward_transitions} Rückwärtswechsel, ${scores.isolated_workdays} einzelne Arbeitstage, ` +
+      `${scores.back_to_back_weekends} Wochenenden in Folge)`
+    );
   if (tier === "balance_deviation_minutes")
     return `${scores.balance_deviation_minutes} (${formatHours(scores.balance_deviation_minutes)})`;
   return String(scores[tier]);

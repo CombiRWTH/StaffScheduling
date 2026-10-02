@@ -23,8 +23,9 @@ STATUS = {
 class SolverService:
     """Solve one month lexicographically and check the schedule found.
 
-    Each objective tier is one stage in priority order: it optimizes the tier within its share of
-    the time, then fixes the value it reached and hands its schedule to the next stage as a hint.
+    Each objective tier is one stage in priority order: it optimizes the tier within half of the
+    time left (the last stage within all of it), then fixes the value it reached and hands its
+    schedule to the next stage as a hint. A stage that proves its optimum early passes its time on.
     No lower tier can therefore buy back a unit of a higher one. Only the first stage can fail to
     find a schedule; a later stage that finds no schedule in its time keeps the previous one. The
     solution keeps CP-SAT's status apart from the independent schedule check of the final schedule.
@@ -99,7 +100,8 @@ class SolverService:
                 model.maximize(expr)
             else:
                 model.minimize(expr)
-            solver = self._solver(configuration, (deadline - monotonic()) / (len(built.tiers) - index))
+            remaining = deadline - monotonic()
+            solver = self._solver(configuration, remaining if index == len(built.tiers) - 1 else remaining / 2)
             status = STATUS.get(solver.solve(model), SolutionStatus.UNKNOWN)
             if status in FOUND:
                 best = solver

@@ -38,7 +38,7 @@ The examples carry 32 demonstration wishes in the project table: two per station
 | May   | `feasible`    | 941    | 144                | 0                          | 0        | 5, 0, 0                                 |
 | Jun   | `feasible`    | 1070   | 134                | 0                          | 0        | 5, 0, 0                                 |
 
-January's check is `accepted`. February to June are `incomplete` only because their first days have no trusted context yet; the month-by-month sequence supplies the preceding accepted month. A January run through the webapp at 60 s was also `accepted` with 0 findings, but stopped with 269 gap slots in the top stage (bound 0): 60 seconds are too short for these stations, so the example months use 300 seconds.
+January's check is `accepted`. February to June are `incomplete` only because their first days have no trusted context yet; the month-by-month sequence supplies the preceding accepted month. A January run through the webapp at 60 s was also `accepted` with 0 findings, but stopped with 269 gap slots in the top stage (bound 0): 60 seconds are too short for these stations, so the example months use 300 seconds. With all four health events and each stage getting half of the time left, a January run at 300 s was `feasible` and `accepted` with 0 findings and 1031 duties: 0 gaps (optimal), 31 health events (18 backward steps, 13 back-to-back worked weekends, no isolated workday or six-day window; bound 0), 0 station transfers (optimal), wish cost 1, 2250 balance minutes and 201 surplus intermediate duties; every stage value equals its checked score.
 
 On the earlier example units, January runs compared the objectives (both stations, 2026-10-02):
 

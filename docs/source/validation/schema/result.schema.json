@@ -500,6 +500,16 @@
           "title": "Backward Transitions",
           "type": "integer"
         },
+        "isolated_workdays": {
+          "description": "Month dates with a duty starting on them but on neither neighbouring date; outside the month and its\ntrusted context a date is never free.",
+          "title": "Isolated Workdays",
+          "type": "integer"
+        },
+        "back_to_back_weekends": {
+          "description": "Consecutive weekends with a duty touching their Saturday or Sunday, counted in the month of the later\nSunday, when the earlier weekend's Friday lies within the preceding context days.",
+          "title": "Back To Back Weekends",
+          "type": "integer"
+        },
         "station_transfers": {
           "description": "Duties of employees whose origin that date is a station, worked at another station.",
           "title": "Station Transfers",
@@ -523,6 +533,8 @@
         "gaps",
         "six_day_windows",
         "backward_transitions",
+        "isolated_workdays",
+        "back_to_back_weekends",
         "station_transfers",
         "wish_cost",
         "balance_deviation_minutes",

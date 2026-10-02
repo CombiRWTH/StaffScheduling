@@ -91,6 +91,12 @@ class ScheduleScores(SchedulingBaseModel):
     """Required slots that no assignment fills, recomputed from the assignments."""
     six_day_windows: int
     backward_transitions: int
+    isolated_workdays: int
+    """Month dates with a duty starting on them but on neither neighbouring date; outside the month and its
+    trusted context a date is never free."""
+    back_to_back_weekends: int
+    """Consecutive weekends with a duty touching their Saturday or Sunday, counted in the month of the later
+    Sunday, when the earlier weekend's Friday lies within the preceding context days."""
     station_transfers: int
     """Duties of employees whose origin that date is a station, worked at another station."""
     wish_cost: int
@@ -101,7 +107,7 @@ class ScheduleScores(SchedulingBaseModel):
     @computed_field
     @property
     def health_events(self) -> int:
-        return self.six_day_windows + self.backward_transitions
+        return self.six_day_windows + self.backward_transitions + self.isolated_workdays + self.back_to_back_weekends
 
 
 class WishStatus(StrEnum):
@@ -510,18 +516,33 @@ class _Check:
             outcomes.append(WishOutcome(**wish.model_dump(), status=status))
         return tuple(outcomes)
 
+    def known_free(self, day: Date, worked: set[Date]) -> bool:
+        """Whether no duty starts on the date and it lies in the month or its trusted context."""
+        return (day in self.month or self.context.covers(day)) and day not in worked
+
     def scores(
         self, duties: list[_Duty], timelines: dict[int, list[_Duty]], wishes: tuple[WishOutcome, ...]
     ) -> ScheduleScores:
-        """The objective tiers; backward steps compare with ranked duties from the preceding context days on."""
+        """The objective tiers; backward steps and weekend pairs reach back to the preceding context days."""
         lookback = self.month.start - timedelta(days=POLICY.preceding_context_days)
-        six_day = backward = 0
+        one, week = timedelta(days=1), timedelta(days=7)
+        sundays = [day for day in self.month.dates if day.isoweekday() == 7 and day - week - 2 * one >= lookback]
+        six_day = backward = isolated = weekends = 0
         for timeline in timelines.values():
             worked = {duty.assignment.date for duty in timeline}
             six_day += sum(
                 all(day - timedelta(days=offset) in worked for offset in range(WORKED_DAYS_WINDOW))
                 for day in self.month.dates
             )
+            isolated += sum(
+                day in worked and self.known_free(day - one, worked) and self.known_free(day + one, worked)
+                for day in self.month.dates
+            )
+            weekend = {
+                sunday: any(duty.times.touches(sunday - one) or duty.times.touches(sunday) for duty in timeline)
+                for sunday in {*sundays, *(sunday - week for sunday in sundays)}
+            }
+            weekends += sum(weekend[sunday - week] and weekend[sunday] for sunday in sundays)
             ranked = [duty for duty in timeline if duty.shift.type in SHIFT_ORDER and duty.assignment.date >= lookback]
             backward += sum(
                 later.in_month and SHIFT_ORDER[later.shift.type] < SHIFT_ORDER[earlier.shift.type]
@@ -546,6 +567,8 @@ class _Check:
             gaps=sum(self.missing(duties).values()),
             six_day_windows=six_day,
             backward_transitions=backward,
+            isolated_workdays=isolated,
+            back_to_back_weekends=weekends,
             station_transfers=transfers,
             wish_cost=sum((count * (count + 1) // 2) ** 2 for count in denied.values()),
             balance_deviation_minutes=sum(abs(balance) for _, balance in self.balances(duties)),

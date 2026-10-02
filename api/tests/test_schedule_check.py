@@ -477,7 +477,7 @@ def test_surplus_counts_intermediate_duties_beyond_the_minimum() -> None:
     )
     schedule = [duty(1, jan(5), INTERMEDIATE), duty(2, jan(5), INTERMEDIATE), duty(1, jan(7), INTERMEDIATE)]
     assert check_schedule(data, schedule).scores.surplus_intermediate_duties == 2
-    assert check_schedule(data, schedule).scores.health_events == 0
+    assert check_schedule(data, schedule).scores.backward_transitions == 0
 
 
 def test_the_month_must_start_after_its_covered_context() -> None:

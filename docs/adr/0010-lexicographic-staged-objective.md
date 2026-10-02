@@ -1,6 +1,6 @@
 # Lexicographic staged objective instead of derived weights
 
-The solver optimizes the objective tiers of `OBJECTIVES` one CP-SAT stage at a time, in priority order: gaps, health events, station transfers, wish cost, balance deviation, surplus intermediate duties. Each stage optimizes its tier, then fixes the value it reached (`≤`, or `≥` for a reward) and hands its schedule to the next stage as a hint. One unit of a higher tier therefore can never be traded for any change in lower tiers, and no tier needs a weight. The tier expressions are exact for every schedule, so each stage's value equals the score that the independent schedule check recomputes. The requested timeout is the total: each stage gets the remaining time divided by the stages left, so a stage that proves its optimum early passes its time on.
+The solver optimizes the objective tiers of `OBJECTIVES` one CP-SAT stage at a time, in priority order: gaps, health events, station transfers, wish cost, balance deviation, surplus intermediate duties. Each stage optimizes its tier, then fixes the value it reached (`≤`, or `≥` for a reward) and hands its schedule to the next stage as a hint. One unit of a higher tier therefore can never be traded for any change in lower tiers, and no tier needs a weight. The tier expressions are exact for every schedule, so each stage's value equals the score that the independent schedule check recomputes. The requested timeout is the total: each stage gets half of the time left and the last stage all of it, so a stage that proves its optimum early passes its time on.
 
 ## Considered Options
 
@@ -12,6 +12,7 @@ The solver optimizes the objective tiers of `OBJECTIVES` one CP-SAT stage at a t
 
 - A time-limited stage reports `feasible` with its proven bound. A later stage may still improve that tier within the fixed limit, so stage values are read from the final schedule.
 - Only the first stage can be `infeasible` or `unknown`. A later stage that finds no schedule in its time keeps the previous one, `feasible` without a bound. The solution is `optimal` only if every stage is.
-- The top tier gets only part of the time. Live January needed 300 s instead of 120 s for good health scores.
+- The top tiers get only part of the time. Live January needed 300 s instead of 120 s for good health scores.
+- Gaps, station transfers and wish cost proved their optimum within seconds in live January runs, while health events, balance and surplus used their whole share. An even split of the time left gave health about 60 of 300 s; halving gives it about 150 s and leaves the two lowest tiers less, matching their priority.
 - Results report every stage instead of weights and one objective value. Portable format version 2 replaced version 1, and older bundles are not re-checked.
 - Reordering tiers is a code change to `OBJECTIVES`.

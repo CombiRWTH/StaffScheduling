@@ -8,11 +8,12 @@ only an optimal one, so each stage's value is the check's score of the schedule 
 from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date as Date
 from datetime import timedelta
 
 from app.domain import FREE_WISHES, POLICY, SHIFT_ORDER, WORKED_DAYS_WINDOW, ShiftType, WishType, dates_between
 from app.domain.planning_unit import home_unit_id
-from app.solver.model.candidates import CandidateModel, Expr, by_day
+from app.solver.model.candidates import CandidateModel, Expr, Slot, by_day
 
 type Term = Callable[[CandidateModel], Expr]
 
@@ -73,6 +74,55 @@ def backward_transitions(model: CandidateModel) -> Expr:
             any_ranked = sum(on.values(), 0)
             last = {rank: on[rank] + model.and_not(last[rank], any_ranked) for rank in ranks}
     return sum(events, 0)
+
+
+def isolated_workdays(model: CandidateModel) -> Expr:
+    """Month dates with a duty starting on them but on neither neighbouring date, a single night included.
+
+    A neighbouring date outside the month is free only inside the trusted context, so a month edge
+    without context never isolates a duty.
+    """
+    events: list[Expr] = []
+    for slots in model.timelines.values():
+        starting = by_day(slots)
+        for day in model.month.dates:
+            if starting[day]:
+                before, after = (_starts(model, starting, day + timedelta(days=step)) for step in (-1, 1))
+                events.append(model.and_not(model.and_not(_starts(model, starting, day), before), after))
+    return sum(events, 0)
+
+
+def back_to_back_weekends(model: CandidateModel) -> Expr:
+    """Pairs of consecutive worked weekends, each counted in the month of its later Sunday.
+
+    A weekend is worked when a duty touches its Saturday or Sunday, so a Friday night counts. A pair
+    counts only when the earlier weekend's Friday lies within the preceding context days.
+    """
+    lookback = model.month.start - timedelta(days=POLICY.preceding_context_days)
+    week = timedelta(days=7)
+    sundays = [day for day in model.month.dates if day.isoweekday() == 7 and day - week - timedelta(days=2) >= lookback]
+    events: list[Expr] = []
+    for slots in model.timelines.values():
+        worked = {sunday: _worked_weekend(model, slots, sunday) for sunday in {*sundays, *(s - week for s in sundays)}}
+        events.extend(model.logical_and(worked[sunday - week], worked[sunday]) for sunday in sundays)
+    return sum(events, 0)
+
+
+def _starts(model: CandidateModel, starting: dict[Date, list[Slot]], day: Date) -> Expr:
+    """1 when a duty starts on the date, also when it lies outside the month and its trusted context."""
+    if day not in model.month and not model.context.covers(day):
+        return 1
+    if any(slot.fixed for slot in starting[day]):
+        return 1
+    return sum((variable for slot in starting[day] for variable in slot.variables), 0)
+
+
+def _worked_weekend(model: CandidateModel, slots: list[Slot], sunday: Date) -> Expr:
+    """1 when a duty touches the Sunday or the Saturday before it."""
+    touching = [slot for slot in slots if slot.times.touches(sunday - timedelta(days=1)) or slot.times.touches(sunday)]
+    if any(slot.fixed for slot in touching):
+        return 1
+    return model.any_of([variable for slot in touching for variable in slot.variables])
 
 
 def station_transfers(model: CandidateModel) -> Expr:
@@ -153,7 +203,7 @@ def surplus_intermediate(model: CandidateModel) -> Expr:
 # The objective tiers, highest priority first.
 OBJECTIVES: tuple[Tier, ...] = (
     Tier("gaps", (gaps,)),
-    Tier("health_events", (six_day_windows, backward_transitions)),
+    Tier("health_events", (six_day_windows, backward_transitions, isolated_workdays, back_to_back_weekends)),
     Tier("station_transfers", (station_transfers,)),
     Tier("wish_cost", (wish_cost,)),
     Tier("balance_deviation_minutes", (balance_deviation,)),

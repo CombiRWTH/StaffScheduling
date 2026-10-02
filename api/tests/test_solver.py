@@ -1,5 +1,6 @@
 """Production solves of small months: every hard rule is modelled, the objective stages keep their order."""
 
+from collections.abc import Sequence
 from datetime import date
 from typing import Any
 
@@ -24,6 +25,7 @@ from scheduling import (
 )
 
 from app.domain import (
+    POLICY,
     Assignment,
     Availability,
     AvailabilityType,
@@ -42,7 +44,8 @@ from app.domain import (
 )
 from app.settings import Settings
 from app.solver.diagnostics import DiagnosticSeverity
-from app.solver.model.objectives import OBJECTIVES
+from app.solver.model.candidates import CandidateModel
+from app.solver.model.objectives import OBJECTIVES, Term, back_to_back_weekends, isolated_workdays
 from app.solver.models import Solution, SolutionStatus
 from app.solver.service import SolverService
 
@@ -134,14 +137,92 @@ def test_a_later_stage_without_time_keeps_the_previous_schedule_as_feasible(monk
     )
     solution = SOLVER.solve(data, timeout=30)
 
-    # Each stage gets the time left divided by the stages left.
-    assert budgets[0] == pytest.approx(30 / len(OBJECTIVES), rel=0.01)
+    # Each stage but the last gets half of the time left.
+    assert budgets[0] == pytest.approx(30 / 2, rel=0.01)
     assert solution.status == SolutionStatus.FEASIBLE
     assert [(stage.status, stage.best_bound) for stage in solution.stages[1:]] == [(SolutionStatus.FEASIBLE, None)] * (
         len(OBJECTIVES) - 1
     )
     assert checked(solution).status == CheckStatus.ACCEPTED
     assert stages_are_scores(solution)
+
+
+def term_value(term: Term, data: SchedulingDataset, schedule: list[Assignment]) -> int:
+    """The term's value with every candidate fixed to the schedule and no objective pushing it."""
+    model = CandidateModel(data)
+    expr = term(model)
+    for duty_, variable in model.candidates.items():
+        model.cp.add(variable == int(duty_ in schedule))
+    solver = cp_model.CpSolver()
+    assert solver.solve(model.cp) == cp_model.OPTIMAL
+    return int(solver.value(expr))
+
+
+APRIL = PlanningMonth(year=2026, month=4)
+
+
+def health_case(
+    schedule: list[Assignment], context: Sequence[Assignment] = (), month: PlanningMonth = JANUARY, **coverage: int
+) -> tuple[SchedulingDataset, list[Assignment]]:
+    data = dataset(
+        memberships=member(1),
+        accounts=[account(1, 0, month=month)],
+        month=month,
+        context_duties=context,
+        covered_days_before=coverage.get("before", POLICY.preceding_context_days),
+        covered_days_after=coverage.get("after", 0),
+    )
+    return data, schedule
+
+
+@pytest.mark.parametrize(
+    ("case", "expected"),
+    [
+        # A two-day block is not isolated; the later single day is.
+        (health_case([duty(1, jan(13), EARLY), duty(1, jan(14), EARLY), duty(1, jan(20), LATE)]), 1),
+        (health_case([duty(1, jan(1), EARLY)]), 1),
+        # The trusted duty of December 31 keeps January 1 from being isolated.
+        (health_case([duty(1, jan(1), EARLY)], [duty(1, date(2025, 12, 31), EARLY)]), 0),
+        # A single night counts, although the recovery keeps the next day free.
+        (health_case([duty(1, jan(14), NIGHT)]), 1),
+        # Without following context the month's last date is never isolated; with it, it is.
+        (health_case([duty(1, jan(31), EARLY)]), 0),
+        (health_case([duty(1, jan(31), EARLY)], after=POLICY.following_context_days), 1),
+    ],
+)
+def test_isolated_workdays_term_is_the_checked_score(
+    case: tuple[SchedulingDataset, list[Assignment]], expected: int
+) -> None:
+    data, schedule = case
+    assert check_schedule(data, schedule).scores.isolated_workdays == expected
+    assert term_value(isolated_workdays, data, schedule) == expected
+
+
+@pytest.mark.parametrize(
+    ("case", "expected"),
+    [
+        # January 2026 starts on a Thursday: weekends are 3/4, 10/11, 17/18, 24/25 and 31/February 1.
+        (health_case([duty(1, jan(10), EARLY), duty(1, jan(18), LATE)]), 1),
+        (health_case([duty(1, jan(10), EARLY), duty(1, jan(17), EARLY), duty(1, jan(24), EARLY)]), 2),
+        # Two free weekends in a row are no event.
+        (health_case([duty(1, jan(10), EARLY), duty(1, jan(24), EARLY)]), 0),
+        # A Friday night touches its Saturday.
+        (health_case([duty(1, jan(9), NIGHT), duty(1, jan(17), EARLY)]), 1),
+        # The earlier weekend of January 4 has its Friday six days before the month: not counted.
+        (health_case([duty(1, jan(3), EARLY)], [duty(1, date(2025, 12, 27), EARLY)], before=14), 0),
+        # April 2026 starts on a Wednesday: the Friday of March 27 is the first preceding context day.
+        (
+            health_case([duty(1, date(2026, 4, 4), EARLY)], [duty(1, date(2026, 3, 27), NIGHT)], month=APRIL),
+            1,
+        ),
+    ],
+)
+def test_back_to_back_weekends_term_is_the_checked_score(
+    case: tuple[SchedulingDataset, list[Assignment]], expected: int
+) -> None:
+    data, schedule = case
+    assert check_schedule(data, schedule).scores.back_to_back_weekends == expected
+    assert term_value(back_to_back_weekends, data, schedule) == expected
 
 
 def test_trusted_context_constrains_the_first_days_of_the_month() -> None:
@@ -174,6 +255,7 @@ def test_unmet_demand_returns_exactly_the_missing_slots_as_gaps() -> None:
         memberships=[*member(1, StaffLevel.MFA), *member(2, StaffLevel.ASSISTANT)],
         accounts=[account(1, 420), account(2, 0)],
         demand=[need(jan(5), EARLY, count=2, level=StaffLevel.MFA)],
+        availability=only(1, {5: (EARLY.shift_id,)}),
     )
     solution = solve(data)
 
@@ -218,6 +300,7 @@ def test_a_jumper_pool_employee_cannot_fill_both_stations_on_one_date() -> None:
         memberships=member(1, StaffLevel.ASSISTANT, home=JUMPER_POOL, replacements=[NORTH, SOUTH]),
         accounts=[account(1, 420)],
         demand=[need(jan(5), EARLY, level=StaffLevel.ASSISTANT, unit=unit) for unit in (NORTH, SOUTH)],
+        availability=only(1, {5: (EARLY.shift_id,)}),
     )
     solution = solve(data)
 
@@ -230,20 +313,23 @@ def wish(day: int, kind: WishType, shift_: Shift | None = None, employee_id: int
 
 
 def test_fairness_spreads_unavoidable_denials_even_against_the_balance() -> None:
-    # Both want January 5 and 6 off, and each day needs one of them. Employee 1's account alone would
+    # Both want January 5 and 7 off, and each day needs one of them. Employee 1's account alone would
     # take both duties; the cubic cost spreads the denials 1 + 1 instead of 2 + 0, although employee 2's
-    # zero target is then exceeded by a duty.
+    # zero target is then exceeded by a duty. Either way both duties are isolated.
+    allowed = {5: (EARLY.shift_id,), 7: (EARLY.shift_id,)}
     data = dataset(
         memberships=[*member(1), *member(2)],
         accounts=[account(1, 840), account(2, 0)],
-        demand=[need(jan(5), EARLY), need(jan(6), EARLY)],
-        wishes=[wish(day, WishType.FREE_DAY, employee_id=employee) for employee in (1, 2) for day in (5, 6)],
+        demand=[need(jan(5), EARLY), need(jan(7), EARLY)],
+        availability=[*only(1, allowed), *only(2, allowed)],
+        wishes=[wish(day, WishType.FREE_DAY, employee_id=employee) for employee in (1, 2) for day in (5, 7)],
     )
     solution = solve(data)
 
     assert {row.employee_id for row in solution.assignments} == {1, 2}
     assert checked(solution).scores.wish_cost == 2
-    assert checked(solution).scores.balance_deviation_minutes == 420
+    # Employee 1 is a duty short and employee 2 a duty over; 2 + 0 would leave both balanced.
+    assert checked(solution).scores.balance_deviation_minutes == 2 * 420
 
 
 def test_health_events_outweigh_a_wish() -> None:
@@ -260,18 +346,37 @@ def test_health_events_outweigh_a_wish() -> None:
     assert checked(solution).scores.backward_transitions == 0
 
 
+def test_one_isolated_workday_fewer_outweighs_a_wish() -> None:
+    # The required early of January 13 needs a second duty for the balance. The preferred January 20 would
+    # be isolated, the early of January 14 is not.
+    data = dataset(
+        memberships=member(1),
+        accounts=[account(1, 2 * 420)],
+        demand=[need(jan(13), EARLY)],
+        availability=only(1, {13: (EARLY.shift_id,), 14: (EARLY.shift_id,), 20: (EARLY.shift_id,)}),
+        wishes=[wish(20, WishType.PREFERRED_DAY)],
+    )
+    solution = solve(data)
+
+    assert solution.assignments == (duty(1, jan(13), EARLY), duty(1, jan(14), EARLY))
+    assert checked(solution).scores.isolated_workdays == 0
+    assert [row.status for row in checked(solution).wishes] == [WishStatus.DENIED]
+
+
 def test_a_jumper_pool_wish_is_granted_at_a_station_and_an_ungrantable_one_costs_nothing() -> None:
     # Without wishes the zero target keeps the jumper pool employee free; the wished late is worked at
-    # South, the only station they may work at. The vacation day's wish cannot be granted.
+    # South, the only station they may work at, and the trusted early of December 31 keeps it from being
+    # isolated. The vacation day's wish cannot be granted.
     data = dataset(
         memberships=member(1, home=JUMPER_POOL, replacements=[SOUTH]),
         accounts=[account(1, 0)],
         availability=[away(1, jan(6))],
-        wishes=[wish(5, WishType.PREFERRED_SHIFT, LATE), wish(6, WishType.PREFERRED_DAY)],
+        wishes=[wish(1, WishType.PREFERRED_SHIFT, LATE), wish(6, WishType.PREFERRED_DAY)],
+        context_duties=[duty(1, date(2025, 12, 31), EARLY, unit=SOUTH)],
     )
     solution = solve(data)
 
-    assert solution.assignments == (duty(1, jan(5), LATE, unit=SOUTH),)
+    assert solution.assignments == (duty(1, jan(1), LATE, unit=SOUTH),)
     assert [row.status for row in checked(solution).wishes] == [WishStatus.GRANTED, WishStatus.NOT_GRANTABLE]
     assert checked(solution).scores.wish_cost == 0
 
@@ -283,6 +388,7 @@ def test_health_events_outweigh_a_station_transfer() -> None:
         memberships=[*member(1, replacements=[SOUTH]), *member(2, home=SOUTH)],
         accounts=[account(1, 0), account(2, 435 + 420)],
         demand=[need(jan(10), LATE, unit=SOUTH), need(jan(12), EARLY, unit=SOUTH)],
+        availability=[*only(1, {12: (EARLY.shift_id,)}), *only(2, {10: (LATE.shift_id,), 12: (EARLY.shift_id,)})],
     )
     solution = solve(data)
 
@@ -297,6 +403,7 @@ def test_a_station_transfer_is_never_made_to_grant_a_wish() -> None:
         memberships=[*member(1, replacements=[SOUTH]), *member(2, home=SOUTH)],
         accounts=[account(1, 420), account(2, 0)],
         demand=[need(jan(5), EARLY, unit=SOUTH)],
+        availability=only(1, {5: (EARLY.shift_id,)}),
         wishes=[wish(5, WishType.FREE_DAY, employee_id=2)],
     )
     solution = solve(data)
@@ -363,13 +470,13 @@ def test_health_events_outweigh_the_monthly_balance(extra_late_day: int, worked:
 
 
 def test_an_intermediate_gap_never_offsets_a_surplus() -> None:
-    # One employee cannot fill both intermediate slots of January 5; their intermediate duty of January 12,
+    # One employee cannot fill both intermediate slots of January 5; their intermediate duty of January 6,
     # which no row requires, is still a surplus.
     data = dataset(
         memberships=member(1),
         accounts=[account(1, 2 * 345)],
         demand=[need(jan(5), INTERMEDIATE, count=2)],
-        availability=only(1, {5: (INTERMEDIATE.shift_id,), 12: (INTERMEDIATE.shift_id,)}),
+        availability=only(1, {5: (INTERMEDIATE.shift_id,), 6: (INTERMEDIATE.shift_id,)}),
     )
     solution = solve(data)
 
@@ -380,14 +487,15 @@ def test_an_intermediate_gap_never_offsets_a_surplus() -> None:
 @pytest.mark.parametrize(("short_by", "intermediate"), [(172, False), (173, True)])
 def test_the_balance_outweighs_extra_intermediate_duties(short_by: int, intermediate: bool) -> None:
     # An optional 345-minute intermediate duty helps only if it brings the balance closer, by even one minute.
+    # It follows the required block of January 9 and 10, so no day is isolated either way.
     data = dataset(
         memberships=member(1),
-        accounts=[account(1, 420 + short_by)],
-        demand=[need(jan(10), EARLY)],
-        availability=only(1, {10: (EARLY.shift_id,), 12: (INTERMEDIATE.shift_id,)}),
+        accounts=[account(1, 2 * 420 + short_by)],
+        demand=[need(jan(9), EARLY), need(jan(10), EARLY)],
+        availability=only(1, {9: (EARLY.shift_id,), 10: (EARLY.shift_id,), 11: (INTERMEDIATE.shift_id,)}),
     )
     solution = solve(data)
-    extra: Assignment = duty(1, jan(12), INTERMEDIATE)
+    extra: Assignment = duty(1, jan(11), INTERMEDIATE)
 
     assert (extra in solution.assignments) == intermediate
     assert checked(solution).scores.surplus_intermediate_duties == int(intermediate)

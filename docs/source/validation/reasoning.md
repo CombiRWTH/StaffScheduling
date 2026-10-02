@@ -16,6 +16,8 @@ The assignment asks for monthly hospital rosters that meet minimum staffing by q
 | Work average for duties up to 10 h                 | ArbZG §3, §6(2)                                          | Every month is its own compensation period: work ≤ 8 h × Werktage, for night and other workers alike |
 | Sunday and holiday replacement rest                | ArbZG §11(3)                                             | A duty-free Werktag of the same month within two weeks (Sunday) or eight weeks (holiday)             |
 | Night blocks and recovery                          | BAuA night- and shift-work guidance                      | Adopted as project policy: at most three nights in a row, 48 hours after the final night             |
+| Forward rotation, no isolated workdays             | [BAuA practical guide][baua-guide], p. 24                | Health events: backward steps, single workdays between free days and six-day runs are minimized      |
+| No employee works every weekend                    | Project policy                                           | Health event: each pair of consecutive worked weekends; soft, since weekend demand often forces it   |
 | Employee wishes, jumper pool included              | Course goal; the reference team's fair-preference model  | Wishes never bind; one strike per wish, convex cost per employee                                     |
 
 AVR applicability, its annexes and any employer agreement are unconfirmed, so they supply no exception. The BAuA numbers are recommendations made binding for this project, not standalone statutory limits.
@@ -25,13 +27,19 @@ AVR applicability, its annexes and any employer agreement are unconfirmed, so th
 Hard rules are what a schedule must satisfy to be usable: staffing (or a declared gap), eligibility by dated membership and qualification, one duty per day, availability, monthly balance, work and breaks, work average, rest, consecutive nights, night recovery and replacement rest. Soft priorities rank schedules that satisfy them, highest first:
 
 1. **Gaps.** Staffing is the only hard rule that may be relaxed, and only by a gap: an unfilled required slot reported next to the assignments, so the hospital can request guest staff instead of receiving no schedule at all. Every other rule stays hard, so an honest `infeasible` remains possible. As the top tier, a schedule without gaps always wins where one exists.
-2. **Health events.** Health beats preference: no wish is granted at the cost of a six-day run or a backward shift step.
+2. **Health events.** Health beats preference: no wish is granted at the cost of a six-day run, a backward shift step, an isolated workday or a second worked weekend in a row. Each event is one unit; the tier has no weights.
 3. **Station transfers.** Working at another station is allowed in general: a station member may work at another station through a replacement membership (Ersatz), and the jumper pool exists for it. A station member's duty at another station is counted and minimized, so the jumper pool is preferred and an organisational transfer is never made merely to grant a wish. Jumper pool duties never count.
 4. **Wishes**, fairly. A wish beats balance minutes inside the hard ±460-minute band.
 5. **Monthly balance deviation**, in minutes.
 6. **Additional intermediate duties**, as a reward.
 
-Earlier legacy objectives (assignment-count balancing, overtime-only penalties, block-length and weekend rewards, weighted wish scores, intermediate-shift hierarchy) were removed because they were arbitrary or duplicated a hard rule.
+Earlier legacy objectives (assignment-count balancing, overtime-only penalties, weighted wish scores) were removed because they were arbitrary or duplicated a hard rule.
+
+## Not modeled
+
+- **Free days next to weekends.** A comfort preference without a source in the problem statement. With isolated workdays penalized, free days already tend to cluster.
+- **Spreading intermediate duties over the week.** The problem statement's preference (a weekday intermediate duty versus an extra early or late person) is ambiguous, and as a hard rule it could make months unsolvable while being met by no intermediate duty at all. The lowest tier still rewards extra intermediate duties where they fit, but with no weekday or weekend order and no even spread.
+- **Shorter night runs.** The hard maximum of three nights plus 48 hours of recovery already applies the BAuA recommendation, so a second preference for one or two nights would duplicate it. Runs of one, two and three nights are not weighed against each other; the isolated-workday event leans toward two or three.
 
 ## Modeling choices and alternatives
 
@@ -62,5 +70,9 @@ A wish is one employee and one date at any station; a jumper pool employee's wis
 - Annual free Sundays need the whole year and are not assessed.
 - Month-local averaging and replacement rest can reject a schedule that a longer legal period would allow.
 - Backward shift steps look back at most five days before the month.
-- Time-limited stages return feasible schedules with a weak proven bound; the schedule itself is checked. Each stage gets only a share of the time, so real months need about 300 seconds.
+- A pair of worked weekends counts only when the earlier weekend's Friday lies within those five days, so months starting Thursday to Sunday count no pair ending with their first weekend.
+- Without following context, the month's last date is never an isolated workday.
+- Time-limited stages return feasible schedules with a weak proven bound; the schedule itself is checked. Each stage but the last gets half of the time left, so real months need about 300 seconds.
 - Minors, other employment regimes and employer-specific agreements would need their own rule sources.
+
+[baua-guide]: https://www.baua.de/DE/Angebote/Publikationen/Praxis/Flexibel-arbeiten.pdf?__blob=publicationFile&v=12

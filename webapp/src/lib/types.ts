@@ -209,6 +209,8 @@ export interface ScheduleCheck {
     gaps: number;
     six_day_windows: number;
     backward_transitions: number;
+    isolated_workdays: number;
+    back_to_back_weekends: number;
     health_events: number;
     station_transfers: number;
     wish_cost: number;
