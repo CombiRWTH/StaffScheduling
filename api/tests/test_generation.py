@@ -134,7 +134,7 @@ def test_generation_input_reads_only_absences_from_the_roster() -> None:
     assert not any("pkg.RefDienste " in sql or "pkg.RefDienste\n" in sql for sql in roster_queries)
     # The approved absence still binds planning.
     assert [(row.employee_id, row.date.day, row.reason) for row in dataset.availability] == [(1, 1, "U")]
-    # Station 101 is assignable, pool 201 is origin context; station 102 stays out of this run.
+    # Station 101 is assignable, jumper pool 201 is origin context; station 102 stays out of this run.
     assert [unit.planning_unit_id for unit in dataset.planning_units] == [101, 201]
     assert {row.planning_unit_id for row in dataset.planning_unit_memberships} == {101, 201}
     assert {row.planning_unit_id for row in dataset.demand_requirements} == {101}

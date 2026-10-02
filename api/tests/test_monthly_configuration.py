@@ -156,7 +156,7 @@ def test_dated_demand_round_trips_per_station_month(source: InspectionSource) ->
     assert service.get_demand(planning_unit_id=102, planning_month=JANUARY).demand == south
 
 
-def test_demand_rejects_pools_unplanned_months_and_unknown_shifts(source: InspectionSource) -> None:
+def test_demand_rejects_jumper_pools_unplanned_months_and_unknown_shifts(source: InspectionSource) -> None:
     service = source.service
     with pytest.raises(InvalidSelection, match="jumper pool"):
         service.get_demand(planning_unit_id=201, planning_month=JANUARY)

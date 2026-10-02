@@ -60,9 +60,9 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
           <div className="flex flex-wrap gap-2 pt-2 text-sm">
             <span className="text-muted-foreground">Zugehöriger Springerpool:</span>
             {jumperPools.length ? (
-              jumperPools.map((pool) => (
-                <Badge key={pool.planning_unit_id} variant="secondary">
-                  {pool.display_name}
+              jumperPools.map((jumperPool) => (
+                <Badge key={jumperPool.planning_unit_id} variant="secondary">
+                  {jumperPool.display_name}
                 </Badge>
               ))
             ) : (

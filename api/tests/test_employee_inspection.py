@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from datetime import date, datetime
+from datetime import date
 from typing import Any, cast
 from unittest.mock import MagicMock
 
@@ -55,7 +55,7 @@ def test_combined_scope_retains_identity_memberships_mfa_origin_and_account_evid
     assert result.employees[1].account.credit_details == ()
     assert employee.availability[0].date == date(2026, 1, 1)
     assert employee.availability[0].reason == "U"
-    # A pool origin alone does not imply eligibility at either destination.
+    # A jumper pool origin alone does not imply eligibility at either destination.
     assert {row.planning_unit_id for row in result.employees[2].memberships} == {201}
     source.name = "Renamed Example"
     renamed = source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=month)
@@ -64,14 +64,26 @@ def test_combined_scope_retains_identity_memberships_mfa_origin_and_account_evid
     assert not any(word in sql.upper() for sql in source.queries for word in ("CREATE TABLE", "INSERT ", "DELETE "))
     assert not any("FROM TPlanPersonal " in sql for sql in source.queries)
 
-    with_rows(source, "AS roster_date", lambda rows: rows.append({**rows[0], "resolved_absence_code": "ZU"}))
+    with_rows(
+        source,
+        "TPlanPersonalKommtGeht",
+        lambda rows: rows.append({**rows[0], "resolved_absence_code": "ZU"}),
+    )
     distinct = source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=month)
     assert {row.reason for row in distinct.employees[0].availability} == {"U", "ZU"}
 
 
 @pytest.mark.parametrize(
     "flag",
-    ["orphan_credit", "missing_account", "missing_employee", "duplicate_account", "duplicate_plan", "missing_name"],
+    [
+        "orphan_credit",
+        "unbooked_absence",
+        "missing_account",
+        "missing_employee",
+        "duplicate_account",
+        "duplicate_plan",
+        "missing_name",
+    ],
 )
 def test_missing_or_ambiguous_source_facts_fail_the_whole_inspection(flag: str) -> None:
     source = InspectionSource()
@@ -79,7 +91,7 @@ def test_missing_or_ambiguous_source_facts_fail_the_whole_inspection(flag: str) 
         source.name = ""
     else:
         setattr(source, flag, True)
-    with pytest.raises(ValueError, match="requires|require|Missing|Multiple|has no 'SC' absence"):
+    with pytest.raises(ValueError, match="requires|require|Missing|Multiple|absence\\.|credit booking"):
         source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=PlanningMonth(year=2026, month=1))
 
 
@@ -124,15 +136,9 @@ def test_explicit_zero_target_and_actual_are_preserved_missing_target_is_error()
         source.service.inspect_employees(planning_unit_ids=(101,), planning_month=month)
 
 
-@pytest.mark.parametrize("defect", ["credit_date", "duplicate_credit", "unknown_shift", "ambiguous_home"])
+@pytest.mark.parametrize("defect", ["unknown_shift", "ambiguous_home"])
 def test_month_facts_are_validated_before_any_employee_is_returned(defect: str) -> None:
     source = InspectionSource()
-
-    def malformed_credits(rows: list[dict[str, Any]]) -> None:
-        if defect == "credit_date":
-            rows[0]["credit_date"] = datetime(2025, 12, 31)
-        elif defect == "duplicate_credit":
-            rows.append(dict(rows[0]))
 
     if defect == "ambiguous_home":
         with_rows(source, "TPlanungseinheitenPersonal", _set("is_home", True, index=1))
@@ -146,9 +152,7 @@ def test_month_facts_are_validated_before_any_employee_is_returned(defect: str) 
                 "reason": None,
             }
         )
-    else:
-        with_rows(source, "TPersonalKontenJeTag", malformed_credits)
-    with pytest.raises(ValueError, match="outside|Duplicate|Unknown allowed shift|origin"):
+    with pytest.raises(ValueError, match="Unknown allowed shift|origin"):
         source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=PlanningMonth(year=2026, month=1))
 
 
@@ -160,7 +164,9 @@ def test_source_codes_are_trimmed_and_ignored_absences_are_dropped() -> None:
             row["membership_profession_code"] = f" {row['membership_profession_code']} "
 
     with_rows(source, "TPlanungseinheitenPersonal", pad)
-    with_rows(source, "AS roster_date", _set("resolved_absence_code", "FR"))
+    with_rows(source, "TPlanPersonalKommtGeht", _set("resolved_absence_code", "FR"))
+    # A free day carries no credit booking.
+    with_rows(source, "TPersonalKontenJeTag", lambda rows: rows.clear())
     result = source.service.inspect_employees(
         planning_unit_ids=(101, 102), planning_month=PlanningMonth(year=2026, month=1)
     )
@@ -172,7 +178,11 @@ def test_source_codes_are_trimmed_and_ignored_absences_are_dropped() -> None:
 @pytest.mark.parametrize(
     ("table", "change", "message"),
     [
-        ("AS roster_date", _set("resolved_absence_code", "XX"), "Unmapped TimeOffice absence code"),
+        (
+            "TPlanPersonalKommtGeht",
+            _set("resolved_absence_code", "XX"),
+            "Unmapped TimeOffice absence code",
+        ),
         ("TPlanungseinheitenPersonal", _set("membership_profession_code", "00000-000"), "No qualification mapping"),
         ("TPersonal per", _set("employee_profession_code", None), "No qualification mapping"),
         ("JOIN TPlan p", _set("plan_planning_unit_id", 999), "different planning unit"),
@@ -203,16 +213,16 @@ def test_selected_station_without_target_plan_fails() -> None:
         source.service.inspect_employees(planning_unit_ids=(101,), planning_month=PlanningMonth(year=2026, month=2))
 
 
-def test_replacement_only_pool_membership_is_not_an_association() -> None:
+def test_replacement_only_jumper_pool_membership_is_not_an_association() -> None:
     source = InspectionSource()
 
-    def pool_as_replacement(rows: list[dict[str, Any]]) -> None:
+    def jumper_pool_as_replacement(rows: list[dict[str, Any]]) -> None:
         for row in rows:
             if row["employee_id"] == 1:
                 row["is_home"] = row["planning_unit_id"] == 101
                 row["is_replacement"] = row["planning_unit_id"] != 101
 
-    with_rows(source, "TPlanungseinheitenPersonal", pool_as_replacement)
+    with_rows(source, "TPlanungseinheitenPersonal", jumper_pool_as_replacement)
     result = source.service.inspect_employees(
         planning_unit_ids=(101,), planning_month=PlanningMonth(year=2026, month=1)
     )

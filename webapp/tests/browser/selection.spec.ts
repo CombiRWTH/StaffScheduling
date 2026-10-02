@@ -18,7 +18,7 @@ async function closeStations(page: Page) {
 const rows = (page: Page) => page.getByRole("row");
 const defaultMonth = `${new Date().getFullYear()}-01`;
 
-test("select both stations, inspect stable employees and pool facts, then change scope", async ({ page }) => {
+test("select both stations, inspect stable employees and jumper pool facts, then change scope", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(`/?month=${defaultMonth}`);
   await expect(page.getByRole("combobox", { name: "Monat" })).toHaveText("Januar");

@@ -23,6 +23,7 @@ from app.domain import (
     ShiftOption,
     StaffLevel,
     WorkCredit,
+    month_calendar,
     staffing_role,
 )
 from app.timeoffice.facts import TimeOfficeFacts
@@ -189,9 +190,16 @@ def read_employees(connection: Connection, facts: TimeOfficeFacts, employee_ids:
 
 
 def read_accounts(
-    connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
+    connection: Connection,
+    facts: TimeOfficeFacts,
+    employee_ids: Sequence[int],
+    month: PlanningMonth,
+    absences: Sequence[Availability],
 ) -> tuple[MonthlyWorkAccount, ...]:
-    """Monthly target hours (required), actual hours (optional) and dated absence credits, in minutes."""
+    """Monthly target hours (required), actual hours (optional) and dated absence credits, in minutes.
+
+    `absences` are the employees' roster absences of the month from `read_absences`; credits are checked against them.
+    """
     rows = select_rows(
         connection,
         """
@@ -211,7 +219,7 @@ def read_accounts(
         target_account_id=facts.monthly_target_work_account_id,
         actual_account_id=facts.monthly_actual_work_account_id,
     )
-    credits = _read_absence_credits(connection, facts, employee_ids, month)
+    credits = _read_absence_credits(connection, facts, employee_ids, month, absences)
     return tuple(
         MonthlyWorkAccount(
             employee_id=row["employee_id"],
@@ -224,55 +232,50 @@ def read_accounts(
 
 
 def _read_absence_credits(
-    connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
+    connection: Connection,
+    facts: TimeOfficeFacts,
+    employee_ids: Sequence[int],
+    month: PlanningMonth,
+    absences: Sequence[Availability],
 ) -> dict[int, list[WorkCredit]]:
     """Dated credits from the TimeOffice daily absence-hour accounts, by employee.
 
-    Each credit row must fall on a roster absence with its account's code. An absence without a
-    credit row credits nothing, as TimeOffice books none on weekend days within a vacation.
+    TimeOffice books a credited absence on every Monday-to-Friday date that is not a public holiday,
+    and none on weekends or holidays. A credit without an absence of its code on that date, and a
+    credited weekday absence without its booking, are source errors.
     """
     rows = select_rows(
         connection,
         """
-        SELECT
-            credit.RefPersonal AS employee_id,
-            credit.Datum AS credit_date,
-            credit.RefKonten AS account_id,
-            credit.Wert AS credit_hours,
-            absence.absence_code
-        FROM TPersonalKontenJeTag credit
-        OUTER APPLY (
-            SELECT TOP 1 COALESCE(global_absence_d.KurzBez, absence_d.KurzBez) AS absence_code
-            FROM TPlanPersonalKommtGeht pkg
-            LEFT JOIN TDienste global_absence_d ON global_absence_d.Prim = pkg.RefgAbw
-            LEFT JOIN TDienste absence_d ON absence_d.Prim = pkg.RefDienstAbw
-            WHERE pkg.RefPersonal = credit.RefPersonal
-                AND CONVERT(date, pkg.Datum) = CONVERT(date, credit.Datum)
-                AND ISNULL(pkg.Wunschdienst, 0) = 0
-                AND (pkg.RefgAbw IS NOT NULL OR pkg.RefDienstAbw IS NOT NULL)
-        ) absence
-        WHERE credit.RefPersonal IN :employee_ids
-            AND credit.RefKonten IN :credit_account_ids
-            AND CONVERT(date, credit.Datum) BETWEEN :start AND :end
-        ORDER BY credit.RefPersonal, credit.Datum, credit.RefKonten
+        SELECT RefPersonal AS employee_id, Datum AS credit_date, RefKonten AS account_id, Wert AS credit_hours
+        FROM TPersonalKontenJeTag
+        WHERE RefPersonal IN :employee_ids
+            AND RefKonten IN :credit_account_ids
+            AND CONVERT(date, Datum) BETWEEN :start AND :end
+        ORDER BY RefPersonal, Datum, RefKonten
         """,
         employee_ids=list(employee_ids),
         credit_account_ids=sorted(facts.credited_absence_code_by_account_id),
         start=month.start,
         end=month.end,
     )
+    code_by_account = facts.credited_absence_code_by_account_id
+    absent = {(row.employee_id, row.date, row.reason) for row in absences}
+    booked = {(row["employee_id"], row["credit_date"].date(), code_by_account[row["account_id"]]) for row in rows}
+    if orphan := sorted(booked - absent):
+        employee_id, day, code = orphan[0]
+        raise ValueError(f"TimeOffice credit for employee_id={employee_id} on {day} has no {code!r} absence.")
+    booking_days = {day.date for day in month_calendar(month) if day.weekday <= 5 and not day.public_holiday}
+    credited = {key for key in absent if key[1] in booking_days and key[2] in code_by_account.values()}
+    if unbooked := sorted(credited - booked):
+        employee_id, day, code = unbooked[0]
+        raise ValueError(f"TimeOffice absence {code!r} of employee_id={employee_id} on {day} has no credit booking.")
     credits: dict[int, list[WorkCredit]] = {}
     for row in rows:
-        code = facts.credited_absence_code_by_account_id[row["account_id"]]
-        day: datetime = row["credit_date"]
-        if _text(row["absence_code"]) != code:
-            raise ValueError(
-                f"TimeOffice credit account {row['account_id']} for employee_id={row['employee_id']} "
-                f"on {day.date()} has no {code!r} absence."
-            )
+        code = code_by_account[row["account_id"]]
         credits.setdefault(row["employee_id"], []).append(
             WorkCredit(
-                date=day.date(),
+                date=row["credit_date"].date(),
                 minutes=_minutes(row["credit_hours"]),
                 kind="approved_absence",
                 source=f"TimeOffice {code} absence",

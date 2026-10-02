@@ -14,7 +14,7 @@ from sqlalchemy import Engine
 
 from app.domain import PlanningUnitType
 from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable
-from app.timeoffice.facts import TIMEOFFICE_FACTS
+from app.timeoffice.facts import SCHOOL_CREDIT_ACCOUNT_ID, TIMEOFFICE_FACTS, VACATION_CREDIT_ACCOUNT_ID
 
 SHIFT_CODES = {1113: "F", 1453: "Z", 1605: "S", 1690: "N"}
 
@@ -55,6 +55,7 @@ class InspectionSource:
 
     def __init__(self) -> None:
         self.orphan_credit = False
+        self.unbooked_absence = False
         self.missing_account = False
         self.missing_employee = False
         self.duplicate_account = False
@@ -228,20 +229,19 @@ class InspectionSource:
             ]
             if self.duplicate_account:
                 rows.append(rows[0])
-        elif "FROM TPersonalKontenJeTag credit" in sql:
-            # Employee 1's vacation on the 1st is credited eight hours on TimeOffice's U_STD account.
+        elif "FROM TPersonalKontenJeTag" in sql:
+            # Employee 1's vacation on the 1st is credited eight hours on the vacation account.
             first = datetime.combine(params["start"], datetime.min.time())
             rows = [
-                {"employee_id": 1, "credit_date": first, "account_id": 85, "credit_hours": 8.0, "absence_code": "U"}
+                {"employee_id": 1, "credit_date": first, "account_id": VACATION_CREDIT_ACCOUNT_ID, "credit_hours": 8.0}
             ]
             if self.orphan_credit:
                 rows.append(
                     {
                         "employee_id": 2,
                         "credit_date": first,
-                        "account_id": 97,
+                        "account_id": SCHOOL_CREDIT_ACCOUNT_ID,
                         "credit_hours": 7.8,
-                        "absence_code": None,
                     }
                 )
             rows = [row for row in rows if row["employee_id"] in params["employee_ids"]]
@@ -250,6 +250,12 @@ class InspectionSource:
             roster = [
                 # An approved absence: the only kind of roster row planning may use.
                 {"employee_id": 1, "roster_date": first, "resolved_absence_code": "U"},
+                # Without its credit booking only when `unbooked_absence`: a school day on a regular weekday.
+                *(
+                    [{"employee_id": 2, "roster_date": datetime(2026, 1, 2), "resolved_absence_code": "SC"}]
+                    if self.unbooked_absence
+                    else []
+                ),
                 # Polluted worked shifts: an unmapped shift in another plan and earlier output in the target.
                 {"employee_id": 2, "roster_date": first, "plan_id": 9, "work_shift_id": 9999},
                 {"employee_id": 1, "roster_date": first.replace(day=2), "plan_id": 1101, "work_shift_id": 1113},

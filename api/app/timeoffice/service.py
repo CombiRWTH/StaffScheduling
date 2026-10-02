@@ -150,8 +150,8 @@ class TimeOfficeService:
     ) -> PlanningInspection:
         units, memberships, employee_ids = self._selection_scope(connection, selected, planning_month)
         employees = queries.read_employees(connection, self._facts, employee_ids)
-        accounts = queries.read_accounts(connection, self._facts, employee_ids, planning_month)
         absences = queries.read_absences(connection, self._facts, employee_ids, planning_month)
+        accounts = queries.read_accounts(connection, self._facts, employee_ids, planning_month, absences)
         availability = project_tables.read_availability(connection, employee_ids, planning_month)
 
         scope_memberships = tuple(row for row in memberships if row.employee_id in employee_ids)

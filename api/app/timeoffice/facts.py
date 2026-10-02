@@ -19,6 +19,12 @@ MONTHLY_TARGET_WORK_ACCOUNT_ID = 1
 # TPersonalKontenJeMonat.RefKonten for current monthly actual hours.
 MONTHLY_ACTUAL_WORK_ACCOUNT_ID = 55
 
+# TPersonalKontenJeTag.RefKonten of the daily absence-hour accounts that credit work.
+VACATION_CREDIT_ACCOUNT_ID = 85  # U_STD, ABW: Urlaub Std.
+INTERNAL_TRAINING_CREDIT_ACCOUNT_ID = 93  # FI_STD, ABW: Fortbildung intern Std.
+EXTERNAL_TRAINING_CREDIT_ACCOUNT_ID = 95  # FE_STD, ABW: Fortbildung extern Std.
+SCHOOL_CREDIT_ACCOUNT_ID = 97  # ST_STD, ABW: Schule Stunden
+
 # TPlanungseinheiten.Prim of the prepared example units (KurzBez BSP-A, BSP-B, BSP-JUMP).
 # Supporting another unit means adding it here; see the TimeOffice adapter docs for the checklist.
 EXAMPLE_STATION_A_ID = 427  # demand profile 85
@@ -63,7 +69,7 @@ class TimeOfficeFacts:
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
 
-    # TPersonalKontenJeTag absence-hour accounts that credit work, with the absence code they book.
+    # Daily absence-hour accounts that credit work, with the absence code they book.
     credited_absence_code_by_account_id: Mapping[int, str]
 
     @property
@@ -171,10 +177,10 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     monthly_actual_work_account_id=MONTHLY_ACTUAL_WORK_ACCOUNT_ID,
     credited_absence_code_by_account_id=MappingProxyType(
         {
-            85: "U",  # U_STD, ABW: Urlaub Std.
-            93: "FI",  # FI_STD, ABW: Fortbildung intern Std.
-            95: "FE",  # FE_STD, ABW: Fortbildung extern Std.
-            97: "SC",  # ST_STD, ABW: Schule Stunden
+            VACATION_CREDIT_ACCOUNT_ID: "U",
+            INTERNAL_TRAINING_CREDIT_ACCOUNT_ID: "FI",
+            EXTERNAL_TRAINING_CREDIT_ACCOUNT_ID: "FE",
+            SCHOOL_CREDIT_ACCOUNT_ID: "SC",
         }
     ),
 )
