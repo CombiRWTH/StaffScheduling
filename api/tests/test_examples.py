@@ -1,4 +1,4 @@
-"""The hand-in examples: accepted monthly bundles of both example stations, January to June 2026.
+"""The hand-in examples: accepted monthly bundles of stations 77 and 79, January to June 2026.
 
 `check_examples` validates monthly bundle folders; the committed `examples/` must pass it. The
 `reproduction` tests solve every committed input again without TimeOffice and take minutes, so they

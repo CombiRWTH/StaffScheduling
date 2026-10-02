@@ -428,7 +428,7 @@ function DutyCell({ duty, station }: { duty: DutyRow; station?: string }) {
       </span>
       {kind === "unknown" && <UnknownOriginTag />}
       {station && kind === "transfer" && (
-        // A short code such as "BSP-A" stays on one line; only a full name (when codes collide) may wrap.
+        // A short code such as "PE 77" stays on one line; only a full name (when codes collide) may wrap.
         <div
           aria-hidden
           className={cn("text-[10px] leading-tight opacity-80", station.length <= 6 && "whitespace-nowrap")}

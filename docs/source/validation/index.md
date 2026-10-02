@@ -4,7 +4,7 @@ This checkout provides a reproducible development foundation with checked monthl
 
 ## What this section proves
 
-For evaluators and anyone deciding whether to rely on a result. The checks below cover the current foundation and generation; a live January schedule was accepted by the independent check and published and cleared on the prepared test database, but no exported example bundle is claimed yet. [Reasoning and requirements](reasoning.md) explains policy choices and evaluation; [examples and reproduction](examples.md) will document the accepted deliverables.
+For evaluators and anyone deciding whether to rely on a result. The checks below cover the current foundation and generation; a live January schedule of the original stations was accepted by the independent check, earlier example units were published and cleared on the test database, but no exported example bundle is claimed yet. [Reasoning and requirements](reasoning.md) explains policy choices and evaluation; [examples and reproduction](examples.md) will document the accepted deliverables.
 
 ## Startup and connectivity
 
@@ -12,24 +12,35 @@ Image-built development Compose startup, actual Next-server/API HTTP connectivit
 
 ## Webapp integration
 
-The webapp is a plain Next.js App Router project. The home page, canonical month/station selection with complete read-only employee inspection, and monthly configuration (availability, wishes and dated staffing demand with a weekly pattern) are implemented, with controlled browser evidence. Generation of the full month with transient job states and the review of its schedule, with import and download of portable files and its explicit publication and clear, are implemented. Recurring settings and templates are not part of the application; optimization controls are omitted. Generation considers wishes as one objective tier; they never bind. On the test database the project tables and the [prepared example inputs](examples.md#input-data-and-boundary-context) exist. Live checks on 2026-10-02 at revision `8089e0e`, through the running Compose API against the test database:
+The webapp is a plain Next.js App Router project. The home page, canonical month/station selection with complete read-only employee inspection, and monthly configuration (availability, wishes and dated staffing demand with a weekly pattern) are implemented, with controlled browser evidence. Generation of the full month with transient job states and the review of its schedule, with import and download of portable files and its explicit publication and clear, are implemented. Recurring settings and templates are not part of the application; optimization controls are omitted. Generation considers wishes as one objective tier; they never bind. On the test database the project tables and the [prepared inputs](examples.md#input-data-and-boundary-context) of stations `PE 77` and `PE 79` and jumper pool `PE 408` exist. Live checks on 2026-10-02 at revision `c6eb998`, through the running Compose instance against the test database:
 
-| Check (command)                                                    | Expected                                            | Actual                                                                       |
-| ------------------------------------------------------------------ | --------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `GET /planning/options?year=2026&month=1`                          | The two example stations                            | `BSP-A`, `BSP-B`                                                             |
-| `GET /employees` for both stations, each month January–June        | Complete inspection, jumper pool associated         | 57 employees, jumper pool 429, every month                                   |
-| `TimeOfficeService.read_generation_input`, January–June            | Complete input; no roster work                      | Built every month; 0 assignments, 0 wishes (before the example wishes below) |
-| `POST /demand/pattern` then `PUT /demand`, then `GET /demand`      | Twelve station months saved and read back unchanged | Identical for all twelve                                                     |
-| `PUT` then `DELETE /availability/…` and `/wishes/…`                | Saved, read back, removed; tables empty afterwards  | `200`, read back, `204`; both tables empty                                   |
-| `PUT /availability/…` for an employee outside the configured units | Rejected                                            | `422`                                                                        |
+| Check (command)                                                   | Expected                                         | Actual                                                   |
+| ----------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------- |
+| `GET /planning/options?year=2026&month=1`                         | The two stations                                 | `PE 77`, `PE 79`                                         |
+| `GET /employees` for both stations, each month January–June       | Complete inspection, jumper pool associated      | 53 employees, jumper pool 408, every month               |
+| Webapp **Mitarbeiter** for both stations, each month January–June | Complete table, no error                         | 53 rows each month, 0.3–3 s per page                     |
+| `just test-timeoffice`                                            | Preparation converged, every readiness check met | Both tests pass; no write changes a row; every `ok` is 1 |
 
-Unrelated units, employees, plans and roster rows, and the two older project tables the API no longer reads (`StaffSchedulingMinimalStaffing`, `StaffSchedulingObjectiveWeights`), were counted before and after preparation and are unchanged.
+Earlier checks on prepared example units, since removed, also covered saving twelve station months of demand through `POST /demand/pattern` and `PUT /demand` (read back unchanged), availability and wish round trips (`PUT`, read back, `DELETE`) and the rejection of an employee outside the configured units (`422`). Removing those units deleted only their own rows: the count and checksum of every other row of the affected tables stayed unchanged.
 
 ## Solver and schedule check
 
 `POST /generation` runs the solver for one full month in a background job; `GET /generation` reports the latest job, and every found schedule carries the independent [schedule check](../architecture/solver.md#result). The solver implements every agreed hard rule, including trusted context around the month, relaxes only staffing through reported gaps, and optimizes its six tiers as lexicographic stages; inputs include the project wishes and exclude in-month roster work.
 
-The examples carry 38 fictional wishes written through the API into the project table: two per unit and month from January to June (`BSP-A`, `BSP-B`, `BSP-JUMP`) and one more each in January (`BSP-A`) and April (`BSP-JUMP`), covering all four wish types, two of them deliberately on the employee's own vacation day. The January runs also see two wishes that existed before, nine in all. Live runs through the running Compose API against the prepared test database, both example stations, January 2026, on 2026-10-02:
+The examples carry 32 demonstration wishes in the project table: two per station and month and one of a jumper pool employee per month, covering all four wish types; two are deliberately not grantable (a late shift on an early-only day, and a wish inside the employee's own vacation). Solves of every month through the adapter's own reads and the production solver, both stations together, 300 s, on the current solver code with the stations configured as now (2026-10-02):
+
+| Month | Solver status | Duties | Jumper pool duties | Gap slots                  | Findings | Wishes (granted, denied, not grantable) |
+| ----- | ------------- | ------ | ------------------ | -------------------------- | -------- | --------------------------------------- |
+| Jan   | `feasible`    | 1080   | 161                | 0                          | 0        | 5, 0, 0                                 |
+| Feb   | `feasible`    | 1014   | 154                | 5 (MFA, its vacation week) | 0        | 5, 0, 0                                 |
+| Mar   | `feasible`    | 1146   | 173                | 0                          | 0        | 5, 0, 2                                 |
+| Apr   | `feasible`    | 1051   | 152                | 0                          | 0        | 5, 0, 0                                 |
+| May   | `feasible`    | 941    | 144                | 0                          | 0        | 5, 0, 0                                 |
+| Jun   | `feasible`    | 1070   | 134                | 0                          | 0        | 5, 0, 0                                 |
+
+January's check is `accepted`. February to June are `incomplete` only because their first days have no trusted context yet; the month-by-month sequence supplies the preceding accepted month. A January run through the webapp at 60 s was also `accepted` with 0 findings, but stopped with 269 gap slots in the top stage (bound 0): 60 seconds are too short for these stations, so the example months use 300 seconds.
+
+On the earlier example units, January runs compared the objectives (both stations, 2026-10-02):
 
 | Run                             | Solver status | Duties | Check      | Stages (gaps, health, station transfers, wish cost, balance minutes, surplus intermediate) | Wishes (granted, denied, not grantable) |
 | ------------------------------- | ------------- | ------ | ---------- | ------------------------------------------------------------------------------------------ | --------------------------------------- |
@@ -40,37 +51,37 @@ The examples carry 38 fictional wishes written through the API into the project 
 
 Every stage value equals the score the check recomputes, and each 300-second bundle re-reads as a valid import with all five files identical to their rendering. The open items are the after-month boundary (checked by the next run) and annual free Sundays. Each stage gets only part of the time limit, so the top tier needs a longer total limit than the weighted objective did: at 120 seconds the staged runs had 40–84 health events, at 300 seconds 15–38; results vary between runs because the search is parallel and time-limited. The example months therefore use 300 seconds. Proven bounds stay weak (health bound 0), so the stages are `feasible`, not `optimal`.
 
-An earlier weighted June run (120 s, 1096 duties, 0 findings) stayed `incomplete` for lack of May context, which the six-month sequence supplies. The first June run was infeasible: the prepared July context left no professional able to work the June 30 night (a fourth night in a row, or a duty inside the 48-hour recovery). The solver's diagnostic named this shortage, and the context was corrected by removing three trusted July 3 night duties; no rule was relaxed.
+On the earlier example units, a weighted June run (120 s, 1096 duties, 0 findings) stayed `incomplete` for lack of May context, which the six-month sequence supplies. The first June run was infeasible: the prepared July context left no professional able to work the June 30 night (a fourth night in a row, or a duty inside the 48-hour recovery). The solver's diagnostic named this shortage, and the context was corrected by removing three trusted July 3 night duties; no rule was relaxed.
 
 Jobs are lost on API restart. Monthly runs are independent; the coordinated six-month example files are pending. The application writes key-scoped saves to the project tables (availability, wishes, demand) and, only through explicit publication and clear, the worked rows of the stations' target plans.
 
 ## Review, import and export
 
-**Prüfen** reviews the latest generated or imported schedule; `ScheduleBundle` validates imports and renders the five portable files, and the example tests validate and re-solve bundle folders without TimeOffice ([examples and reproduction](examples.md#bundle-files)). Live check on 2026-10-02 through the running Compose instance against the prepared test database:
+**Prüfen** reviews the latest generated or imported schedule; `ScheduleBundle` validates imports and renders the five portable files, and the example tests validate and re-solve bundle folders without TimeOffice ([examples and reproduction](examples.md#bundle-files)). Live check on 2026-10-02 through the running Compose instance against the earlier prepared example units:
 
 | Check                                                                       | Expected                                    | Actual                                                                     |
 | --------------------------------------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------- |
 | `POST /generation`, January 2026, both example stations, 120 s              | A found schedule, reviewed automatically    | `feasible`, check `accepted`, 1059 duties, 0 findings                      |
-| `GET /review?month=2026-01&stations=427,428` of the webapp                  | Review page with summary, grid and accounts | `200`; 57 employees, staffing of both stations                             |
+| Webapp `/review` for January and both stations                              | Review page with summary, grid and accounts | `200`; 57 employees, staffing of both stations                             |
 | Webapp `/review/files/{name}`, all four files (before `gaps.csv`)           | Attachments of the reviewed bundle          | `200`; 233 kB input, 183 kB result, 160 kB schedule, 69 kB employee tables |
 | Example validator (`check_examples`) on the downloaded folder, January only | Accepted single month of both stations      | No problem; open: following month's start, annual free Sundays             |
 
 The pair passed the same validation as an import. A single month cannot show the sequence checks; they are covered by the offline tests until the six accepted months exist. Messages of findings and the API's import details are English; the webapp names import problems in German. The review is lost on API restart and is not a saved library.
 
-The pages at revision `22d1c6c` were checked read-only against the same prepared database through the running Compose webapp (page loads only; no write was triggered):
+The pages at revision `22d1c6c` were checked read-only against the same example units through the running Compose webapp (page loads only; no write was triggered):
 
-| Check                                           | Expected                                          | Actual                                                                                                             |
-| ----------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| All six pages for January 2026, BSP-A and BSP-B | `200`, no webapp or API errors                    | `200` each; logs clean                                                                                             |
-| **Mitarbeiter**, details of one employee        | Accounts in hours, no raw IDs or provenance       | 57 employees; _Soll 163:48 h_, credits _7:48 h · Genehmigte Abwesenheit_                                           |
-| **Erstellen** with the latest January job       | Headline, fact row and review link                | _Dienstplan erstellt, Regeln eingehalten_, 1072 duties, **Dienstplan prüfen**                                      |
-| **Prüfen** summary and grid                     | Status line, actions; transfers marked with codes | _Regeln eingehalten · Kann veröffentlicht werden_; 143 transfers, codes BSP-A/BSP-B on one line; no truncated name |
+| Check                                         | Expected                                          | Actual                                                                                                               |
+| --------------------------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| All six pages for January 2026, both stations | `200`, no webapp or API errors                    | `200` each; logs clean                                                                                               |
+| **Mitarbeiter**, details of one employee      | Accounts in hours, no raw IDs or provenance       | 57 employees; _Soll 163:48 h_, credits _7:48 h · Genehmigte Abwesenheit_                                             |
+| **Erstellen** with the latest January job     | Headline, fact row and review link                | _Dienstplan erstellt, Regeln eingehalten_, 1072 duties, **Dienstplan prüfen**                                        |
+| **Prüfen** summary and grid                   | Status line, actions; transfers marked with codes | _Regeln eingehalten · Kann veröffentlicht werden_; 143 transfers, short station codes on one line; no truncated name |
 
 Live publication and clear through the confirmation panels of that revision were not repeated; their backend behaviour is unchanged and the panels are covered by the offline browser flows.
 
 ## Publication and clear
 
-Publication writes the accepted schedule under review into the stations' target plans and clear removes it ([procedure](../user-guide/publication.md), [storage](../architecture/timeoffice.md#publication)). Live check on 2026-10-02 against the prepared test database, one writer, through the running Compose API and webapp. Before and after every step the target plans' rows were counted by kind, and all roster rows outside the example plans and the example plans' absence and context rows were checksummed:
+Publication writes the accepted schedule under review into the stations' target plans and clear removes it ([procedure](../user-guide/publication.md), [storage](../architecture/timeoffice.md#publication)). Live check on 2026-10-02 against the earlier prepared example units, one writer, through the running Compose API and webapp. Before and after every step the target plans' rows were counted by kind, and all roster rows outside the example plans and the example plans' absence and context rows were checksummed:
 
 | Step                                                                    | Expected                                              | Actual                                                                                          |
 | ----------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -80,11 +91,11 @@ Publication writes the accepted schedule under review into the stations' target 
 | Generate January again                                                  | Published rows are not input                          | 0 in-month context duties; `accepted`, 1051 duties                                              |
 | `POST /publication` with the first schedule's `received_at`             | Refused, no change                                    | `409` `changed`                                                                                 |
 | `POST /publication` of the new schedule                                 | Replacement                                           | 1059 removed, 1051 published                                                                    |
-| Webapp **Prüfen**, BSP-B only: clear cancelled, then confirmed          | Only BSP-B's duties removed                           | _Entfernt: 606 veröffentlichte Dienste_; BSP-A's rows and all checksums unchanged               |
+| Webapp **Prüfen**, second station only: clear cancelled, then confirmed | Only that station's duties removed                    | _Entfernt: 606 veröffentlichte Dienste_; the first station's rows and all checksums unchanged   |
 | Webapp **Prüfen**, both stations: publication cancelled, then confirmed | Committed and read back                               | _Veröffentlicht: 1051 Dienste geschrieben und gelesen, 445 bisherige ersetzt_                   |
 | `DELETE /publication`, both stations                                    | Targets empty again                                   | 1051 removed; every count and checksum equals the starting state                                |
 
-Each publication and clear took about one second. A second live check on the same day, after publication was limited to rows marked `Info` = `StaffScheduling`, prepared three unmarked rows in BSP-A's January target first (a native wish on an employee's duty date, a weekend absence on another employee's duty date and a duty entered as if by hand) and removed them again at the end:
+Each publication and clear took about one second. A second live check on the same day, after publication was limited to rows marked `Info` = `StaffScheduling`, prepared three unmarked rows in the first station's January target first (a native wish on an employee's duty date, a weekend absence on another employee's duty date and a duty entered as if by hand) and removed them again at the end:
 
 | Step                                                                                                           | Expected                                                       | Actual                                                                                                                                            |
 | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -100,7 +111,6 @@ After removing the prepared rows every count and checksum equalled the starting 
 
 - **Ersatz example data.** Station transfers through a replacement membership (Ersatz) are modelled and minimized below health and above wishes, but the example data gives replacement memberships only to the jumper pool, so the examples show no station transfer.
 - **Wish variants.** Maximizing the number of granted wishes first and only then their fairness, or minimizing the largest number of denials of any employee, are alternatives to the adopted cubic fairness cost.
-- **Gap demonstration.** The examples meet their demand; a deliberate demand peak that shows gaps in an accepted example month is not part of them.
 - **Native wishes.** TimeOffice's own wish rows (`Wunschdienst`) are not read; wishes come from the project table only.
 
 ## Quality gates
