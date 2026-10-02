@@ -255,15 +255,17 @@ class InspectionSource:
                 )
             rows = [row for row in rows if row["employee_id"] in params["employee_ids"]]
         elif "FROM TPlan p" in sql and "p.RefStati = :context_status_id" in sql:
-            start = datetime.combine(params["start"], datetime.min.time())
+            # Each station has a trusted plan of the last 14 days of every month, like the prepared December.
+            month_ends = [datetime(2026, month, 1) - timedelta(days=1) for month in range(1, 13)]
             rows = [
-                {"planning_unit_id": unit, "plan_start": start, "plan_end": start + timedelta(days=13)}
+                {"planning_unit_id": unit, "plan_start": end - timedelta(days=13), "plan_end": end}
+                for end in month_ends
                 for unit in params["station_ids"]
                 if self.context_plans
             ]
         elif "FROM TPlanPersonalKommtGeht" in sql and "p.RefStati = :context_status_id" in sql:
-            # The night of the last covered date, one row per catalog segment; a drifted one ends late.
-            night = datetime.combine(params["start"], datetime.min.time()) + timedelta(days=13)
+            # The night of December 31, one row per catalog segment; a drifted one ends late.
+            night = datetime(2025, 12, 31)
             late = timedelta(minutes=10 if self.drifted_context_duty else 0)
             segments = SHIFT_SEGMENTS[1690]
             rows = [
@@ -277,7 +279,9 @@ class InspectionSource:
                     "segment_end": night + (segment_end - DAY) + (late if index == len(segments) - 1 else timedelta()),
                 }
                 for index, (segment_start, segment_end, _) in enumerate(segments)
-                if self.context_plans and 2 in params["employee_ids"]
+                if self.context_plans
+                and 2 in params["employee_ids"]
+                and params["start"] <= night.date() <= params["end"]
             ]
         elif "FROM TPlanPersonalKommtGeht" in sql:
             first = datetime.combine(params["start"], datetime.min.time())

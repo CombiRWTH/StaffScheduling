@@ -152,8 +152,9 @@ def test_generation_input_reads_absences_and_only_trusted_context_duties() -> No
     worked = [sql for sql in roster_queries if "pkg.RefDienste AS shift_id" in sql]
     assert len(worked) == 1
     assert "p.RefStati = :context_status_id" in worked[0]
-    # The context plans span the 14 days before January; employee 2 worked the night of December 31.
-    assert (dataset.context.covered_from, dataset.context.covered_until) == (date(2025, 12, 18), JANUARY.end)
+    # The context plans span the five days before January that the rules reach; employee 2 worked
+    # the night of December 31.
+    assert (dataset.context.covered_from, dataset.context.covered_until) == (date(2025, 12, 27), JANUARY.end)
     [night] = dataset.context.duties
     assert (night.employee_id, night.date, night.shift_id, night.staff_level) == (
         2,

@@ -57,6 +57,9 @@ class PlanningUnitMembership(SchedulingBaseModel):
     is_home: bool
     is_replacement: bool
 
+    def active_on(self, day: Date) -> bool:
+        return self.valid_from <= day and (self.valid_until is None or day <= self.valid_until)
+
     @model_validator(mode="after")
     def validate_membership(self) -> Self:
         if self.valid_until is not None and self.valid_from > self.valid_until:

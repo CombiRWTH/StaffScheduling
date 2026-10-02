@@ -2,10 +2,10 @@
 
 `check_schedule` never sees solver variables. It recomputes real duty times, accounts and sequences
 from the dataset, the trusted context and the assignments, so client- or solver-supplied schedules are
-judged alike. Only the small per-duty functions of `app.domain.rules` are shared with the solver.
+judged alike. It shares only the rule policy and the duty times with the solver.
 """
 
-from collections import Counter, defaultdict
+from collections import Counter
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date as Date
@@ -15,30 +15,20 @@ from enum import StrEnum
 from pydantic import computed_field
 
 from app.domain.assignment import Assignment
-from app.domain.availability import AvailabilityEntry
-from app.domain.calendar import dates_between, is_working_day
+from app.domain.availability import AvailabilityType
+from app.domain.calendar import is_working_day
 from app.domain.core import SchedulingBaseModel
 from app.domain.dataset import SchedulingDataset
+from app.domain.demand import DemandKey
 from app.domain.duty import DutyTimes, duty_times
-from app.domain.employee import StaffLevel
 from app.domain.monthly_work_account import MonthlyWorkAccount
-from app.domain.planning_unit import PlanningUnitType
-from app.domain.rules import (
-    POLICY,
-    RulePolicy,
-    availability_problem,
-    duty_problem,
-    replacement_window_days,
-    rest_conflict,
-)
+from app.domain.rules import APPROVED_FREE, BLOCKING_AVAILABILITY, POLICY
 from app.domain.shift import Shift, ShiftType
 
 # The forward shift order of the health objective; other shift types have no position in it.
 SHIFT_ORDER = {ShiftType.EARLY: 0, ShiftType.LATE: 1, ShiftType.NIGHT: 2}
 # Fully worked consecutive days counted as one health event.
 WORKED_DAYS_WINDOW = 6
-
-type DemandKey = tuple[int, Date, int, StaffLevel]
 
 
 class CheckStatus(StrEnum):
@@ -126,15 +116,13 @@ class _Duty:
 ASSESSED = tuple(rule for rule in Rule if rule != Rule.ANNUAL_FREE_SUNDAYS)
 
 
-def check_schedule(
-    dataset: SchedulingDataset, assignments: Iterable[Assignment], policy: RulePolicy = POLICY
-) -> ScheduleCheck:
+def check_schedule(dataset: SchedulingDataset, assignments: Iterable[Assignment]) -> ScheduleCheck:
     """Check the month's assignments against every hard rule and score them.
 
     Malformed assignments (unknown references, outside the month, duplicates) are findings and take
     no part in the other checks.
     """
-    check = _Check(dataset, policy)
+    check = _Check(dataset)
     duties = check.valid_duties(tuple(assignments))
     check.staffing(duties)
     check.eligibility(duties)
@@ -174,9 +162,8 @@ def check_schedule(
 
 
 class _Check:
-    def __init__(self, dataset: SchedulingDataset, policy: RulePolicy) -> None:
+    def __init__(self, dataset: SchedulingDataset) -> None:
         self.dataset = dataset
-        self.policy = policy
         self.month = dataset.planning_month
         self.context = dataset.context
         self.shifts = {row.shift_id: row for row in dataset.shifts}
@@ -211,15 +198,18 @@ class _Check:
 
     def valid_duties(self, assignments: tuple[Assignment, ...]) -> list[_Duty]:
         employees = {row.employee_id for row in self.dataset.employees}
-        stations = {row.planning_unit_id for row in self.dataset.planning_units if row.type == PlanningUnitType.STATION}
         seen: set[tuple[int, Date, int, int]] = set()
         duties: list[_Duty] = []
         for row in assignments:
             key = (row.employee_id, row.date, row.planning_unit_id, row.shift_id)
-            known = row.employee_id in employees and row.planning_unit_id in stations and row.shift_id in self.shifts
+            known = (
+                row.employee_id in employees
+                and row.planning_unit_id in self.dataset.station_ids
+                and row.shift_id in self.shifts
+            )
             if not known:
                 self.fail(Rule.INPUT, "Unknown employee, selected station or shift.", row)
-            elif not self.month.start <= row.date <= self.month.end:
+            elif row.date not in self.month:
                 self.fail(Rule.INPUT, "The duty starts outside the planning month.", row)
             elif key in seen:
                 self.fail(Rule.INPUT, "Duplicate assignment.", row)
@@ -230,13 +220,12 @@ class _Check:
         return duties
 
     def staffing(self, duties: list[_Duty]) -> None:
-        covered = Counter(_demand_key(duty.assignment) for duty in duties)
+        covered = Counter(duty.assignment.demand_key for duty in duties)
         for row in self.dataset.demand_requirements:
-            key = (row.planning_unit_id, row.date, row.shift_id, row.staff_level)
-            if covered[key] < row.required_count:
+            if (count := covered[row.demand_key]) < row.required_count:
                 self.fail(
                     Rule.STAFFING,
-                    f"{covered[key]} of {row.required_count} required {row.staff_level.value} staff.",
+                    f"{count} of {row.required_count} required {row.staff_level.value} staff.",
                     planning_unit_id=row.planning_unit_id,
                     date=row.date,
                     shift_id=row.shift_id,
@@ -250,8 +239,7 @@ class _Check:
                 m.employee_id == row.employee_id
                 and m.planning_unit_id == row.planning_unit_id
                 and m.staff_level == row.staff_level
-                and m.valid_from <= row.date
-                and (m.valid_until is None or row.date <= m.valid_until)
+                and m.active_on(row.date)
                 for m in memberships
             ):
                 self.fail(Rule.ELIGIBILITY, f"No active {row.staff_level.value} membership at the station.", row)
@@ -264,16 +252,32 @@ class _Check:
                 self.fail(Rule.ONE_DUTY_PER_DAY, message, employee_id=employee_id, date=day)
 
     def availability(self, duties: list[_Duty]) -> None:
-        entries: defaultdict[int, defaultdict[Date, list[AvailabilityEntry]]] = defaultdict(lambda: defaultdict(list))
-        for row in (*self.dataset.availability, *self.context.availability):
-            entries[row.employee_id][row.date].append(row)
+        """Blocking availability on any date a duty touches, every allowed-shift restriction of its start
+        date (several narrow, never widen) and no night before an approved free date."""
         for duty in duties:
             row = duty.assignment
-            if problem := availability_problem(row.date, duty.shift, duty.times, entries[row.employee_id]):
-                self.fail(Rule.AVAILABILITY, problem, row)
+            following = row.date + timedelta(days=1)
+            for day in (row.date, following):
+                if not duty.times.touches(day):
+                    continue
+                for entry in self.dataset.availability_on(row.employee_id, day):
+                    if entry.availability_type in BLOCKING_AVAILABILITY:
+                        self.fail(
+                            Rule.AVAILABILITY, f"The duty overlaps {entry.availability_type.value} on {day}.", row
+                        )
+            for entry in self.dataset.availability_on(row.employee_id, row.date):
+                if entry.availability_type == AvailabilityType.AVAILABLE_ONLY and row.shift_id not in (
+                    entry.shift_ids or ()
+                ):
+                    self.fail(Rule.AVAILABILITY, f"Only other shifts are allowed on {row.date}.", row)
+            if duty.shift.type == ShiftType.NIGHT and any(
+                entry.availability_type in APPROVED_FREE
+                for entry in self.dataset.availability_on(row.employee_id, following)
+            ):
+                self.fail(Rule.AVAILABILITY, f"A night duty may not precede the approved free day {following}.", row)
 
     def monthly_balance(self, duties: list[_Duty]) -> None:
-        tolerance = self.policy.balance_tolerance_minutes
+        tolerance = POLICY.balance_tolerance_minutes
         for account, balance in self.balances(duties):
             if abs(balance) > tolerance:
                 self.fail(
@@ -290,35 +294,20 @@ class _Check:
         return [(row, row.balance(paid[row.employee_id])) for row in self.dataset.monthly_work_accounts]
 
     def work(self, duties: list[_Duty]) -> None:
-        by_employee: defaultdict[int, list[_Duty]] = defaultdict(list)
+        """Daily work and breaks of every duty, and every employee's monthly average per Werktag."""
+        total = Counter[int]()
         for duty in duties:
-            by_employee[duty.assignment.employee_id].append(duty)
-            if problem := duty_problem(duty.times, self.policy):
+            total[duty.assignment.employee_id] += duty.times.work_minutes
+            if problem := _daily_work_problem(duty.times):
                 self.fail(Rule.WORK_AND_BREAKS, problem, duty.assignment)
-        limit = self.policy.daily_work_minutes
-        working_days = sum(is_working_day(day) for day in dates_between(self.month.start, self.month.end))
-        for employee_id, own in by_employee.items():
-            extended = [duty for duty in own if duty.times.work_minutes > limit]
-            if not extended:
-                continue
-            total = sum(duty.times.work_minutes for duty in own)
-            if total > limit * working_days:
+        average = POLICY.average_daily_work_minutes
+        working_days = sum(is_working_day(day) for day in self.month.dates)
+        for employee_id, minutes in total.items():
+            if minutes > average * working_days:
                 self.fail(
                     Rule.WORK_AVERAGE,
-                    f"Duties over {limit} minutes need an average of at most {limit} per Werktag; the month has "
-                    f"{total} minutes of work on {working_days} Werktage.",
+                    f"{minutes} minutes of work exceed {average} per Werktag on the month's {working_days} Werktage.",
                     employee_id=employee_id,
-                )
-            if any(duty.shift.type != ShiftType.NIGHT for duty in extended):
-                self.not_assessed.append(
-                    NotAssessed(
-                        rule=Rule.WORK_AVERAGE,
-                        reason="Extended day duties outside night work average over 24 weeks, beyond the month.",
-                        blocking=False,
-                        start=self.month.start - timedelta(weeks=24),
-                        end=self.month.end,
-                        employee_id=employee_id,
-                    )
                 )
 
     def timelines(self, duties: list[_Duty]) -> dict[int, list[_Duty]]:
@@ -334,20 +323,21 @@ class _Check:
         return timelines
 
     def boundary_coverage(self) -> None:
-        days = self.policy.preceding_context_days
-        first = self.month.start - timedelta(days=days)
+        before = POLICY.preceding_context_days
+        first = self.month.start - timedelta(days=before)
         if self.context.covered_from > first:
             self.not_assessed.append(
                 NotAssessed(
                     rule=Rule.REST,
-                    reason=f"Rest, night and recovery rules at the month start need trusted duties of the "
-                    f"{days} preceding days.",
+                    reason=f"Rest, night, recovery and health scores at the month start need trusted duties of "
+                    f"the {before} preceding days.",
                     blocking=True,
                     start=first,
                     end=self.month.start - timedelta(days=1),
                 )
             )
-        if self.context.covered_until < self.month.end + timedelta(days=days):
+        after = POLICY.following_context_days
+        if self.context.covered_until < self.month.end + timedelta(days=after):
             self.not_assessed.append(
                 NotAssessed(
                     rule=Rule.REST,
@@ -355,18 +345,18 @@ class _Check:
                     "with this schedule as its preceding context.",
                     blocking=False,
                     start=self.month.end + timedelta(days=1),
-                    end=self.month.end + timedelta(days=days),
+                    end=self.month.end + timedelta(days=after),
                 )
             )
 
     def rest(self, timeline: list[_Duty]) -> None:
-        reach = timedelta(minutes=self.policy.min_rest_minutes)
+        minimum = POLICY.min_rest_minutes
         for index, earlier in enumerate(timeline):
             for later in timeline[index + 1 :]:
-                if later.times.start >= earlier.times.end + reach:
+                gap = earlier.times.minutes_until(later.times)
+                if gap >= minimum:
                     break
-                if (earlier.in_month or later.in_month) and rest_conflict(earlier.times, later.times, self.policy):
-                    gap = earlier.times.minutes_until(later.times)
+                if earlier.in_month or later.in_month:
                     self.fail(
                         Rule.REST,
                         f"Only {gap} minutes from the duty of {earlier.assignment.date} to this one."
@@ -377,7 +367,7 @@ class _Check:
 
     def nights(self, timeline: list[_Duty]) -> None:
         nights = {duty.assignment.date: duty for duty in timeline if duty.shift.type == ShiftType.NIGHT}
-        limit = self.policy.max_consecutive_nights
+        limit = POLICY.max_consecutive_nights
         for day, night in nights.items():
             run = [night]
             while (run[-1].assignment.date - timedelta(days=1)) in nights:
@@ -386,78 +376,61 @@ class _Check:
                 self.fail(Rule.CONSECUTIVE_NIGHTS, f"{len(run)} consecutive night duties.", night.assignment)
             if day + timedelta(days=1) in nights:
                 continue
-            recovery_end = night.times.end + timedelta(minutes=self.policy.night_recovery_minutes)
+            recovery_end = night.times.end + timedelta(minutes=POLICY.night_recovery_minutes)
             for later in timeline:
                 if night.times.end <= later.times.start < recovery_end and (night.in_month or later.in_month):
                     self.fail(
                         Rule.NIGHT_RECOVERY,
-                        f"Starts within {self.policy.night_recovery_minutes} minutes of the final night of "
+                        f"Starts within {POLICY.night_recovery_minutes} minutes of the final night of "
                         f"{night.assignment.date}.",
                         later.assignment if later.in_month else night.assignment,
                     )
 
     def replacement_rest(self, timeline: list[_Duty]) -> None:
-        """Match each worked Sunday/holiday of the month to its own free Werktag inside its window.
+        """Match each worked Sunday/holiday of the month to its own free Werktag of the month inside its window.
 
-        Obligations whose window lies inside the known dates are matched first; the rest are matched
-        with what remains and, if unmatched, reported as not assessed.
+        Taking obligations by their window's end and the earliest free date that fits finds a match
+        for all of them whenever one exists.
         """
-        if not timeline:
-            return
-        known = dates_between(self.context.covered_from, self.context.covered_until)
-        worked = {day for day in known if any(duty.times.touches(day) for duty in timeline)}
-        free = [day for day in known if day not in worked and is_working_day(day)]
-        obligations: list[tuple[Date, Date, Date, bool]] = []
-        for day in dates_between(self.month.start, self.month.end):
-            if day in worked and (days := replacement_window_days(day, self.policy)) is not None:
-                start, end = day - timedelta(days=days), day + timedelta(days=days)
-                inside = self.context.covered_from <= start and end <= self.context.covered_until
-                obligations.append((day, start, end, inside))
-        employee_id = timeline[0].assignment.employee_id
-        used: set[Date] = set()
-        for inside in (True, False):
-            for day, start, end, _ in sorted((o for o in obligations if o[3] == inside), key=lambda o: o[2]):
-                match = next((d for d in free if start <= d <= end and d not in used), None)
-                if match is not None:
-                    used.add(match)
-                elif inside:
-                    self.fail(
-                        Rule.REPLACEMENT_REST,
-                        f"No free Werktag left between {start} and {end} as replacement rest.",
-                        employee_id=employee_id,
-                        date=day,
-                    )
-                else:
-                    self.not_assessed.append(
-                        NotAssessed(
-                            rule=Rule.REPLACEMENT_REST,
-                            reason=f"No replacement rest found for {day} inside the known dates; its window "
-                            "extends beyond them.",
-                            blocking=False,
-                            start=start,
-                            end=end,
-                            employee_id=employee_id,
-                        )
-                    )
+        worked = {day for day in self.month.dates if any(duty.times.touches(day) for duty in timeline)}
+        free = [day for day in self.month.dates if day not in worked and is_working_day(day)]
+        windows = [
+            (day + timedelta(days=days), day - timedelta(days=days), day)
+            for day in sorted(worked)
+            if (days := POLICY.replacement_days(day)) is not None
+        ]
+        for end, start, day in sorted(windows):
+            match = next((free_day for free_day in free if start <= free_day <= end), None)
+            if match is None:
+                self.fail(
+                    Rule.REPLACEMENT_REST,
+                    f"No free Werktag of the month left between {start} and {end} as replacement rest.",
+                    employee_id=timeline[0].assignment.employee_id,
+                    date=day,
+                )
+            else:
+                free.remove(match)
 
     def scores(self, duties: list[_Duty], timelines: dict[int, list[_Duty]]) -> ScheduleScores:
+        """The objective tiers; backward steps compare with ranked duties from the preceding context days on."""
+        lookback = self.month.start - timedelta(days=POLICY.preceding_context_days)
         six_day = backward = 0
         for timeline in timelines.values():
             worked = {duty.assignment.date for duty in timeline}
             six_day += sum(
                 all(day - timedelta(days=offset) in worked for offset in range(WORKED_DAYS_WINDOW))
-                for day in dates_between(self.month.start, self.month.end)
+                for day in self.month.dates
             )
-            ranked = [duty for duty in timeline if duty.shift.type in SHIFT_ORDER]
+            ranked = [duty for duty in timeline if duty.shift.type in SHIFT_ORDER and duty.assignment.date >= lookback]
             backward += sum(
                 later.in_month and SHIFT_ORDER[later.shift.type] < SHIFT_ORDER[earlier.shift.type]
                 for earlier, later in zip(ranked, ranked[1:], strict=False)
             )
         required = Counter[DemandKey]()
         for row in self.dataset.demand_requirements:
-            required[(row.planning_unit_id, row.date, row.shift_id, row.staff_level)] += row.required_count
+            required[row.demand_key] += row.required_count
         intermediate = Counter(
-            _demand_key(duty.assignment) for duty in duties if duty.shift.type == ShiftType.INTERMEDIATE
+            duty.assignment.demand_key for duty in duties if duty.shift.type == ShiftType.INTERMEDIATE
         )
         return ScheduleScores(
             six_day_windows=six_day,
@@ -467,5 +440,27 @@ class _Check:
         )
 
 
-def _demand_key(row: Assignment) -> DemandKey:
-    return (row.planning_unit_id, row.date, row.shift_id, row.staff_level)
+def _daily_work_problem(times: DutyTimes) -> str | None:
+    """Why a duty's own work and break pattern breaks ArbZG §§3-4, if it does."""
+    work = times.work_minutes
+    if work > POLICY.max_daily_work_minutes:
+        return f"{work} minutes of work exceed the daily maximum of {POLICY.max_daily_work_minutes}."
+    required = (
+        POLICY.long_break_minutes
+        if work > POLICY.long_break_after_minutes
+        else POLICY.short_break_minutes
+        if work > POLICY.short_break_after_minutes
+        else 0
+    )
+    qualifying = sum(gap for gap in times.breaks if gap >= POLICY.min_break_part_minutes)
+    if qualifying < required:
+        return f"{work} minutes of work need {required} minutes of break, the duty has {qualifying}."
+    # A gap shorter than a qualifying break part does not interrupt the work around it.
+    run = 0
+    for (start, end), gap in zip(times.work, (*times.breaks, None), strict=True):
+        run += int((end - start).total_seconds() // 60)
+        if run > POLICY.max_uninterrupted_work_minutes:
+            return f"More than {POLICY.max_uninterrupted_work_minutes} minutes of work without a break."
+        if gap is None or gap >= POLICY.min_break_part_minutes:
+            run = 0
+    return None

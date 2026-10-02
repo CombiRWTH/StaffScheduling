@@ -26,11 +26,11 @@ from app.domain import (
     Availability,
     AvailabilityType,
     CheckStatus,
+    PlanningMonth,
     ScheduleCheck,
     SchedulingDataset,
     StaffLevel,
     check_schedule,
-    dates_between,
 )
 from app.settings import Settings
 from app.solver.models import Solution, SolutionStatus
@@ -70,7 +70,7 @@ def only(employee_id: int, allowed: dict[int, tuple[int, ...]]) -> list[Availabi
         away(employee_id, day, AvailabilityType.AVAILABLE_ONLY, allowed[day.day])
         if day.day in allowed
         else away(employee_id, day, AvailabilityType.UNAVAILABLE)
-        for day in dates_between(JANUARY.start, JANUARY.end)
+        for day in JANUARY.dates
     ]
 
 
@@ -136,6 +136,30 @@ def test_a_jumper_pool_employee_cannot_fill_both_stations_on_one_date() -> None:
         demand=[need(jan(5), EARLY, level=StaffLevel.ASSISTANT, unit=unit) for unit in (NORTH, SOUTH)],
     )
     assert solve(data).status == SolutionStatus.INFEASIBLE
+
+
+def test_a_month_needs_every_account_before_it_solves() -> None:
+    memberships = [*member(1), *member(2)]
+    with pytest.raises(ValueError, match="exactly one monthly account"):
+        dataset(memberships=memberships, accounts=[account(1, 0)])
+    assert solve(dataset(memberships=memberships, accounts=[account(1, 0), account(2, 0)])).status == (
+        SolutionStatus.OPTIMAL
+    )
+
+
+def test_the_night_before_the_october_clock_change_is_never_assigned() -> None:
+    # The repeated hour stretches the night's last segment of 00:30-06:10 to 6 h 40 min without a break.
+    october = PlanningMonth(year=2026, month=10)
+    data = dataset(
+        memberships=member(1),
+        accounts=[account(1, 555, month=october)],
+        demand=[need(date(2026, 10, 24), NIGHT)],
+        month=october,
+    )
+    solution = solve(data)
+
+    assert solution.status == SolutionStatus.INFEASIBLE
+    assert {row.code for row in solution.diagnostics} >= {"shift.breaks_rules", "staffing.too_few_candidates"}
 
 
 @pytest.mark.parametrize(("target", "status"), [(1000, SolutionStatus.INFEASIBLE), (400, SolutionStatus.OPTIMAL)])

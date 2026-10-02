@@ -56,8 +56,7 @@ def dates_between(start: Date, end: Date) -> tuple[Date, ...]:
 def month_calendar(month: PlanningMonth) -> tuple[CalendarDay, ...]:
     """Every date of the month with its weekday and NRW public holiday name."""
     return tuple(
-        CalendarDay(date=day, weekday=day.isoweekday(), public_holiday=public_holiday(day))
-        for day in dates_between(month.start, month.end)
+        CalendarDay(date=day, weekday=day.isoweekday(), public_holiday=public_holiday(day)) for day in month.dates
     )
 
 

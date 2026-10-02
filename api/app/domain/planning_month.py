@@ -1,5 +1,6 @@
 from calendar import monthrange
-from datetime import date
+from datetime import date, timedelta
+from functools import cached_property
 
 from pydantic import Field, computed_field
 
@@ -23,3 +24,11 @@ class PlanningMonth(SchedulingBaseModel):
             self.month,
             monthrange(self.year, self.month)[1],
         )
+
+    @cached_property
+    def dates(self) -> tuple[date, ...]:
+        """Every date of the month in order."""
+        return tuple(self.start + timedelta(days=offset) for offset in range(self.end.day))
+
+    def __contains__(self, day: date) -> bool:
+        return self.start <= day <= self.end

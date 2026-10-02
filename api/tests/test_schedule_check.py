@@ -1,6 +1,6 @@
 """The independent schedule check on the discriminating examples of the selected rule policy."""
 
-from datetime import date, timedelta
+from datetime import date
 
 import pytest
 from scheduling import (
@@ -31,13 +31,14 @@ from app.domain import (
     PlanningMonth,
     Rule,
     SchedulingDataset,
+    Shift,
     ShiftType,
     StaffLevel,
     check_schedule,
     duty_times,
 )
 from app.domain.duty import local_instant
-from app.domain.rules import duty_problem
+from app.solver.model import build_model
 
 
 def rules(data: SchedulingDataset, assignments: list[Assignment]) -> set[Rule]:
@@ -74,7 +75,7 @@ def test_missing_preceding_context_leaves_the_month_incomplete() -> None:
 
     assert check.status == CheckStatus.INCOMPLETE
     [gap] = [row for row in check.not_assessed if row.blocking]
-    assert (gap.rule, gap.start, gap.end) == (Rule.REST, date(2025, 12, 29), date(2025, 12, 31))
+    assert (gap.rule, gap.start, gap.end) == (Rule.REST, date(2025, 12, 27), date(2025, 12, 31))
 
 
 def test_malformed_assignments_are_rejected_and_ignored_otherwise() -> None:
@@ -237,11 +238,14 @@ def test_recovery_after_the_final_night_is_48_elapsed_hours() -> None:
     ],
 )
 def test_daily_work_and_breaks_follow_the_segments(segments: tuple[tuple[int, int], ...], problem: bool) -> None:
-    times = duty_times(jan(5), shift(9, "X", ShiftType.OTHER, *segments))
-    assert (duty_problem(times) is not None) == problem
+    pattern = shift(9, "X", ShiftType.OTHER, *segments)
+    data = dataset(memberships=member(1), accounts=[account(1, pattern.net_work_minutes)], shifts=[pattern])
+    # The check and the solver implement the rule separately and agree on every boundary.
+    assert (Rule.WORK_AND_BREAKS in rules(data, [duty(1, jan(5), pattern)])) == problem
+    assert ("shift.breaks_rules" in {row.code for row in build_model(data).diagnostics}) == problem
 
 
-def test_duties_over_eight_hours_need_the_monthly_average_of_eight_per_werktag() -> None:
+def test_monthly_work_averages_at_most_eight_hours_per_werktag() -> None:
     # 9.5 hours of work with the required 45-minute break.
     long_day = shift(7, "T", ShiftType.OTHER, (hm(7), hm(12)), (hm(12, 45), hm(17, 15)))
     february = PlanningMonth(year=2026, month=2)
@@ -253,27 +257,34 @@ def test_duties_over_eight_hours_need_the_monthly_average_of_eight_per_werktag()
 
     assert Rule.WORK_AVERAGE not in {row.rule for row in check(20).findings}
     assert Rule.WORK_AVERAGE in {row.rule for row in check(21).findings}
-    # Outside night work the ordinary 24-week average cannot be decided in one month.
-    assert any(row.rule == Rule.WORK_AVERAGE and not row.blocking for row in check(20).not_assessed)
+    # The month is its own compensation period: nothing is left for a longer one.
+    assert all(row.rule != Rule.WORK_AVERAGE for row in check(20).not_assessed)
 
 
-def test_each_worked_sunday_needs_its_own_free_werktag() -> None:
-    context = [duty(1, date(2025, 12, 18) + timedelta(days=offset), EARLY) for offset in range(14)]
+def replacement_missing(data: SchedulingDataset, assignments: list[Assignment]) -> set[date | None]:
+    return {row.date for row in check_schedule(data, assignments).findings if row.rule == Rule.REPLACEMENT_REST}
+
+
+def test_each_worked_sunday_and_holiday_needs_its_own_free_werktag_of_the_month() -> None:
     every_day = [duty(1, jan(day), EARLY) for day in range(1, 32)]
-    data = dataset(memberships=member(1), accounts=[account(1, 31 * 420)], context_duties=context)
+    data = dataset(memberships=member(1), accounts=[account(1, 31 * 420)])
+    # New Year and all four Sundays are worked and the month has no free Werktag.
+    assert replacement_missing(data, every_day) == {jan(1), jan(4), jan(11), jan(18), jan(25)}
+    assert all(row.rule != Rule.REPLACEMENT_REST for row in check_schedule(data, every_day).not_assessed)
 
-    check = check_schedule(data, every_day)
-    missing = {row.date for row in check.findings if row.rule == Rule.REPLACEMENT_REST}
-    open_ = {row.start + (row.end - row.start) / 2 for row in check.not_assessed if row.rule == Rule.REPLACEMENT_REST}
-    # Sundays whose two-week window lies in the known dates fail; later ones and New Year are not assessed.
-    assert missing == {jan(4), jan(11), jan(18)}
-    assert open_ == {jan(1), jan(25)}
-
-    # One free Wednesday serves January 4 or January 11, never both.
+    # One free Wednesday serves one of them, never two.
     free_wednesday = [row for row in every_day if row.date != jan(7)]
-    data = dataset(memberships=member(1), accounts=[account(1, 30 * 420)], context_duties=context)
-    missing = {row.date for row in check_schedule(data, free_wednesday).findings if row.rule == Rule.REPLACEMENT_REST}
-    assert len(missing & {jan(4), jan(11)}) == 1
+    data = dataset(memberships=member(1), accounts=[account(1, 30 * 420)])
+    assert len(replacement_missing(data, free_wednesday)) == 4
+
+
+@pytest.mark.parametrize(("saturday", "sunday_worked"), [(LATE, False), (NIGHT, True)])
+def test_a_saturday_night_is_sunday_work(saturday: Shift, sunday_worked: bool) -> None:
+    # Every Werktag from January 2 to 24 is worked, so Sunday January 11 has no free Werktag in its window.
+    werktage = [duty(1, jan(day), EARLY) for day in range(2, 25) if day not in (4, 10, 11, 18)]
+    schedule = [*werktage, duty(1, jan(10), saturday)]
+    data = dataset(memberships=member(1), accounts=balanced(1, schedule))
+    assert (jan(11) in replacement_missing(data, schedule)) == sunday_worked
 
 
 def test_daylight_saving_changes_elapsed_work_but_not_paid_minutes() -> None:
@@ -284,6 +295,30 @@ def test_daylight_saving_changes_elapsed_work_but_not_paid_minutes() -> None:
         local_instant(date(2026, 3, 29), hm(2, 30))
     with pytest.raises(ValueError, match="skipped or repeated"):
         local_instant(date(2026, 10, 25), hm(2, 30))
+
+
+def test_rest_and_recovery_count_elapsed_hours_across_clock_changes() -> None:
+    early_six = shift(2, "E6", ShiftType.EARLY, (hm(6), hm(10)), (hm(10, 30), hm(13)))
+    until_seven = shift(3, "L19", ShiftType.LATE, (hm(13), hm(16)), (hm(16, 30), hm(19)))
+    march = PlanningMonth(year=2026, month=3)
+    data = dataset(
+        memberships=member(1),
+        accounts=[account(1, 750, month=march)],
+        shifts=[early_six, until_seven, NIGHT],
+        month=march,
+    )
+    # 19:00 to 06:00 is eleven hours, but only ten elapse into March 29, when clocks skip an hour.
+    assert Rule.REST not in rules(
+        data, [duty(1, date(2026, 3, 21), until_seven), duty(1, date(2026, 3, 22), early_six)]
+    )
+    assert Rule.REST in rules(data, [duty(1, date(2026, 3, 28), until_seven), duty(1, date(2026, 3, 29), early_six)])
+
+    october = PlanningMonth(year=2026, month=10)
+    data = dataset(memberships=member(1), accounts=[account(1, 975, month=october)], month=october)
+    # The night ends Saturday, October 24, 06:10; the repeated hour makes Monday 05:55 48 h 45 min later.
+    assert Rule.NIGHT_RECOVERY not in rules(
+        data, [duty(1, date(2026, 10, 23), NIGHT), duty(1, date(2026, 10, 26), EARLY)]
+    )
 
 
 def test_context_counts_for_sequences_but_never_for_demand_or_accounts() -> None:

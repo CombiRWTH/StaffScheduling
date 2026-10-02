@@ -1,6 +1,7 @@
 from datetime import date as Date
 
 from app.domain.core import SchedulingBaseModel
+from app.domain.demand import DemandKey
 from app.domain.employee import EmployeeId, StaffLevel
 from app.domain.planning_unit import PlanningUnitId
 from app.domain.shift import ShiftId
@@ -19,3 +20,8 @@ class Assignment(SchedulingBaseModel):
     planning_unit_id: PlanningUnitId
     shift_id: ShiftId
     staff_level: StaffLevel
+
+    @property
+    def demand_key(self) -> DemandKey:
+        """The demand row this duty counts towards."""
+        return (self.planning_unit_id, self.date, self.shift_id, self.staff_level)

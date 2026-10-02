@@ -1,7 +1,6 @@
 """Read-only planning inspection: the selected month/stations with their complete employee facts."""
 
 from collections.abc import Iterable
-from datetime import timedelta
 
 from app.domain.availability import Availability
 from app.domain.core import NonEmptyStr, SchedulingBaseModel
@@ -100,22 +99,17 @@ def build_inspection(
     inspected: list[EmployeeInspection] = []
     for employee in employees:
         employee_memberships = tuple(row for row in memberships if row.employee_id == employee.employee_id)
-        for offset in range((planning_month.end - planning_month.start).days + 1):
-            day = planning_month.start + timedelta(days=offset)
-            active = [
-                row
-                for row in employee_memberships
-                if row.valid_from <= day and (row.valid_until is None or day <= row.valid_until)
-            ]
+        for day in planning_month.dates:
+            active = [row for row in employee_memberships if row.active_on(day)]
             homes = {row.planning_unit_id for row in active if row.is_home}
             if active and len(homes) != 1:
                 raise ValueError(f"Employee {employee.employee_id} requires one evidenced home origin on {day}.")
         account = accounts_by_id[employee.employee_id]
-        if any(not planning_month.start <= credit.date <= planning_month.end for credit in account.credit_details):
+        if any(credit.date not in planning_month for credit in account.credit_details):
             raise ValueError("Credit date is outside the selected month.")
         employee_availability = tuple(row for row in availability if row.employee_id == employee.employee_id)
         for row in employee_availability:
-            if not planning_month.start <= row.date <= planning_month.end:
+            if row.date not in planning_month:
                 raise ValueError("Availability date is outside the selected month.")
             if row.shift_ids and not set(row.shift_ids) <= allowed_shift_ids:
                 raise ValueError("Unknown allowed shift in availability.")

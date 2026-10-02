@@ -12,6 +12,9 @@ from app.domain.planning_month import PlanningMonth
 from app.domain.planning_unit import PlanningUnitId
 from app.domain.shift import ShiftId, ShiftOption
 
+# Station, date, shift and credited qualification: what a demand row requires and a duty covers.
+type DemandKey = tuple[PlanningUnitId, Date, ShiftId, StaffLevel]
+
 
 class DemandRequirement(SchedulingBaseModel):
     """Hard minimum staffing demand for one planning unit, date, shift and staff level."""
@@ -21,6 +24,10 @@ class DemandRequirement(SchedulingBaseModel):
     shift_id: ShiftId
     staff_level: StaffLevel
     required_count: int = Field(gt=0)
+
+    @property
+    def demand_key(self) -> DemandKey:
+        return (self.planning_unit_id, self.date, self.shift_id, self.staff_level)
 
 
 # An upper bound that no station reaches, so a typo cannot save an absurd minimum.
@@ -48,7 +55,7 @@ class MonthlyDemand(SchedulingBaseModel):
         keys = [(cell.date, cell.shift_id, cell.staff_level) for cell in self.cells]
         if len(set(keys)) != len(keys):
             raise ValueError("Duplicate demand for one date, shift and qualification.")
-        if any(not self.planning_month.start <= cell.date <= self.planning_month.end for cell in self.cells):
+        if any(cell.date not in self.planning_month for cell in self.cells):
             raise ValueError("Demand date is outside the planning month.")
         return self
 

@@ -1,10 +1,12 @@
+from collections import defaultdict
+from datetime import date as Date
 from datetime import timedelta
+from functools import cached_property
 from typing import Self
 
 from pydantic import model_validator
 
-from app.domain.availability import Availability
-from app.domain.calendar import dates_between
+from app.domain.availability import Availability, AvailabilityEntry
 from app.domain.context import ScheduleContext
 from app.domain.core import SchedulingBaseModel
 from app.domain.demand import DemandRequirement, MonthlyDemand
@@ -40,27 +42,26 @@ class SchedulingDataset(SchedulingBaseModel):
         month = self.planning_month
         employee_ids = [row.employee_id for row in self.employees]
         shift_ids = {row.shift_id for row in self.shifts}
-        stations = {row.planning_unit_id for row in self.planning_units if row.type == PlanningUnitType.STATION}
         if len(set(employee_ids)) != len(employee_ids) or len(shift_ids) != len(self.shifts):
             raise ValueError("Duplicate employee or shift identities.")
         if sorted(row.employee_id for row in self.monthly_work_accounts) != sorted(employee_ids):
             raise ValueError("Every employee requires exactly one monthly account.")
         if any(row.employee_id not in employee_ids for row in self.planning_unit_memberships):
             raise ValueError("Membership of an unknown employee.")
-        demand_keys = [(r.planning_unit_id, r.date, r.shift_id, r.staff_level) for r in self.demand_requirements]
+        demand_keys = [row.demand_key for row in self.demand_requirements]
         if len(set(demand_keys)) != len(demand_keys):
             raise ValueError("Duplicate demand requirement.")
         for row in self.demand_requirements:
-            if row.planning_unit_id not in stations or row.shift_id not in shift_ids:
+            if row.planning_unit_id not in self.station_ids or row.shift_id not in shift_ids:
                 raise ValueError("Demand for an unknown station or shift.")
-            if not month.start <= row.date <= month.end:
+            if row.date not in month:
                 raise ValueError("Demand date is outside the planning month.")
         for row in self.availability:
-            if row.employee_id not in employee_ids or not month.start <= row.date <= month.end:
+            if row.employee_id not in employee_ids or row.date not in month:
                 raise ValueError("Availability of an unknown employee or outside the planning month.")
         self._validate_context(set(employee_ids), shift_ids)
         # Every possible duty must have unambiguous local times, so the run cannot fail on them later.
-        for day in dates_between(month.start, month.end):
+        for day in month.dates:
             for shift in self.shifts:
                 duty_times(day, shift)
         return self
@@ -75,12 +76,28 @@ class SchedulingDataset(SchedulingBaseModel):
         for row in context.duties:
             if row.employee_id not in employee_ids or row.shift_id not in shift_ids:
                 raise ValueError("Context duty of an unknown employee or shift.")
-            if month.start <= row.date <= month.end or not context.covered_from <= row.date <= context.covered_until:
+            if row.date in month or not context.covers(row.date):
                 raise ValueError("Context duties lie inside their coverage and outside the planning month.")
             duty_times(row.date, next(shift for shift in self.shifts if shift.shift_id == row.shift_id))
         after = month.end + timedelta(days=1)
         if any(row.employee_id not in employee_ids or row.date != after for row in context.availability):
             raise ValueError("Context availability belongs to a known employee and the date after the month.")
+
+    @cached_property
+    def station_ids(self) -> frozenset[int]:
+        """The selected stations, the only units that receive duties."""
+        return frozenset(row.planning_unit_id for row in self.planning_units if row.type == PlanningUnitType.STATION)
+
+    def availability_on(self, employee_id: int, day: Date) -> tuple[AvailabilityEntry, ...]:
+        """The employee's approved availability on `day`, from the month or the date after it."""
+        return self._availability.get((employee_id, day), ())
+
+    @cached_property
+    def _availability(self) -> dict[tuple[int, Date], tuple[AvailabilityEntry, ...]]:
+        entries: defaultdict[tuple[int, Date], list[AvailabilityEntry]] = defaultdict(list)
+        for row in (*self.availability, *self.context.availability):
+            entries[(row.employee_id, row.date)].append(row)
+        return {key: tuple(rows) for key, rows in entries.items()}
 
 
 def build_scheduling_dataset(

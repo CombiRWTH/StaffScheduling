@@ -21,3 +21,6 @@ class ScheduleContext(SchedulingBaseModel):
     covered_until: Date
     duties: tuple[Assignment, ...] = ()
     availability: tuple[Availability, ...] = ()
+
+    def covers(self, day: Date) -> bool:
+        return self.covered_from <= day <= self.covered_until

@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from sqlalchemy import Connection, Engine
 
 from app.domain import (
+    POLICY,
     Availability,
     AvailabilityEntry,
     DemandConfiguration,
@@ -30,11 +31,6 @@ from app.domain import (
 )
 from app.timeoffice import project_tables, queries
 from app.timeoffice.facts import TIMEOFFICE_FACTS, TimeOfficeFacts
-
-# How far around a month generation reads trusted context duties; the prepared context plans
-# hold the 14 days before January and the 7 days after June.
-CONTEXT_DAYS_BEFORE = 14
-CONTEXT_DAYS_AFTER = 7
 
 
 class TimeOfficeService:
@@ -184,7 +180,7 @@ class TimeOfficeService:
     def _read_context(
         self, connection: Connection, month: PlanningMonth, employee_ids: list[int], shifts: tuple[Shift, ...]
     ) -> ScheduleContext:
-        """Trusted duties of the dates around the month that context plans span without a gap.
+        """Trusted duties of the dates the month's rules reach that context plans span without a gap.
 
         A context duty inside the month would be fixed input, which generation does not support, so it fails.
         """
@@ -192,8 +188,8 @@ class TimeOfficeService:
         spanned = queries.read_context_coverage(
             connection,
             self._facts,
-            month.start - CONTEXT_DAYS_BEFORE * day,
-            month.end + CONTEXT_DAYS_AFTER * day,
+            month.start - POLICY.preceding_context_days * day,
+            month.end + POLICY.following_context_days * day,
         )
         covered_from, covered_until = month.start, month.end
         while covered_from - day in spanned:
@@ -201,7 +197,7 @@ class TimeOfficeService:
         while covered_until + day in spanned:
             covered_until += day
         duties = queries.read_context_duties(connection, self._facts, employee_ids, covered_from, covered_until, shifts)
-        if any(month.start <= row.date <= month.end for row in duties):
+        if any(row.date in month for row in duties):
             raise ValueError("Trusted context plans contain duties inside the planning month.")
         after = month.end + day
         return ScheduleContext(
