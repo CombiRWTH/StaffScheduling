@@ -4,7 +4,7 @@ Run commands from the repository root after the [native tool installation](../ge
 
 ## Unit responsibilities
 
-`just test` runs the offline API suite, including tests marked `integration`; only explicitly external `timeoffice` tests are excluded by default. Solver constraint/objective tests own local rules. Settings tests own secret loading. `test_inspection_rules.py` owns the domain rule that adds only pools that station members call home. The foundation tests exercise API liveness without credentials, shared database error sanitization/TLS, driver/settings validation and diagnostic cleanup/read-only query behavior.
+`just test` runs the offline API suite, including tests marked `integration`; only explicitly external `timeoffice` tests are excluded by default. Solver constraint/objective tests own local rules. Settings tests own secret loading. `test_inspection_rules.py` owns the domain rule that adds only pools that station members call home. `test_monthly_configuration.py` owns the NRW calendar and weekly-pattern expansion rules. The foundation tests exercise API liveness without credentials, shared database error sanitization/TLS, driver/settings validation and diagnostic cleanup/read-only query behavior.
 
 ## Service and adapter integration
 
@@ -18,7 +18,7 @@ FastAPI and Next source reload were checked separately with isolated source copi
 
 ## Staff-admin browser flows
 
-Selection/inspection is the first automated flow. The other four families (configuration, generation/review, import/export, publication/clear) remain pending. The foundation smoke is a separate HTTP/system-boundary check.
+Selection/inspection and monthly configuration are automated. The other three families (generation/review, import/export, publication/clear) remain pending. The foundation smoke is a separate HTTP/system-boundary check.
 
 ```sh
 just install
@@ -29,9 +29,15 @@ The locked `@playwright/test` runner uses Chromium; `just install` installs it a
 
 `webapp/tests/browser/selection.spec.ts` selects both fictional stations/full month, verifies pool context, one row per stable employee, MFA, dated origin/replacement memberships, target/actual/credit evidence, constraints, search and unit filter. It changes month/stations, retains available stations, removes unavailable ones and checks empty/unavailable/incomplete states and recovery without old-scope/partial tables. URL-backed checkbox transitions are checked after navigation, using bounded waits. Further tests check that a subpage's back arrow returns to the overview with the selection, that unsupported areas are visible in the sidebar but not navigable, that year entry keeps the month and rejects out-of-range years, that a missing or invalid month redirects to January of the current year and invalid stations ask for a selection, and that the mobile navigation opens, keeps the selection and closes. Another `next dev` for `webapp/` must not be running, because Next.js allows one development server per project directory.
 
-`api/tests/browser_server.py` overrides the adapter dependency only in the test process. `inspection_fixture.py` substitutes SQL query results; the production queries, complete inspection validation and HTTP routes remain in use. The fixture supplies fictional IDs/names/complete monthly declarations and deliberate failure months. This proves offline user interaction and canonical integration, not Microsoft SQL Server query execution, live account semantics or real employee data acceptance. Production never imports this fixture.
+`webapp/tests/browser/configuration.spec.ts` is the configure flow. On **Verfügbarkeit** it saves a _Nur bestimmte Schichten_ entry with shifts and reason, reloads, edits it to _Urlaub_, checks that the native absence stays, saves and removes a wish without touching the availability entry, deletes the entry and confirms the empty day after reload. A save for "Example Pool Three" fails deliberately: the error appears, no success message, and the entered type stays. On **Mindestbesetzung** it edits and resets a cell, saves Fachkraft and MFA demand on different dates, reloads both, previews a weekly pattern (the New Year holiday takes the holiday row, six dates listed), applies it to the unsaved grid and resets it. A save for "Example Station South" fails deliberately and keeps the unsaved edit.
 
-`api/tests/test_employee_inspection.py` owns source completeness, identity under renaming, MFA/multiple memberships, pool origin versus destination eligibility, explicit zero accounts, missing/duplicate facts, TimeOffice code translation (trimmed codes, ignored and unmapped absence codes, unmapped professions, foreign or missing target plans, blank unit names) and HTTP validation. These checks do not invoke the solver. Traces on failure are ignored under `webapp/test-results/`; inspect with `pnpm --dir webapp exec playwright show-trace <path>`.
+`api/tests/browser_server.py` overrides the adapter dependency only in the test process. `inspection_fixture.py` substitutes SQL query results; the production queries, complete inspection validation and HTTP routes remain in use. The fixture supplies fictional IDs/names/complete monthly declarations, deliberate failure months and failing write IDs. The project tables are an in-memory store that applies the adapter's scoped DELETE/INSERT parameters and restores its state when a transaction fails. This proves offline user interaction and canonical integration, not Microsoft SQL Server query execution, live account semantics or real employee data acceptance. Production never imports this fixture.
+
+`api/tests/test_employee_inspection.py` owns source completeness, identity under renaming, MFA/multiple memberships, pool origin versus destination eligibility, explicit zero accounts, missing/duplicate facts, TimeOffice code translation (trimmed codes, ignored and unmapped absence codes, unmapped professions, foreign or missing target plans, blank unit names) and HTTP validation. These checks do not invoke the solver.
+
+`api/tests/test_monthly_configuration.py` owns the scoped configuration writes: availability and wish saves/deletes touch only their employee and date, native absences survive, reasons and shifts read back, wishes stay separate, invalid employees/shifts fail before writing and a failed write leaves saved entries unchanged. It also checks dated demand round-trips per station month (including MFA and an explicitly empty month), rejection of pools, stations without a target plan and unknown shifts, and the HTTP `422` contract. Live SQL Server round-trips of these tables belong to prepared-data verification.
+
+Traces on failure are ignored under `webapp/test-results/`; inspect with `pnpm --dir webapp exec playwright show-trace <path>`.
 
 ## Live TimeOffice verification
 

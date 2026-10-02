@@ -12,21 +12,21 @@ Image-built development Compose startup, actual Next-server/API HTTP connectivit
 
 ## Webapp integration
 
-The webapp is a plain Next.js App Router project. Only the home page and canonical month/station selection with complete read-only employee inspection are implemented, with controlled browser evidence. Monthly configuration, minimum staffing, generation, review/export/publication, recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. Selection requires explicit prepared monthly credit/constraint evidence; no live table provisioning or inspection has been performed.
+The webapp is a plain Next.js App Router project. The home page, canonical month/station selection with complete read-only employee inspection, and monthly configuration (availability, wishes and dated staffing demand with a weekly pattern) are implemented, with controlled browser evidence. Generation, review/export/publication, recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. Wishes are stored but do not influence generation. Inspection requires explicit prepared monthly credit evidence. The project tables have not been created in the test database, so no live inspection or configuration save has been performed.
 
 ## Solver and publication
 
 The solver engine is not reachable through the API; its unit tests run offline, nine currently failing. Generation jobs, independent schedule acceptance, complete required policy correction, scoped publication/clear verification and coordinated six-month example files are pending.
 
-No publication or other database write path exists; scoped, checked publication and clear are a later slice.
+The only database writes are key-scoped saves to the project tables (availability, wishes, demand). No publication path exists; scoped, checked publication and clear are a later slice.
 
 ## Quality gates
 
-The latest executed offline suite reports **115 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
+The latest executed offline suite reports **124 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
 
-Webapp strict TypeScript and the native production build pass. The six controlled browser scenarios (selection/inspection, unavailable/incomplete reads, back navigation, unsupported areas, year entry and the January default, mobile navigation) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
+Webapp strict TypeScript and the native production build pass. The ten controlled browser scenarios (selection/inspection, unavailable/incomplete reads, back navigation, unsupported areas, year entry and the January default, mobile navigation, availability edit/reload/delete with wishes, failed availability save, demand save/reload/reset/pattern, failed demand save) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
 
-Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint reports no findings. React Doctor passes with visible warnings: pnpm install hardening, the planning picker's control-flow complexity and the standard shadcn `ui/` variant exports. `just check` now runs all independent offline gates, including browser flows, production build, docs and credential-free Compose smoke, and retains a failing exit status. It remains red for the nine solver failures.
+Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint reports no findings. React Doctor passes with visible warnings: pnpm install hardening and the standard shadcn `ui/` variant exports. `just check` now runs all independent offline gates, including browser flows, production build, docs and credential-free Compose smoke, and retains a failing exit status. It remains red for the nine solver failures.
 
 ## Retired material
 

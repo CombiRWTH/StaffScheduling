@@ -2,7 +2,7 @@
 
 This reference describes inspected source definitions. Connected database behavior and complete user workflows require separate acceptance evidence; see [current limitations](../validation/index.md).
 
-`api/app/timeoffice/` owns the application's Microsoft SQL Server integration. `TimeOfficeService` coordinates read-only queries and their translation into canonical models. The solver depends on the [domain model](domain.md), not the database schema.
+`api/app/timeoffice/` owns the application's Microsoft SQL Server integration. `TimeOfficeService` coordinates queries, their translation into canonical models and scoped writes to the project tables. The solver depends on the [domain model](domain.md), not the database schema.
 
 ## Modules
 
@@ -11,6 +11,7 @@ This reference describes inspected source definitions. Connected database behavi
 | `database.py`                    | SQLAlchemy engine using `mssql+pyodbc`                                                           |
 | `facts.py`                       | Reference identifiers, shift mappings and planning status assumptions                            |
 | `queries.py`                     | One function per TimeOffice SELECT, returning canonical models with its code/account translation |
+| `project_tables.py`              | Reads and key-scoped writes of the project tables next to the TimeOffice schema                  |
 | `service.py`                     | `TimeOfficeService`, the package's only public entry point; one connection per call              |
 
 ## Connection and schema
@@ -23,9 +24,9 @@ The adapter reads TimeOffice tables including `TPlanungseinheiten`, `TPlanungsei
 
 ## Read and write boundaries
 
-`TimeOfficeService` is the adapter's whole interface: `get_planning_options` and `inspect_employees` take canonical arguments and return canonical domain models. SQL, source rows and TimeOffice terminology stay private to the package (`app.timeoffice` exports only the service, the unavailable error and the engine factory). Each query function translates its own source codes and checks source-level facts such as missing master rows, duplicate target plans or unmapped codes; cross-entity completeness belongs to `domain/inspection.py`. The API depends on a small `PlanningSource` protocol, so another planning database can replace TimeOffice without touching routes or domain. TimeOffice reductions and fixed reference mappings in `facts.py` remain adapter behavior and must be checked against the chosen data.
+`TimeOfficeService` is the adapter's whole interface: `get_planning_options`, `inspect_employees`, `get_employee_calendar`, `save_availability`/`delete_availability`, `save_wish`/`delete_wish`, `get_demand` and `save_demand` take canonical arguments and return canonical domain models. SQL, source rows and TimeOffice terminology stay private to the package (`app.timeoffice` exports only the service, the unavailable error and the engine factory). Each query function translates its own source codes and checks source-level facts such as missing master rows, duplicate target plans or unmapped codes; cross-entity completeness belongs to `domain/inspection.py`. The API depends on a small `PlanningSource` protocol, so another planning database can replace TimeOffice without touching routes or domain. TimeOffice reductions and fixed reference mappings in `facts.py` remain adapter behavior and must be checked against the chosen data.
 
-The adapter performs no SQL writes and builds no solver dataset. Configuration writes, generation inputs and publication are added later as canonical operations behind the same service.
+The adapter writes only the project tables and builds no solver dataset. Generation inputs and publication are added later as canonical operations behind the same service.
 
 ## Employee inspection evidence
 
@@ -33,8 +34,21 @@ Selection and employee inspection are strictly read-only. They never create tabl
 
 Monthly native target/actual reads use the configured account IDs (currently target 1 and actual 55, `Wert2` hours). The adapter converts finite nonnegative hours to integer minutes, retaining explicit zero. Native actual totals are not approved credits; their meaning still needs live verification against the prepared source.
 
-An authorized preparer must explicitly run `api/sql/employee-inspection.sql` once in the declared test database, then supply `dbo.StaffSchedulingEmployeeMonthEvidence`. Reads never provision it. The service account needs SELECT, not DDL/write permission for this operation. This slice supplies the schema/read contract; it does not execute setup or claim live source acceptance.
+Each `dbo.StaffSchedulingEmployeeMonthEvidence` row is keyed by positive `employee_id` and first-of-month `planning_month`. Required `credit_details` is a JSON array; `source` names the verified complete monthly declaration. Credit objects contain `date`, `minutes`, `kind` (`approved_absence` or `trusted_work`) and `source`. An explicit empty array declares verified zero credits; it is never installed as a default. Native absences are loaded separately and retain their reason; project availability comes from its own table. Missing declarations/accounts, duplicate credits, unknown shifts, mismatched month dates and ambiguous home origin reject the complete inspection.
 
-Each row is keyed by positive `employee_id` and first-of-month `planning_month`. Required `credit_details` and `constraints` are JSON arrays; `source` names the verified complete monthly declaration. Credit objects contain `date`, `minutes`, `kind` (`approved_absence` or `trusted_work`) and `source`. Additional constraints use the canonical Availability fields: employee ID, full date, availability type, optional allowed `shift_ids`, reason and source. Native absences are loaded separately and retain their reason. Explicit empty arrays declare verified zero credits/no additional constraints; they are never installed as defaults. Missing declarations/accounts, duplicate credits, unknown identities/shifts, mismatched month dates and ambiguous home origin reject the complete inspection.
+Do not copy polluted actual roster totals into this table, fabricate balancing credits or declare a month complete without reviewing applicable contracts/source absences. Prepared-data verification must establish native account semantics, completeness and provenance before live use. Generation is not connected to the API; solver input, correction and accepted exports remain later gates.
 
-Do not copy polluted actual roster totals into this table, fabricate balancing credits or declare constraints complete without reviewing applicable contracts/source absences. Prepared-data verification must establish native account semantics, completeness and provenance before live use. Generation is not connected to the API; solver input, correction and accepted exports remain later gates.
+## Project tables
+
+An authorized preparer runs `api/sql/supplemental-tables.sql` once in the declared test database. It creates `dbo.StaffSchedulingEmployeeMonthEvidence`, `dbo.StaffSchedulingAvailability`, `dbo.StaffSchedulingWish`, `dbo.StaffSchedulingDemandMonth` and `dbo.StaffSchedulingDemand`. Creating them needs DDL permission; the runtime login needs SELECT on all five and INSERT/DELETE on availability, wish and the two demand tables. The API never creates tables. The script has not been run against the test database yet.
+
+| Table                         | Key                                 | Meaning                                                                    |
+| ----------------------------- | ----------------------------------- | -------------------------------------------------------------------------- |
+| `StaffSchedulingAvailability` | employee, date                      | Canonical availability type, JSON `shift_ids` for `available_only`, reason |
+| `StaffSchedulingWish`         | employee, date                      | Canonical wish type and optional shift                                     |
+| `StaffSchedulingDemandMonth`  | station, first of month             | The station month's demand has been saved                                  |
+| `StaffSchedulingDemand`       | station, date, shift, qualification | Required count ≥ 1; a missing row in a saved month requires nobody         |
+
+Every write runs in one transaction and validates first: the employee needs a membership in a configured unit that month, shifts must be reference shifts, and a demand station needs a target plan. An availability or wish save deletes and inserts exactly one employee date; a demand save replaces exactly one station month and marks it saved. Writes need no target-plan rows, roster rows or profession lookups, so they also work on empty prepared targets. Serialize writes as for every shared database change. `docs/adr/0006-monthly-configuration-in-project-tables.md` records why these tables are used instead of native TimeOffice wish rows or the old recurring `StaffSchedulingMinimalStaffing` table, which the API no longer reads.
+
+Intentional mappings: project availability and wishes are invisible in TimeOffice, and native TimeOffice wishes (`Wunschdienst` rows) are not read. Reference shifts are the four facts in `facts.py` (F `1113`, Z `1453`, S `1605`, N `1690`); their codes come from `TDienste`, their types from the facts. Staff levels and availability types are stored as their canonical values.

@@ -21,7 +21,8 @@ For developers and technical reviewers tracing responsibilities and data flow. T
 │   │   ├── api/              # HTTP routes only
 │   │   ├── domain/           # canonical models and domain rules, e.g. inspection
 │   │   ├── solver/           # CP-SAT engine (not yet wired to a route)
-│   │   └── timeoffice/       # adapter: TimeOfficeService facade; queries.py, facts.py, database.py inside
+│   │   └── timeoffice/       # adapter: TimeOfficeService facade; queries.py, project_tables.py, facts.py inside
+│   ├── sql/                  # explicit setup of the project tables
 │   ├── tests/
 │   ├── pyproject.toml
 │   ├── uv.lock
@@ -30,7 +31,7 @@ For developers and technical reviewers tracing responsibilities and data flow. T
 │   ├── src/
 │   │   ├── app/              # App Router pages, route-local components, /api/health
 │   │   ├── components/       # shell, planning picker and ui/ primitives
-│   │   └── lib/              # server-only API fetches, response types, scope parsing
+│   │   └── lib/              # server-only API calls, types, labels, scope parsing
 │   ├── tests/browser/        # Playwright staff-admin flows
 │   ├── package.json
 │   ├── pnpm-lock.yaml
@@ -69,22 +70,25 @@ The solver engine depends only on `domain/`; the generation slice will connect i
 | Scheduling concept or domain rule   | `api/app/domain/`                                                         |
 | Constraint/objective or solving     | `api/app/solver/cp_sat/`, `solver/config.py`, `solver/service.py`         |
 | TimeOffice query or translation     | `api/app/timeoffice/queries.py`, `facts.py`, `service.py`                 |
+| Project table read or write         | `api/app/timeoffice/project_tables.py`, `api/sql/supplemental-tables.sql` |
 | Screen behavior                     | `webapp/src/app/<route>/` and shared `webapp/src/components/`             |
 | Webapp API calls and response types | `webapp/src/lib/api.ts`, `webapp/src/lib/types.ts`                        |
 | Runtime/dependency pins             | service manifests/locks, Dockerfiles and consuming workflow/tool settings |
 | Documentation                       | `docs/source/` and `docs/mkdocs.yml`                                      |
 
-Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. Domain terms are defined in the repository's `GLOSSARY.md`; decisions that are hard to reverse are recorded in `docs/adr/` (for example, why the webapp was rebuilt rather than adapted, and why TimeOffice sits behind one service). The [limitations](../validation/index.md) page records remaining compatibility work.
+Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. Domain terms are defined in the repository's `GLOSSARY.md`; decisions that are hard to reverse are recorded in `docs/adr/` (for example, why the webapp was rebuilt rather than adapted, why TimeOffice sits behind one service, and why monthly configuration lives in project tables). The [limitations](../validation/index.md) page records remaining compatibility work.
 
 ## Selection and inspection boundary
 
-The webapp follows plain App Router conventions. Pages are server components that read `month`/`stations` from `searchParams`, load data through `lib/api.ts` and pass it to small client components. `lib/scope.ts` validates the URL and loads the month's stations; stations unavailable in the month are dropped by a server redirect. The picker only changes the URL. `app/employees/` loads all selected stations together inside a Suspense boundary keyed by scope, so a new scope shows its loading state instead of the previous result. Search, filter and expanded details are local interaction state. Backend `domain/inspection.py` validates completeness; the concrete TimeOffice adapter resolves target plans and reads membership/master/account/absence sources and prepared evidence. Only home and employee inspection are implemented; the sidebar shows every other area greyed out as not yet supported, without routes.
+The webapp follows plain App Router conventions. Pages are server components that read `month`/`stations` from `searchParams`, load data through `lib/api.ts` and pass it to small client components. `lib/scope.ts` validates the URL and loads the month's stations; stations unavailable in the month are dropped by a server redirect. The picker only changes the URL. `app/employees/` loads all selected stations together inside a Suspense boundary keyed by scope, so a new scope shows its loading state instead of the previous result. Search, filter and expanded details are local interaction state. Backend `domain/inspection.py` validates completeness; the concrete TimeOffice adapter resolves target plans and reads membership/master/account/absence sources and prepared evidence. `app/availability/` and `app/staffing/` follow the same pattern for monthly configuration: the server page loads the canonical read, a client component owns unsaved edits, and server actions in `actions.ts` call the API writes and revalidate the page. Home, employees, availability and staffing are implemented; the sidebar shows every other area greyed out as not yet supported, without routes.
 
 UI conventions for every page:
 
 - Pages render `PageHeader` with a title, a one-line description and the planning selection. Every page below the overview passes `parent`, which shows a back arrow before the title; it returns to the parent page and keeps the month/station selection.
 - The URL is the only selection state. A missing or invalid month means January of the current year; navigation links carry the selection.
 - Unsupported areas stay visible in the sidebar as greyed, route-less entries with a tooltip; they never link to placeholder pages.
-- Use the domain's German terms consistently: Verfügbarkeit (wishes and constraints), Zuordnungen (dated unit assignments), Mindestbesetzung, Dienstplan.
+- Use the domain's German terms consistently: Verfügbarkeit (page for availability entries, called Einschränkung, and wishes), Abwesenheit (native TimeOffice absence), Zuordnungen (dated unit assignments), Mindestbesetzung, Wochenmuster, Dienstplan.
+- A page-local choice such as the employee or station lives in the URL next to the selection (`employee=`, `station=`).
+- A failed save shows the error and keeps the user's input; success is shown only after the API confirmed the write.
 
 The offline browser fixture substitutes SQL query results, while using the actual FastAPI routes, TimeOffice queries and Next.js pages. It is test infrastructure, never a production data fallback. [Testing](../development/testing.md#staff-admin-browser-flows) describes reproduction and limitations.

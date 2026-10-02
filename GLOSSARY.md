@@ -5,7 +5,7 @@ Monthly shift planning for hospital stations and their shared pool: inspecting w
 ## Planning scope
 
 **Planning month**:
-One full calendar month; every plan, account and constraint is scoped to exactly one.
+One full calendar month; every plan, account, availability entry and staffing demand is scoped to exactly one.
 _Avoid_: period, interval, case
 
 **Planning unit**:
@@ -65,20 +65,20 @@ Dated minutes counted towards the target without being worked, such as approved 
 _Avoid_: bonus, adjustment
 
 **Evidence declaration** (Monatsnachweis):
-The prepared statement that an employee's credits and additional constraints for a month are complete, with its source.
+The prepared statement that an employee's work credits for a month are complete, with its source.
 _Avoid_: proof file, attestation
 
-**Constraint** (Einschränkung):
-A date on which an employee must not be planned, or may only be planned for certain shifts.
-_Avoid_: hard restriction, availability, blocker, absence (when meaning the constraint itself)
+**Availability** (Verfügbarkeit; one entry: Einschränkung):
+A date on which an employee must not be planned, or may only be planned for certain shifts. It always binds planning.
+_Avoid_: constraint (a solver rule), hard restriction, blocker
+
+**Native absence** (Abwesenheit):
+An approved absence read from the roster system, such as vacation; shown next to availability but never edited by this application.
+_Avoid_: availability entry, blocker
 
 **Wish** (Wunsch):
-A soft preference for a shift or free day that planning should try to honour.
-_Avoid_: request, preference rule
-
-**Availability** (Verfügbarkeit):
-Umbrella for an employee's wishes and constraints in a month.
-_Avoid_: using it for constraints alone
+A soft preference for a shift or free day; stored and shown, but not yet considered when generating a schedule.
+_Avoid_: request, preference rule, availability
 
 **Employee inspection** (Mitarbeiterprüfung):
 The read-only, all-or-nothing check of every employee in a planning selection and their monthly facts.
@@ -87,8 +87,16 @@ _Avoid_: employee list, import
 ## Schedules
 
 **Staffing demand** (Mindestbesetzung):
-The minimum number of employees per qualification required for a station, date and shift.
+The minimum number of employees per qualification required for a station, date and shift. It is saved per station month; within a saved month a missing entry requires nobody.
 _Avoid_: target staffing, capacity
+
+**Weekly pattern** (Wochenmuster):
+Counts per weekday plus a public-holiday row that fill one month's staffing demand once; it is not stored or carried into other months.
+_Avoid_: template, recurring demand
+
+**Public holiday** (Feiertag):
+A North Rhine-Westphalia public holiday; it keeps its weekday but takes the holiday row of a weekly pattern.
+_Avoid_: weekend day
 
 **Shift** (Dienst):
 A named working period of a day, such as early, late, night or intermediate.
