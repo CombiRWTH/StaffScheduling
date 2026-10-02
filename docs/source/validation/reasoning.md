@@ -4,7 +4,7 @@ For reviewers assessing why the scheduling model and its evaluation fit the task
 
 ## Problem and agreed planning scope
 
-The assignment asks for monthly hospital rosters that meet minimum staffing by qualification and shift, keep approved absences and free days, stay within ±7.67 hours of each employee's monthly target, and respect working-time law and occupational-science findings. This project plans two stations of the TimeOffice test database and their jumper pool for January to June 2026: one run per full month with both stations selected. The population is adult; the examples carry a small demonstration set of employee wishes, including jumper pool employees, and no special capabilities (such as rounds or night-watch roles). Qualifications are Fachkraft, Hilfskraft, Azubi and MFA; they never substitute for each other.
+The assignment asks for monthly hospital rosters that meet minimum staffing by qualification and shift, keep approved absences and free days, stay within ±7.67 hours of each employee's monthly target, and respect working-time law and occupational-science findings. This project plans two stations of the TimeOffice test database and their jumper pool for January to June 2026: one run per full month with both stations selected. The population is adult; the examples carry a small demonstration set of employee wishes, including jumper pool employees, and no special capabilities (such as rounds or night-watch roles). Qualifications are Fachkraft, Hilfskraft, Azubi and MFA; they never substitute for each other. The problem statement's individual facts about named employees in its November 2024 scenario (health, caregiving, night-duty, leadership and preference notes) are deliberately not modeled: they describe other people and another month, and the 2026 examples use the test database's employees instead.
 
 ## Requirements, sources and assumptions
 
@@ -37,6 +37,7 @@ Earlier legacy objectives (assignment-count balancing, overtime-only penalties, 
 
 ## Not modeled
 
+- **A preferred block length.** The reference solver rewarded runs of exactly three workdays. No source supports one block length, so that objective is dropped; isolated workdays and the night limits shape the blocks instead.
 - **Free days next to weekends.** A comfort preference without a source in the problem statement. With isolated workdays penalized, free days already tend to cluster.
 - **Spreading intermediate duties over the week.** The problem statement's preference (a weekday intermediate duty versus an extra early or late person) is ambiguous, and as a hard rule it could make months unsolvable while being met by no intermediate duty at all. The lowest tier still rewards extra intermediate duties where they fit, but with no weekday or weekend order and no even spread.
 - **Shorter night runs.** The hard maximum of three nights plus 48 hours of recovery already applies the BAuA recommendation, so a second preference for one or two nights would duplicate it. Runs of one, two and three nights are not weighed against each other; the isolated-workday event leans toward two or three.

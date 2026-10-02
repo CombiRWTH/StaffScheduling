@@ -103,7 +103,7 @@ Change the parameter in `RulePolicy`, or the rule in both places. In the model, 
 
 ## Adding an objective
 
-An objective is a term the solver minimizes (or, as a reward, maximizes) after every hard rule holds and every higher tier is fixed. Health events, for example, are one tier of two terms, six-day windows and backward transitions, both counts weighted alike.
+An objective is a term the solver minimizes (or, as a reward, maximizes) after every hard rule holds and every higher tier is fixed. Health events, for example, are one tier of four terms (six-day windows, backward transitions, isolated workdays and back-to-back worked weekends), all counts weighted alike.
 
 1. **Define the score.** State what is counted, its unit (a count of events or duties, or minutes), whether it is a penalty or a reward, and its priority among the tiers. A new concern of the same unit and priority as an existing tier becomes a term of that tier; otherwise it is a new tier. Record the reasoning in [reasoning and requirements](../validation/reasoning.md).
 2. **Score it independently.** Add the field to `ScheduleScores` in `domain/acceptance.py` and compute it in the check's `scores` from assignments and context alone, never from solver variables. A tier of several terms is a computed field, like `health_events`. The [portable scoring contract](../validation/examples.md#interpret-objectives-and-solver-settings) describes how scores and stages relate in every result.

@@ -4,7 +4,7 @@ Accepted example schedules of stations `PE 77` and `PE 79` with their jumper poo
 
 | Folder                          | Content                                                                  |
 | ------------------------------- | ------------------------------------------------------------------------ |
-| `2026-01/` … `2026-05/`         | The example schedules without preferences: no employee wishes; June not generated yet |
+| `2026-01/` … `2026-06/`         | The example schedules without preferences: no employee wishes |
 | `mit-wuenschen/`                | Planned: the same months with 32 demonstration wishes; not generated yet  |
 | `backup/`                       | An older dataset of an earlier project state; not part of these sets     |
 
@@ -37,7 +37,7 @@ Each month folder holds one run that planned both stations together, one monthly
 From the repository root:
 
 ```sh
-just test tests/test_examples.py                     # validate both sets and their month-to-month sequence
+just test tests/test_examples.py                     # validate both sets and their month-to-month sequence (the set with wishes is skipped until it is committed)
 just test -m reproduction tests/test_examples.py     # solve every input again without TimeOffice (about an hour)
 ```
 

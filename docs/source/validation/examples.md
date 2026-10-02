@@ -1,6 +1,6 @@
 # Examples and reproduction
 
-For readers trying to inspect or reproduce the example schedules in `plaene/`. They were generated from the prepared TimeOffice inputs below and can be checked and solved again without TimeOffice. Committed are the months January to May 2026 of the set without wishes (`plaene/2026-01` to `plaene/2026-05`), each accepted by the schedule check. June of that set and the whole set with wishes are not generated yet; the command below produces them.
+For readers trying to inspect or reproduce the example schedules in `plaene/`. They were generated from the prepared TimeOffice inputs below and can be checked and solved again without TimeOffice. All six months of the set without wishes are committed (`plaene/2026-01` to `plaene/2026-06`), each accepted by the schedule check. The set with wishes is not generated yet; the command below produces it.
 
 Return to the [documentation overview](../index.md).
 
@@ -10,10 +10,10 @@ Stations `PE 77` and `PE 79` of the TimeOffice test database and their jumper po
 
 There are two sets of the same six months, each a folder `2026-MM/` per month with the five [bundle files](#bundle-files): 30 files per set.
 
-| Set                             | Wishes                      | Purpose                                                                                            |
-| ------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- |
-| `plaene/2026-MM/`               | none                        | The requested example schedules without preferences ("ohne Präferenzen"); January to May committed |
-| `plaene/mit-wuenschen/2026-MM/` | the 32 demonstration wishes | The same inputs with wishes, showing the wish-fairness objective; not generated yet                |
+| Set                             | Wishes                      | Purpose                                                                             |
+| ------------------------------- | --------------------------- | ----------------------------------------------------------------------------------- |
+| `plaene/2026-MM/`               | none                        | The requested example schedules without preferences ("ohne Präferenzen"); committed |
+| `plaene/mit-wuenschen/2026-MM/` | the 32 demonstration wishes | The same inputs with wishes, showing the wish-fairness objective; not generated yet |
 
 The set with wishes goes beyond the request because fair wish satisfaction is one of the planning goals; its inputs differ from the first set only in their wishes, and each set has its own month-to-month context. `plaene/backup/` holds an older dataset of an earlier project state (stations 77 and 78, another format). It is not an input of these sets and not checked by the tests below.
 
@@ -25,7 +25,7 @@ The employees are the units' existing test-database employees, all of them adult
 - **Targets.** Native targets are kept. Missing ones are derived by the native rule: weekly hours (38.5 when the contract states none) ÷ 5 for each Monday–Friday that is not an NRW public holiday.
 - **Absences.** Each professional of both stations and the jumper pool, and each assistant and the MFA of `PE 77`, has one Monday–Friday vacation week (`U`), credited with the weekly hours ÷ 5 per day in TimeOffice's daily accounts. The jumper pool's vacations fall in June.
 - **Demand.** Professionals follow the chair's minimum-staffing table for keys 77 and 79 (its weekday and weekend/holiday rows; NRW holidays take the weekend row). The table's other levels exceed the real staff, so they are sized near it, so that the jumper pool visibly jumps and gaps stay small: at `PE 77` assistants early 2 and late 2 on weekdays (early 2, late 1 on weekends and holidays), one trainee and one MFA early on weekdays; at `PE 79` one assistant early every day and no trainee or MFA demand. Qualifications stay separate.
-- **Capacity.** Per qualification and month, available hours (target − credits) of the home staff against demand hours are 1.37–1.65 for professionals at `PE 77`, 1.03–1.26 at `PE 79`, and 0.64–1.12 for assistants; the trainee demand at `PE 77` relies on the jumper pool's trainee alone. Every shortfall is smaller than the jumper pool's hours of that qualification. The one deliberate gap is the MFA's vacation week, 2026-02-09..13: no other MFA exists, so its early demand stays unfilled for five days. This is an hours and headcount check only; it does not show that a schedule satisfying every rule exists.
+- **Capacity.** Per qualification and month, available hours (target − credits) of the home staff against demand hours are 1.37–1.65 for professionals at `PE 77`, 1.03–1.26 at `PE 79`, and 0.64–1.12 for assistants; the trainee demand at `PE 77` relies on the jumper pool's trainee alone. Every shortfall is smaller than the jumper pool's hours of that qualification. The one deliberate gap is the MFA's vacation week, 2026-02-09..13: no other MFA exists, so its early demand stays unfilled for five days. This is an hours and headcount check only; it does not show that a schedule satisfying every rule exists. The generated months show further gaps where a month's end constrains the next month's start: March has early-shift gaps at `PE 77` for the MFA and a trainee on 2026-03-02 and 03-03, because February, solved without knowing March, ends with night duties of the only MFA and of trainees on 2026-02-28, and the 48-hour recovery after a night run lasts until 06:10 on 2026-03-03, after the early shift's 05:55 start. The gap stage is optimal, so no March schedule avoids them given that context.
 - **Boundary context.** Empty trusted context plans cover 2025-12-18 to 2025-12-31 and 2026-07-01 to 2026-07-07: January starts and June ends next to known free days. From February, the [generation](#generate-the-examples) takes the last five days of the accepted previous month of the same set as trusted context.
 - **Availability.** One employee is unavailable on 2026-06-08..12, where native duties remain in the June target plan; two employees may work only early (2026-03-10) or early and intermediate shifts (2026-04-14).
 - **Wishes.** 32 demonstration wishes: two per station and month and one of a jumper pool employee per month, covering free days, free shifts, preferred days and preferred shifts. Two are not grantable by design: a late shift on the early-only day 2026-03-10, and a wish on 2026-03-25 inside the employee's own vacation.
@@ -77,6 +77,21 @@ PLAENE_GENERATION=write just test-timeoffice tests/test_examples.py -k mit-wuens
 
 Each command generates one set: January to June in order, each month read from TimeOffice for stations 77 and 79 like a generation in the webapp and solved for 300 seconds with the default solver settings. TimeOffice is only read; nothing is written back. The first set leaves out the prepared wishes. From February, the month's trusted context is the last five days of the set's accepted previous month, in place of TimeOffice context plans, which exist only before January and after June. A month is written only when its check is accepted; otherwise the run stops with the month's status and blocking items. An existing month folder is kept and serves as the next month's context, so a run continues after the last written month; delete a month's folder and the later ones to generate them again. The run ends with the validation below.
 
+## Results
+
+The set without wishes, generated on 2026-10-02 at revision `4b6b2fa` (the generation code; the inputs come from the prepared test database), 300 seconds per month, default solver settings, in the API image (Linux arm64 container on macOS). Health events count six-day windows, backward transitions, isolated workdays and back-to-back worked weekends; the balance is the sum of absolute monthly balances. Every month's check is `accepted` with 0 findings, its gap stage is optimal and no station-origin employee transfers.
+
+| Month | Duties | Jumper pool duties | Gap slots | Health events | Balance minutes | Surplus intermediate |
+| ----- | -----: | -----------------: | --------: | ------------: | --------------: | -------------------: |
+| Jan   |   1042 |                157 |         0 |            34 |             497 |                  219 |
+| Feb   |    951 |                145 |         5 |            72 |            4928 |                  138 |
+| Mar   |   1051 |                160 |         4 |           128 |            5414 |                  121 |
+| Apr   |    991 |                148 |         0 |            64 |            4953 |                  158 |
+| May   |    928 |                138 |         0 |            49 |            1461 |                  198 |
+| Jun   |   1022 |                132 |         0 |            64 |            3384 |                  189 |
+
+February's gaps are the MFA's vacation week and March's follow from February's last nights ([input data](#input-data-and-boundary-context)). The later stages stop at the time limit as `feasible`, so their values are not proven minimal: March's 128 health events include 73 back-to-back worked weekends.
+
 ## Reproduce without TimeOffice
 
 From the repository root, with the [native tools](../getting-started/installation.md#optional-native-developer-setup) installed:
@@ -106,7 +121,7 @@ The test validates both committed sets, `plaene/2026-01` to `plaene/2026-06` and
 - every month plans the same two stations and jumper pools, with duties at both stations;
 - consecutive months agree: the trusted context duties of a month on the other month's dates equal that month's schedule (both directions), and the availability of the first date of the later month equals the earlier month's context availability.
 
-Non-blocking open items stay visible in each result's check: the following month's start (checked by the next month with this schedule as context) and annual free Sundays, which need the whole year and are never reported as passed. Until both sets hold all six months, the committed-set and reproduction tests are skipped; the committed January to May pass `check_examples` for those months. Tests with small two-month bundles show that the validator accepts a consistent sequence and reports each kind of problem.
+Non-blocking open items stay visible in each result's check: the following month's start (checked by the next month with this schedule as context) and annual free Sundays, which need the whole year and are never reported as passed. The set without wishes passes; the tests of the set with wishes are skipped until it is committed. Tests with small two-month bundles show that the validator accepts a consistent sequence and reports each kind of problem.
 
 ## Interpret objectives and solver settings
 

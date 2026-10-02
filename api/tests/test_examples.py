@@ -51,11 +51,11 @@ HAND_IN_UNITS = (77, 79)
 HAND_IN_STATIONS = 2
 GENERATION_SECONDS = 300
 
-# Temporary until both sets are committed: then delete this skip, so that a missing set fails instead of
-# passing silently.
-committed = pytest.mark.skipif(
-    not all((directory / "2026-06").is_dir() for directory in SETS.values()), reason="a set is not committed yet"
-)
+
+def committed(directory: Path) -> None:
+    """Temporary until the set with wishes is committed: then delete this skip, so that a missing set fails."""
+    if not (directory / HAND_IN_MONTHS[-1].label).is_dir():
+        pytest.skip("this set is not committed yet")
 
 
 def check_examples(directory: Path, months: Sequence[PlanningMonth], stations: int) -> list[str]:
@@ -148,18 +148,18 @@ def _rows(rows: Iterable[BaseModel]) -> set[str]:
     return {row.model_dump_json() for row in rows}
 
 
-@committed
 @pytest.mark.parametrize("directory", SETS.values(), ids=SETS)
 def test_committed_examples_are_accepted_hand_in_bundles(directory: Path) -> None:
+    committed(directory)
     assert check_examples(directory, HAND_IN_MONTHS, HAND_IN_STATIONS) == []
 
 
 @pytest.mark.reproduction
-@committed
 @pytest.mark.parametrize("directory", SETS.values(), ids=SETS)
 @pytest.mark.parametrize("month", HAND_IN_MONTHS, ids=lambda month: month.label)
 def test_committed_inputs_solve_again_to_accepted_schedules(directory: Path, month: PlanningMonth) -> None:
     """Byte-identical results are not expected; an equally valid schedule is."""
+    committed(directory)
     folder = directory / month.label
     input_json = (folder / INPUT_FILE).read_bytes()
     example = ScheduleBundle.read(input_json, (folder / RESULT_FILE).read_bytes())
