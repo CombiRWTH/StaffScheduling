@@ -35,10 +35,23 @@ export function withCount(grid: DemandGrid, date: string, shiftId: number, level
   return next as DemandGrid;
 }
 
-export function sameGrid(left: DemandGrid, right: DemandGrid): boolean {
-  return (
-    left.size === right.size && [...left].every(([key, cell]) => right.get(key)?.required_count === cell.required_count)
-  );
+/** Where `grid` differs from `saved`: per cell, its saved count; a missing cell counts as zero. */
+export function changesFrom(grid: DemandGrid, saved: DemandGrid) {
+  const changed = new Map<string, number>();
+  const levels = new Set<StaffLevel>();
+  for (const cell of [...grid.values(), ...saved.values()]) {
+    const key = keyOf(cell.date, cell.shift_id, cell.staff_level);
+    const before = saved.get(key)?.required_count ?? 0;
+    if ((grid.get(key)?.required_count ?? 0) === before) continue;
+    changed.set(key, before);
+    levels.add(cell.staff_level);
+  }
+  return {
+    size: changed.size,
+    /** The saved count of a changed cell, or undefined when the cell is unchanged. */
+    savedCount: (date: string, shiftId: number, level: StaffLevel) => changed.get(keyOf(date, shiftId, level)),
+    hasLevel: (level: StaffLevel) => levels.has(level),
+  };
 }
 
 /** The complete month as the cells the API saves. */

@@ -23,7 +23,7 @@ export default async function StaffingPage({
       <PageHeader
         title="Mindestbesetzung"
         parent={{ href: "/", label: "Übersicht" }}
-        description="Mindestbesetzung je Tag, Schicht und Qualifikation für den Planungsmonat."
+        description="Benötigtes Personal je Station, Tag, Schicht und Qualifikation im Planungsmonat."
         scope={scope}
       />
       {!stationId ? (

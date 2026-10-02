@@ -77,17 +77,24 @@ test("save and reload dated demand, reset edits and apply a previewed pattern", 
   await expect(page.getByText("Für diesen Monat ist noch keine Mindestbesetzung gespeichert.")).toBeVisible();
   await expect(page.getByRole("row", { name: /01\.01\.2026/ }).first()).toContainText("Neujahr");
   const cell = (shift: string, date: string) => page.getByLabel(`${shift} am ${date}`, { exact: true });
+  const changed = page.locator("input[data-changed]");
 
   await cell("F", "03.01.2026").fill("2");
-  await expect(page.getByText("Ungespeicherte Änderungen")).toBeVisible();
+  await expect(page.getByText("1 ungespeicherte Änderung")).toBeVisible();
+  await expect(cell("F", "03.01.2026")).toHaveAccessibleDescription("Geändert, gespeichert: 0");
+  await expect(page.getByRole("tab", { name: "Fachkraft (geändert)" })).toBeVisible();
   await page.getByRole("button", { name: "Zurücksetzen" }).click();
   await expect(cell("F", "03.01.2026")).toHaveValue("0");
+  await expect(changed).toHaveCount(0);
 
   await cell("F", "03.01.2026").fill("2");
   await page.getByRole("tab", { name: "MFA" }).click();
   await cell("Z", "02.01.2026").fill("1");
+  await expect(page.getByText("2 ungespeicherte Änderungen")).toBeVisible();
   await page.getByRole("button", { name: "Speichern" }).click();
   await expect(page.getByRole("status")).toHaveText("Mindestbesetzung gespeichert.");
+  await expect(changed).toHaveCount(0);
+  await expect(page.getByText(/ungespeicherte Änderung/)).toHaveCount(0);
 
   await page.reload();
   await expect(page.getByText("Für diesen Monat ist noch keine Mindestbesetzung gespeichert.")).toHaveCount(0);
@@ -97,7 +104,7 @@ test("save and reload dated demand, reset edits and apply a previewed pattern", 
   await expect(cell("Z", "03.01.2026")).toHaveValue("0");
 
   await page.getByRole("tab", { name: "Fachkraft" }).click();
-  await page.getByText("Wochenmuster anwenden").click();
+  await page.getByText("Wochenmuster anwenden").press("Enter");
   await page.getByLabel("Muster F Mo", { exact: true }).fill("3");
   await page.getByLabel("Muster F Feiertag", { exact: true }).fill("1");
   await page.getByRole("button", { name: "Vorschau" }).click();
@@ -110,6 +117,10 @@ test("save and reload dated demand, reset edits and apply a previewed pattern", 
   await expect(cell("F", "05.01.2026")).toHaveValue("3");
   await expect(cell("F", "01.01.2026")).toHaveValue("1");
   await expect(cell("F", "03.01.2026")).toHaveValue("0");
+  // Applied cells are marked like direct edits, also a saved count replaced by zero.
+  await expect(changed).toHaveCount(6);
+  await expect(cell("F", "03.01.2026")).toHaveAccessibleDescription("Geändert, gespeichert: 2");
+  await expect(cell("F", "06.01.2026")).not.toHaveAttribute("data-changed");
   // Each qualification has its own pattern.
   await page.getByRole("tab", { name: "MFA" }).click();
   await expect(page.getByLabel("Muster F Mo", { exact: true })).toHaveValue("0");
@@ -118,6 +129,7 @@ test("save and reload dated demand, reset edits and apply a previewed pattern", 
   await page.getByRole("button", { name: "Zurücksetzen" }).click();
   await expect(cell("F", "05.01.2026")).toHaveValue("0");
   await expect(cell("F", "03.01.2026")).toHaveValue("2");
+  await expect(changed).toHaveCount(0);
 });
 
 test("an invalid count is rejected by the API and kept for correction", async ({ page }) => {
@@ -143,5 +155,6 @@ test("a failed demand save keeps the unsaved edits", async ({ page }) => {
   await expect(page.getByRole("alert").filter({ hasText: "nicht gespeichert" })).toBeVisible();
   await expect(page.getByRole("status")).toHaveCount(0);
   await expect(input).toHaveValue("4");
-  await expect(page.getByText("Ungespeicherte Änderungen")).toBeVisible();
+  await expect(input).toHaveAttribute("data-changed", "true");
+  await expect(page.getByText("1 ungespeicherte Änderung")).toBeVisible();
 });
