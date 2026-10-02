@@ -27,7 +27,7 @@ export function EmployeePicker({
         <SelectContent>
           {employees.map(({ employee_id, display_name }) => (
             <SelectItem key={employee_id} value={String(employee_id)}>
-              {display_name} · {employee_id}
+              {employee_id} · {display_name}
             </SelectItem>
           ))}
         </SelectContent>

@@ -16,6 +16,8 @@ from app.solver.models import Solution
 logger = logging.getLogger(__name__)
 
 # Bounds a mistyped timeout; real monthly runs stay far below an hour.
+# Solver search limits; below the minimum a month of the example size cannot be searched meaningfully.
+MIN_TIMEOUT_SECONDS = 30
 MAX_TIMEOUT_SECONDS = 3600
 
 FAILED = "Generation failed unexpectedly; the API log has details."
@@ -26,7 +28,7 @@ class GenerationRequest(SchedulingBaseModel):
 
     planning_unit_ids: tuple[PositiveId, ...] = Field(min_length=1)
     planning_month: PlanningMonth
-    timeout_seconds: float = Field(gt=0, le=MAX_TIMEOUT_SECONDS, allow_inf_nan=False)
+    timeout_seconds: float = Field(ge=MIN_TIMEOUT_SECONDS, le=MAX_TIMEOUT_SECONDS, allow_inf_nan=False)
 
 
 class JobState(StrEnum):

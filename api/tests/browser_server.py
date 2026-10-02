@@ -52,10 +52,13 @@ solver = SolverService(get_settings(), create_cp_sat_model_builder())
 
 
 def browser_solve(dataset: SchedulingDataset, timeout: float) -> Solution:
-    """June solves for real; July fails at runtime and August is infeasible, each after a visible run."""
+    """June solves for real; July fails at runtime and August is infeasible, each after a visible run.
+
+    Browser flows request the minimum time limit; the real June solve is capped at three seconds.
+    """
     month = dataset.planning_month.month
     if month == 6:
-        return solver.solve(dataset, timeout=timeout)
+        return solver.solve(dataset, timeout=min(timeout, 3))
     sleep(2)
     if month == 7:
         raise RuntimeError("Fictional solver crash")

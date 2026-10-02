@@ -32,7 +32,10 @@ test("select both stations, inspect stable employees and jumper pool facts, then
   await toggleStation(page, "Example Station South");
   await expect(page.getByRole("checkbox", { name: "Example Station South" })).toBeChecked();
   await closeStations(page);
-  await expect(page.getByRole("button", { name: "Stationen: 2 Stationen" })).toBeVisible();
+  // The button shows a count, so its width stays predictable; the accessible name lists the stations.
+  await expect(
+    page.getByRole("button", { name: "Stationen: Example Station North, Example Station South" }),
+  ).toHaveText("2 Stationen");
 
   await page
     .getByRole("link", { name: /^Mitarbeiter/ })

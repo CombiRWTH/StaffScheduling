@@ -6,7 +6,6 @@ import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Briefcase,
   CalendarHeart,
   CalendarCheck,
   CalendarPlus,
@@ -77,11 +76,10 @@ function SidebarContent({ search, isActive, onClose, showCloseButton = false }: 
       <div className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-sidebar-border px-6">
         <Link
           href={`/${search}`}
-          className="flex min-w-0 items-center gap-2 hover:opacity-80 transition-opacity"
+          className="min-w-0 truncate font-semibold transition-opacity hover:opacity-80"
           onClick={onClose}
         >
-          <Briefcase className="h-5 w-5 shrink-0" />
-          <span className="truncate font-semibold">Schichtplan Manager</span>
+          Schichtplan Manager
         </Link>
 
         {showCloseButton && (
@@ -155,8 +153,7 @@ export function AppNavigation() {
   return (
     <>
       <div className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
-        <Link href={`/${search}`} className="flex items-center gap-2 font-semibold">
-          <Briefcase className="h-5 w-5" />
+        <Link href={`/${search}`} className="font-semibold">
           Schichtplan Manager
         </Link>
         <Button variant="ghost" size="icon" onClick={() => setIsMobileOpen(true)} aria-label="Navigation öffnen">

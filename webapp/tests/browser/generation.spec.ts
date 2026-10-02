@@ -1,15 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // The offline API (api/tests/browser_server.py) has saved staffing for Station North in June,
-// July and August, none in September. June solves for real; July fails at runtime and August
-// is infeasible, each after a two-second run. Jobs live in that process only.
+// July and August, none in September. June solves for real for at most three seconds; July fails
+// at runtime and August is infeasible, each after a two-second run. Jobs live in that process only.
 
 const latest = (page: Page) => page.getByLabel("Letzte Generierung");
 
-async function start(page: Page, url: string, seconds = "2") {
+async function start(page: Page, url: string, seconds = "30") {
   await page.goto(url);
   await page.getByLabel("Maximale Laufzeit (Sekunden)").fill(seconds);
-  await page.getByRole("button", { name: "Generierung starten" }).click();
+  await page.getByRole("button", { name: "Starten" }).click();
 }
 
 test("no result before the first run; incomplete or invalid input starts nothing", async ({ page }) => {
@@ -23,13 +23,13 @@ test("no result before the first run; incomplete or invalid input starts nothing
   await expect(page.getByText(/Mindestbesetzung jeder Station speichern.*keine Generierung gestartet/)).toBeVisible();
   await expect(page.getByText(/Kein Ergebnis verfügbar/)).toBeVisible();
 
-  // An invalid time limit reaches the backend, which rejects it before any job exists.
-  await start(page, "/generation?month=2026-06&stations=101", "0");
+  // A time limit below the minimum reaches the backend, which rejects it before any job exists.
+  await start(page, "/generation?month=2026-06&stations=101", "10");
   await expect(page.getByText(/Generierung ungültig.*keine Generierung gestartet/)).toBeVisible();
   await expect(page.getByText(/Kein Ergebnis verfügbar/)).toBeVisible();
 
   await page.goto("/generation?month=2026-09");
-  await expect(page.getByRole("button", { name: "Generierung starten" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Starten" })).toBeDisabled();
 });
 
 test("a running job survives navigation, rejects a second run and ends as an unchecked draft", async ({
@@ -39,13 +39,13 @@ test("a running job survives navigation, rejects a second run and ends as an unc
   const other = await context.newPage();
   await other.goto("/generation?month=2026-06&stations=101");
 
-  await start(page, "/generation?month=2026-06&stations=101", "3");
+  await start(page, "/generation?month=2026-06&stations=101");
   await expect(latest(page)).toContainText("Läuft");
   await expect(latest(page)).toContainText("Juni 2026 (01.06.2026–30.06.2026) · Example Station North");
-  await expect(page.getByRole("button", { name: "Generierung starten" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Starten" })).toBeDisabled();
 
   // The page loaded before the run still offers the button; the backend refuses the overlap.
-  await other.getByRole("button", { name: "Generierung starten" }).click();
+  await other.getByRole("button", { name: "Starten" }).click();
   await expect(other.getByText(/Es läuft bereits eine Generierung/)).toBeVisible();
 
   await page.getByRole("link", { name: "Mitarbeiter" }).click();
@@ -55,7 +55,7 @@ test("a running job survives navigation, rejects a second run and ends as an unc
   await expect(latest(page)).toContainText(/Lösung|Keine Lösung/);
   await expect(latest(page)).toContainText("Noch nicht verfügbar");
   await expect(latest(page)).toContainText("nicht automatisch veröffentlicht");
-  await expect(page.getByRole("button", { name: "Generierung starten" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Starten" })).toBeEnabled();
 });
 
 test("infeasible and failed runs are reported differently", async ({ page }) => {

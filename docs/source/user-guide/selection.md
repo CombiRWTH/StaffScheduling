@@ -15,7 +15,7 @@ Changing month/stations replaces the displayed inspection, including filters/det
 
 ## Inspect employees and memberships
 
-The table heading names the month and selected stations. **Zugehöriger Springerpool** names jumper pools discovered from the dated home memberships of station-eligible employees. Their other jumper pool employees are included for inspection, even if they have no membership permitting an assignment at the selected stations. No home relationship means no inferred jumper pool association; a replacement membership in a jumper pool does not associate it.
+The table heading names the month and selected stations; each row shows the employee ID before the name, sorted by name. The employees of every jumper pool that a station member calls home (an associated jumper pool, discovered from the dated home memberships) are included for inspection, even if they have no membership permitting an assignment at the selected stations. No home relationship means no inferred jumper pool association; a replacement membership in a jumper pool does not associate it.
 
 Each employee appears once by stable positive ID. Display names may change without changing identity. Search by name, ID, qualification or unit name; the unit filter limits employees by membership. Expand a row for all dated unit assignments (**Zuordnungen**), including home/replacement flags and membership qualifications. Professional, assistant, trainee and MFA remain distinct. Employee-level qualification does not override a different unit membership qualification.
 

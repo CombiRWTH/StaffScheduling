@@ -27,7 +27,7 @@ from app.solver.models import Solution, SolutionStatus
 from app.solver.service import SolverService
 
 JANUARY = PlanningMonth(year=2026, month=1)
-REQUEST = GenerationRequest(planning_unit_ids=(101,), planning_month=JANUARY, timeout_seconds=5)
+REQUEST = GenerationRequest(planning_unit_ids=(101,), planning_month=JANUARY, timeout_seconds=30)
 EARLY = 1113
 INFEASIBLE = Solution(status=SolutionStatus.INFEASIBLE)
 
@@ -172,7 +172,11 @@ def source() -> InspectionSource:
 @pytest.fixture
 def generation(source: InspectionSource) -> Iterator[Generation]:
     solver = SolverService(Settings(solver_num_search_workers=1), create_cp_sat_model_builder())
-    generation = Generation(read_input=source.service.read_generation_input, solve=solver.solve)
+    # Requests carry the minimum time limit; the HTTP contract needs a result, not a full-length search.
+    generation = Generation(
+        read_input=source.service.read_generation_input,
+        solve=lambda dataset, timeout: solver.solve(dataset, timeout=min(timeout, 2)),
+    )
     yield generation
     generation.shutdown()
 
@@ -186,7 +190,7 @@ def client(generation: Generation) -> Iterator[httpx.Client]:
         app.dependency_overrides.clear()
 
 
-BODY = {"planning_unit_ids": [101], "planning_month": {"year": 2026, "month": 1}, "timeout_seconds": 5}
+BODY = {"planning_unit_ids": [101], "planning_month": {"year": 2026, "month": 1}, "timeout_seconds": 30}
 
 
 def test_http_generation_solves_the_saved_month(
@@ -214,7 +218,7 @@ def test_http_generation_solves_the_saved_month(
 @pytest.mark.parametrize(
     ("body", "status"),
     [
-        ({**BODY, "timeout_seconds": 0}, 422),
+        ({**BODY, "timeout_seconds": 29}, 422),
         ({**BODY, "planning_unit_ids": []}, 422),
         ({**BODY, "planning_unit_ids": [201]}, 422),
         (BODY, 409),

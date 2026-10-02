@@ -16,7 +16,7 @@ import type {
 const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
 
 const INVALID_SELECTION = "Ungültige Auswahl. Nur Stationen mit Planungsziel für diesen Monat wählen.";
-const INCOMPLETE = "Daten unvollständig. Stationen, Zuordnungen, Konten und Monatsnachweise prüfen.";
+const INCOMPLETE = "Daten unvollständig. Stationen, Zuordnungen, Monatskonten und Abwesenheiten prüfen.";
 
 /** A failed API call: a German message for the user and the HTTP status for callers that handle one. */
 class ApiError extends Error {

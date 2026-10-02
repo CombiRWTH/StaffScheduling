@@ -60,7 +60,7 @@ test("edit, reload and delete availability, and keep wishes separate", async ({ 
 
 test("a failed availability save keeps the entry and shows no success", async ({ page }) => {
   await page.goto("/availability?month=2026-01&stations=101,102");
-  await choose(page, "Mitarbeiter", "Example Jumper Three · 3");
+  await choose(page, "Mitarbeiter", "3 · Example Jumper Three");
   await expect(page).toHaveURL(/employee=3/);
   await day(page, "06.01.2026").click();
   await choose(page, "Art der Einschränkung", "Fortbildung");

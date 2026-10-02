@@ -2,7 +2,6 @@
 
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,9 +30,6 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
   const units = new Map(inspection.planning_units.map((unit) => [unit.planning_unit_id, unit]));
   const unitName = (id: number) => units.get(id)?.display_name ?? `Einheit ${id}`;
   const stations = inspection.selected_station_ids.map(unitName).join(", ");
-  const jumperPools = inspection.associated_jumper_pool_ids
-    .map((id) => units.get(id))
-    .filter((unit) => unit !== undefined);
   const needle = search.toLocaleLowerCase("de-DE");
   const filtered = inspection.employees.filter(
     (employee) =>
@@ -57,18 +53,9 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
           <CardDescription>
             {formatMonth(inspection.planning_month.start)} · {stations}
           </CardDescription>
-          <div className="flex flex-wrap gap-2 pt-2 text-sm">
-            <span className="text-muted-foreground">Zugehöriger Springerpool:</span>
-            {jumperPools.length ? (
-              jumperPools.map((jumperPool) => (
-                <Badge key={jumperPool.planning_unit_id} variant="secondary">
-                  {jumperPool.display_name}
-                </Badge>
-              ))
-            ) : (
-              <span>keiner</span>
-            )}
-          </div>
+          <p className="text-xs text-muted-foreground">
+            Nur Lesen. Springerpool-Herkunft und Einsatzberechtigung auf einer Station sind getrennte Angaben.
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-3">
@@ -131,9 +118,7 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
                               {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                             </Button>
                           </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{employee.employee_id}</Badge>
-                          </TableCell>
+                          <TableCell className="tabular-nums text-muted-foreground">{employee.employee_id}</TableCell>
                           <TableCell className="font-medium">{employee.display_name}</TableCell>
                           <TableCell>{STAFF_LEVEL_LABELS[employee.staff_level]}</TableCell>
                           <TableCell className="text-muted-foreground">
@@ -154,9 +139,6 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
               </Table>
             </div>
           )}
-          <p className="text-xs text-muted-foreground">
-            Nur Lesen. Springerpool-Herkunft und Einsatzberechtigung auf einer Station sind getrennte Angaben.
-          </p>
         </CardContent>
       </Card>
     </div>

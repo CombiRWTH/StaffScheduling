@@ -23,8 +23,9 @@ function availabilityText(row: Availability, shifts: ShiftOption[]) {
 }
 
 export function AvailabilityCalendar({ calendar }: { calendar: EmployeeCalendar }) {
-  const [selected, setSelected] = useState<string | null>(null);
   const days = calendar.calendar;
+  // The first day of the month is open for editing until another day is chosen.
+  const [selected, setSelected] = useState(days[0].date);
   const absences = new Map(calendar.absences.map((row) => [row.date, row]));
   const availability = new Map(calendar.availability.map((row) => [row.date, row]));
   const wishes = new Map(calendar.wishes.map((row) => [row.date, row]));
@@ -95,34 +96,30 @@ export function AvailabilityCalendar({ calendar }: { calendar: EmployeeCalendar 
         </CardContent>
       </Card>
 
-      {selected ? (
-        <Card key={selected}>
-          <CardHeader>
-            <CardTitle>{formatDate(selected)}</CardTitle>
-            {absences.has(selected) && (
-              <CardDescription>
-                Abwesenheit aus TimeOffice: {availabilityText(absences.get(selected)!, calendar.shifts)} (nur lesend)
-              </CardDescription>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <AvailabilityForm
-              employeeId={calendar.employee_id}
-              date={selected}
-              saved={availability.get(selected)}
-              shifts={calendar.shifts}
-            />
-            <WishForm
-              employeeId={calendar.employee_id}
-              date={selected}
-              saved={wishes.get(selected)}
-              shifts={calendar.shifts}
-            />
-          </CardContent>
-        </Card>
-      ) : (
-        <p className="text-sm text-muted-foreground">Kein Tag gewählt.</p>
-      )}
+      <Card key={selected}>
+        <CardHeader>
+          <CardTitle>{formatDate(selected)}</CardTitle>
+          {absences.has(selected) && (
+            <CardDescription>
+              Abwesenheit aus TimeOffice: {availabilityText(absences.get(selected)!, calendar.shifts)} (nur lesend)
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <AvailabilityForm
+            employeeId={calendar.employee_id}
+            date={selected}
+            saved={availability.get(selected)}
+            shifts={calendar.shifts}
+          />
+          <WishForm
+            employeeId={calendar.employee_id}
+            date={selected}
+            saved={wishes.get(selected)}
+            shifts={calendar.shifts}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

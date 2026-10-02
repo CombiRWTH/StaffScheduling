@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,6 +23,9 @@ import {
 } from "./demand-grid";
 
 const LEVELS = Object.keys(STAFF_LEVEL_LABELS) as StaffLevel[];
+// Count inputs are centered under their shift heading; spinners would push the digits off-center.
+const COUNT_INPUT =
+  "mx-auto w-16 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
 const DAY_TYPES: Array<{ type: DayType; label: string }> = [
   ...(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const).map((type, index) => ({
     type,
@@ -128,6 +130,7 @@ export function StaffingEditor({ month, configuration }: { month: string; config
             <TableHeader>
               <TableRow>
                 <TableHead>Datum</TableHead>
+                <TableHead>Feiertag</TableHead>
                 {shifts.map((shift) => (
                   <TableHead key={shift.shift_id} className="text-center">
                     {shift.code}
@@ -140,14 +143,10 @@ export function StaffingEditor({ month, configuration }: { month: string; config
                 <TableRow key={day.date} className={cn((day.weekday > 5 || day.public_holiday) && "bg-muted/40")}>
                   <TableCell className="whitespace-nowrap">
                     {WEEKDAYS[day.weekday - 1]} {formatDate(day.date)}
-                    {day.public_holiday && (
-                      <Badge variant="outline" className="ml-2 text-xs">
-                        {day.public_holiday}
-                      </Badge>
-                    )}
                   </TableCell>
+                  <TableCell className="text-muted-foreground">{day.public_holiday}</TableCell>
                   {shifts.map((shift) => (
-                    <TableCell key={shift.shift_id}>
+                    <TableCell key={shift.shift_id} className="text-center">
                       <Input
                         type="number"
                         min={0}
@@ -156,7 +155,7 @@ export function StaffingEditor({ month, configuration }: { month: string; config
                         aria-invalid={!isValidCount(countAt(grid, day.date, shift.shift_id, level))}
                         value={countAt(grid, day.date, shift.shift_id, level)}
                         onChange={(event) => setCount(day.date, shift.shift_id, event.target.value)}
-                        className="mx-auto w-16 text-center"
+                        className={COUNT_INPUT}
                       />
                     </TableCell>
                   ))}
@@ -237,7 +236,7 @@ function PatternCard({
               <TableRow key={type}>
                 <TableCell>{label}</TableCell>
                 {shifts.map((shift) => (
-                  <TableCell key={shift.shift_id}>
+                  <TableCell key={shift.shift_id} className="text-center">
                     <Input
                       type="number"
                       min={0}
@@ -252,7 +251,7 @@ function PatternCard({
                         }));
                         setPreview(null);
                       }}
-                      className="mx-auto w-16 text-center"
+                      className={COUNT_INPUT}
                     />
                   </TableCell>
                 ))}

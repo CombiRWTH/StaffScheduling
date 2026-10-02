@@ -22,8 +22,8 @@ Check the employee page for completeness first: generation reads the same facts 
 
 1. Choose the month and one or more stations in the header.
 2. Open **Dienstplan erstellen**. The card _Neue Generierung_ on the left repeats the period and stations and lists which inputs are and are not used; a run always covers the whole month.
-3. Enter the **maximale Laufzeit** in seconds (1–3600, default 30). This is the solver's search limit; reading the data and preparing the model come on top.
-4. Select **Generierung starten**.
+3. Enter the **maximale Laufzeit** in seconds (30–3600, default 30). This is the solver's search limit; reading the data and preparing the model come on top.
+4. Select **Starten**.
 
 The backend first reads and checks all inputs. If something is missing, a message appears under the button and no job starts: an incomplete or unsaved input asks to save every station's staffing and to check the employee data; an invalid selection or time limit names what to choose; an unreachable TimeOffice or a failed TimeOffice query (schema, permissions) says so. Otherwise the job appears under _Letzte Generierung_ as **Läuft**.
 

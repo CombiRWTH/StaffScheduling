@@ -11,8 +11,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Dienstplan erstellen · Schichtplanung" };
 
-const USED = "Mitarbeiter und Zuordnungen, Monatskonten, Abwesenheiten, Einschränkungen, Mindestbesetzung";
-const NOT_USED = "Wünsche, bestehende Dienste im Dienstplan, Vor- und Folgemonat";
+const USED = ["Mitarbeiter und Zuordnungen", "Monatskonten", "Abwesenheiten", "Einschränkungen", "Mindestbesetzung"];
+const NOT_USED = ["Wünsche", "Bestehende Dienste im Dienstplan", "Vor- und Folgemonat"];
 
 export default async function GenerationPage({ searchParams }: { searchParams: Promise<ScopeSearchParams> }) {
   const params = await searchParams;
@@ -43,14 +43,14 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
         </div>
       )}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
+      <div className="max-w-3xl space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Neue Generierung</CardTitle>
             <CardDescription>Plant immer den ganzen Monat.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <dl className="space-y-4 text-sm">
+            <dl className="grid gap-x-8 gap-y-5 text-sm sm:grid-cols-2">
               <div className="space-y-1">
                 <dt className="text-muted-foreground">Zeitraum</dt>
                 <dd className="font-medium">
@@ -71,13 +71,25 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
                   )}
                 </dd>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <dt className="text-muted-foreground">Berücksichtigt</dt>
-                <dd>{USED}</dd>
+                <dd>
+                  <ul className="list-disc space-y-0.5 pl-5">
+                    {USED.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </dd>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <dt className="text-muted-foreground">Nicht berücksichtigt</dt>
-                <dd>{NOT_USED}</dd>
+                <dd>
+                  <ul className="list-disc space-y-0.5 pl-5">
+                    {NOT_USED.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </dd>
               </div>
             </dl>
             <GenerationForm month={scope.month} stationIds={scope.stationIds} running={running} />

@@ -6,6 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { generate } from "./actions";
 
+// The API accepts solver time limits in this range (GenerationRequest).
+const MIN_SECONDS = 30;
+const MAX_SECONDS = 3600;
+
 /** Solver time limit and start button; the job itself is shown by the page. */
 export function GenerationForm({
   month,
@@ -34,19 +38,20 @@ export function GenerationForm({
         <Label htmlFor="generation-timeout">Maximale Laufzeit (Sekunden)</Label>
         <Input
           id="generation-timeout"
+          className="w-32"
           type="number"
-          min={1}
-          max={3600}
+          min={MIN_SECONDS}
+          max={MAX_SECONDS}
           value={timeoutSeconds}
           onChange={(event) => setTimeoutSeconds(event.target.value)}
           aria-describedby="generation-timeout-hint"
         />
         <p id="generation-timeout-hint" className="text-xs text-muted-foreground">
-          Suchzeit des Solvers, 1–3600. Das Laden der Daten kommt hinzu.
+          Suchzeit des Solvers, {MIN_SECONDS}–{MAX_SECONDS}. Das Laden der Daten kommt hinzu.
         </p>
       </div>
-      <Button className="w-full" disabled={pending || running || stationIds.length === 0} onClick={start}>
-        {pending ? "Eingaben werden geprüft …" : "Generierung starten"}
+      <Button disabled={pending || running || stationIds.length === 0} onClick={start}>
+        {pending ? "Eingaben werden geprüft …" : "Starten"}
       </Button>
       {running && (
         <p className="text-sm text-muted-foreground">Eine neue Generierung ist nach dem laufenden Job möglich.</p>

@@ -1,24 +1,24 @@
 # Monthly configuration
 
-The **Verfügbarkeit** and **Mindestbesetzung** pages edit the inputs of one planning month. The offline [browser procedure](../development/testing.md#staff-admin-browser-flows) passes against fictional SQL results. No connected TimeOffice save has been verified yet; see [current limitations](../validation/index.md).
+The **Verfügbarkeit** and **Mindestbesetzung** pages edit the inputs of one planning month. The offline [browser procedure](../development/testing.md#staff-admin-browser-flows) passes against fictional SQL results, and saves against the prepared test database are recorded under [current limitations](../validation/index.md#webapp-integration).
 
 Return to the [documentation overview](index.md).
 
 ## Availability and wishes
 
-Choose the month and stations, then open **Verfügbarkeit**. Pick an employee of the selection; the choice is kept in the URL (`employee=`). The list needs only names and memberships, so it works even when an employee's monthly evidence is still incomplete. The calendar shows three things per day:
+Choose the month and stations, then open **Verfügbarkeit**. Pick an employee of the selection, listed as `ID · Name` and sorted by name; the choice is kept in the URL (`employee=`). The list needs only names and memberships, so it works even when an employee's monthly account is still incomplete. The calendar shows three things per day:
 
 - **Abwesenheit (TimeOffice)**: approved absences from the roster system, such as `Urlaub · U`. They are read-only here.
 - **Einschränkung**: project availability. Choose _Nicht verfügbar_, _Urlaub_, _Fortbildung_, _Frei_ or _Nur bestimmte Schichten_ with the allowed shifts, plus an optional reason.
 - **Wunsch**: a free day, a free shift, a preferred day or a preferred shift.
 
-Click a day, change the entry and press **Einschränkung speichern** or **Wunsch speichern**. **Einschränkung entfernen** and **Wunsch entfernen** delete only that day's entry. An employee has at most one availability entry and one wish per day; saving replaces it.
+The first day of the month is open for editing; click another day to switch. Change the entry and press **Einschränkung speichern** or **Wunsch speichern**. **Einschränkung entfernen** and **Wunsch entfernen** delete only that day's entry. An employee has at most one availability entry and one wish per day; saving replaces it.
 
 Wishes are saved and shown, but generation does not consider them yet. The page says so next to the wish form. The final examples contain no wishes.
 
 ## Dated staffing requirements
 
-Open **Mindestbesetzung**. With several stations selected, a tab per station chooses the station (`station=` in the URL). Tabs for **Fachkraft**, **Hilfskraft**, **Azubi** and **MFA** show one row per date and one column per reference shift (F, Z, S, N). Weekends and North Rhine-Westphalia public holidays are shaded; holidays show their name. Enter whole numbers from 0 to 99; an empty or zero cell means nobody is required. Another value, such as `-1` or `1.5`, is kept and marked, and **Speichern** then fails with "Mindestbesetzung ungültig" until you correct it.
+Open **Mindestbesetzung**. With several stations selected, a tab per station chooses the station (`station=` in the URL). Tabs for **Fachkraft**, **Hilfskraft**, **Azubi** and **MFA** show one row per date and one column per reference shift (F, Z, S, N). Weekends and North Rhine-Westphalia public holidays are shaded, and the **Feiertag** column names the holiday. Enter whole numbers from 0 to 99; an empty or zero cell means nobody is required. Another value, such as `-1` or `1.5`, is kept and marked, and **Speichern** then fails with "Mindestbesetzung ungültig" until you correct it.
 
 Edits stay unsaved until **Speichern**. **Zurücksetzen** discards them and restores the last saved month. Until a month has been saved once, the page says that no staffing demand is saved; afterwards a saved empty month means nobody is required.
 

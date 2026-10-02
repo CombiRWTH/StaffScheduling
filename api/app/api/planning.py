@@ -38,7 +38,7 @@ def get_planning_options(year: Year, month: Month, source: Source) -> PlanningOp
 def get_employees(planning_unit_ids: StationIds, year: Year, month: Month, source: Source) -> PlanningInspection:
     with planning_errors(
         invalid=INVALID,
-        incomplete="Employee inspection is incomplete. Verify stations, memberships, accounts and monthly evidence.",
+        incomplete="Employee inspection is incomplete. Verify stations, memberships, accounts and absence credits.",
     ):
         return source.inspect_employees(
             planning_unit_ids=tuple(planning_unit_ids), planning_month=PlanningMonth(year=year, month=month)

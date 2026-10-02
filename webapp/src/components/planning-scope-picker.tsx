@@ -33,11 +33,12 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
 
   const selected = new Set(stationIds);
   const selectedNames = stations.filter((unit) => selected.has(unit.planning_unit_id)).map((u) => u.display_name);
+  // A count, not names, so the button keeps a predictable width like the month field.
   const summary =
     selectedNames.length === 0
       ? "Stationen wählen"
       : selectedNames.length === 1
-        ? selectedNames[0]
+        ? "1 Station"
         : `${selectedNames.length} Stationen`;
 
   return (
@@ -80,12 +81,17 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className={cn("h-8 max-w-[260px] gap-2 px-3 font-normal", !stationIds.length && "border-primary")}
-            aria-label={`Stationen: ${summary}`}
+            className={cn(
+              "h-8 w-[160px] justify-between gap-2 px-3 font-normal",
+              !stationIds.length && "border-primary",
+            )}
+            aria-label={`Stationen: ${selectedNames.join(", ") || summary}`}
           >
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-            <span className="truncate">{summary}</span>
-            <ChevronDown className="h-4 w-4 opacity-50" />
+            <span className="flex min-w-0 items-center gap-2">
+              <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="truncate">{summary}</span>
+            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-64 p-2">
