@@ -1,3 +1,4 @@
+import { BulletList } from "@/components/bullet-list";
 import { LoadError } from "@/components/load-error";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -11,8 +12,16 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Dienstplan erstellen · Schichtplanung" };
 
-const USED = ["Mitarbeiter und Zuordnungen", "Monatskonten", "Abwesenheiten", "Einschränkungen", "Mindestbesetzung"];
-const NOT_USED = ["Wünsche", "Bestehende Dienste im Dienstplan", "Vor- und Folgemonat"];
+const USED = [
+  "Mitarbeiter und Zuordnungen",
+  "Monatskonten",
+  "Abwesenheiten",
+  "Einschränkungen",
+  "Mindestbesetzung",
+  "Arbeitszeit-, Pausen- und Ruheregeln",
+  "Gesicherte Dienste vor und nach dem Monat",
+];
+const NOT_USED = ["Wünsche", "Bestehende Dienste im Dienstplan"];
 
 export default async function GenerationPage({ searchParams }: { searchParams: Promise<ScopeSearchParams> }) {
   const params = await searchParams;
@@ -104,15 +113,5 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
         )}
       </div>
     </div>
-  );
-}
-
-function BulletList({ items }: { items: string[] }) {
-  return (
-    <ul className="list-disc space-y-0.5 pl-5">
-      {items.map((item) => (
-        <li key={item}>{item}</li>
-      ))}
-    </ul>
   );
 }

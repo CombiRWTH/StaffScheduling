@@ -158,18 +158,38 @@ export type Severity = "info" | "warning" | "error";
 
 export interface GeneratedAssignment {
   employee_id: number;
-  planning_unit_id: number | null;
+  planning_unit_id: number;
   date: string;
   shift_id: number;
-  assignment_type: "planned" | "external" | "generated";
+  /** The qualification the duty is credited as towards demand. */
+  staff_level: StaffLevel;
+}
+
+export type CheckStatus = "accepted" | "rejected" | "incomplete";
+
+/** The independent schedule check of a found schedule; computed by the backend, never here. */
+export interface ScheduleCheck {
+  status: CheckStatus;
+  rules: string[];
+  findings: { rule: string; message: string; employee_id: number | null; date: string | null }[];
+  not_assessed: { rule: string; reason: string; blocking: boolean; start: string; end: string }[];
+  scores: {
+    six_day_windows: number;
+    backward_transitions: number;
+    health_events: number;
+    balance_deviation_minutes: number;
+    surplus_intermediate_duties: number;
+  };
 }
 
 export interface Solution {
   status: SolutionStatus;
+  wall_time_seconds: number;
   assignments: GeneratedAssignment[];
   diagnostics: { code: string; severity: Severity; message: string }[];
-  /** Post-solve findings of the implemented rules; not an independent schedule check. */
-  audit: { findings: { code: string; severity: Severity; message: string }[] };
+  /** Present with a found schedule only. */
+  check: ScheduleCheck | null;
+  objective: { value: number; best_bound: number; relative_gap: number } | null;
 }
 
 /** One generation run: `state` is the job's progress, `solution.status` what the solver found. */
@@ -181,6 +201,4 @@ export interface GenerationJob {
   finished_at: string | null;
   solution: Solution | null;
   error: string | null;
-  /** No independent schedule check exists yet. */
-  acceptance: "not_assessed";
 }

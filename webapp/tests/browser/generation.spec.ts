@@ -1,8 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // The offline API (api/tests/browser_server.py) has saved staffing for Station North in June,
-// July and August, none in September. June solves for real for at most three seconds; July fails
-// at runtime and August is infeasible, each after a two-second run. Jobs live in that process only.
+// July and August, none in September. June and August solve for real for at most three seconds;
+// July fails at runtime and August's demand is infeasible, each after a two-second run. Jobs live
+// in that process only.
 
 const latest = (page: Page) => page.getByLabel("Letzte Generierung");
 
@@ -32,7 +33,7 @@ test("no result before the first run; incomplete or invalid input starts nothing
   await expect(page.getByRole("button", { name: "Starten" })).toBeDisabled();
 });
 
-test("a running job survives navigation, rejects a second run and ends as an unchecked draft", async ({
+test("a running job survives navigation, rejects a second run and ends with its schedule check", async ({
   page,
   context,
 }) => {
@@ -52,8 +53,10 @@ test("a running job survives navigation, rejects a second run and ends as an unc
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mitarbeiter");
   await page.getByRole("link", { name: "Erstellen" }).click();
   await expect(latest(page)).toContainText("Abgeschlossen", { timeout: 20_000 });
-  await expect(latest(page)).toContainText(/Lösung|Keine Lösung/);
-  await expect(latest(page)).toContainText("Noch nicht verfügbar");
+  await expect(latest(page)).toContainText(/Optimale Lösung|Lösung gefunden/);
+  // The independent check accepts the plan and lists what lies beyond the month.
+  await expect(latest(page)).toContainText("Regeln eingehalten");
+  await expect(latest(page)).toContainText("Freie Sonntage im Jahr: 1 (über den Monat hinaus)");
   await expect(latest(page)).toContainText("nicht automatisch veröffentlicht");
   await expect(page.getByRole("button", { name: "Starten" })).toBeEnabled();
 });
@@ -62,6 +65,7 @@ test("infeasible and failed runs are reported differently", async ({ page }) => 
   await start(page, "/generation?month=2026-08&stations=101");
   await expect(latest(page)).toContainText("Abgeschlossen", { timeout: 15_000 });
   await expect(latest(page)).toContainText("Keine Lösung möglich");
+  await expect(latest(page)).toContainText("Kein Plan zu prüfen");
 
   await start(page, "/generation?month=2026-07&stations=101");
   await expect(latest(page)).toContainText("Fehlgeschlagen", { timeout: 15_000 });
