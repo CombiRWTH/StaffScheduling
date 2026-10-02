@@ -1,10 +1,10 @@
 # Evidence and current limitations
 
-This checkout provides a reproducible development foundation with checked monthly generation, review, validated import and portable downloads. Publication and the final example dataset remain unfinished. These limits describe current code and executed checks; they are not promises inferred from visible controls.
+This checkout provides a reproducible development foundation with checked monthly generation, review, validated import, portable downloads and scoped publication to TimeOffice. The final example dataset remains unfinished. These limits describe current code and executed checks; they are not promises inferred from visible controls.
 
 ## What this section proves
 
-For evaluators and anyone deciding whether to rely on a result. The checks below cover the current foundation and generation; a live January schedule was accepted by the independent check, but no exported example bundle or live end-to-end publication is claimed. [Reasoning and requirements](reasoning.md) explains policy choices and evaluation; [examples and reproduction](examples.md) will document the accepted deliverables.
+For evaluators and anyone deciding whether to rely on a result. The checks below cover the current foundation and generation; a live January schedule was accepted by the independent check and published and cleared on the prepared test database, but no exported example bundle is claimed yet. [Reasoning and requirements](reasoning.md) explains policy choices and evaluation; [examples and reproduction](examples.md) will document the accepted deliverables.
 
 ## Startup and connectivity
 
@@ -12,7 +12,7 @@ Image-built development Compose startup, actual Next-server/API HTTP connectivit
 
 ## Webapp integration
 
-The webapp is a plain Next.js App Router project. The home page, canonical month/station selection with complete read-only employee inspection, and monthly configuration (availability, wishes and dated staffing demand with a weekly pattern) are implemented, with controlled browser evidence. Generation of the full month with transient job states and the review of its schedule, with import and download of portable files, are implemented. Publication, recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. Wishes are stored but do not influence generation. On the test database the project tables and the [prepared example inputs](examples.md#input-data-and-boundary-context) exist. Live checks on 2026-10-02 at revision `8089e0e`, through the running Compose API against the test database:
+The webapp is a plain Next.js App Router project. The home page, canonical month/station selection with complete read-only employee inspection, and monthly configuration (availability, wishes and dated staffing demand with a weekly pattern) are implemented, with controlled browser evidence. Generation of the full month with transient job states and the review of its schedule, with import and download of portable files and its explicit publication and clear, are implemented. Recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. Wishes are stored but do not influence generation. On the test database the project tables and the [prepared example inputs](examples.md#input-data-and-boundary-context) exist. Live checks on 2026-10-02 at revision `8089e0e`, through the running Compose API against the test database:
 
 | Check (command)                                                    | Expected                                            | Actual                                     |
 | ------------------------------------------------------------------ | --------------------------------------------------- | ------------------------------------------ |
@@ -36,7 +36,7 @@ Unrelated units, employees, plans and roster rows, and the two older project tab
 
 In both runs the reported objective equals the weighted total of the recomputed scores; the relative gap is large (0.98–1.00) because the proven bound is weak. January's preceding context is the prepared December context. June's following context (July 1–3) was checked; June stays incomplete until an accepted May schedule is supplied as its context, which the six-month example sequence does. The first June run was infeasible: the prepared July context left no professional able to work the June 30 night (a fourth night in a row, or a duty inside the 48-hour recovery). The solver's diagnostic named this shortage, and the context was corrected by removing three trusted July 3 night duties; no rule was relaxed.
 
-Jobs are lost on API restart. Monthly runs are independent; scoped publication/clear and the coordinated six-month example files are pending. The only database writes of the application are key-scoped saves to the project tables (availability, wishes, demand); no publication path exists yet.
+Jobs are lost on API restart. Monthly runs are independent; the coordinated six-month example files are pending. The application writes key-scoped saves to the project tables (availability, wishes, demand) and, only through explicit publication and clear, the worked rows of the stations' target plans.
 
 ## Review, import and export
 
@@ -51,11 +51,29 @@ Jobs are lost on API restart. Monthly runs are independent; scoped publication/c
 
 The pair passed the same validation as an import. A single month cannot show the sequence checks; they are covered by the offline tests until the six accepted months exist. Messages of findings and the API's import details are English; the webapp names import problems in German. The review is lost on API restart and is not a saved library.
 
+## Publication and clear
+
+Publication writes the accepted schedule under review into the stations' target plans and clear removes it ([procedure](../user-guide/publication.md), [storage](../architecture/timeoffice.md#publication)). Live check on 2026-10-02 against the prepared test database, one writer, through the running Compose API and webapp. Before and after every step the target plans' rows were counted by kind, and all roster rows outside the example plans and the example plans' absence and context rows were checksummed:
+
+| Step                                                                    | Expected                                              | Actual                                                                                          |
+| ----------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Generate January, both example stations, 120 s                          | Accepted schedule under review                        | `feasible`, `accepted`, 1059 duties, 0 findings                                                 |
+| `POST /publication`                                                     | 1059 duties written and read back, nothing removed    | `200`; 1995 rows (one per segment), nights dated on their start, jumper duties in station plans |
+| Read-only SQL after publishing                                          | No duty on an absence date; everything else unchanged | 0 such duties; 32307 other roster rows and 2272 example absence/context rows, checksums equal   |
+| Generate January again                                                  | Published rows are not input                          | 0 in-month context duties; `accepted`, 1051 duties                                              |
+| `POST /publication` with the first schedule's `received_at`             | Refused, no change                                    | `409` `changed`                                                                                 |
+| `POST /publication` of the new schedule                                 | Replacement                                           | 1059 removed, 1051 published                                                                    |
+| Webapp **Prüfen**, BSP-B only: clear cancelled, then confirmed          | Only BSP-B's duties removed                           | _Entfernt: 606 veröffentlichte Dienste_; BSP-A's rows and all checksums unchanged               |
+| Webapp **Prüfen**, both stations: publication cancelled, then confirmed | Committed and read back                               | _Veröffentlicht: 1051 Dienste geschrieben und gelesen, 445 bisherige ersetzt_                   |
+| `DELETE /publication`, both stations                                    | Targets empty again                                   | 1051 removed; every count and checksum equals the starting state                                |
+
+Each publication and clear took about one second. Conflicts, insert-failure rollback, ambiguous targets and concurrent writers were not provoked live; the offline adapter tests own them. Whether the TimeOffice client displays published duties without `TPlanPersonal` rows was not checked.
+
 ## Quality gates
 
-The latest executed offline suite reports **115 passed** and one skipped (the committed examples, which do not exist yet), including the solver integration tests; no test is excluded to manufacture success. The removed solver plugin tests are replaced by the schedule-check boundary examples (`test_schedule_check.py`) and production solves (`test_solver.py`).
+The latest executed offline suite reports **122 passed** and one skipped (the committed examples, which do not exist yet), including the solver integration tests; no test is excluded to manufacture success. The removed solver plugin tests are replaced by the schedule-check boundary examples (`test_schedule_check.py`) and production solves (`test_solver.py`).
 
-Webapp strict TypeScript and the native production build pass. The seventeen controlled browser scenarios (selection/inspection, unavailable/incomplete reads, back navigation, unsupported areas, year entry and the January default, mobile navigation, availability edit/reload/delete with wishes, failed availability save, demand save/reload/reset/pattern, invalid count, failed demand save, generation without result or with incomplete input, a running generation across navigation with busy rejection and its accepted schedule check, infeasible versus failed runs, review of a generated schedule with downloads, import of a matching pair and rejection of a mismatched pair without losing the review, and a schedule of another scope) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
+Webapp strict TypeScript and the native production build pass. The twenty controlled browser scenarios (selection/inspection, unavailable/incomplete reads, back navigation, unsupported areas, year entry and the January default, mobile navigation, availability edit/reload/delete with wishes, failed availability save, demand save/reload/reset/pattern, invalid count, failed demand save, generation without result or with incomplete input, a running generation across navigation with busy rejection and its accepted schedule check, infeasible versus failed runs, review of a generated schedule with downloads, import of a matching pair and rejection of a mismatched pair without losing the review, a schedule of another scope, publication and clear each cancelled and then confirmed, a publication refused after the schedule under review changed, and no publication of an incompletely checked schedule) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
 
 Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint reports no findings. React Doctor passes with visible warnings: pnpm install hardening and the standard shadcn `ui/` variant exports. `just check` runs all independent offline gates, including browser flows, production build and docs, and retains a failing exit status.
 

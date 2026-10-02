@@ -1,6 +1,6 @@
 # API
 
-This reference describes inspected source definitions. Connected database behavior and complete user workflows require separate acceptance evidence; see [current limitations](../validation/index.md).
+This reference describes the source definitions. Executed live checks are listed under [current limitations](../validation/index.md).
 
 The FastAPI application is `api/app/main.py`. With Compose running, open <http://localhost:8000/docs> for interactive request/response schemas, or <http://localhost:8000/openapi.json> for OpenAPI. Schemas reflect the current checkout.
 
@@ -23,8 +23,8 @@ Consult OpenAPI for exact bodies and responses.
 | `/review`                            | GET         | The schedule under review with its check and readable tables            |
 | `/review/import`                     | POST        | Validate an uploaded `input`/`result` pair and review it                |
 | `/review/files/{name}`               | GET         | Download `input.json`, `result.json`, `schedule.csv` or `employees.csv` |
-
-Publication has no endpoints yet.
+| `/publication`                       | POST        | Publish the accepted schedule under review to its stations' targets     |
+| `/publication`                       | DELETE      | Remove the published duties of the named stations' month                |
 
 Next's `GET /api/health` makes a server-side request to API `/status`: it returns healthy only for a valid API liveness response, or `503` if the API is unavailable. Database availability is separate. Direct TimeOffice failures return `503` with sanitized `detail`, `integration: timeoffice` and the failed `stage`. See the [read-only diagnostic](../getting-started/installation.md#database-configuration).
 
@@ -68,6 +68,14 @@ One `Review` object (`api/app/solver/review.py`) holds the schedule under review
 
 `GET /review/files/{name}` returns the file as an attachment (`application/json` or `text/csv; charset=utf-8`), or `404` without a schedule. `input.json` keeps the exact bytes its digest names. The format is described under [bundle files](../validation/examples.md#bundle-files); `ScheduleBundle` (`api/app/solver/bundle.py`) owns parsing, pairing, re-checking and rendering, so imports, downloads and the [example tests](../validation/examples.md#validate-monthly-and-sequence-results) share one implementation. A generated schedule becomes a bundle directly with the solver's check; only uploaded pairs are re-validated.
 
+## Publication and clear
+
+`POST /publication` takes `planning_month` (`year`, `month`), `planning_unit_ids` and `received_at` of the schedule under review, as `GET /review` returned them. `Review.publish` refuses with `409` and `problem` `changed` when there is no schedule under review or it differs in arrival, month or stations, and `not_accepted` unless its check is `accepted`; only then does it hand the assignments to `TimeOfficeService.publish`. The response, after commit, names the month and stations, `removed_duties` (the earlier publication it replaced) and `published_duties` (written and read back). The adapter refuses with `409` `conflict` when an employee has an absence or a duty in another plan on a duty's date, `422` for a schedule without duties and for duties outside the named stations or month, `409` without `problem` for ambiguous targets or a qualification no station membership books, and sanitized `503` when TimeOffice fails, in each case without a change.
+
+`DELETE /publication?year=2026&month=1&planning_unit_ids=101` takes the same repeated station IDs as `/employees` and returns the same result with `published_duties` 0. Jumper pools and stations without a target plan return `422`. Publication and clear run one at a time in the API process; see [TimeOffice publication](timeoffice.md#publication) for the transaction.
+
+The webapp waits up to two minutes for either write and reports an unanswered request as an unknown outcome rather than a failure.
+
 ## Side effects
 
-Only the configuration PUT/DELETE routes write, and only to the [project tables](timeoffice.md#project-tables). Generation, review and import write nothing; downloads are rendered in memory. No route creates tables or writes TimeOffice roster, plan or account rows.
+The configuration PUT/DELETE routes write the [project tables](timeoffice.md#project-tables); `POST` and `DELETE /publication` write the worked roster rows of the named stations' target plans. Generation, review and import write nothing; downloads are rendered in memory. No route creates tables or writes plan, account, absence or wish rows.

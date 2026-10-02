@@ -14,7 +14,7 @@ FastAPI and Next source reload were checked separately with isolated source copi
 
 ## Staff-admin browser flows
 
-Selection/inspection, monthly configuration, generation and review with import/export are automated. Publication/clear remains pending.
+Selection/inspection, monthly configuration, generation, review with import/export and publication/clear are automated.
 
 ```sh
 just install
@@ -41,13 +41,17 @@ The locked `@playwright/test` runner uses Chromium; `just install` installs it a
 
 `api/tests/test_review.py` owns the schedule tables (labels, overnight and clock-change times with offsets, public holidays, jumper pool origin, every participant's balance, staffing including assigned-without-demand), the bundle files and their round trip (exact input keys without plan or wish fields, every CSV column, JSON arrays in quoted cells), every import rejection (malformed, unknown field, other version, wrong calendar, digest and month mismatch, unknown or out-of-month assignments, a changed stored check, other rule settings, no schedule), the published schemas against the models (a stale schema is rewritten and fails once), and the HTTP review/download/import contract after a real solve with one rejected pair keeping the review. `api/tests/test_examples.py` owns the example validator and the committed examples: an accepted two-month sequence of both stations; a folder outside the range, a changed CSV, context duties and first-date availability that differ from the neighbouring month; a rejected diagnostic month, a station without duties, other stations, one station instead of two, a folder holding another month and a missing file. The committed examples and their reproduction (`reproduction`, solving every input again) are skipped until `examples/` exists.
 
+`webapp/tests/browser/publication.spec.ts` is the publish and clear flow against the browser API's in-memory roster. It generates June for Station North, opens the publication confirmation (which names the station, month and duty count), cancels it without a result, then confirms and expects the committed written-and-read-back count. A cancelled clear leaves every duty, which the confirmed clear afterwards removes and counts. A schedule replaced by another generation after the page loaded is refused with its German message and no success. June at Station South has no trusted context in the browser API, so its incompletely checked schedule offers no publication while clearing stays available.
+
+`api/tests/test_publication.py` owns publication through `TimeOfficeService` over the fixture's writable roster: one row per segment in the destination station's target plan with the membership profession, a jumper pool employee's night in the other station's plan dated on its start, numbering after a kept native wish, and kept absences, wishes and other-plan duties; rejection before any deletion of an empty schedule, a duty outside the stations or month, a non-reference shift, a second duty on a date, a qualification without a membership profession and conflicts with an absence or another plan's duty; rollback of the deletion when an insert fails; ambiguous and missing targets and jumper pools for publish and clear; clearing exactly the named stations; and a second write waiting for the first. Over HTTP it publishes a real solve only with the reviewed `received_at` and stations, replaces it, clears it, rejects jumper pools and an incompletely checked schedule (`not_accepted`), and reports `changed` without a review.
+
 Traces on failure are ignored under `webapp/test-results/`; inspect with `pnpm --dir webapp exec playwright show-trace <path>`.
 
 ## Live TimeOffice verification
 
 With services running, `just connectivity` performs only configuration/ODBC/DNS/login/`SELECT 1` checks. It needs the authorized connection settings, private password and VPN/network/TLS prerequisites documented in [installation](../getting-started/installation.md#database-configuration). It never runs application queries. It passes against the current test server with `DB_TRUST_SERVER_CERTIFICATE=true` (self-signed certificate). That proves basic connection/query access, not planning-table permissions or valid scheduling data.
 
-`just test-timeoffice` runs only explicitly external tests. No such tests are present yet: pytest exits with status 5, which is a missing gate, not success. Later live checks must use a declared prepared test database, serialize writes and independently verify publication/recovery scope.
+`just test-timeoffice` runs only explicitly external tests. No such tests are present yet: pytest exits with status 5, which is a missing gate, not success. Live checks that write are run by hand instead, one writer at a time on the prepared example targets: record the target plans' rows by kind and checksums of all other roster rows, publish and clear through the API or the webapp, compare after every step, and finish with the targets empty again; [current limitations](../validation/index.md#publication-and-clear) lists the executed run.
 
 ## Linux and clean-checkout checks
 

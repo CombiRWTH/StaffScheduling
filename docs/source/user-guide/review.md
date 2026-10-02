@@ -1,6 +1,6 @@
 # Review, import and export
 
-**Dienstplan → Prüfen** shows the latest schedule — generated or imported — with the solver result, the independent schedule check, the duties, staffing and monthly accounts, and offers its files for download. Nothing is published or saved; the schedule is kept only until the API restarts. The procedure below is checked with controlled browser flows and fictional data and with a live January run on the prepared test database; see [current limitations](../validation/index.md#review-import-and-export).
+**Dienstplan → Prüfen** shows the latest schedule — generated or imported — with the solver result, the independent schedule check, the duties, staffing and monthly accounts, and offers its files for download. Nothing is saved, and nothing is published until you [publish it explicitly](publication.md); the schedule is kept only until the API restarts. The procedure below is checked with controlled browser flows and fictional data and with a live January run on the prepared test database; see [current limitations](../validation/index.md#review-import-and-export).
 
 Return to the [documentation overview](index.md).
 
