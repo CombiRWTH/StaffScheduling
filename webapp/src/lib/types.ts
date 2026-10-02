@@ -1,6 +1,6 @@
-// Response types of the canonical FastAPI planning endpoints.
+// Request and response types of the canonical FastAPI planning endpoints.
 
-export type Qualification = "professional" | "assistant" | "trainee" | "mfa";
+export type StaffLevel = "professional" | "assistant" | "trainee" | "mfa";
 
 export interface PlanningMonth {
   year: number;
@@ -25,7 +25,7 @@ export interface Membership {
   employee_id: number;
   valid_from: string;
   valid_until: string | null;
-  staff_level: Qualification;
+  staff_level: StaffLevel;
   is_home: boolean;
   is_replacement: boolean;
 }
@@ -37,19 +37,86 @@ export interface WorkCredit {
   source: string;
 }
 
-export interface Constraint {
+export type AvailabilityType = "unavailable" | "vacation" | "training" | "free_day" | "available_only";
+
+/** A date on which an employee must not be planned, or only for `shift_ids`. */
+export interface Availability {
   employee_id: number;
   date: string;
-  availability_type: "unavailable" | "vacation" | "training" | "free_day" | "available_only";
+  availability_type: AvailabilityType;
   shift_ids: number[] | null;
   reason: string | null;
   source: string | null;
 }
 
+export type WishType = "free_day" | "free_shift" | "preferred_day" | "preferred_shift";
+
+export interface Wish {
+  employee_id: number;
+  date: string;
+  type: WishType;
+  shift_id: number | null;
+}
+
+export interface ShiftOption {
+  shift_id: number;
+  code: string;
+  type: "early" | "late" | "night" | "intermediate" | "management" | "other";
+}
+
+export interface EmployeeCalendar {
+  employee_id: number;
+  planning_month: PlanningMonth;
+  /** Approved roster absences; read-only. */
+  absences: Availability[];
+  availability: Availability[];
+  wishes: Wish[];
+  shifts: ShiftOption[];
+}
+
+export interface CalendarDay {
+  date: string;
+  /** ISO weekday, Monday=1 to Sunday=7. */
+  weekday: number;
+  public_holiday: string | null;
+}
+
+export interface DemandRequirement {
+  planning_unit_id: number;
+  date: string;
+  shift_id: number;
+  staff_level: StaffLevel;
+  required_count: number;
+}
+
+export interface MonthlyDemand {
+  planning_unit_id: number;
+  planning_month: PlanningMonth;
+  requirements: DemandRequirement[];
+}
+
+export interface DemandConfiguration {
+  planning_unit_id: number;
+  planning_month: PlanningMonth;
+  /** Null until the station month has been saved once. */
+  demand: MonthlyDemand | null;
+  calendar: CalendarDay[];
+  shifts: ShiftOption[];
+}
+
+export type DayType = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday" | "holiday";
+
+export interface PatternRequirement {
+  day_type: DayType;
+  shift_id: number;
+  staff_level: StaffLevel;
+  required_count: number;
+}
+
 export interface Employee {
   employee_id: number;
   display_name: string;
-  staff_level: Qualification;
+  staff_level: StaffLevel;
   memberships: Membership[];
   account: {
     target_minutes: number;
@@ -58,8 +125,8 @@ export interface Employee {
     credit_details: WorkCredit[];
     evidence_source: string;
   };
-  constraints: Constraint[];
-  constraints_source: string;
+  /** Native absences and project availability of the month. */
+  availability: Availability[];
 }
 
 export interface PlanningInspection {

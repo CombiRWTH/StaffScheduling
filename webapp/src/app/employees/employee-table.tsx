@@ -8,34 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Employee, Constraint, PlanningInspection, PlanningUnit, Qualification, WorkCredit } from "@/lib/types";
+import type { Employee, PlanningInspection, PlanningUnit, WorkCredit } from "@/lib/types";
+import { AVAILABILITY_LABELS, STAFF_LEVEL_LABELS, formatDate } from "@/lib/labels";
 import { MONTHS } from "@/lib/selection";
 
-const QUALIFICATION_LABELS: Record<Qualification, string> = {
-  professional: "Fachkraft",
-  assistant: "Hilfskraft",
-  trainee: "Azubi",
-  mfa: "MFA",
-};
 const UNIT_TYPE_LABELS: Record<PlanningUnit["type"], string> = { station: "Station", shared_pool: "Pool" };
-const CONSTRAINT_LABELS: Record<Constraint["availability_type"], string> = {
-  unavailable: "Nicht verfügbar",
-  vacation: "Urlaub",
-  training: "Fortbildung",
-  free_day: "Frei",
-  available_only: "Nur bestimmte Schichten",
-};
 const CREDIT_LABELS: Record<WorkCredit["kind"], string> = {
   approved_absence: "Genehmigte Abwesenheit",
   trusted_work: "Anerkannte Arbeit",
 };
 const ALL_UNITS = "all";
-
-// Format ISO dates from their text, so server and browser render identically regardless of locale/timezone.
-function formatDate(value: string) {
-  const [year, month, day] = value.split("-");
-  return `${day}.${month}.${year}`;
-}
 
 function formatMonth(value: string) {
   const [year, month] = value.split("-");
@@ -57,7 +39,7 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
       [
         employee.employee_id,
         employee.display_name,
-        QUALIFICATION_LABELS[employee.staff_level],
+        STAFF_LEVEL_LABELS[employee.staff_level],
         ...employee.memberships.map((row) => unitName(row.planning_unit_id)),
       ]
         .join(" ")
@@ -151,7 +133,7 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
                             <Badge variant="outline">{employee.employee_id}</Badge>
                           </TableCell>
                           <TableCell className="font-medium">{employee.display_name}</TableCell>
-                          <TableCell>{QUALIFICATION_LABELS[employee.staff_level]}</TableCell>
+                          <TableCell>{STAFF_LEVEL_LABELS[employee.staff_level]}</TableCell>
                           <TableCell className="text-muted-foreground">
                             {[...new Set(employee.memberships.map((row) => unitName(row.planning_unit_id)))].join(", ")}
                           </TableCell>
@@ -202,7 +184,7 @@ function EmployeeDetails({
                 {type && <span className="text-muted-foreground"> ({UNIT_TYPE_LABELS[type]})</span>}
                 <div className="text-muted-foreground">
                   {formatDate(row.valid_from)} – {row.valid_until ? formatDate(row.valid_until) : "offen"} ·{" "}
-                  {QUALIFICATION_LABELS[row.staff_level]}
+                  {STAFF_LEVEL_LABELS[row.staff_level]}
                   {row.is_home && " · Heimat"}
                   {row.is_replacement && " · Ersatz"}
                 </div>
@@ -235,12 +217,12 @@ function EmployeeDetails({
         <p className="text-xs text-muted-foreground">Nachweis: {account.evidence_source}</p>
       </section>
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold">Einschränkungen</h3>
-        {employee.constraints.length ? (
+        <h3 className="text-sm font-semibold">Verfügbarkeit</h3>
+        {employee.availability.length ? (
           <ul className="space-y-1 text-sm">
-            {employee.constraints.map((row) => (
+            {employee.availability.map((row) => (
               <li key={`${row.date}:${row.availability_type}:${row.reason}:${row.source}:${row.shift_ids}`}>
-                {formatDate(row.date)} · {CONSTRAINT_LABELS[row.availability_type]}
+                {formatDate(row.date)} · {AVAILABILITY_LABELS[row.availability_type]}
                 {row.reason && ` · ${row.reason}`}
                 {row.shift_ids && ` · Erlaubte Schichten: ${row.shift_ids.join(", ")}`}
                 {row.source && <span className="text-muted-foreground"> · {row.source}</span>}
@@ -248,9 +230,8 @@ function EmployeeDetails({
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">Explizit keine Einschränkungen.</p>
+          <p className="text-sm text-muted-foreground">Keine Abwesenheiten oder Einschränkungen.</p>
         )}
-        <p className="text-xs text-muted-foreground">Vollständigkeitsnachweis: {employee.constraints_source}</p>
       </section>
     </div>
   );

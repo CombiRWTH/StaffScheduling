@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarCheck, CalendarPlus, Users, type LucideIcon } from "lucide-react";
+import { CalendarCheck, CalendarHeart, CalendarPlus, UserCog, Users, type LucideIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
@@ -25,6 +25,20 @@ const areas: Area[] = [
     icon: Users,
     href: "/employees",
     color: "text-blue-500 bg-blue-50",
+  },
+  {
+    title: "Verfügbarkeit",
+    description: "Einschränkungen und Wünsche einzelner Mitarbeiter im Monat bearbeiten",
+    icon: CalendarHeart,
+    href: "/availability",
+    color: "text-rose-500 bg-rose-50",
+  },
+  {
+    title: "Mindestbesetzung",
+    description: "Mindestbesetzung je Tag, Schicht und Qualifikation festlegen",
+    icon: UserCog,
+    href: "/staffing",
+    color: "text-amber-500 bg-amber-50",
   },
   {
     title: "Dienstplan erstellen",

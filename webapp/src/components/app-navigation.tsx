@@ -35,8 +35,13 @@ const navigationSections: Array<{ label: string; links: NavigationLink[] }> = [
     label: "Planungsdaten",
     links: [
       { href: "/employees", label: "Mitarbeiter", icon: Users },
-      { label: "Verfügbarkeit", icon: CalendarHeart, hint: "Wünsche und Einschränkungen des Monats" },
-      { label: "Mindestbesetzung", icon: UserCog },
+      {
+        href: "/availability",
+        label: "Verfügbarkeit",
+        icon: CalendarHeart,
+        hint: "Einschränkungen und Wünsche des Monats",
+      },
+      { href: "/staffing", label: "Mindestbesetzung", icon: UserCog },
     ],
   },
   {
@@ -116,7 +121,7 @@ function SidebarContent({ search, isActive, onClose, showCloseButton = false }: 
                       isActive(href) && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
                     )}
                   >
-                    <Link href={`${href}${search}`} onClick={onClose}>
+                    <Link href={`${href}${search}`} onClick={onClose} title={hint}>
                       <Icon className="h-4 w-4 shrink-0" />
                       <span className="truncate">{linkLabel}</span>
                     </Link>
