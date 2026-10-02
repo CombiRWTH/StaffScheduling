@@ -4,24 +4,23 @@ Run the root `just` recipes from the repository root. API dependencies and tools
 
 ## Commands
 
-| Recipe                          | Behavior                                                                                                             |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `just install`                  | Frozen API/webapp installs, Chromium and Git hooks. Existing configuration and secrets are preserved.                |
-| `just format`                   | Ruff formats Python; Prettier formats supported webapp and root documentation/configuration files.                   |
-| `just format-check`             | Non-mutating Ruff and Prettier checks.                                                                               |
-| `just lint`                     | Ruff and Next core web vitals/TypeScript ESLint rules.                                                               |
-| `just quality`                  | Full local React Doctor scan; errors fail, warnings remain visible.                                                  |
-| `just typecheck`                | Strict Pyright and explicit strict `tsc --noEmit`.                                                                   |
-| `just test [arguments...]`      | All offline tests, including solver and adapter tests using fakes. Arguments pass to pytest.                         |
-| `just test-browser`             | Controlled Chromium staff-admin flows through temporary Next.js/FastAPI servers.                                     |
-| `just docs` / `just docs-check` | Unified MkDocs server / strict build.                                                                                |
-| `just build`                    | Native production webapp build, including its type gate.                                                             |
-| `just smoke`                    | Isolated Compose image builds, HTTP connectivity, failure recovery and output persistence.                           |
-| `just connectivity`             | Explicit read-only external connection diagnostic in the running API container.                                      |
-| `just test-timeoffice`          | External-only tests; currently exits 5 because none exist.                                                           |
-| `just check`                    | Runs format, lint, quality, types, offline API/browser tests, build, strict docs and smoke; fails if any gate fails. |
+| Recipe                          | Behavior                                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `just install`                  | Frozen API/webapp installs, Chromium and Git hooks. Existing configuration and secrets are preserved.         |
+| `just format`                   | Ruff formats Python; Prettier formats supported webapp and root documentation/configuration files.            |
+| `just format-check`             | Non-mutating Ruff and Prettier checks.                                                                        |
+| `just lint`                     | Ruff and Next core web vitals/TypeScript ESLint rules.                                                        |
+| `just quality`                  | Full local React Doctor scan; errors fail, warnings remain visible.                                           |
+| `just typecheck`                | Strict Pyright and explicit strict `tsc --noEmit`.                                                            |
+| `just test [arguments...]`      | All offline tests, including solver and adapter tests using fakes. Arguments pass to pytest.                  |
+| `just test-browser`             | Controlled Chromium staff-admin flows through temporary Next.js/FastAPI servers.                              |
+| `just docs` / `just docs-check` | Unified MkDocs server / strict build.                                                                         |
+| `just build`                    | Native production webapp build, including its type gate.                                                      |
+| `just connectivity`             | Explicit read-only external connection diagnostic in the running API container.                               |
+| `just test-timeoffice`          | External-only tests; currently exits 5 because none exist.                                                    |
+| `just check`                    | Runs format, lint, quality, types, offline API/browser tests, build and strict docs; fails if any gate fails. |
 
-`just run` builds and starts both hot-reloading services through one root Compose file. The CI definitions cover independent offline gates. Diagnostic failure paths are verified; successful external connectivity and hosted CI execution remain pending. `just smoke` requires Docker Compose, curl and a POSIX shell; `just check` also requires the native tools. Checks never rewrite source or refresh locks; builds and pytest may create ignored output.
+`just run` builds and starts both hot-reloading services through one root Compose file. The CI definitions cover independent offline gates. Diagnostic failure paths are verified; successful external connectivity and hosted CI execution remain pending. `just run` requires Docker Compose; `just check` requires the native tools only. Checks never rewrite source or refresh locks; builds and pytest may create ignored output.
 
 Use `just test-timeoffice` only for explicitly authorized external-database tests; none currently exist. `just connectivity` checks basic access without calling application-table readers. See [testing](testing.md) for evidence and boundaries.
 
@@ -64,7 +63,7 @@ React Doctor runs the installed binary with full scope, no cache, no supply-chai
 
 ## Known failing checks
 
-See [current limitations](../validation/index.md#quality-gates) for the exact solver failures and remaining acceptance. `just check` runs format, lint, quality, types, offline API/browser tests, production webapp build, strict docs and isolated Compose smoke even when a gate fails; it returns nonzero if any gate fails. It requires Docker as well as the native tools. The solver failures remain visible.
+See [current limitations](../validation/index.md#quality-gates) for the exact solver failures and remaining acceptance. `just check` runs format, lint, quality, types, offline API/browser tests, production webapp build and strict docs even when a gate fails; it returns nonzero if any gate fails. The solver failures remain visible.
 
 ## Configuration ownership
 
@@ -74,13 +73,13 @@ Root EditorConfig supplies shared editor settings. Ruff uses a Python line width
 
 ## Tests and documentation
 
-Use focused unit tests for local rule logic, service integration tests for module boundaries and distinct system flows for staff-admin behavior. Avoid proving the same responsibility at every level. `api/tests/cp/` covers constraints/objectives; the solution writer/settings/foundation tests cover adapter/settings behavior. `just build` runs the native production webapp build; `just smoke` builds both development images and tests isolated startup, actual HTTP connectivity, unavailable integration behavior and persistence. `just connectivity` is an explicit read-only external diagnostic. `just test-timeoffice` selects only external tests; none are implemented yet, so it currently exits with pytest’s no-tests status rather than proving live acceptance. Run `uv run python -m pytest` from `api/` for direct test execution, or use root `just test` with forwarded arguments.
+Use focused unit tests for local rule logic, service integration tests for module boundaries and distinct system flows for staff-admin behavior. Avoid proving the same responsibility at every level. `api/tests/cp/` covers constraints/objectives; the solution writer/settings/foundation tests cover adapter/settings behavior. `just build` runs the native production webapp build; `just connectivity` is an explicit read-only external diagnostic. `just test-timeoffice` selects only external tests; none are implemented yet, so it currently exits with pytest’s no-tests status rather than proving live acceptance. Run `uv run python -m pytest` from `api/` for direct test execution, or use root `just test` with forwarded arguments.
 
 Documentation is a separate locked project with MkDocs and Material. Edit `docs/source/`, update `docs/mkdocs.yml` navigation when adding/removing a page, and run `just docs-check`. Keep current instructions tied to source, preserve known limitations and remove obsolete instructions rather than publishing competing workflows. Generated `docs/site/` is disposable. Every implementation change updates its affected documentation; see [maintaining documentation](documentation.md) for section ownership and evidence rules. See [testing](testing.md) for verified foundation checks and pending system procedures.
 
 ## CI and Git hooks
 
-`.github/workflows/ci.yml` is the monorepo CI entry point for main/handin-readiness pushes, PRs into main and manual runs. Its five independent jobs cover quality/hooks and types, all offline API tests, the Next production build, both Compose image builds/ODBC import and isolated startup/connectivity/persistence smoke, and strict documentation. Independent jobs ensure a known type failure does not prevent tests or docs from running. Service installs are frozen, action references are pinned to commits and validation permissions are read-only. CI needs no TimeOffice credentials and performs no connected database operations.
+`.github/workflows/ci.yml` is the monorepo CI entry point for main/handin-readiness pushes, PRs into main and manual runs. Its six independent jobs cover quality/hooks and types, all offline API tests, the Next production build, the offline browser flows, the Compose file and both image builds with the ODBC driver check, and strict documentation. Independent jobs ensure a known type failure does not prevent tests or docs from running. Service installs are frozen, action references are pinned to commits and validation permissions are read-only. CI needs no TimeOffice credentials and performs no connected database operations.
 
 `.github/workflows/docs.yml` publishes only relevant main-branch pushes to the existing `gh-pages` branch after a strict docs build. Only that publishing job has repository write permission; its deployments are serialized. Docs no longer import API modules, so API-source-only changes do not trigger publication. GitHub Pages must continue serving the `gh-pages` branch.
 

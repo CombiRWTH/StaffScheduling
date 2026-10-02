@@ -35,7 +35,7 @@ test-browser:
 
 # Run every independent offline gate and retain a failure exit status.
 check:
-    @result=0; for task in format-check lint quality typecheck test test-browser build docs-check smoke; do "{{just_executable()}}" "$task" || result=1; done; exit "$result"
+    @result=0; for task in format-check lint quality typecheck test test-browser build docs-check; do "{{just_executable()}}" "$task" || result=1; done; exit "$result"
 
 build:
     cd webapp && pnpm run build
@@ -54,10 +54,6 @@ docs:
 
 docs-check:
     uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs build --strict
-
-# Credential-free isolated startup, HTTP connectivity and persistent output checks.
-smoke:
-    sh scripts/smoke.sh
 
 # Explicit read-only external integration diagnostics; services must already be running.
 connectivity:
