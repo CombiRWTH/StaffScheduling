@@ -17,6 +17,7 @@ nav:
       - Generate schedules: user-guide/generation.md
       - Review, import and export: user-guide/review.md
       - Publish and clear: user-guide/publication.md
+      - Planning rules: user-guide/rules.md
   - Understand the system:
       - architecture/index.md
       - Domain model: architecture/domain.md
@@ -61,6 +62,9 @@ extra_css:
   - stylesheets/extra.css
 
 markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
   - toc:
       permalink: true
   - pymdownx.highlight
