@@ -6,22 +6,22 @@ Follow the [quickstart](quickstart.md) for the shortest path. This guide covers 
 
 | Task                                  | Required                                                                                               |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Start API and webapp                  | Docker Engine with Compose, repository files, database password, free ports 3000 and 8000              |
+| Start API and webapp                  | Docker Engine with Compose, just, repository files, database password, free ports 3000 and 8000        |
 | Use TimeOffice-backed planning        | Network/VPN access to the configured SQL Server, authorized database user and compatible planning data |
 | Clone or contribute                   | Git; a source archive is enough for running the app                                                    |
-| Use root task recipes                 | just, tested with 1.58.0                                                                               |
 | Native API tools and Git hooks        | uv 0.12.21 and Python from `api/.python-version`                                                       |
 | Native webapp tools and Prettier hook | Node from `webapp/package.json` and its pinned pnpm version                                            |
-| Build/view documentation locally      | uv and the pinned Python; just for `just docs` recipes                                                 |
+| Build/view documentation locally      | uv and the pinned Python                                                                               |
 
-[Docker Desktop](https://docs.docker.com/compose/install/) includes Engine and Compose on macOS, Windows and Linux. Linux users can install Engine and the Compose plugin separately. The daemon must be running; the user must be able to run Docker commands. On Windows, use Linux containers. The root just recipes use a POSIX shell; use WSL for those recipes.
+[Docker Desktop](https://docs.docker.com/compose/install/) includes Engine and Compose on macOS, Windows and Linux. Linux users can install Engine and the Compose plugin separately. The daemon must be running; the user must be able to run Docker commands. On Windows, use Linux containers. The root just recipes need a POSIX shell, and `just precheck` uses Bash. They do not support the Windows Command Prompt or PowerShell. On Windows, run them from [Git Bash](https://git-scm.com/downloads/win) or [WSL](https://learn.microsoft.com/en-us/windows/wsl/install); with WSL, enable Docker Desktop's WSL integration. Windows use is untested.
 
-Verify the container prerequisites:
+Verify the prerequisites:
 
 ```sh
-docker version
-docker compose version
+just precheck
 ```
+
+It warns when Docker with Compose is missing, and when just, uv, `python3.14`, Node or pnpm are missing or differ from the versions pinned in the project files and CI. Only Docker and just are needed to run the services; the other tools are for native development, where the Git hook calls `python3.14` directly. Warnings do not stop it; it fails only if the password file is missing. `just run` runs it first.
 
 The first build needs internet access to fetch images, OS packages and locked dependencies. Docker images contain Python, Node, uv, pnpm and Microsoft's ODBC Driver 18; these do not need host installations for Compose startup. Dedicated Linux-host and connected database acceptance are still pending; see [limitations](../validation/index.md).
 
@@ -38,14 +38,14 @@ Alternatively, extract the provided source archive. Keep `.env`, `compose.yaml`,
 
 The root `.env` is tracked and contains only non-secret connection settings. For another authorized target, edit `DB_SERVER`, `DB_NAME` and `DB_USER`. `DB_DRIVER` defaults to `ODBC Driver 18 for SQL Server`. Keep the password in the ignored `.secrets/db_password` file, never in a committed configuration file.
 
-Create that file with your editor, containing the supplied password only, without quotes. On macOS/Linux, restrict access after creating it:
+Create that file with your editor or file manager, containing the supplied password only, without quotes. Replace or empty it the same way later. On macOS/Linux, restrict access after creating it:
 
 ```sh
 chmod 700 .secrets
 chmod 600 .secrets/db_password
 ```
 
-On Windows, restrict the folder/file to your user through its security properties. Do not overwrite an existing password during setup.
+On Windows, restrict the folder/file to your user through its security properties. To use a different file, set `DB_PASSWORD_FILE` in your shell environment, where both `just precheck` and Compose read it. Compose also reads it from `.env`, but `just precheck` does not.
 
 Compose reads `.env` and mounts the password at `/run/secrets/db_password`. Pydantic settings loads that file using `SECRETS_DIR=/run/secrets`. The adapter connects to an external TimeOffice Microsoft SQL Server; Compose does not provision a database or sample hospital data. Arrange the required network/VPN route, database permissions and planning scope with the database administrator. [TimeOffice reference](../architecture/timeoffice.md) describes the adapter, its project tables, the prepared example units and the checklist for supporting another unit. A database without the project tables and a configured, prepared unit can pass the connectivity diagnostic but cannot serve planning pages.
 
@@ -56,30 +56,29 @@ Use a hostname or IP in `DB_SERVER`, with a separate optional `DB_PORT` (default
 With services running, execute the read-only diagnostic:
 
 ```sh
-docker compose exec -T api python -m app.timeoffice.database
-# Equivalent when just is installed:
 just connectivity
 ```
 
-It checks configuration, the installed driver, DNS, encrypted login and `SELECT 1`. It prints safe JSON, exits nonzero on failure and performs no application-table queries or writes. A connection failure means checking the VPN/network route, firewall/port, login and TLS trust with the administrator. Query failure means checking connectivity/schema/permissions. SQLAlchemy may also issue read-only server/session metadata queries when initializing the connection. The diagnostic does not establish planning-table permissions or dataset validity.
+It runs `python -m app.timeoffice.database` in the API container and checks configuration, the installed driver, DNS, encrypted login and `SELECT 1`. It prints safe JSON, exits nonzero on failure and performs no application-table queries or writes. A connection failure means checking the VPN/network route, firewall/port, login and TLS trust with the administrator. Query failure means checking connectivity/schema/permissions. SQLAlchemy may also issue read-only server/session metadata queries when initializing the connection. The diagnostic does not establish planning-table permissions or dataset validity.
 
 ## Start, update and stop
 
 ```sh
-docker compose up --build --wait
-docker compose ps
+just run
 ```
 
-Open <http://localhost:3000> and <http://localhost:8000/docs>. Ports bind to loopback by default. `API_PORT`, `WEBAPP_PORT` and `BIND_ADDRESS` can override them. Source mounts support FastAPI and Next.js development reload. Changes to manifests, locks or Dockerfiles require rebuilding with the same startup command. The webapp installs its frozen lock in a persistent dependency volume when it starts.
+`just run` runs `just precheck`, then `docker compose up --build --wait`: it builds both images, starts the services in the background and waits for their health checks. `just stop` and `just logs` wrap `docker compose down` and `docker compose logs --follow`.
+
+Open <http://localhost:3000> and <http://localhost:8000/docs>. Ports bind to loopback by default. `API_PORT`, `WEBAPP_PORT` and `BIND_ADDRESS` can override them. Source mounts support FastAPI and Next.js development reload. Changes to manifests, locks or Dockerfiles require rebuilding with `just run`. The webapp installs its frozen lock in a persistent dependency volume when it starts.
 
 ```sh
-docker compose logs --follow
-docker compose down
+just logs
+just stop
 ```
 
 `data/` is the API's persistent runtime directory, mapped to `/project/data/`, and initially contains only `.gitkeep`. Nothing writes to it yet; later export bundles will. Runtime files are ignored and survive container shutdown.
 
-Named volumes hold webapp dependencies and Next build output. Do not delete `data/` as a troubleshooting step. `docker compose down` is sufficient for ordinary shutdown.
+Named volumes hold webapp dependencies and Next build output. Do not delete `data/` as a troubleshooting step. `just stop` is sufficient for ordinary shutdown.
 
 The current Compose setup runs development servers and exposes their ports on the host. A production deployment, authentication and TLS termination are outside this setup; it is intended for the prepared development/test environment.
 
@@ -88,7 +87,7 @@ The current Compose setup runs development servers and exposes their ports on th
 For a prepared laptop needing LAN access, deliberately bind the development services and choose free host ports:
 
 ```sh
-BIND_ADDRESS=0.0.0.0 API_PORT=8000 WEBAPP_PORT=3000 docker compose up --build --wait
+BIND_ADDRESS=0.0.0.0 API_PORT=8000 WEBAPP_PORT=3000 just run
 ```
 
 Use the laptop's address in the browser. Its VPN/firewall must allow both the SQL connection and the intended client access. Keep loopback defaults for local use. Separate checkouts/projects can set `COMPOSE_PROJECT_NAME`, ports and `DATA_DIR`; `DB_PASSWORD_FILE` selects a private password file. Keep machine-specific overrides in your shell environment, rather than committing them. These are Compose settings, not `NEXT_PUBLIC_` browser configuration.
@@ -97,9 +96,9 @@ Linux bind mounts preserve numeric ownership. The current containers run as root
 
 ## Optional native developer setup
 
-Service startup remains through Compose. Native environments support IDEs, dependency maintenance, checks and Git hooks.
+Services still start through `just run`. Native environments support IDEs, dependency maintenance, checks and Git hooks.
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) 0.12.21, Node as declared in `webapp/package.json`, and [just](https://github.com/casey/just#installation). Then:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) 0.12.21 and Node as declared in `webapp/package.json`. Then:
 
 ```sh
 uv python install "$(cat api/.python-version)"
@@ -115,7 +114,7 @@ The [pnpm installation](https://pnpm.io/installation) uses npm; npm 12 requires 
 
 ## Documentation setup
 
-With uv, the pinned Python and just installed:
+With uv and the pinned Python installed:
 
 ```sh
 just docs
@@ -133,9 +132,9 @@ uv run --directory docs --frozen --python "$(cat api/.python-version)" mkdocs se
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Docker daemon unavailable                                  | Start Docker Desktop/Engine; verify `docker version`.                                                                   |
 | `docker compose` unavailable or `--wait` unknown           | Install/update the Compose plugin using Docker's installation guide.                                                    |
-| Password file missing / settings validation error          | Check the exact `.secrets/db_password` path and root `.env`; inspect `docker compose logs api`.                         |
+| Password file missing / settings validation error          | Run `just precheck`; check the exact `.secrets/db_password` path and root `.env`; inspect `docker compose logs api`.    |
 | Port 3000 or 8000 already allocated                        | Stop the conflicting process or previous Compose instance, then retry.                                                  |
-| Build/download failure                                     | Check internet/proxy access and the first failing build step; retry the startup command.                                |
+| Build/download failure                                     | Check internet/proxy access and the first failing build step; retry `just run`.                                         |
 | Container unhealthy                                        | Inspect `docker compose ps` and `docker compose logs api webapp`; health checks cover liveness only.                    |
 | Healthy API, failing employee/configuration query          | Check VPN/network, server/database/user/password and SQL permissions; startup did not test these.                       |
 | Missing route or empty case/schedule selector              | Consult [limitations](../validation/index.md); removed case files and integration gaps are not an installation failure. |

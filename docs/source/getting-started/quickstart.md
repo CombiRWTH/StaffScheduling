@@ -1,6 +1,6 @@
 # Quickstart
 
-You need [Docker with Compose](https://docs.docker.com/compose/install/), a copy of this repository and the supplied test database password. Start Docker. No host Python, Node, pnpm or just installation is needed.
+You need [Docker with Compose](https://docs.docker.com/compose/install/), [just](https://github.com/casey/just#installation), a copy of this repository and the supplied test database password. Start Docker. No host Python, Node or pnpm installation is needed. On Windows, run the commands in Git Bash or WSL, not in the Command Prompt or PowerShell; see [prerequisites](installation.md#prerequisites).
 
 ## 1. Get the project
 
@@ -32,10 +32,10 @@ The committed `.env` already contains the test database server, database name an
 ## 3. Start both services
 
 ```sh
-docker compose up --build --wait
+just run
 ```
 
-The first build downloads dependencies. This command runs in the background and waits for the service health checks, as described in the [Compose command reference](https://docs.docker.com/reference/cli/docker/compose/up/).
+It builds and starts both services in the background and waits for their health checks; the first build downloads dependencies. It first runs [`just precheck`](installation.md#prerequisites), which stops if the password file is missing.
 
 Open the webapp at <http://localhost:3000>. The API's interactive reference is at <http://localhost:8000/docs>; <http://localhost:8000/status> should return `{"status":"healthy"}`.
 
@@ -44,9 +44,8 @@ Open <http://localhost:3000/api/health> to check a real request from the webapp 
 ## Stop or inspect
 
 ```sh
-docker compose ps
-docker compose logs --follow
-docker compose down
+just logs
+just stop
 ```
 
-Stopping preserves files in `data/` and the dependency/build volumes. If startup fails, follow [troubleshooting](installation.md#troubleshooting). If just is already installed, `just run`, `just logs` and `just stop` wrap these same Compose operations.
+Stopping preserves files in `data/` and the dependency/build volumes. If startup fails, follow [troubleshooting](installation.md#troubleshooting).

@@ -6,7 +6,7 @@ A hospital planning application combining a Next.js webapp, a FastAPI API and an
 
 | You are here to…                       | Start here                                            | What you will find                                                |
 | -------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------- |
-| Try the application                    | [Quickstart](getting-started/quickstart.md)           | Docker, the password file and one startup command                 |
+| Try the application                    | [Quickstart](getting-started/quickstart.md)           | Docker, just, the password file and one startup command           |
 | Set up a machine                       | [Installation](getting-started/installation.md)       | Prerequisites, configuration, network access and troubleshooting  |
 | Use the application                    | [Use guide](user-guide/index.md)                      | Staff-admin operations, with unfinished procedures clearly marked |
 | Understand the system                  | [Architecture](architecture/index.md)                 | Code map, data flow, domain and integration contracts             |

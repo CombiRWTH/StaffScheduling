@@ -7,6 +7,7 @@ Run the root `just` recipes from the repository root. API dependencies and tools
 | Recipe                          | Behavior                                                                                                      |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `just install`                  | Frozen API/webapp installs, Chromium and Git hooks. Existing configuration and secrets are preserved.         |
+| `just precheck`                 | Warns about missing tools or versions differing from the pins; fails only if the password file is missing.    |
 | `just format`                   | Ruff formats Python; Prettier formats supported webapp and root documentation/configuration files.            |
 | `just format-check`             | Non-mutating Ruff and Prettier checks.                                                                        |
 | `just lint`                     | Ruff and Next core web vitals/TypeScript ESLint rules.                                                        |
@@ -20,7 +21,7 @@ Run the root `just` recipes from the repository root. API dependencies and tools
 | `just test-timeoffice`          | External-only tests; currently exits 5 because none exist.                                                    |
 | `just check`                    | Runs format, lint, quality, types, offline API/browser tests, build and strict docs; fails if any gate fails. |
 
-`just run` builds and starts both hot-reloading services through one root Compose file. The CI definitions cover independent offline gates. Diagnostic failure paths are verified; successful external connectivity and hosted CI execution remain pending. `just run` requires Docker Compose; `just check` requires the native tools only. Checks never rewrite source or refresh locks; builds and pytest may create ignored output.
+`just run` runs `just precheck`, then builds and starts both hot-reloading services through one root Compose file. The CI definitions cover independent offline gates. Diagnostic failure paths are verified; successful external connectivity and hosted CI execution remain pending. `just run` requires Docker Compose; `just check` requires the native tools only. Checks never rewrite source or refresh locks; builds and pytest may create ignored output.
 
 Use `just test-timeoffice` only for explicitly authorized external-database tests; none currently exist. `just connectivity` checks basic access without calling application-table readers. See [testing](testing.md) for evidence and boundaries.
 
@@ -34,7 +35,7 @@ Use `just test-timeoffice` only for explicitly authorized external-database test
 | Node                    | `webapp/package.json` engines: 26.10.0; CI reads this same field.                    |
 | uv                      | 0.12.21 is enforced in both uv manifests and matched by Docker/hooks/workflows.      |
 | pnpm                    | `webapp/package.json`: 12.8.1.                                                       |
-| just                    | 1.58.0, tested; documented prerequisite without an unused version file.              |
+| just                    | 1.58.0, tested; `just precheck` warns about other versions.                          |
 | Ruff / Pyright / pytest | API manifest and lock: 0.16.10 / 1.1.414 / 9.1.1.                                    |
 | Prettier / React Doctor | Webapp manifest and lock: 3.9.9 / 0.9.14.                                            |
 | TypeScript / ESLint     | 6.0.3 / 9.39.5, compatibility exceptions below.                                      |

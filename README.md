@@ -4,15 +4,15 @@ Hospital staff scheduling with a Next.js webapp, a FastAPI API and Google OR-Too
 
 ## Quickstart
 
-Install [Docker with Compose](https://docs.docker.com/compose/install/) and start Docker. Download/clone this repository, then create the file `db_password` in its `.secrets` directory, containing only the supplied test database password. The tracked `.env` contains the non-secret connection settings. Keep the password file private.
+Install [Docker with Compose](https://docs.docker.com/compose/install/) and [just](https://github.com/casey/just#installation), then start Docker. Download/clone this repository, then create the file `db_password` in its `.secrets` directory, containing only the supplied test database password. The tracked `.env` contains the non-secret connection settings. Keep the password file private.
 
-From the repository root:
+From the repository root (on Windows, in Git Bash or WSL rather than the Command Prompt or PowerShell):
 
 ```sh
-docker compose up --build --wait
+just run
 ```
 
-Open <http://localhost:3000>; API documentation is at <http://localhost:8000/docs>. No host Python, Node, pnpm or just is needed. Stop with `docker compose down`; inspect with `docker compose logs --follow`. See the [step-by-step quickstart](docs/source/getting-started/quickstart.md) and [full installation guide](docs/source/getting-started/installation.md).
+Open <http://localhost:3000>; API documentation is at <http://localhost:8000/docs>. No host Python, Node or pnpm is needed. Stop with `just stop`; inspect with `just logs`. See the [step-by-step quickstart](docs/source/getting-started/quickstart.md) and [full installation guide](docs/source/getting-started/installation.md).
 
 Health checks establish service liveness. Database operations need network/credentials, and the planning workflow has [known integration and solver limitations](docs/source/validation/index.md). Independently accepted example schedules remain pending.
 

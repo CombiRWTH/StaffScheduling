@@ -1,6 +1,6 @@
 # Keep the command surface minimal
 
-Staff administrators use the webapp, and developers start the application with `docker compose up --build --wait`. Everything else is a small set of root `just` recipes that wrap native service commands: installation, the individual quality gates, `check`, docs and explicit diagnostics. CI runs the same recipes, so there is one command contract. The API has no command-line interface.
+Staff administrators use the webapp, and developers start the application with `just run`, which checks prerequisites and runs `docker compose up --build --wait`. Everything else is a small set of root `just` recipes that wrap native service commands: the prerequisite check, installation, the individual quality gates, `check`, docs and explicit diagnostics. CI runs the same recipes, so there is one command contract. The API has no command-line interface.
 
 ## Considered Options
 
