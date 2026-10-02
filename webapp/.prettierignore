@@ -7,8 +7,5 @@ pnpm-lock.yaml
 *.tsbuildinfo
 playwright-report/
 test-results/
-# Generated portable bundles and their schema keep the bytes their digests and checks compare.
-examples/
-# Generated plan exports are data files and keep the bytes they were exported with.
-plaene/
+# The generated bundle schemas keep the bytes the example tests compare.
 **/validation/schema/

@@ -42,4 +42,6 @@ repos:
         entry: node webapp/node_modules/prettier/bin/prettier.cjs --check --config webapp/.prettierrc.json --ignore-path webapp/.prettierignore
         language: system
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css]
-        exclude: ^(api/|webapp/pnpm-lock.yaml$)
+        # The paths `just format-check` checks; data folders in the root stay out.
+        files: ^(webapp/|docs/source/|docs/adr/|docs/mkdocs\.yml$|README\.md$|GLOSSARY\.md$|compose\.yaml$|\.github/|\.pre-commit-config\.yaml$)
+        exclude: ^webapp/pnpm-lock\.yaml$
