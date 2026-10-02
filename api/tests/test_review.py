@@ -1,4 +1,4 @@
-"""Review tables, portable bundles, the review HTTP flow and the example-folder validator."""
+"""Review tables, portable bundles, their published schemas and the review HTTP flow."""
 
 import csv
 import io
@@ -12,7 +12,7 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 from inspection_fixture import InspectionSource
-from scheduling import EARLY, JANUARY, JUMPER_POOL, NIGHT, NORTH, account, dataset, duty, jan, member, need
+from scheduling import EARLY, JUMPER_POOL, NIGHT, NORTH, account, dataset, duty, jan, member, need
 from test_generation import BODY, CONFIGURATION, INFEASIBLE, finished, save_demand
 
 from app.api.generation import get_generation
@@ -33,7 +33,6 @@ from app.solver.bundle import (
     ScheduleResult,
     to_json,
 )
-from app.solver.examples import check_examples, main
 from app.solver.generation import Generation
 from app.solver.models import ObjectiveReport, Solution, SolutionStatus
 from app.solver.review import Review
@@ -58,7 +57,7 @@ def january() -> SchedulingDataset:
     )
 
 
-# An early duty on Friday and a pool employee's night from Saturday into February.
+# An early duty on Friday and a jumper pool employee's night from Saturday into February.
 JANUARY_DUTIES = (duty(1, jan(30), EARLY), duty(2, jan(31), NIGHT))
 
 
@@ -74,7 +73,8 @@ def found(data: SchedulingDataset, assignments: tuple[Assignment, ...]) -> Solut
 
 
 def bundle_of(data: SchedulingDataset, assignments: tuple[Assignment, ...]) -> ScheduleBundle:
-    return ScheduleBundle.solved(to_json(ScheduleInput.of(data)), found(data, assignments))
+    schedule_input = ScheduleInput.of(data)
+    return ScheduleBundle.solved(schedule_input, to_json(schedule_input), found(data, assignments))
 
 
 def csv_rows(content: bytes) -> list[dict[str, str]]:
@@ -92,7 +92,7 @@ def test_tables_label_duties_with_real_times_origin_and_every_employee() -> None
         "North",
     )
     assert (early.origin_unit_id, early.origin_unit_type) == (NORTH, "station")
-    # The night belongs to its start date and ends on February 1; the pool employee works at North.
+    # The night belongs to its start date and ends on February 1; the jumper pool employee works at North.
     assert (night.date, night.start_at.isoformat(), night.end_at.isoformat()) == (
         jan(31),
         "2026-01-31T20:10:00+01:00",
@@ -194,15 +194,19 @@ def test_bundle_files_carry_every_field_and_read_back() -> None:
 
     employees = csv_rows(files[EMPLOYEES_FILE])
     assert [row["employee_id"] for row in employees] == ["1", "2", "3"]
-    pool = employees[1]
-    assert (pool["planning_month"], pool["target_minutes"], pool["generated_minutes"]) == ("2026-01", "555", "555")
+    jumper = employees[1]
+    assert (jumper["planning_month"], jumper["target_minutes"], jumper["generated_minutes"]) == (
+        "2026-01",
+        "555",
+        "555",
+    )
     # Multi-valued facts are complete JSON arrays inside quoted cells.
-    memberships = json.loads(pool["memberships"])
+    memberships = json.loads(jumper["memberships"])
     assert [(row["planning_unit_id"], row["is_home"], row["is_replacement"]) for row in memberships] == [
         (JUMPER_POOL, True, False),
         (NORTH, False, True),
     ]
-    assert json.loads(pool["hard_availability"]) == []
+    assert json.loads(jumper["hard_availability"]) == []
     assert json.loads(employees[0]["credit_details"]) == []
 
 
@@ -237,7 +241,7 @@ def _edit(content: bytes, change: Callable[[dict[str, Any]], None]) -> bytes:
         (RESULT_FILE, _set("solution.assignments.0.employee_id", 99), BundleProblem.REFERENCES, "unknown"),
         (RESULT_FILE, _set("solution.assignments.1.date", "2026-02-01"), BundleProblem.REFERENCES, "outside"),
         (RESULT_FILE, _set("solution.check.status", "rejected"), BundleProblem.CHECK, "differs from a re-check"),
-        (RESULT_FILE, _set("solution.configuration.policy.min_rest_minutes", 600), BundleProblem.CHECK, "rule"),
+        (RESULT_FILE, _set("solution.configuration.policy.min_rest_minutes", 600), BundleProblem.POLICY, "rule"),
     ],
 )
 def test_read_rejects_malformed_unknown_or_mismatched_files(
@@ -251,18 +255,24 @@ def test_read_rejects_malformed_unknown_or_mismatched_files(
     assert raised.value.problem == problem
 
 
-def test_a_result_without_schedule_is_no_bundle() -> None:
-    input_json = to_json(ScheduleInput.of(january()))
-    with pytest.raises(InvalidBundle) as raised:
-        ScheduleBundle.solved(input_json, INFEASIBLE)
+def test_read_rejects_a_result_without_schedule() -> None:
+    bundle = bundle_of(january(), JANUARY_DUTIES)
+    result = bundle.result.model_copy(update={"solution": INFEASIBLE})
+
+    with pytest.raises(InvalidBundle, match="no schedule") as raised:
+        ScheduleBundle.read(bundle.input_json, to_json(result))
     assert raised.value.problem == BundleProblem.NO_SCHEDULE
 
 
-def test_committed_schemas_are_the_model_schemas() -> None:
+def test_published_schemas_are_the_model_schemas() -> None:
+    """A stale schema is rewritten from its model, so the next run passes once the change is committed."""
+    stale: list[str] = []
     for name, model in (("input.schema.json", ScheduleInput), ("result.schema.json", ScheduleResult)):
-        assert json.loads((SCHEMA / name).read_text()) == model.model_json_schema(), (
-            f"Regenerate with: uv run --frozen python -m app.solver.examples schema {SCHEMA}"
-        )
+        schema = json.dumps(model.model_json_schema(), indent=2, ensure_ascii=False) + "\n"
+        if not (SCHEMA / name).is_file() or (SCHEMA / name).read_text() != schema:
+            (SCHEMA / name).write_text(schema)
+            stale.append(name)
+    assert not stale, f"Rewrote the stale {stale} in {SCHEMA}; review and commit them."
 
 
 @pytest.fixture
@@ -338,75 +348,3 @@ def test_http_review_downloads_and_imports_only_valid_pairs(
     # The rejected pair leaves the imported review and its files in place.
     assert http.get("/review").json()["received_at"] == imported.json()["received_at"]
     assert http.get(f"/review/files/{SCHEDULE_FILE}").content == files[SCHEDULE_FILE]
-    assert upload(b"", files[RESULT_FILE]).json()["problem"] == "malformed"
-
-
-def write_folder(directory: Path, bundle: ScheduleBundle) -> Path:
-    month = bundle.input.dataset.planning_month
-    folder = directory / f"{month.year}-{month.month:02d}"
-    folder.mkdir()
-    for name, content in bundle.files.items():
-        (folder / name).write_bytes(content)
-    return folder
-
-
-def february(context: tuple[Assignment, ...]) -> SchedulingDataset:
-    """February after `january`, with January 27-31 as trusted context."""
-    return dataset(
-        memberships=(
-            *member(1),
-            *member(2, home=JUMPER_POOL, replacements=(NORTH,)),
-            *member(3, ASSISTANT),
-        ),
-        accounts=(account(1, 420, month=FEBRUARY), account(2, 0, month=FEBRUARY), account(3, 0, month=FEBRUARY)),
-        month=FEBRUARY,
-        context_duties=context,
-        covered_days_before=5,
-        levels={3: ASSISTANT},
-    )
-
-
-FEBRUARY_DUTIES = (duty(1, date(2026, 2, 3), EARLY),)
-
-
-def test_examples_accept_a_complete_consistent_sequence(tmp_path: Path) -> None:
-    write_folder(tmp_path, bundle_of(january(), JANUARY_DUTIES))
-    write_folder(tmp_path, bundle_of(february(JANUARY_DUTIES), FEBRUARY_DUTIES))
-
-    report = check_examples(tmp_path, JANUARY, FEBRUARY)
-
-    assert report.problems == []
-    assert report.summaries[0].startswith("2026-01: optimal, check accepted, 2 duties at North, 3 employees")
-
-
-def test_examples_reject_diagnostics_drift_and_inconsistent_context(tmp_path: Path) -> None:
-    write_folder(tmp_path, bundle_of(january(), JANUARY_DUTIES))
-    # February trusts only one of January's duties.
-    february_folder = write_folder(tmp_path, bundle_of(february(JANUARY_DUTIES[:1]), FEBRUARY_DUTIES))
-    # A schedule outside the folder range, and a station month missing its demanded duty.
-    (tmp_path / "2026-03").mkdir()
-    rejected = bundle_of(january(), JANUARY_DUTIES[1:])
-    (february_folder / SCHEDULE_FILE).write_bytes(b"employee_id\n")
-
-    problems = "\n".join(check_examples(tmp_path, JANUARY, FEBRUARY).problems)
-    assert "Folders outside 2026-01 to 2026-02: 2026-03." in problems
-    assert "2026-02: schedule.csv differs" in problems
-    assert "the context duties on 2026-01 dates differ from its schedule" in problems
-
-    for name in (RESULT_FILE, SCHEDULE_FILE, EMPLOYEES_FILE):
-        (tmp_path / "2026-01" / name).write_bytes(rejected.files[name])
-    problems = "\n".join(check_examples(tmp_path, JANUARY, JANUARY).problems)
-    assert "2026-01: diagnostic result, not an example: schedule check rejected with 1 findings" in problems
-    (tmp_path / "2026-01" / EMPLOYEES_FILE).write_bytes(b"")
-    assert "2026-01: missing or empty employees.csv." in check_examples(tmp_path, JANUARY, JANUARY).problems
-
-
-@pytest.mark.integration
-def test_examples_solve_and_check_a_folder_without_timeoffice(tmp_path: Path) -> None:
-    folder = tmp_path / "2026-01"
-    folder.mkdir()
-    (folder / INPUT_FILE).write_bytes(to_json(ScheduleInput.of(january())))
-
-    assert main(["solve", str(folder), "--timeout", "2"]) == 0
-    assert main(["check", str(tmp_path), "--first", "2026-01", "--last", "2026-01"]) == 0
-    assert csv_rows((folder / SCHEDULE_FILE).read_bytes())

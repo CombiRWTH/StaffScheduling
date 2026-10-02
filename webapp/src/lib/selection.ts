@@ -15,6 +15,11 @@ export const MONTHS = [
   "Dezember",
 ];
 
+/** The selection's `YYYY-MM` month of a year and month number. */
+export function selectionMonth(year: number, month: number) {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
 /** The query string for a selection, or "" when nothing is selected. */
 export function selectionSearch(month?: string | null, stations?: readonly number[] | string | null): string {
   const query = new URLSearchParams();

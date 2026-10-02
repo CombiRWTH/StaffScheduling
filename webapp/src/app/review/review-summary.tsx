@@ -43,7 +43,7 @@ export function ReviewSummary({ review }: { review: ScheduleReview }) {
   const findings = check.findings.map((row) =>
     [
       `${RULES[row.rule]}: ${row.message}`,
-      row.employee_id && (employeeName.get(row.employee_id) ?? `Mitarbeiter ${row.employee_id}`),
+      row.employee_id && employeeName.get(row.employee_id),
       row.date && formatDate(row.date),
       row.planning_unit_id && unitName.get(row.planning_unit_id),
     ]
@@ -77,8 +77,8 @@ export function ReviewSummary({ review }: { review: ScheduleReview }) {
           />
           <Outcome
             label="Zielfunktion"
-            value={objective ? `Lücke ${NUMBER.format(objective.relative_gap * 100)} %` : "Nicht verfügbar"}
-            detail={objective ? `Wert ${objective.value}, Schranke ${NUMBER.format(objective.best_bound)}` : ""}
+            value={`Lücke ${NUMBER.format(objective.relative_gap * 100)} %`}
+            detail={`Wert ${objective.value}, Schranke ${NUMBER.format(objective.best_bound)}`}
           />
         </div>
 

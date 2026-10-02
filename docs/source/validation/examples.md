@@ -1,6 +1,6 @@
 # Examples and reproduction
 
-For readers trying to inspect or reproduce the example schedules. The prepared TimeOffice inputs below exist; how they were checked is recorded under [current limitations](index.md#webapp-integration). The bundle format, the TimeOffice-free commands and the validator below are implemented and tested; the accepted six-month example files are not yet part of the repository.
+For readers trying to inspect or reproduce the example schedules. The prepared TimeOffice inputs below exist; how they were checked is recorded under [current limitations](index.md#webapp-integration). The bundle format, the TimeOffice-free tests and the validator below are implemented and tested; the accepted six-month example files are not yet part of the repository.
 
 Return to the [documentation overview](../index.md).
 
@@ -28,7 +28,7 @@ All people, contracts and absences are invented for the example, all of them adu
 
 ## Bundle files
 
-A monthly bundle is one folder `YYYY-MM/` with four files, produced by **Prüfen** downloads or `solve` below. JSON is the complete reproduction format; the CSV tables are the readable submission format and are derived from the JSON pair, never read back.
+A monthly bundle is one folder `YYYY-MM/` with four files, as downloaded from **Prüfen**. JSON is the complete reproduction format; the CSV tables are the readable submission format and are derived from the JSON pair, never read back.
 
 | File            | Content                                                                                                                                                                                                                                                                                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -45,42 +45,36 @@ The JSON Schemas are generated from the Pydantic models: [input.schema.json](sch
 
 CSV conventions: UTF-8, comma, one header row, standard-library quoting, `\n` line ends, `true`/`false` booleans, integer minutes, full ISO dates. An empty cell only appears in the origin columns, for a duty of an employee without membership that day, which the check reports as an eligibility finding.
 
-## Run without TimeOffice
+## Reproduce without TimeOffice
 
-From `api/`, with the [native tools](../getting-started/installation.md#optional-native-developer-setup) installed:
-
-```sh
-uv run --frozen python -m app.solver.examples solve ../examples/2026-01 --timeout 120
-```
-
-`solve` reads `input.json` of the folder, solves it with the [solver settings](../getting-started/installation.md) (`--timeout` overrides `SOLVER_MAX_TIME_SECONDS`) and writes `result.json`, `schedule.csv` and `employees.csv` beside it. Without a found schedule it writes nothing, prints the diagnostics and exits with status 1. A rerun can find another equally valid schedule; byte-identical results are not expected.
-
-An input for a month comes from **Prüfen** after a generation (`input.json`) or from `GET /review/files/input.json`. Each month's input carries its own trusted context; supplying the preceding accepted month as context is part of preparing the sequence, not done by `solve`.
-
-To regenerate the published schemas after a model change:
+From the repository root, with the [native tools](../getting-started/installation.md#optional-native-developer-setup) installed:
 
 ```sh
-uv run --frozen python -m app.solver.examples schema ../docs/source/validation/schema
+just test -m reproduction tests/test_examples.py
 ```
 
-A test fails while the committed schemas differ from the models.
+The reproduction tests solve every committed `input.json` again with the time limit, search workers and seed recorded in its `result.json`, and pass when the new schedule is accepted by the schedule check. A rerun can find another equally valid schedule; byte-identical results are not expected. They take minutes and are not part of `just test`.
+
+A month's input comes from **Prüfen** after a generation (`input.json`) or from `GET /review/files/input.json`. Each month's input carries its own trusted context; supplying the preceding accepted month as context is part of preparing the sequence.
+
+`just test` compares the published schemas with the models. A stale schema file is rewritten from its model and the test fails once, so a model change shows up as a schema diff to review and commit.
 
 ## Validate monthly and sequence results
 
 ```sh
-uv run --frozen python -m app.solver.examples check ../examples --first 2026-01 --last 2026-06
+just test tests/test_examples.py
 ```
 
-The command prints one summary line per month and `PASS` or every problem with `FAIL`, and exits with status 1 on any problem. It accepts the folders only if:
+The test validates the committed folders `examples/2026-01` to `examples/2026-06` and fails with the list of every problem. It accepts them only if:
 
-- exactly the months from first to last are present as `YYYY-MM` folders, each with four nonempty files, all planning the same stations and jumper pools;
+- exactly these six `YYYY-MM` folders are present, each with four nonempty files, and each folder holds the bundle of its own month;
 - every pair is a valid bundle as for an import (format, digest, month, references, found schedule, current rule settings, stored check equal to a re-check);
-- `result.json`, `schedule.csv` and `employees.csv` equal the canonical rendering of the pair, so the tables contain exactly the canonical duties and every participant's account, memberships, availability and credits;
-- the check is **accepted**: no finding and no blocking gap. Rejected or incomplete results are reported as _diagnostic result, not an example_;
-- every duty has an evidenced origin;
+- `result.json`, `schedule.csv` and `employees.csv` equal the rendering of the pair, so the tables contain exactly the canonical duties and every participant's account, memberships, availability and credits;
+- the check is **accepted**: no finding and no blocking gap. A duty without an evidenced origin is an eligibility finding. Rejected or incomplete results are reported as _diagnostic result, not an example_;
+- every month plans the same two stations and jumper pools, with duties at both stations;
 - consecutive months agree: the trusted context duties of a month on the other month's dates equal that month's schedule (both directions), and the availability of the first date of the later month equals the earlier month's context availability.
 
-Non-blocking open items stay visible in the summary: the following month's start (checked by the next month with this schedule as context) and annual free Sundays, which need the whole year and are never reported as passed.
+Non-blocking open items stay visible in each result's check: the following month's start (checked by the next month with this schedule as context) and annual free Sundays, which need the whole year and are never reported as passed. Until the examples are committed, the example and reproduction tests are skipped; tests with small two-month bundles show that the validator accepts a consistent sequence and reports each kind of problem.
 
 ## Interpret objectives and solver settings
 

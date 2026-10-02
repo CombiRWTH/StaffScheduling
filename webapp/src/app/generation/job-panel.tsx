@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Outcome } from "@/components/outcome";
 import { buttonVariants } from "@/components/ui/button";
 import { CHECK_STATUS, RULES, SOLVER_STATUS, monthLabel } from "@/lib/labels";
-import { selectionSearch } from "@/lib/selection";
+import { selectionMonth, selectionSearch } from "@/lib/selection";
 import type { GenerationJob, PlanningUnit, Rule, ScheduleCheck } from "@/lib/types";
 import { RefreshWhileRunning } from "./refresh-while-running";
 
@@ -43,7 +43,7 @@ function CheckDetails({
   month: GenerationJob["request"]["planning_month"];
   stationIds: number[];
 }) {
-  const search = selectionSearch(`${month.year}-${String(month.month).padStart(2, "0")}`, stationIds);
+  const search = selectionSearch(selectionMonth(month.year, month.month), stationIds);
   const blocking = check.not_assessed.filter((row) => row.blocking);
   const open = check.not_assessed.filter((row) => !row.blocking);
   return (

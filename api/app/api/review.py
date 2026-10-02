@@ -4,7 +4,7 @@ from typing import Annotated, Any, Protocol
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, UploadFile, status
 
-from app.solver.bundle import FileName
+from app.solver.bundle import EMPLOYEES_FILE, INPUT_FILE, RESULT_FILE, SCHEDULE_FILE, FileName
 from app.solver.review import ScheduleReview
 
 router = APIRouter()
@@ -24,14 +24,19 @@ def get_review(request: Request) -> Any:
 
 Reviewer = Annotated[ScheduleReviewer, Depends(get_review)]
 
-NONE = "No schedule to review: generate one or import an input.json/result.json pair. Lost when the API restarts."
-MEDIA_TYPES = {".json": "application/json", ".csv": "text/csv; charset=utf-8"}
+NO_REVIEW = "No schedule to review: generate one or import an input.json/result.json pair. Lost when the API restarts."
+MEDIA_TYPES: dict[FileName, str] = {
+    INPUT_FILE: "application/json",
+    RESULT_FILE: "application/json",
+    SCHEDULE_FILE: "text/csv; charset=utf-8",
+    EMPLOYEES_FILE: "text/csv; charset=utf-8",
+}
 
 
 @router.get("/review")
 def get_current_review(reviewer: Reviewer) -> ScheduleReview:
     if (review := reviewer.current()) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=NONE)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=NO_REVIEW)
     return review
 
 
@@ -47,9 +52,9 @@ def import_review(input: UploadFile, result: UploadFile, reviewer: Reviewer) -> 
 @router.get("/review/files/{name}")
 def download_review_file(name: FileName, reviewer: Reviewer) -> Response:
     if (content := reviewer.file(name)) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=NONE)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=NO_REVIEW)
     return Response(
         content,
-        media_type=MEDIA_TYPES[name[name.rindex(".") :]],
+        media_type=MEDIA_TYPES[name],
         headers={"Content-Disposition": f'attachment; filename="{name}"'},
     )

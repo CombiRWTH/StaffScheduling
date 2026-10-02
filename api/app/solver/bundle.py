@@ -2,9 +2,8 @@
 
 The files are readable, solvable and checkable without TimeOffice. A result names the SHA-256 of the
 exact input.json bytes it was solved from, so a pair can be verified with the standard library. Every
-`ScheduleBundle` is a validated pair: the format, the pairing, a found schedule whose references exist,
-and a stored schedule check equal to an independent re-check. CSV tables are derived from the pair and
-never read back.
+`ScheduleBundle` holds a found schedule: just solved, or read from a validated pair. CSV tables are
+derived from the pair and never read back.
 """
 
 import csv
@@ -41,7 +40,6 @@ INPUT_FILE: Final = "input.json"
 RESULT_FILE: Final = "result.json"
 SCHEDULE_FILE: Final = "schedule.csv"
 EMPLOYEES_FILE: Final = "employees.csv"
-FILES = (INPUT_FILE, RESULT_FILE, SCHEDULE_FILE, EMPLOYEES_FILE)
 type FileName = Literal["input.json", "result.json", "schedule.csv", "employees.csv"]
 
 
@@ -100,6 +98,7 @@ class BundleProblem(StrEnum):
     MALFORMED = "malformed"
     MISMATCH = "mismatch"
     NO_SCHEDULE = "no_schedule"
+    POLICY = "policy"
     REFERENCES = "references"
     CHECK = "check"
 
@@ -117,12 +116,14 @@ class ScheduleBundle:
     input_json: bytes
     """The input file exactly as digested."""
     check: ScheduleCheck
-    """The independent re-check, equal to the stored one."""
+    """The schedule check of the found schedule."""
 
     @classmethod
-    def solved(cls, input_json: bytes, solution: Solution) -> Self:
-        """The bundle of a solution found for `input_json`; raises InvalidBundle like `read`."""
-        schedule_input = read_input(input_json)
+    def solved(cls, schedule_input: ScheduleInput, input_json: bytes, solution: Solution) -> Self:
+        """The bundle of `solution`, solved from `schedule_input` serialized as `input_json`.
+
+        The solver's own check is kept; raises InvalidBundle (`no_schedule`) when nothing was found.
+        """
         result = ScheduleResult(
             format_version=FORMAT_VERSION,
             planning_month=schedule_input.dataset.planning_month,
@@ -132,32 +133,33 @@ class ScheduleBundle:
                 python=platform.python_version(), ortools=version("ortools"), pydantic=version("pydantic")
             ),
         )
-        return cls._validated(schedule_input, result, input_json)
+        return cls(schedule_input, result, input_json, _found_check(solution))
 
     @classmethod
     def read(cls, input_json: bytes, result_json: bytes) -> Self:
-        """Validate a pair of files; raises InvalidBundle naming the first problem."""
-        schedule_input = read_input(input_json)
-        return cls._validated(schedule_input, _parse(ScheduleResult, RESULT_FILE, result_json), input_json)
+        """Validate an uploaded pair; raises InvalidBundle naming the first problem.
 
-    @classmethod
-    def _validated(cls, schedule_input: ScheduleInput, result: ScheduleResult, input_json: bytes) -> Self:
+        Beyond the format, the result must name this input's digest and month, hold a found schedule
+        solved with the current rules whose assignments reference the input, and carry a schedule
+        check equal to an independent re-check.
+        """
+        schedule_input = _parse(ScheduleInput, INPUT_FILE, input_json)
+        result = _parse(ScheduleResult, RESULT_FILE, result_json)
         dataset, solution = schedule_input.dataset, result.solution
         if result.input.sha256 != sha256(input_json).hexdigest():
             raise InvalidBundle(BundleProblem.MISMATCH, f"{RESULT_FILE} was solved from another {INPUT_FILE}.")
         if result.planning_month != dataset.planning_month:
             raise InvalidBundle(BundleProblem.MISMATCH, f"{RESULT_FILE} names another planning month.")
-        if solution.check is None:
-            raise InvalidBundle(BundleProblem.NO_SCHEDULE, f"{RESULT_FILE} has no schedule ({solution.status}).")
+        stored = _found_check(solution)
         if solution.configuration.policy != POLICY:
-            raise InvalidBundle(BundleProblem.CHECK, f"{RESULT_FILE} was solved with other rule settings.")
+            raise InvalidBundle(BundleProblem.POLICY, f"{RESULT_FILE} was solved with other rule settings.")
         check = check_schedule(dataset, solution.assignments)
         if any(finding.rule == Rule.INPUT for finding in check.findings):
             raise InvalidBundle(
                 BundleProblem.REFERENCES,
                 f"{RESULT_FILE} has assignments of unknown employees, stations or shifts, outside the month or twice.",
             )
-        if check != solution.check:
+        if check != stored:
             raise InvalidBundle(BundleProblem.CHECK, f"The schedule check in {RESULT_FILE} differs from a re-check.")
         return cls(schedule_input, result, input_json, check)
 
@@ -176,13 +178,16 @@ class ScheduleBundle:
         }
 
 
+def _found_check(solution: Solution) -> ScheduleCheck:
+    if solution.check is None:
+        reasons = "".join(f" {row.message}" for row in solution.diagnostics)
+        raise InvalidBundle(BundleProblem.NO_SCHEDULE, f"{RESULT_FILE} has no schedule ({solution.status}).{reasons}")
+    return solution.check
+
+
 def to_json(model: BaseModel) -> bytes:
     """Indented JSON without derived fields, so it parses back into the same model."""
     return (model.model_dump_json(indent=2, round_trip=True) + "\n").encode()
-
-
-def read_input(input_json: bytes) -> ScheduleInput:
-    return _parse(ScheduleInput, INPUT_FILE, input_json)
 
 
 def _parse[T: BaseModel](model: type[T], name: str, data: bytes) -> T:

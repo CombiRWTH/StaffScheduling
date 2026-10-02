@@ -31,10 +31,10 @@ class ApiError extends Error {
 }
 
 /**
- * One API call; failures become `ApiError`s, `invalid` and `incomplete` describing a 422 and 409 for this call.
- * A `FormData` body is sent as multipart; `problems` names a 422 by the `problem` code in its body.
+ * One API call's response; failures become `ApiError`s, `invalid` and `incomplete` describing a 422 and 409 for
+ * this call. A `FormData` body is sent as multipart; `problems` names a 422 by the `problem` code in its body.
  */
-async function request<T>(
+async function send(
   method: "GET" | "PUT" | "POST" | "DELETE",
   path: string,
   {
@@ -50,7 +50,7 @@ async function request<T>(
     incomplete?: string;
     problems?: Record<string, string>;
   } = {},
-): Promise<T> {
+): Promise<Response> {
   const json = body !== undefined && !(body instanceof FormData);
   let response: Response;
   try {
@@ -70,6 +70,16 @@ async function request<T>(
   }
   if (response.status === 409) throw new ApiError(incomplete, 409);
   if (!response.ok) throw new ApiError(await unavailableMessage(response), response.status);
+  return response;
+}
+
+/** One API call's JSON body, or nothing for `204`. */
+async function request<T>(
+  method: "GET" | "PUT" | "POST" | "DELETE",
+  path: string,
+  options?: Parameters<typeof send>[2],
+): Promise<T> {
+  const response = await send(method, path, options);
   return response.status === 204 ? (undefined as T) : response.json();
 }
 
@@ -201,6 +211,7 @@ const IMPORT_PROBLEMS: Record<BundleProblem, string> = {
   no_schedule: "result.json enthält keinen Dienstplan.",
   references:
     "result.json enthält Dienste unbekannter Mitarbeiter, Stationen oder Schichten oder außerhalb des Monats.",
+  policy: "result.json wurde mit anderen Regeleinstellungen gelöst.",
   check: "Die Prüfung in result.json weicht von der unabhängigen Prüfung ab.",
 };
 
@@ -217,20 +228,14 @@ export function importReview(files: FormData) {
 export const REVIEW_FILES = ["input.json", "result.json", "schedule.csv", "employees.csv"] as const;
 export type ReviewFile = (typeof REVIEW_FILES)[number];
 
-/** One file of the schedule under review as the API's response, or `null` without a review. */
+/** One file of the schedule under review as the API's attachment response, or `null` without a review. */
 export async function getReviewFile(name: ReviewFile): Promise<Response | null> {
-  let response: Response;
   try {
-    response = await fetch(`${API_URL}/review/files/${name}`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
-    });
-  } catch {
-    throw new ApiError("Backend nicht erreichbar. Verbindung und Einrichtung prüfen.");
+    return await send("GET", `/review/files/${name}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
   }
-  if (response.status === 404) return null;
-  if (!response.ok) throw new ApiError(await unavailableMessage(response), response.status);
-  return response;
 }
 
 export async function isApiHealthy() {

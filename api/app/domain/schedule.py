@@ -92,19 +92,15 @@ class ScheduleTables(SchedulingBaseModel):
 
 
 def schedule_tables(dataset: SchedulingDataset, assignments: Iterable[Assignment]) -> ScheduleTables:
-    """The tables of the month's assignments; every assignment must reference the dataset.
+    """The tables of the month's assignments.
 
+    Every assignment must reference the dataset, which a schedule check without input findings proves.
     Duties are sorted by date, station, start and employee; employees and staffing by their IDs.
     """
     employees = {row.employee_id: row for row in dataset.employees}
     units = {row.planning_unit_id: row for row in dataset.planning_units}
     shifts = {row.shift_id: row for row in dataset.shifts}
     assignments = tuple(assignments)
-    if any(
-        row.employee_id not in employees or row.planning_unit_id not in units or row.shift_id not in shifts
-        for row in assignments
-    ):
-        raise ValueError("An assignment references an unknown employee, planning unit or shift.")
 
     duties: list[DutyRow] = []
     for row in assignments:
@@ -138,7 +134,6 @@ def schedule_tables(dataset: SchedulingDataset, assignments: Iterable[Assignment
     generated = Counter[int]()
     for row in assignments:
         generated[row.employee_id] += shifts[row.shift_id].net_work_minutes
-    month = dataset.planning_month
     rows: list[EmployeeRow] = []
     for account in sorted(dataset.monthly_work_accounts, key=lambda row: row.employee_id):
         employee = employees[account.employee_id]
@@ -147,7 +142,7 @@ def schedule_tables(dataset: SchedulingDataset, assignments: Iterable[Assignment
                 employee_id=employee.employee_id,
                 employee_name=employee.display_name,
                 staff_level=employee.staff_level,
-                planning_month=f"{month.year}-{month.month:02d}",
+                planning_month=dataset.planning_month.label,
                 target_minutes=account.target_minutes,
                 credited_minutes=account.credited_minutes,
                 generated_minutes=generated[employee.employee_id],

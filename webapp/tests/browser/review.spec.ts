@@ -69,7 +69,9 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   expect(JSON.parse(await download(page, "input.json")).dataset.planning_month).toEqual({ year: 2026, month: 6 });
 });
 
-test("only a valid matching pair is imported; a rejected upload keeps the current review", async ({ page }) => {
+test("a downloaded pair is imported; a rejected pair names its reason and keeps the current review", async ({
+  page,
+}) => {
   await page.goto(JUNE);
   await expect(summary(page)).toBeVisible();
   const input = await download(page, "input.json");
@@ -79,21 +81,13 @@ test("only a valid matching pair is imported; a rejected upload keeps the curren
   await expect(summary(page)).toContainText("Importiert");
   const imported = await summary(page).textContent();
 
+  // Each reason the backend names is covered by the API tests; this one shows how a rejection reads.
   const otherInput = JSON.parse(input);
   otherInput.dataset.monthly_work_accounts[0].target_minutes += 1;
-  const unknownEmployee = JSON.parse(result);
-  unknownEmployee.solution.assignments[0].employee_id = 999;
-  const cases: [string, string, RegExp][] = [
-    ["{", result, /Dateien ungültig/],
-    [JSON.stringify(otherInput), result, /gehört zu einer anderen input.json/],
-    [input, JSON.stringify(unknownEmployee), /Dienste unbekannter Mitarbeiter/],
-  ];
-  for (const [inputFile, resultFile, message] of cases) {
-    await upload(page, inputFile, resultFile);
-    const alert = page.getByRole("alert").filter({ hasText: "Der bisherige Dienstplan bleibt zur Prüfung." });
-    await expect(alert).toContainText(message);
-    await expect(summary(page)).toHaveText(imported!);
-  }
+  await upload(page, JSON.stringify(otherInput), result);
+  const alert = page.getByRole("alert").filter({ hasText: "Der bisherige Dienstplan bleibt zur Prüfung." });
+  await expect(alert).toContainText("gehört zu einer anderen input.json");
+  await expect(summary(page)).toHaveText(imported!);
 });
 
 test("a schedule of another scope is not shown as the selected one", async ({ page }) => {

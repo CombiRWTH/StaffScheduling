@@ -300,9 +300,14 @@ export interface ScheduleReview {
   planning_units: PlanningUnit[];
   shifts: Shift[];
   calendar: CalendarDay[];
-  solution: Solution & { check: ScheduleCheck; configuration: RunConfiguration };
+  /** Always a found schedule: it has its objective and check. */
+  solution: Solution & {
+    check: ScheduleCheck;
+    configuration: RunConfiguration;
+    objective: NonNullable<Solution["objective"]>;
+  };
   tables: { duties: DutyRow[]; employees: EmployeeRow[]; staffing: StaffingRow[] };
 }
 
 /** Why the backend refused an uploaded pair of files. */
-export type BundleProblem = "malformed" | "mismatch" | "no_schedule" | "references" | "check";
+export type BundleProblem = "malformed" | "mismatch" | "no_schedule" | "policy" | "references" | "check";

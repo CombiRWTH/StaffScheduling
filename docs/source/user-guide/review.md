@@ -35,7 +35,7 @@ _Monatskonten_ lists every employee's target, credited, generated minutes and ba
 1. Under **Importieren**, choose an `input.json` and its `result.json`.
 2. Select **Importieren**.
 
-The backend validates the pair before replacing the schedule under review: both files must be format version 1 without unknown fields, `result.json` must name the SHA-256 digest of exactly this `input.json` and its month, contain a found schedule whose assignments reference the input's employees, stations and shifts within the month, have been solved with the current rule settings, and carry a schedule check equal to an independent re-check. A rejected pair shows why (invalid files, files that do not belong together, unknown duties, a differing check) and _Der bisherige Dienstplan bleibt zur Prüfung_: the current review and its downloads stay unchanged. An import never publishes and never stores a copy.
+The backend validates the pair before replacing the schedule under review: both files must be format version 1 without unknown fields, `result.json` must name the SHA-256 digest of exactly this `input.json` and its month, contain a found schedule whose assignments reference the input's employees, stations and shifts within the month, have been solved with the current rule settings, and carry a schedule check equal to an independent re-check. A rejected pair shows why (invalid files, files that do not belong together, no schedule, other rule settings, unknown duties, a differing check) and _Der bisherige Dienstplan bleibt zur Prüfung_: the current review and its downloads stay unchanged. An import never publishes and never stores a copy.
 
 ## Download JSON and CSV files
 

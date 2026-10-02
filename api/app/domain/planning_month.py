@@ -30,5 +30,10 @@ class PlanningMonth(SchedulingBaseModel):
         """Every date of the month in order."""
         return tuple(self.start + timedelta(days=offset) for offset in range(self.end.day))
 
+    @property
+    def label(self) -> str:
+        """`YYYY-MM`, the month's folder and CSV notation."""
+        return f"{self.year}-{self.month:02d}"
+
     def __contains__(self, day: date) -> bool:
         return self.start <= day <= self.end

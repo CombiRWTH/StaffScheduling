@@ -49,8 +49,9 @@ reportUnusedVariable = "warning"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-m 'not timeoffice'"
+addopts = "-m 'not timeoffice and not reproduction'"
 markers = [
     "integration: offline tests that run the solver or cross module boundaries",
-    "timeoffice: tests requiring an explicitly declared external test database"
+    "timeoffice: tests requiring an explicitly declared external test database",
+    "reproduction: tests that solve the committed example inputs again; minutes, run on request"
 ]

@@ -10,12 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { PlanningScope } from "@/lib/scope";
-import { MONTHS, selectionSearch } from "@/lib/selection";
+import { MONTHS, selectionMonth, selectionSearch } from "@/lib/selection";
 import { cn } from "@/lib/utils";
-
-function toMonth(year: number, month: number) {
-  return `${year}-${String(month).padStart(2, "0")}`;
-}
 
 /** Month and station selection; the URL is the only state. */
 export function PlanningScopePicker({ month, stationIds, stations, error }: PlanningScope) {
@@ -45,7 +41,7 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
     <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Planungsauswahl">
       <Select
         value={String(monthNumber)}
-        onValueChange={(value) => changeMonth(toMonth(year, Number(value)))}
+        onValueChange={(value) => changeMonth(selectionMonth(year, Number(value)))}
         disabled={pending}
       >
         <SelectTrigger className="h-8 w-[124px]" aria-label="Monat">
@@ -73,7 +69,7 @@ export function PlanningScopePicker({ month, stationIds, stations, error }: Plan
           const nextYear = Number(event.currentTarget.value);
           if (!Number.isInteger(nextYear) || nextYear < 2000 || nextYear > 2200)
             event.currentTarget.value = String(year);
-          else changeMonth(toMonth(nextYear, monthNumber));
+          else changeMonth(selectionMonth(nextYear, monthNumber));
         }}
       />
 

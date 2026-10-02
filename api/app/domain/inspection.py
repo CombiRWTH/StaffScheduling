@@ -69,6 +69,26 @@ def _associated_jumper_pool_ids(
     }
 
 
+def validate_employee_facts(
+    month: PlanningMonth,
+    unit_ids: set[int],
+    memberships: tuple[PlanningUnitMembership, ...],
+    accounts: Iterable[MonthlyWorkAccount],
+) -> None:
+    """Raise ValueError unless every membership names a known unit, each employee has one home on every
+    date with a membership, and every credit lies inside the month.
+
+    Inspections and scheduling datasets share these rules, so a dataset read from a file obeys them too.
+    """
+    if any(row.planning_unit_id not in unit_ids for row in memberships):
+        raise ValueError("Membership of an unknown planning unit.")
+    for employee_id in {row.employee_id for row in memberships}:
+        for day in month.dates:
+            home_unit_id(memberships, employee_id, day)
+    if any(credit.date not in month for account in accounts for credit in account.credit_details):
+        raise ValueError("Work credit outside the planning month.")
+
+
 def build_inspection(
     *,
     planning_month: PlanningMonth,
@@ -91,19 +111,13 @@ def build_inspection(
     if len(set(account_ids)) != len(account_ids) or set(account_ids) != employee_ids:
         raise ValueError("Every employee requires exactly one monthly account.")
     accounts_by_id = {row.employee_id: row for row in accounts}
-    for membership in memberships:
-        if membership.planning_unit_id not in unit_ids:
-            raise ValueError("Unknown membership unit.")
+    validate_employee_facts(planning_month, unit_ids, memberships, accounts)
     if any(row.employee_id not in employee_ids for row in availability):
         raise ValueError("Unknown employee in availability.")
     inspected: list[EmployeeInspection] = []
     for employee in employees:
         employee_memberships = tuple(row for row in memberships if row.employee_id == employee.employee_id)
-        for day in planning_month.dates:  # raises unless every date with a membership has one home
-            home_unit_id(employee_memberships, employee.employee_id, day)
         account = accounts_by_id[employee.employee_id]
-        if any(credit.date not in planning_month for credit in account.credit_details):
-            raise ValueError("Credit date is outside the selected month.")
         employee_availability = tuple(row for row in availability if row.employee_id == employee.employee_id)
         for row in employee_availability:
             if row.date not in planning_month:

@@ -252,7 +252,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                   {SHIFT_TYPE_LABELS[type]}
                 </span>
               ))}
-            <span>U, SC …: Abwesenheit oder Einschränkung</span>
+            <span>Grund oder Kürzel (U, FB, Fr, nur …): Abwesenheit oder Einschränkung</span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block size-3 rounded ring-2 ring-inset ring-destructive" />
               Regelverstoß

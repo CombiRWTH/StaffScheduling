@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getReview } from "@/lib/api";
 import { monthLabel } from "@/lib/labels";
 import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
-import { selectionSearch } from "@/lib/selection";
+import { selectionMonth, selectionSearch } from "@/lib/selection";
 import type { ScheduleReview } from "@/lib/types";
 import { AccountTable } from "./account-table";
 import { ImportForm } from "./import-form";
@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: "Dienstplan prüfen · Schichtplanung
 function reviewScope(review: ScheduleReview) {
   const { year, month } = review.planning_month;
   const stations = review.planning_units.filter((unit) => unit.type === "station");
-  return { month: `${year}-${String(month).padStart(2, "0")}`, stations };
+  return { month: selectionMonth(year, month), stations };
 }
 
 export default async function ReviewPage({ searchParams }: { searchParams: Promise<ScopeSearchParams> }) {

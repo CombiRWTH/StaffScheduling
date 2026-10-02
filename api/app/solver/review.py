@@ -40,7 +40,9 @@ class Review:
     def generated(self, dataset: SchedulingDataset, solution: Solution) -> None:
         """Review a generation's solution, if it found a schedule."""
         if solution.found:
-            self._show(ScheduleBundle.solved(to_json(ScheduleInput.of(dataset)), solution), ReviewSource.GENERATION)
+            schedule_input = ScheduleInput.of(dataset)
+            bundle = ScheduleBundle.solved(schedule_input, to_json(schedule_input), solution)
+            self._show(bundle, ReviewSource.GENERATION)
 
     def imported(self, input_json: bytes, result_json: bytes) -> ScheduleReview:
         """Review an uploaded pair; raises InvalidBundle and keeps the current review if it is not a bundle."""
