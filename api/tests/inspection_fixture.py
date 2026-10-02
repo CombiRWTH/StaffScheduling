@@ -13,8 +13,13 @@ from unittest.mock import MagicMock
 from sqlalchemy import Engine
 
 from app.domain import PlanningUnitType
-from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable
-from app.timeoffice.facts import SCHOOL_CREDIT_ACCOUNT_ID, TIMEOFFICE_FACTS, VACATION_CREDIT_ACCOUNT_ID
+from app.timeoffice import TimeOfficeConflict, TimeOfficeService, TimeOfficeUnavailable
+from app.timeoffice.facts import (
+    GENERATED_DUTY_INFO,
+    SCHOOL_CREDIT_ACCOUNT_ID,
+    TIMEOFFICE_FACTS,
+    VACATION_CREDIT_ACCOUNT_ID,
+)
 
 SHIFT_CODES = {1113: "F", 1453: "Z", 1605: "S", 1690: "N"}
 
@@ -73,9 +78,12 @@ class InspectionSource:
         self.tables: dict[str, list[dict[str, Any]]] = {name: [] for name in PROJECT_TABLES}
         # Writes naming one of these employee or station IDs fail like a lost connection.
         self.failing_ids: set[int] = set()
-        # Writable TPlanPersonalKommtGeht rows (published duties, test wishes, absences and other plans' duties),
-        # keyed like TimeOffice by (employee_id, roster_date, status_id, number) without the plan.
+        # Writable TPlanPersonalKommtGeht rows (published duties, test wishes, absences, duties entered in
+        # TimeOffice and other plans' duties), keyed like TimeOffice by (employee_id, roster_date, status_id,
+        # number) without the plan.
         self.roster: list[dict[str, Any]] = []
+        # Roster inserts naming one of these employee or station IDs collide like a concurrent writer.
+        self.conflicting_ids: set[int] = set()
         # Called before roster rows are inserted, so a test can hold a publication mid-transaction.
         self.before_roster_insert: Callable[[], None] = lambda: None
         self.facts = replace(
@@ -110,8 +118,13 @@ class InspectionSource:
 
     @staticmethod
     def is_output(row: dict[str, Any], plan_ids: list[int]) -> bool:
-        """A worked row of one of the target plans, as publication's SQL defines its output."""
-        return row["plan_id"] in plan_ids and not row.get("wish") and not row.get("absence")
+        """A published duty row of one of the target plans, as publication's SQL defines its output."""
+        return (
+            row["plan_id"] in plan_ids
+            and not row.get("wish")
+            and not row.get("absence")
+            and row.get("info") == GENERATED_DUTY_INFO
+        )
 
     def _write_roster(self, sql: str, params: dict[str, Any] | list[dict[str, Any]]) -> None:
         if sql.lstrip().startswith("DELETE"):
@@ -121,11 +134,14 @@ class InspectionSource:
         assert isinstance(params, list)
         self.before_roster_insert()
         for row in params:
-            if row["employee_id"] in self.failing_ids:
+            ids = {row["employee_id"], row["planning_unit_id"]}
+            if ids & self.failing_ids:
                 raise TimeOfficeUnavailable("query", "TimeOffice query failed.")
             key = (row["employee_id"], row["roster_date"], row["status_id"], row["number"])
-            if any((r["employee_id"], r["roster_date"], r["status_id"], r["number"]) == key for r in self.roster):
-                raise TimeOfficeUnavailable("query", "TimeOffice query failed.")
+            if ids & self.conflicting_ids or any(
+                (r["employee_id"], r["roster_date"], r["status_id"], r["number"]) == key for r in self.roster
+            ):
+                raise TimeOfficeConflict("TimeOffice changed concurrently.")
             self.roster.append(dict(row))
 
     def _roster_rows(self, sql: str, params: dict[str, Any]) -> list[dict[str, Any]]:

@@ -1,8 +1,9 @@
 """Published duties in the stations' TimeOffice target plans: validated rows, read-back, replacement and clear.
 
 TimeOffice stores a duty as one `TPlanPersonalKommtGeht` row per work segment of its shift, dated on the
-duty's start date and keyed by (RefPersonal, Datum, RefStati, lfdNr) without the plan. The worked rows of
-a target plan are its published output; absences, wishes and every row of other plans are kept.
+duty's start date and keyed by (RefPersonal, Datum, RefStati, lfdNr) without the plan. The published output
+of a target plan is its worked rows marked with `Info` = `generated_duty_info`; absences, wishes, duties
+entered in TimeOffice and every row of other plans are kept.
 
 Representative write: a duty gets its reference shift's catalog segments with their wall-clock minutes,
 the profession of the employee's membership at the station that books its qualification, and the
@@ -40,7 +41,8 @@ def duty_rows(
 
     Raises InvalidSelection for duties outside the stations, month or reference shifts or a second duty of
     an employee on one date; ValueError when no single membership profession books a duty's qualification;
-    PublicationRejected (conflict) when the employee has an absence or a duty outside the replaced output that day.
+    PublicationRejected (conflict) when the employee has an absence or a duty outside the replaced output that day,
+    including a duty entered in TimeOffice in the target plan itself.
     """
     catalog = {shift.shift_id: shift for shift in shifts}
     if any(row.planning_unit_id not in plans or row.date not in month for row in assignments):
@@ -88,6 +90,7 @@ def duty_rows(
                     "segment_start": start,
                     "segment_end": start + timedelta(minutes=minutes),
                     "minutes": minutes,
+                    "info": facts.generated_duty_info,
                 }
             )
     return rows
@@ -99,9 +102,9 @@ def insert_rows(connection: Connection, rows: list[dict[str, Any]]) -> None:
             """
             INSERT INTO TPlanPersonalKommtGeht
                 (RefPlan, RefPersonal, Datum, RefStati, lfdNr, RefDienste, RefBerufe, RefPlanungseinheiten,
-                VonZeit, BisZeit, Minuten, Wunschdienst, RefPeinheitOwner)
+                VonZeit, BisZeit, Minuten, Wunschdienst, RefPeinheitOwner, Info)
             VALUES (:plan_id, :employee_id, :roster_date, :status_id, :number, :shift_id, :profession_id,
-                :planning_unit_id, :segment_start, :segment_end, :minutes, 0, :planning_unit_id)
+                :planning_unit_id, :segment_start, :segment_end, :minutes, 0, :planning_unit_id, :info)
             """
         ),
         rows,
@@ -129,14 +132,16 @@ def read_output(
             AND ISNULL(pkg.Wunschdienst, 0) = 0
             AND pkg.RefgAbw IS NULL
             AND pkg.RefDienstAbw IS NULL
+            AND ISNULL(pkg.Info, N'') = :generated_info
         ORDER BY pkg.RefPersonal, pkg.Datum, pkg.lfdNr
         """,
         plan_ids=plan_ids,
+        generated_info=facts.generated_duty_info,
     )
     return duties_from_segments(rows, shifts, facts, "published duty")
 
 
-def count_output(connection: Connection, plan_ids: list[int]) -> int:
+def count_output(connection: Connection, facts: TimeOfficeFacts, plan_ids: list[int]) -> int:
     """The number of published duties (employee and date) in the target plans, whatever their rows hold."""
     rows = select_rows(
         connection,
@@ -149,16 +154,18 @@ def count_output(connection: Connection, plan_ids: list[int]) -> int:
                 AND ISNULL(pkg.Wunschdienst, 0) = 0
                 AND pkg.RefgAbw IS NULL
                 AND pkg.RefDienstAbw IS NULL
+                AND ISNULL(pkg.Info, N'') = :generated_info
         ) published
         """,
         plan_ids=plan_ids,
+        generated_info=facts.generated_duty_info,
     )
     return rows[0]["duties"]
 
 
-def delete_output(connection: Connection, plan_ids: list[int]) -> None:
-    """Delete the worked rows of the target plans; their absences and wishes stay."""
-    params = {"plan_ids": plan_ids}
+def delete_output(connection: Connection, facts: TimeOfficeFacts, plan_ids: list[int]) -> None:
+    """Delete the published duty rows of the target plans; their other rows stay."""
+    params: dict[str, Any] = {"plan_ids": plan_ids, "generated_info": facts.generated_duty_info}
     connection.execute(
         statement(
             """
@@ -167,6 +174,7 @@ def delete_output(connection: Connection, plan_ids: list[int]) -> None:
                 AND ISNULL(pkg.Wunschdienst, 0) = 0
                 AND pkg.RefgAbw IS NULL
                 AND pkg.RefDienstAbw IS NULL
+                AND ISNULL(pkg.Info, N'') = :generated_info
             """,
             params,
         ),
@@ -195,10 +203,12 @@ def _kept_rows(
                 AND ISNULL(pkg.Wunschdienst, 0) = 0
                 AND pkg.RefgAbw IS NULL
                 AND pkg.RefDienstAbw IS NULL
+                AND ISNULL(pkg.Info, N'') = :generated_info
             )
         """,
         employee_ids=employee_ids,
         plan_ids=plan_ids,
+        generated_info=facts.generated_duty_info,
         start=month.start,
         end=month.end,
     )

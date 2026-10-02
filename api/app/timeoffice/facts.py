@@ -16,6 +16,9 @@ TARGET_PLANNING_STATUS_ID = 20
 # TPlan.RefStati value of plans whose worked roster rows are trusted context around a month.
 TRUSTED_CONTEXT_STATUS_ID = 30
 
+# TPlanPersonalKommtGeht.Info of the duty rows this application publishes; only these rows are its output.
+GENERATED_DUTY_INFO = "StaffScheduling"
+
 # TPersonalKontenJeMonat.RefKonten for planned monthly target hours.
 MONTHLY_TARGET_WORK_ACCOUNT_ID = 1
 
@@ -57,6 +60,7 @@ class TimeOfficeFacts:
     monthly_planning_interval_id: int
     target_planning_status_id: int
     trusted_context_status_id: int
+    generated_duty_info: str
 
     planning_unit_type_by_id: Mapping[PlanningUnitId, PlanningUnitType]
 
@@ -127,6 +131,7 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     monthly_planning_interval_id=MONTHLY_PLANNING_INTERVAL_ID,
     target_planning_status_id=TARGET_PLANNING_STATUS_ID,
     trusted_context_status_id=TRUSTED_CONTEXT_STATUS_ID,
+    generated_duty_info=GENERATED_DUTY_INFO,
     planning_unit_type_by_id=MappingProxyType(
         {
             EXAMPLE_STATION_A_ID: PlanningUnitType.STATION,

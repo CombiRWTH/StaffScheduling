@@ -12,7 +12,7 @@ from app.solver.bundle import InvalidBundle
 from app.solver.generation import Generation
 from app.solver.review import Review
 from app.solver.service import SolverService
-from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable, create_db_engine
+from app.timeoffice import TimeOfficeConflict, TimeOfficeService, TimeOfficeUnavailable, create_db_engine
 
 settings = get_settings()
 configure_logging(level=settings.log_level)
@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     source = TimeOfficeService(engine)
     solver = SolverService(settings)
     app.state.planning_source = source
-    app.state.review = Review(publish=source.publish)
+    app.state.review = Review()
     app.state.generation = Generation(
         read_input=source.read_generation_input, solve=solver.solve, on_solved=app.state.review.generated
     )
@@ -55,6 +55,11 @@ async def timeoffice_unavailable(_request: Request, error: TimeOfficeUnavailable
 @app.exception_handler(InvalidBundle)
 async def invalid_bundle(_request: Request, error: InvalidBundle) -> JSONResponse:
     return JSONResponse(status_code=422, content={"detail": str(error), "problem": error.problem})
+
+
+@app.exception_handler(TimeOfficeConflict)
+async def timeoffice_conflict(_request: Request, error: TimeOfficeConflict) -> JSONResponse:
+    return JSONResponse(status_code=409, content={"detail": str(error), "problem": "concurrent"})
 
 
 @app.exception_handler(PublicationRejected)

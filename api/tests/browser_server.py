@@ -7,7 +7,6 @@ from fastapi import Request
 from inspection_fixture import InspectionSource
 
 from app.api.generation import get_generation
-from app.api.publication import get_publisher
 from app.api.review import get_review
 from app.api.shared import get_planning_source
 from app.domain import DemandCell, MonthlyDemand, PlanningMonth, SchedulingDataset, StaffLevel
@@ -61,14 +60,15 @@ source.service.save_demand(
         ),
     )
 )
-# Configuration writes for this employee and station fail, so the browser can check failed saves.
+# Configuration and roster writes for this employee and station fail, so the browser can check failed saves.
 source.failing_ids = {3, 102}
 
 solver = SolverService(get_settings())
 
 
 def browser_input(*, planning_unit_ids: tuple[int, ...], planning_month: PlanningMonth) -> SchedulingDataset:
-    source.context_plans = 102 not in planning_unit_ids
+    """Station South alone has no trusted context; with Station North it has (and its roster writes fail)."""
+    source.context_plans = 101 in planning_unit_ids
     return source.service.read_generation_input(planning_unit_ids=planning_unit_ids, planning_month=planning_month)
 
 
@@ -85,11 +85,10 @@ def browser_solve(dataset: SchedulingDataset, timeout: float) -> Solution:
     return solver.solve(dataset, timeout=min(timeout, 3))
 
 
-review = Review(publish=source.service.publish)
+review = Review()
 generation = Generation(read_input=browser_input, solve=browser_solve, on_solved=review.generated)
 app.dependency_overrides[get_generation] = lambda: generation
 app.dependency_overrides[get_review] = lambda: review
-app.dependency_overrides[get_publisher] = lambda: review
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=18080)

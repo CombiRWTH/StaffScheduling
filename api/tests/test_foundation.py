@@ -10,7 +10,7 @@ from pydantic import SecretStr, ValidationError
 
 from app.main import app
 from app.settings import Settings
-from app.timeoffice.database import TimeOfficeUnavailable, create_db_engine, diagnose
+from app.timeoffice.database import TimeOfficeConflict, TimeOfficeUnavailable, create_db_engine, diagnose
 
 
 def offline_settings(db_timeout_seconds: int = 5) -> Settings:
@@ -63,6 +63,11 @@ def test_shared_engine_has_verified_tls_and_sanitizes_login_and_query(monkeypatc
         # Invoke the same engine error boundary used by SQLAlchemy for DBAPI query failures.
         with pytest.raises(TimeOfficeUnavailable, match="permissions"):
             engine.dialect.dispatch.handle_error(MagicMock())
+        # A deadlock victim or duplicate key is a rolled-back conflict, also without driver text.
+        for error in (pyodbc.Error("40001", "private-test-marker deadlock"), pyodbc.IntegrityError("23000", "x")):
+            with pytest.raises(TimeOfficeConflict, match="nothing was changed") as conflict:
+                engine.dialect.dispatch.handle_error(MagicMock(original_exception=error))
+            assert "private-test-marker" not in str(conflict.value)
     finally:
         engine.dispose()
 

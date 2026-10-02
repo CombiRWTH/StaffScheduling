@@ -2,7 +2,7 @@ from collections.abc import Iterator
 from datetime import date
 from threading import Event
 from time import monotonic, sleep
-from typing import Never, cast
+from typing import cast
 
 import httpx
 import pytest
@@ -27,16 +27,6 @@ from app.solver.generation import Generation, GenerationBusy, GenerationJob, Gen
 from app.solver.models import ObjectiveWeights, RunConfiguration, Solution, SolutionStatus
 from app.solver.review import Review
 from app.solver.service import SolverService
-
-
-def unpublished() -> Review:
-    """A review for generation tests, which never publish."""
-
-    def publish(**_: object) -> Never:
-        raise AssertionError("Generation never publishes.")
-
-    return Review(publish=publish)
-
 
 JANUARY = PlanningMonth(year=2026, month=1)
 REQUEST = GenerationRequest(planning_unit_ids=(101,), planning_month=JANUARY, timeout_seconds=30)
@@ -101,7 +91,7 @@ def read_nothing(**_: object) -> SchedulingDataset:
 
 def test_generation_accepts_at_once_rejects_overlap_and_releases_after_finishing() -> None:
     solve = HeldSolve()
-    generation = Generation(read_input=read_nothing, solve=solve, on_solved=unpublished().generated)
+    generation = Generation(read_input=read_nothing, solve=solve, on_solved=Review().generated)
 
     job = generation.start(REQUEST)
     assert solve.started.wait(5)
@@ -126,7 +116,7 @@ def test_generation_accepts_at_once_rejects_overlap_and_releases_after_finishing
 def test_failed_solve_and_failed_input_release_the_lock() -> None:
     solve = HeldSolve(RuntimeError("solver crashed with internal details"))
     solve.release.set()
-    generation = Generation(read_input=read_nothing, solve=solve, on_solved=unpublished().generated)
+    generation = Generation(read_input=read_nothing, solve=solve, on_solved=Review().generated)
 
     generation.start(REQUEST)
     failed = finished(generation)
@@ -138,11 +128,11 @@ def test_failed_solve_and_failed_input_release_the_lock() -> None:
     def invalid(**_: object) -> SchedulingDataset:
         raise InvalidSelection("not plannable")
 
-    rejecting = Generation(read_input=invalid, solve=solve, on_solved=unpublished().generated)
+    rejecting = Generation(read_input=invalid, solve=solve, on_solved=Review().generated)
     with pytest.raises(InvalidSelection):
         rejecting.start(REQUEST)
     assert rejecting.latest() is None
-    rejecting = Generation(read_input=read_nothing, solve=solve, on_solved=unpublished().generated)
+    rejecting = Generation(read_input=read_nothing, solve=solve, on_solved=Review().generated)
     assert rejecting.start(REQUEST).state == JobState.RUNNING
     finished(rejecting)
 
@@ -233,7 +223,7 @@ def generation(source: InspectionSource) -> Iterator[Generation]:
     generation = Generation(
         read_input=source.service.read_generation_input,
         solve=lambda dataset, timeout: solver.solve(dataset, timeout=min(timeout, 2)),
-        on_solved=unpublished().generated,
+        on_solved=Review().generated,
     )
     yield generation
     generation.shutdown()
@@ -297,9 +287,7 @@ def test_http_generation_rejects_invalid_or_incomplete_input(
 def test_http_generation_rejects_a_second_run_while_busy(source: InspectionSource) -> None:
     save_demand(source)
     solve = HeldSolve()
-    generation = Generation(
-        read_input=source.service.read_generation_input, solve=solve, on_solved=unpublished().generated
-    )
+    generation = Generation(read_input=source.service.read_generation_input, solve=solve, on_solved=Review().generated)
     app.dependency_overrides[get_generation] = lambda: generation
     try:
         client = cast(httpx.Client, TestClient(app))
@@ -318,8 +306,8 @@ def test_http_generation_forgets_jobs_on_restart(source: InspectionSource) -> No
     save_demand(source)
     solve = HeldSolve()
     solve.release.set()
-    before = Generation(read_input=source.service.read_generation_input, solve=solve, on_solved=unpublished().generated)
-    after = Generation(read_input=source.service.read_generation_input, solve=solve, on_solved=unpublished().generated)
+    before = Generation(read_input=source.service.read_generation_input, solve=solve, on_solved=Review().generated)
+    after = Generation(read_input=source.service.read_generation_input, solve=solve, on_solved=Review().generated)
     client = cast(httpx.Client, TestClient(app))
     try:
         app.dependency_overrides[get_generation] = lambda: before

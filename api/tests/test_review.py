@@ -276,19 +276,14 @@ def test_published_schemas_are_the_model_schemas() -> None:
 
 
 @pytest.fixture
-def source() -> InspectionSource:
+def review() -> Review:
+    return Review()
+
+
+@pytest.fixture
+def client(review: Review) -> Iterator[tuple[httpx.Client, Generation, InspectionSource]]:
     source = InspectionSource()
     save_demand(source)
-    return source
-
-
-@pytest.fixture
-def review(source: InspectionSource) -> Review:
-    return Review(publish=source.service.publish)
-
-
-@pytest.fixture
-def client(review: Review, source: InspectionSource) -> Iterator[tuple[httpx.Client, Generation, InspectionSource]]:
     solver = SolverService(Settings(solver_num_search_workers=1))
     generation = Generation(
         read_input=source.service.read_generation_input,

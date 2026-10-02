@@ -14,7 +14,6 @@ from inspection_fixture import PROFESSION_IDS, InspectionSource
 from test_generation import BODY, finished, save_demand
 
 from app.api.generation import get_generation
-from app.api.publication import get_publisher
 from app.api.review import get_review
 from app.api.shared import get_planning_source
 from app.domain import (
@@ -31,7 +30,8 @@ from app.settings import Settings
 from app.solver.generation import Generation
 from app.solver.review import Review
 from app.solver.service import SolverService
-from app.timeoffice import TimeOfficeUnavailable
+from app.timeoffice import TimeOfficeConflict, TimeOfficeUnavailable
+from app.timeoffice.facts import GENERATED_DUTY_INFO
 
 JANUARY = PlanningMonth(year=2026, month=1)
 EARLY, NIGHT = 1113, 1690
@@ -72,18 +72,21 @@ def roster_row(plan_id: int, employee_id: int, day: int, number: int = 1, **fiel
     }
 
 
-# Rows publication must keep: a native wish and an absence in North's target, and a duty in another plan.
+# Rows publication must keep: a native wish, an absence and a duty entered in TimeOffice in North's target,
+# and a duty in another plan.
 WISH = roster_row(NORTH_PLAN, 2, 5, wish=True, shift_id=NIGHT)
 ABSENCE = roster_row(NORTH_PLAN, 2, 20, absence="U", shift_id=None, minutes=0)
+ENTERED_DUTY = roster_row(NORTH_PLAN, 2, 14)
 OTHER_PLAN_DUTY = roster_row(9, 2, 12, planning_unit_id=999)
-# Earlier output in North's target that publication replaces.
-EARLIER_OUTPUT = roster_row(NORTH_PLAN, 2, 9)
+# Earlier published output in North's target, which publication replaces.
+EARLIER_OUTPUT = roster_row(NORTH_PLAN, 2, 9, info=GENERATED_DUTY_INFO)
+KEPT = [WISH, ABSENCE, ENTERED_DUTY, OTHER_PLAN_DUTY]
 
 
 @pytest.fixture
 def source() -> InspectionSource:
     source = InspectionSource()
-    source.roster = [copy.deepcopy(row) for row in (WISH, ABSENCE, OTHER_PLAN_DUTY, EARLIER_OUTPUT)]
+    source.roster = [copy.deepcopy(row) for row in (*KEPT, EARLIER_OUTPUT)]
     return source
 
 
@@ -108,7 +111,7 @@ def test_publication_writes_each_segment_into_the_destination_target_and_keeps_o
     result = publish(source)
 
     assert (result.removed_duties, result.published_duties) == (1, 2)
-    assert kept(source) == [WISH, ABSENCE, OTHER_PLAN_DUTY]
+    assert kept(source) == KEPT
     rows = {(row["employee_id"], row["number"]): row for row in output(source)}
     # The early duty is numbered after the native wish of that date and books the team profession.
     early = [rows[(2, 2)], rows[(2, 3)]]
@@ -135,6 +138,7 @@ def test_invalid_or_conflicting_schedules_fail_before_anything_is_deleted(source
     before = copy.deepcopy(source.roster)
     absent = TEAM_EARLY.model_copy(update={"date": JANUARY.start.replace(day=20)})
     elsewhere = TEAM_EARLY.model_copy(update={"date": JANUARY.start.replace(day=12)})
+    entered = TEAM_EARLY.model_copy(update={"date": JANUARY.start.replace(day=14)})
     for assignments, error in (
         ((), InvalidSelection),
         ((TEAM_EARLY.model_copy(update={"planning_unit_id": SOUTH}),), ValueError),  # no South membership
@@ -145,7 +149,7 @@ def test_invalid_or_conflicting_schedules_fail_before_anything_is_deleted(source
     ):
         with pytest.raises(error):
             publish(source, assignments)
-    for assignments in ((absent,), (elsewhere,)):
+    for assignments in ((absent,), (elsewhere,), (entered,)):
         with pytest.raises(PublicationRejected) as rejected:
             publish(source, assignments)
         assert rejected.value.problem == PublicationProblem.CONFLICT
@@ -156,10 +160,13 @@ def test_invalid_or_conflicting_schedules_fail_before_anything_is_deleted(source
 
 
 @pytest.mark.integration
-def test_failed_insert_rolls_back_the_deletion(source: InspectionSource) -> None:
+def test_failed_or_colliding_insert_rolls_back_the_deletion(source: InspectionSource) -> None:
     before = copy.deepcopy(source.roster)
     source.failing_ids = {1}
     with pytest.raises(TimeOfficeUnavailable):
+        publish(source)
+    source.failing_ids, source.conflicting_ids = set(), {1}
+    with pytest.raises(TimeOfficeConflict):
         publish(source)
     assert source.roster == before
 
@@ -190,7 +197,7 @@ def test_clear_removes_only_the_named_stations_published_duties(source: Inspecti
     north = source.service.clear(planning_month=JANUARY, planning_unit_ids=(NORTH,))
     assert north.removed_duties == 1
     assert output(source) == []
-    assert kept(source) == [WISH, ABSENCE, OTHER_PLAN_DUTY]
+    assert kept(source) == KEPT
 
 
 @pytest.mark.integration
@@ -215,7 +222,7 @@ def test_publications_and_clears_are_serialized(source: InspectionSource) -> Non
     first.join(5)
     second.join(5)
     assert output(source) == []
-    assert kept(source) == [WISH, ABSENCE, OTHER_PLAN_DUTY]
+    assert kept(source) == KEPT
 
 
 @pytest.fixture
@@ -223,7 +230,7 @@ def client(source: InspectionSource) -> Iterator[tuple[httpx.Client, Generation,
     """The HTTP API over the fixture, with January demand at North and a real two-second solve."""
     source.roster = []
     save_demand(source)
-    review = Review(publish=source.service.publish)
+    review = Review()
     solver = SolverService(Settings(solver_num_search_workers=1))
     generation = Generation(
         read_input=source.service.read_generation_input,
@@ -232,7 +239,6 @@ def client(source: InspectionSource) -> Iterator[tuple[httpx.Client, Generation,
     )
     app.dependency_overrides[get_generation] = lambda: generation
     app.dependency_overrides[get_review] = lambda: review
-    app.dependency_overrides[get_publisher] = lambda: review
     app.dependency_overrides[get_planning_source] = lambda: source.service
     try:
         yield cast(httpx.Client, TestClient(app)), generation, source
@@ -258,6 +264,21 @@ def test_http_publishes_only_the_accepted_schedule_under_review_and_clears_expli
     for stale in ({**named, "received_at": "2026-01-01T00:00:00Z"}, {**named, "planning_unit_ids": [NORTH, SOUTH]}):
         response = http.post("/publication", json=stale)
         assert (response.status_code, response.json()["problem"]) == (409, "changed")
+    assert source.roster == []
+
+    # A duty entered in TimeOffice on a duty's date, a colliding writer and a failing database each change nothing.
+    first = review["solution"]["assignments"][0]
+    day = datetime.fromisoformat(first["date"]).day
+    source.roster = [roster_row(NORTH_PLAN, first["employee_id"], day)]
+    response = http.post("/publication", json=named)
+    assert (response.status_code, response.json()["problem"]) == (409, "conflict")
+    source.roster = []
+    source.conflicting_ids = {NORTH}
+    response = http.post("/publication", json=named)
+    assert (response.status_code, response.json()["problem"]) == (409, "concurrent")
+    source.conflicting_ids, source.failing_ids = set(), {NORTH}
+    assert http.post("/publication", json=named).status_code == 503
+    source.failing_ids = set()
     assert source.roster == []
 
     published = http.post("/publication", json=named)

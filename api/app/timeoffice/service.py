@@ -1,3 +1,5 @@
+from collections.abc import Generator
+from contextlib import contextmanager
 from datetime import date, timedelta
 from threading import Lock
 
@@ -20,6 +22,8 @@ from app.domain import (
     PlanningUnit,
     PlanningUnitMembership,
     PlanningUnitType,
+    PublicationProblem,
+    PublicationRejected,
     PublicationResult,
     ScheduleContext,
     SchedulingDataset,
@@ -47,8 +51,6 @@ class TimeOfficeService:
     def __init__(self, engine: Engine, facts: TimeOfficeFacts = TIMEOFFICE_FACTS) -> None:
         self._engine = engine
         self._facts = facts
-        # Publication and clear run one at a time in this process, each in a serializable transaction
-        # so a concurrent writer elsewhere makes one of them fail and roll back instead of interleaving.
         self._publication_lock = Lock()
         self._serializable = engine.execution_options(isolation_level="SERIALIZABLE")
 
@@ -169,40 +171,48 @@ class TimeOfficeService:
         Everything is validated before the old duties are deleted, inside the writing transaction: the stations
         and their single target plans, duties of those stations in the month with reference shifts and one per
         employee and date, a membership profession booking each duty's qualification, and no absence or other
-        duty of the employee that date (`PublicationRejected`). The written duties are read back before the
-        commit. An empty schedule is refused; `clear` removes published duties.
+        duty of the employee that date (`PublicationRejected`, conflict). The written duties are read back before
+        the commit (`PublicationRejected`, read_back). An empty schedule is refused; `clear` removes published duties.
         """
-        selected = tuple(dict.fromkeys(planning_unit_ids))
         if not assignments:
             raise InvalidSelection("An empty schedule is not published; clear the stations instead.")
-        with self._publication_lock, self._serializable.begin() as connection:
-            plans = self._require_stations(connection, selected, planning_month)
-            plan_ids = list(plans.values())
+        with self._replacing(planning_unit_ids, planning_month) as (connection, plans, removed):
             shifts = queries.read_shifts(connection, self._facts)
             rows = roster.duty_rows(connection, self._facts, plans, shifts, planning_month, assignments)
-            removed = roster.count_output(connection, plan_ids)
-            roster.delete_output(connection, plan_ids)
+            roster.delete_output(connection, self._facts, list(plans.values()))
             roster.insert_rows(connection, rows)
-            written = roster.read_output(connection, self._facts, plan_ids, shifts)
+            written = roster.read_output(connection, self._facts, list(plans.values()), shifts)
             if len(written) != len(assignments) or set(written) != set(assignments):
-                raise ValueError("The published duties read back differently from the schedule.")
+                raise PublicationRejected(
+                    PublicationProblem.READ_BACK, "The published duties read back differently; nothing was changed."
+                )
         return PublicationResult(
             planning_month=planning_month,
-            planning_unit_ids=selected,
+            planning_unit_ids=tuple(plans),
             removed_duties=removed,
             published_duties=len(written),
         )
 
     def clear(self, *, planning_month: PlanningMonth, planning_unit_ids: tuple[int, ...]) -> PublicationResult:
         """Remove the published duties of exactly the named stations' month; absences, wishes and other plans stay."""
-        selected = tuple(dict.fromkeys(planning_unit_ids))
-        with self._publication_lock, self._serializable.begin() as connection:
-            plan_ids = list(self._require_stations(connection, selected, planning_month).values())
-            removed = roster.count_output(connection, plan_ids)
-            roster.delete_output(connection, plan_ids)
+        with self._replacing(planning_unit_ids, planning_month) as (connection, plans, removed):
+            roster.delete_output(connection, self._facts, list(plans.values()))
         return PublicationResult(
-            planning_month=planning_month, planning_unit_ids=selected, removed_duties=removed, published_duties=0
+            planning_month=planning_month, planning_unit_ids=tuple(plans), removed_duties=removed, published_duties=0
         )
+
+    @contextmanager
+    def _replacing(
+        self, planning_unit_ids: tuple[int, ...], month: PlanningMonth
+    ) -> Generator[tuple[Connection, dict[int, int], int]]:
+        """One publication transaction: the stations' target plans by station and their published duty count.
+
+        Publication and clear run one at a time in this process, each serializable, so a concurrent writer
+        elsewhere makes one of them fail and roll back instead of interleaving.
+        """
+        with self._publication_lock, self._serializable.begin() as connection:
+            plans = self._require_stations(connection, tuple(dict.fromkeys(planning_unit_ids)), month)
+            yield connection, plans, roster.count_output(connection, self._facts, list(plans.values()))
 
     def _inspect(
         self, connection: Connection, selected: tuple[int, ...], planning_month: PlanningMonth

@@ -18,6 +18,14 @@ class TimeOfficeUnavailable(RuntimeError):
         super().__init__(message)
 
 
+class TimeOfficeConflict(RuntimeError):
+    """A write that collided with concurrent or existing TimeOffice data and was rolled back; safe to retry."""
+
+
+# SQLSTATEs of a rolled-back write: deadlock/serialization victim and integrity violations such as a duplicate key.
+CONFLICT_SQLSTATES = frozenset({"40001", "23000"})
+
+
 def check_database_configuration(settings: Settings) -> None:
     missing = [
         name
@@ -74,7 +82,12 @@ def create_db_engine(settings: Settings) -> Engine:
         return connection
 
     @event.listens_for(engine, "handle_error")
-    def handle_error(_context: ExceptionContext) -> None:
+    def handle_error(context: ExceptionContext) -> None:
+        error = context.original_exception
+        if isinstance(error, pyodbc.Error) and error.args and error.args[0] in CONFLICT_SQLSTATES:
+            raise TimeOfficeConflict(
+                "TimeOffice changed concurrently or already holds conflicting rows; nothing was changed. Try again."
+            ) from None
         raise TimeOfficeUnavailable(
             "query", "TimeOffice query failed: check connectivity, schema and database permissions."
         ) from None

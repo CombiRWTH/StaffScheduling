@@ -2,7 +2,6 @@
 
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Protocol
 
 from app.domain import (
     Assignment,
@@ -11,10 +10,9 @@ from app.domain import (
     PlanningMonth,
     PlanningUnit,
     PlanningUnitType,
-    PositiveId,
     PublicationProblem,
     PublicationRejected,
-    PublicationResult,
+    PublicationRequest,
     SchedulingBaseModel,
     SchedulingDataset,
     Shift,
@@ -46,32 +44,14 @@ class ScheduleReview(SchedulingBaseModel):
         return tuple(unit.planning_unit_id for unit in self.planning_units if unit.type == PlanningUnitType.STATION)
 
 
-class PublicationRequest(SchedulingBaseModel):
-    """Publish the schedule under review that was received at `received_at` to exactly these stations' month."""
-
-    planning_month: PlanningMonth
-    planning_unit_ids: tuple[PositiveId, ...]
-    received_at: datetime
-
-
-class Publish(Protocol):
-    """Write a schedule to its stations' planning targets, as `TimeOfficeService.publish` does."""
-
-    def __call__(
-        self, *, planning_month: PlanningMonth, planning_unit_ids: tuple[int, ...], assignments: tuple[Assignment, ...]
-    ) -> PublicationResult: ...
-
-
 class Review:
-    """Hold one schedule for review, its downloadable files and its explicit publication.
+    """Hold one schedule for review and its downloadable files, and say whether a publication may take it.
 
     A generation that finds a schedule and a valid import each replace it; a run without a schedule
-    and a rejected import leave it unchanged. Nothing is persisted or saved to a library, and only an
-    explicit request publishes, and only an accepted schedule.
+    and a rejected import leave it unchanged. Nothing is persisted, published or saved to a library.
     """
 
-    def __init__(self, publish: Publish) -> None:
-        self._publish = publish
+    def __init__(self) -> None:
         self._current: tuple[ScheduleBundle, ScheduleReview] | None = None
 
     def generated(self, dataset: SchedulingDataset, solution: Solution) -> None:
@@ -92,10 +72,10 @@ class Review:
         """One file of the schedule under review, or None without one."""
         return self._current[0].files[name] if self._current else None
 
-    def publish(self, request: PublicationRequest) -> PublicationResult:
-        """Publish the schedule under review if the request names it and the independent check accepted it.
+    def publishable(self, request: PublicationRequest) -> tuple[Assignment, ...]:
+        """The assignments of the schedule under review if the request names it and its check accepted it.
 
-        Raises PublicationRejected (`changed`, `not_accepted`) without writing; the writer's own errors pass through.
+        Raises PublicationRejected (`changed`, `not_accepted`) otherwise; nothing is written here.
         """
         current = self._current
         if current is None:
@@ -109,11 +89,7 @@ class Review:
             raise PublicationRejected(PublicationProblem.CHANGED, "The schedule under review is another one.")
         if bundle.check.status != CheckStatus.ACCEPTED:
             raise PublicationRejected(PublicationProblem.NOT_ACCEPTED, "Only an accepted schedule is published.")
-        return self._publish(
-            planning_month=review.planning_month,
-            planning_unit_ids=review.station_ids,
-            assignments=bundle.result.solution.assignments,
-        )
+        return bundle.result.solution.assignments
 
     def _show(self, bundle: ScheduleBundle, source: ReviewSource) -> ScheduleReview:
         dataset = bundle.input.dataset
