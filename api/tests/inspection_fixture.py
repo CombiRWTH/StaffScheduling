@@ -130,7 +130,7 @@ class InspectionSource:
                         if employee == 1
                         else []
                     ),
-                    "hard_restrictions": "[]",
+                    "constraints": "[]",
                 }
                 for employee in params["employee_ids"]
                 if not (self.missing_evidence and employee == 1)

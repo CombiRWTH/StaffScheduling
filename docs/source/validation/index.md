@@ -12,7 +12,7 @@ Image-built development Compose startup, actual Next-server/API HTTP connectivit
 
 ## Webapp integration
 
-The webapp is a plain Next.js App Router project. Only the home page and canonical month/station selection with complete read-only employee inspection are implemented, with controlled browser evidence. Monthly configuration, minimum staffing, generation, review/export/publication, recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. Selection requires explicit prepared monthly credit/restriction evidence; no live table provisioning or inspection has been performed.
+The webapp is a plain Next.js App Router project. Only the home page and canonical month/station selection with complete read-only employee inspection are implemented, with controlled browser evidence. Monthly configuration, minimum staffing, generation, review/export/publication, recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. Selection requires explicit prepared monthly credit/constraint evidence; no live table provisioning or inspection has been performed.
 
 ## Solver and publication
 

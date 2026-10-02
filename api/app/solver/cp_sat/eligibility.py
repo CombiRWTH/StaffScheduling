@@ -24,7 +24,7 @@ def eligible_staff_levels_for_assignment_slot(
     Current hard eligibility rules:
     - employee must have an active membership in the planning unit
     - employee must not be blocked by hard availability
-    - AVAILABLE_ONLY restrictions must include the target shift
+    - AVAILABLE_ONLY constraints must include the target shift
 
     Future hard rules belong here too:
     - shared/jump-pool eligibility

@@ -18,8 +18,8 @@ One `SchedulingDataset` aggregates a `PlanningMonth` and tuples of planning unit
 | `DemandRequirement`         | Positive required count for a specific unit, date, shift and staffing level                            |
 | `Plan`                      | Planning record associated with a unit and month                                                       |
 | `Assignment`                | Employee, date, shift, assignment type and applicable unit                                             |
-| `Availability`              | Hard unavailability, including supported date/shift restrictions                                       |
-| `Wish`                      | Desired work/free day or shift; distinct from hard restrictions                                        |
+| `Availability`              | Constraint: unavailability, including supported date/shift limits                                      |
+| `Wish`                      | Desired work/free day or shift; distinct from constraints                                              |
 | `MonthlyWorkAccount`        | Target/actual minutes, optional verified credits and provenance                                        |
 | `EmployeeSundayWorkHistory` | Imported Sunday work context                                                                           |
 | `SolverObjectiveWeights`    | Per-unit values used by objective penalties                                                            |
@@ -40,7 +40,7 @@ For exact fields and validators, read the model modules rather than copying fron
 
 `api/app/domain/inspection.py` composes existing canonical employee, unit, membership, account and availability models into a `PlanningInspection`. It contains one month, selected station IDs, the relevant unit catalog and one entry per stable employee ID. It exposes no plan IDs, source rows, split-name aliases or special capabilities. `associated_pool_ids` names the pools that members of the selected stations call home, computed by the same rule that adds those pools' employees. A selection that cannot be planned (a pool, an unconfigured unit or a station without a target plan) raises `InvalidSelection` instead of an incomplete-data error. Inspection validates only its own read responsibilities; it does not require staffing demand, a solve result or the full legacy dataset to be valid.
 
-Every employee requires exactly one account and monthly evidence declaration. `WorkCredit` carries a full date, nonnegative integer minutes, `approved_absence`/`trusted_work` kind and source. Explicitly declared empty credits sum to zero; absent credit evidence remains unknown and is rejected by inspection. Actual hours never become credits. Native restrictions preserve reason/source; prepared restrictions retain dates and allowed-shift IDs. Foreign employee/shift references and out-of-month credit/restriction dates fail the read.
+Every employee requires exactly one account and monthly evidence declaration. `WorkCredit` carries a full date, nonnegative integer minutes, `approved_absence`/`trusted_work` kind and source. Explicitly declared empty credits sum to zero; absent credit evidence remains unknown and is rejected by inspection. Actual hours never become credits. Native constraints preserve reason/source; prepared constraints retain dates and allowed-shift IDs. Foreign employee/shift references and out-of-month credit/constraint dates fail the read.
 
 Dated home origin and dated destination membership are separate. Associated pool employees are visible even without selected-station eligibility. Active memberships need exactly one evidenced home unit on each active day. Qualifications, including MFA, are preserved at identity and membership level; they are not interchangeable. The current solver migration/independent acceptance remains separately unfinished.
 

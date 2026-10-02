@@ -5,7 +5,7 @@ Monthly shift planning for hospital stations and their shared pool: inspecting w
 ## Planning scope
 
 **Planning month**:
-One full calendar month; every plan, account and restriction is scoped to exactly one.
+One full calendar month; every plan, account and constraint is scoped to exactly one.
 _Avoid_: period, interval, case
 
 **Planning unit**:
@@ -65,20 +65,20 @@ Dated minutes counted towards the target without being worked, such as approved 
 _Avoid_: bonus, adjustment
 
 **Evidence declaration** (Monatsnachweis):
-The prepared statement that an employee's credits and additional hard restrictions for a month are complete, with its source.
+The prepared statement that an employee's credits and additional constraints for a month are complete, with its source.
 _Avoid_: proof file, attestation
 
-**Hard restriction** (Einschränkung):
+**Constraint** (Einschränkung):
 A date on which an employee must not be planned, or may only be planned for certain shifts.
-_Avoid_: availability, blocker, absence (when meaning the restriction itself)
+_Avoid_: hard restriction, availability, blocker, absence (when meaning the constraint itself)
 
 **Wish** (Wunsch):
 A soft preference for a shift or free day that planning should try to honour.
 _Avoid_: request, preference rule
 
 **Availability** (Verfügbarkeit):
-Umbrella for an employee's wishes and hard restrictions in a month.
-_Avoid_: using it for hard restrictions alone
+Umbrella for an employee's wishes and constraints in a month.
+_Avoid_: using it for constraints alone
 
 **Employee inspection** (Mitarbeiterprüfung):
 The read-only, all-or-nothing check of every employee in a planning selection and their monthly facts.

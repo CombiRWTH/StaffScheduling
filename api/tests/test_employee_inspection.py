@@ -52,8 +52,8 @@ def test_combined_scope_retains_identity_memberships_mfa_origin_and_account_evid
     assert employee.account.target_minutes == 9600
     assert employee.account.actual_minutes == 0
     assert employee.account.credited_minutes == 480
-    assert employee.hard_restrictions[0].date == date(2026, 1, 1)
-    assert employee.hard_restrictions[0].reason == "U"
+    assert employee.constraints[0].date == date(2026, 1, 1)
+    assert employee.constraints[0].reason == "U"
     # A pool origin alone does not imply eligibility at either destination.
     assert {row.planning_unit_id for row in result.employees[2].memberships} == {201}
     source.name = "Renamed Example"
@@ -65,7 +65,7 @@ def test_combined_scope_retains_identity_memberships_mfa_origin_and_account_evid
 
     with_rows(source, "TPlanPersonalKommtGeht", lambda rows: rows.append({**rows[0], "resolved_absence_code": "ZU"}))
     distinct = source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=month)
-    assert {row.reason for row in distinct.employees[0].hard_restrictions} == {"U", "ZU"}
+    assert {row.reason for row in distinct.employees[0].constraints} == {"U", "ZU"}
 
 
 @pytest.mark.parametrize(
@@ -123,7 +123,7 @@ def test_explicit_zero_target_and_actual_are_preserved_missing_target_is_error()
         source.service.inspect_employees(planning_unit_ids=(101,), planning_month=month)
 
 
-@pytest.mark.parametrize("defect", ["credit_date", "duplicate_credit", "restriction_identity", "ambiguous_home"])
+@pytest.mark.parametrize("defect", ["credit_date", "duplicate_credit", "constraint_identity", "ambiguous_home"])
 def test_declared_evidence_is_validated_before_any_employee_is_returned(defect: str) -> None:
     source = InspectionSource()
 
@@ -133,8 +133,8 @@ def test_declared_evidence_is_validated_before_any_employee_is_returned(defect: 
             credits[0]["date"] = "2025-12-31"
         elif defect == "duplicate_credit":
             credits.append(credits[0])
-        elif defect == "restriction_identity":
-            rows[0]["hard_restrictions"] = json.dumps(
+        elif defect == "constraint_identity":
+            rows[0]["constraints"] = json.dumps(
                 [{"employee_id": 999, "date": "2026-01-01", "availability_type": "unavailable"}]
             )
         rows[0]["credit_details"] = json.dumps(credits)
@@ -161,7 +161,7 @@ def test_source_codes_are_trimmed_and_ignored_absences_are_dropped() -> None:
     )
 
     assert result.employees[0].memberships[0].staff_level == StaffLevel.MFA
-    assert result.employees[0].hard_restrictions == ()
+    assert result.employees[0].constraints == ()
 
 
 @pytest.mark.parametrize(

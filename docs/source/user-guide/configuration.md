@@ -4,7 +4,7 @@ Documentation outline. This operation or verification procedure is not yet estab
 
 Return to the [documentation overview](index.md).
 
-## Wishes and hard restrictions
+## Wishes and constraints
 
 ## Dated staffing requirements
 

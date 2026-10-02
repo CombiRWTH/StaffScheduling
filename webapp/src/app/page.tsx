@@ -21,7 +21,7 @@ interface Area {
 const areas: Area[] = [
   {
     title: "Mitarbeiter",
-    description: "Mitarbeiter, Zuordnungen, Monatskonten und harte Einschränkungen der Auswahl prüfen",
+    description: "Mitarbeiter, Zuordnungen, Monatskonten und Einschränkungen der Auswahl prüfen",
     icon: Users,
     href: "/employees",
     color: "text-blue-500 bg-blue-50",

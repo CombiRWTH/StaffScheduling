@@ -10,7 +10,7 @@ from app.domain.shift import ShiftId
 
 
 class AvailabilityType(StrEnum):
-    """Hard employee availability restriction."""
+    """Employee availability constraint."""
 
     UNAVAILABLE = "unavailable"
     VACATION = "vacation"
@@ -20,7 +20,7 @@ class AvailabilityType(StrEnum):
 
 
 class Availability(SchedulingBaseModel):
-    """Hard employee availability restriction for a date.
+    """Employee availability constraint for a date.
 
     Wishes/preferences must not be represented here. They should become a
     separate soft-preference model later.

@@ -23,9 +23,9 @@ Each employee appears once by stable positive ID. Display names may change witho
 
 ## Inspect existing work and availability
 
-Details show monthly target minutes, available actual minutes, verified credit totals/items and their evidence source. A source actual total is displayed separately and is never treated as approved credit. Zero is displayed only when explicitly supplied; absent actual totals show **nicht verfügbar**. Every participant requires a target account and a prepared declaration of complete monthly credits and additional hard restrictions.
+Details show monthly target minutes, available actual minutes, verified credit totals/items and their evidence source. A source actual total is displayed separately and is never treated as approved credit. Zero is displayed only when explicitly supplied; absent actual totals show **nicht verfügbar**. Every participant requires a target account and a prepared declaration of complete monthly credits and additional constraints.
 
-Credits list full dates, minute amounts, approved-absence/trusted-work kind and provenance. Native dated absences and prepared additional hard restrictions are shown separately from soft wishes, with reasons, sources and allowed-shift IDs where applicable. Explicit empty arrays produce **Explizit keine…**, not an inferred default. This view does not prorate targets, calculate a candidate's balance, edit employees or run generation.
+Credits list full dates, minute amounts, approved-absence/trusted-work kind and provenance. Native dated absences and prepared additional constraints are shown separately from soft wishes, with reasons, sources and allowed-shift IDs where applicable. Explicit empty arrays produce **Explizit keine…**, not an inferred default. This view does not prorate targets, calculate a candidate's balance, edit employees or run generation.
 
 Connected prerequisites include read access to the configured TimeOffice tables and explicitly prepared [employee/month evidence](../architecture/timeoffice.md#employee-inspection-evidence). Missing setup/data must be corrected by the authorized database preparer; refreshing cannot create it.
 
@@ -33,7 +33,7 @@ Connected prerequisites include read access to the configured TimeOffice tables 
 
 - Without a station selection, the page asks for at least one station.
 - A month without target stations reports no available stations. A complete selected scope without members reports no employees. An empty search/filter result is distinct from an empty scope.
-- Loading displays a status message. Incomplete targets, identities, memberships, account/credit/restriction evidence or duplicate source facts reject the complete inspection; no partial station table is displayed.
+- Loading displays a status message. Incomplete targets, identities, memberships, account/credit/constraint evidence or duplicate source facts reject the complete inspection; no partial station table is displayed.
 - Backend/TimeOffice failures show a connection/setup message. Verify configuration, network/VPN, TLS and read permissions using [installation](../getting-started/installation.md#database-configuration), then refresh options/reopen the employee page. Errors expose no raw SQL rows or connection secrets.
 
-The sidebar groups **Planungsdaten** (Mitarbeiter, Verfügbarkeit, Mindestbesetzung), **Wiederkehrend** (Verfügbarkeit, Vorlagen) and **Dienstplan** (Erstellen, Prüfen). Everything except Mitarbeiter appears greyed out as not yet supported; **Verfügbarkeit** covers monthly wishes and hard restrictions; they have no pages. Optimization is omitted.
+The sidebar groups **Planungsdaten** (Mitarbeiter, Verfügbarkeit, Mindestbesetzung), **Wiederkehrend** (Verfügbarkeit, Vorlagen) and **Dienstplan** (Erstellen, Prüfen). Everything except Mitarbeiter appears greyed out as not yet supported; **Verfügbarkeit** covers monthly wishes and constraints; they have no pages. Optimization is omitted.

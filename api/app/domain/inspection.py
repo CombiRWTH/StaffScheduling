@@ -18,7 +18,7 @@ class InvalidSelection(ValueError):
 class EmployeeMonthEvidence(SchedulingBaseModel):
     employee_id: EmployeeId
     credit_details: tuple[WorkCredit, ...]
-    hard_restrictions: tuple[Availability, ...]
+    constraints: tuple[Availability, ...]
     source: NonEmptyStr
 
 
@@ -28,8 +28,8 @@ class EmployeeInspection(SchedulingBaseModel):
     staff_level: StaffLevel
     memberships: tuple[PlanningUnitMembership, ...]
     account: MonthlyWorkAccount
-    hard_restrictions: tuple[Availability, ...]
-    restrictions_source: NonEmptyStr
+    constraints: tuple[Availability, ...]
+    constraints_source: NonEmptyStr
 
 
 class PlanningInspection(SchedulingBaseModel):
@@ -103,7 +103,7 @@ def build_inspection(
         if membership.planning_unit_id not in unit_ids:
             raise ValueError("Unknown membership unit.")
     if any(row.employee_id not in employee_ids for row in availability):
-        raise ValueError("Unknown employee in restrictions.")
+        raise ValueError("Unknown employee in constraints.")
     inspected: list[EmployeeInspection] = []
     for employee in employees:
         employee_memberships = tuple(row for row in memberships if row.employee_id == employee.employee_id)
@@ -127,22 +127,22 @@ def build_inspection(
         )
         if any(not planning_month.start <= credit.date <= planning_month.end for credit in declaration.credit_details):
             raise ValueError("Credit date is outside the selected month.")
-        restrictions = tuple(
+        constraints = tuple(
             dict.fromkeys(
                 (
                     *(row for row in availability if row.employee_id == employee.employee_id),
-                    *declaration.hard_restrictions,
+                    *declaration.constraints,
                 )
             )
         )
-        for restriction in restrictions:
+        for constraint in constraints:
             if (
-                restriction.employee_id != employee.employee_id
-                or not planning_month.start <= restriction.date <= planning_month.end
+                constraint.employee_id != employee.employee_id
+                or not planning_month.start <= constraint.date <= planning_month.end
             ):
-                raise ValueError("Restriction identity/date does not match the selected employee month.")
-            if restriction.shift_ids and not set(restriction.shift_ids) <= allowed_shift_ids:
-                raise ValueError("Unknown allowed shift in hard restriction.")
+                raise ValueError("Constraint identity/date does not match the selected employee month.")
+            if constraint.shift_ids and not set(constraint.shift_ids) <= allowed_shift_ids:
+                raise ValueError("Unknown allowed shift in constraint.")
         inspected.append(
             EmployeeInspection(
                 employee_id=employee.employee_id,
@@ -150,8 +150,8 @@ def build_inspection(
                 staff_level=employee.staff_level,
                 memberships=employee_memberships,
                 account=account,
-                hard_restrictions=restrictions,
-                restrictions_source=declaration.source,
+                constraints=constraints,
+                constraints_source=declaration.source,
             )
         )
     pool_ids = {unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.SHARED_POOL}

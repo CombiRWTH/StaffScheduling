@@ -85,6 +85,6 @@ UI conventions for every page:
 - Pages render `PageHeader` with a title, a one-line description and the planning selection. Every page below the overview passes `parent`, which shows a back arrow before the title; it returns to the parent page and keeps the month/station selection.
 - The URL is the only selection state. A missing or invalid month means January of the current year; navigation links carry the selection.
 - Unsupported areas stay visible in the sidebar as greyed, route-less entries with a tooltip; they never link to placeholder pages.
-- Use the domain's German terms consistently: Verfügbarkeit (wishes and hard restrictions), Zuordnungen (dated unit assignments), Mindestbesetzung, Dienstplan.
+- Use the domain's German terms consistently: Verfügbarkeit (wishes and constraints), Zuordnungen (dated unit assignments), Mindestbesetzung, Dienstplan.
 
 The offline browser fixture substitutes SQL query results, while using the actual FastAPI routes, TimeOffice queries and Next.js pages. It is test infrastructure, never a production data fallback. [Testing](../development/testing.md#staff-admin-browser-flows) describes reproduction and limitations.

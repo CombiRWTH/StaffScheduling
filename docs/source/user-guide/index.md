@@ -4,11 +4,11 @@ Start through the [quickstart](../getting-started/quickstart.md), then open <htt
 
 ## What you can use this guide for
 
-For staff administrators using the application: choose the month and units, inspect employees, configure staffing and restrictions, generate schedules, review or exchange files, then publish or clear assignments. Each procedure will explain what to do, what result to expect and how to recover from a failure. These procedures remain outlines until their acceptance checks pass.
+For staff administrators using the application: choose the month and units, inspect employees, configure staffing and constraints, generate schedules, review or exchange files, then publish or clear assignments. Each procedure will explain what to do, what result to expect and how to recover from a failure. These procedures remain outlines until their acceptance checks pass.
 
 ## Planning concepts
 
-The backend models a calendar month, planning units, dated staffing demand, employees and valid unit memberships. Availability is a hard restriction; wishes are preferences. Work accounts use minutes. The [domain reference](../architecture/domain.md) describes the source-defined contract.
+The backend models a calendar month, planning units, dated staffing demand, employees and valid unit memberships. Constraints are binding; wishes are preferences. Work accounts use minutes. The [domain reference](../architecture/domain.md) describes the source-defined contract.
 
 Only the home page and employee inspection are implemented. The sidebar lists every other planning area greyed out as not yet supported.
 

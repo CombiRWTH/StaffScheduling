@@ -199,7 +199,7 @@ def read_accounts(
 def read_absences(
     connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
 ) -> tuple[Availability, ...]:
-    """Dated roster absences as hard restrictions; ignored codes are dropped, unknown codes fail."""
+    """Dated roster absences as constraints; ignored codes are dropped, unknown codes fail."""
     rows = _select(
         connection,
         """
@@ -230,25 +230,25 @@ def read_absences(
             continue
         if code not in facts.availability_type_by_absence_code:
             raise ValueError(f"Unmapped TimeOffice absence code {code!r} for employee_id={row['employee_id']}.")
-        restriction = Availability(
+        constraint = Availability(
             employee_id=row["employee_id"],
             date=day.date(),
             availability_type=facts.availability_type_by_absence_code[code],
             reason=code,
             source="TimeOffice absence",
         )
-        absences[restriction] = None
+        absences[constraint] = None
     return tuple(absences)
 
 
 def read_evidence(
     connection: Connection, employee_ids: Sequence[int], month: PlanningMonth
 ) -> tuple[EmployeeMonthEvidence, ...]:
-    """Explicitly prepared monthly credit/restriction declarations; reads never provision the table."""
+    """Explicitly prepared monthly credit/constraint declarations; reads never provision the table."""
     rows = _select(
         connection,
         """
-        SELECT employee_id, credit_details, hard_restrictions, source
+        SELECT employee_id, credit_details, constraints, source
         FROM dbo.StaffSchedulingEmployeeMonthEvidence
         WHERE employee_id IN :employee_ids AND planning_month = :planning_month
         ORDER BY employee_id
@@ -260,7 +260,7 @@ def read_evidence(
         EmployeeMonthEvidence(
             employee_id=row["employee_id"],
             credit_details=json.loads(row["credit_details"]),
-            hard_restrictions=json.loads(row["hard_restrictions"]),
+            constraints=json.loads(row["constraints"]),
             source=row["source"],
         )
         for row in rows

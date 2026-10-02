@@ -13,7 +13,7 @@ The current builder registers these hard-constraint components:
 - Minimum staffing.
 - Recovery after a night-shift phase.
 - Rounds in early shifts.
-- Availability restrictions.
+- Availability constraints.
 - Intermediate-shift hierarchy.
 - At most one assignment per day.
 - Target working time.

@@ -35,7 +35,7 @@ const navigationSections: Array<{ label: string; links: NavigationLink[] }> = [
     label: "Planungsdaten",
     links: [
       { href: "/employees", label: "Mitarbeiter", icon: Users },
-      { label: "Verfügbarkeit", icon: CalendarHeart, hint: "Wünsche und harte Einschränkungen des Monats" },
+      { label: "Verfügbarkeit", icon: CalendarHeart, hint: "Wünsche und Einschränkungen des Monats" },
       { label: "Mindestbesetzung", icon: UserCog },
     ],
   },

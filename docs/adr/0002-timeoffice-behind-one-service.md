@@ -9,4 +9,4 @@ TimeOffice is an external roster database whose schema and terms we do not contr
 
 ## Consequences
 
-A replacement database implements the same protocol. If a second implementation appears, the orchestration in `inspect_employees` (scoping before reading accounts and restrictions) should move into the domain, so it is not duplicated.
+A replacement database implements the same protocol. If a second implementation appears, the orchestration in `inspect_employees` (scoping before reading accounts and constraints) should move into the domain, so it is not duplicated.

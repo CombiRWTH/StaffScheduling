@@ -37,7 +37,7 @@ export interface WorkCredit {
   source: string;
 }
 
-export interface HardRestriction {
+export interface Constraint {
   employee_id: number;
   date: string;
   availability_type: "unavailable" | "vacation" | "training" | "free_day" | "available_only";
@@ -58,8 +58,8 @@ export interface Employee {
     credit_details: WorkCredit[];
     evidence_source: string;
   };
-  hard_restrictions: HardRestriction[];
-  restrictions_source: string;
+  constraints: Constraint[];
+  constraints_source: string;
 }
 
 export interface PlanningInspection {

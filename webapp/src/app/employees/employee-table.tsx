@@ -8,14 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type {
-  Employee,
-  HardRestriction,
-  PlanningInspection,
-  PlanningUnit,
-  Qualification,
-  WorkCredit,
-} from "@/lib/types";
+import type { Employee, Constraint, PlanningInspection, PlanningUnit, Qualification, WorkCredit } from "@/lib/types";
 import { MONTHS } from "@/lib/selection";
 
 const QUALIFICATION_LABELS: Record<Qualification, string> = {
@@ -25,7 +18,7 @@ const QUALIFICATION_LABELS: Record<Qualification, string> = {
   mfa: "MFA",
 };
 const UNIT_TYPE_LABELS: Record<PlanningUnit["type"], string> = { station: "Station", shared_pool: "Pool" };
-const RESTRICTION_LABELS: Record<HardRestriction["availability_type"], string> = {
+const CONSTRAINT_LABELS: Record<Constraint["availability_type"], string> = {
   unavailable: "Nicht verfügbar",
   vacation: "Urlaub",
   training: "Fortbildung",
@@ -242,12 +235,12 @@ function EmployeeDetails({
         <p className="text-xs text-muted-foreground">Nachweis: {account.evidence_source}</p>
       </section>
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold">Harte Einschränkungen</h3>
-        {employee.hard_restrictions.length ? (
+        <h3 className="text-sm font-semibold">Einschränkungen</h3>
+        {employee.constraints.length ? (
           <ul className="space-y-1 text-sm">
-            {employee.hard_restrictions.map((row) => (
+            {employee.constraints.map((row) => (
               <li key={`${row.date}:${row.availability_type}:${row.reason}:${row.source}:${row.shift_ids}`}>
-                {formatDate(row.date)} · {RESTRICTION_LABELS[row.availability_type]}
+                {formatDate(row.date)} · {CONSTRAINT_LABELS[row.availability_type]}
                 {row.reason && ` · ${row.reason}`}
                 {row.shift_ids && ` · Erlaubte Schichten: ${row.shift_ids.join(", ")}`}
                 {row.source && <span className="text-muted-foreground"> · {row.source}</span>}
@@ -255,9 +248,9 @@ function EmployeeDetails({
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">Explizit keine harten Einschränkungen.</p>
+          <p className="text-sm text-muted-foreground">Explizit keine Einschränkungen.</p>
         )}
-        <p className="text-xs text-muted-foreground">Vollständigkeitsnachweis: {employee.restrictions_source}</p>
+        <p className="text-xs text-muted-foreground">Vollständigkeitsnachweis: {employee.constraints_source}</p>
       </section>
     </div>
   );
