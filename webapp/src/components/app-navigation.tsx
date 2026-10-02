@@ -58,7 +58,7 @@ const navigationSections: Array<{ label: string; links: NavigationLink[] }> = [
     label: "Dienstplan",
     links: [
       { href: "/generation", label: "Erstellen", icon: CalendarPlus, color: areaColors.createRoster },
-      { label: "Prüfen", icon: CalendarCheck },
+      { href: "/review", label: "Prüfen", icon: CalendarCheck, color: areaColors.reviewRoster },
     ],
   },
 ];

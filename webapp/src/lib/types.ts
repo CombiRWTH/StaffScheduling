@@ -186,8 +186,22 @@ export type Rule =
 export interface ScheduleCheck {
   status: CheckStatus;
   rules: Rule[];
-  findings: { rule: Rule; message: string; employee_id: number | null; date: string | null }[];
-  not_assessed: { rule: Rule; reason: string; blocking: boolean; start: string; end: string }[];
+  findings: {
+    rule: Rule;
+    message: string;
+    employee_id: number | null;
+    date: string | null;
+    planning_unit_id: number | null;
+    shift_id: number | null;
+  }[];
+  not_assessed: {
+    rule: Rule;
+    reason: string;
+    blocking: boolean;
+    start: string;
+    end: string;
+    employee_id: number | null;
+  }[];
   scores: {
     six_day_windows: number;
     backward_transitions: number;
@@ -217,3 +231,78 @@ export interface GenerationJob {
   solution: Solution | null;
   error: string | null;
 }
+
+export interface Shift extends ShiftOption {
+  /** Active work in local minutes after midnight of the start date; beyond 1440 on the next date. */
+  segments: { start_minute: number; end_minute: number }[];
+  net_work_minutes: number;
+}
+
+/** One duty as the review and `schedule.csv` show it; times are Europe/Berlin with their offset. */
+export interface DutyRow {
+  employee_id: number;
+  employee_name: string;
+  date: string;
+  weekday: number;
+  is_public_holiday: boolean;
+  planning_unit_id: number;
+  planning_unit_name: string;
+  shift_id: number;
+  shift_code: string;
+  shift_type: ShiftType;
+  start_at: string;
+  end_at: string;
+  net_work_minutes: number;
+  staff_level: StaffLevel;
+  origin_unit_id: number | null;
+  origin_unit_name: string | null;
+  origin_unit_type: PlanningUnit["type"] | null;
+}
+
+/** One participant's month as the review and `employees.csv` show it; computed by the backend. */
+export interface EmployeeRow {
+  employee_id: number;
+  employee_name: string;
+  staff_level: StaffLevel;
+  planning_month: string;
+  target_minutes: number;
+  credited_minutes: number;
+  generated_minutes: number;
+  balance_minutes: number;
+  memberships: Membership[];
+  hard_availability: Availability[];
+  credit_details: WorkCredit[];
+}
+
+export interface StaffingRow {
+  planning_unit_id: number;
+  date: string;
+  shift_id: number;
+  staff_level: StaffLevel;
+  required_count: number;
+  assigned_count: number;
+}
+
+/** The effective settings of one solve; `policy` holds the rule parameters in minutes and days. */
+export interface RunConfiguration {
+  policy: { balance_tolerance_minutes: number } & Record<string, number>;
+  weights: { health_events: number; balance_deviation_minutes: number; surplus_intermediate_duties: number };
+  timeout_seconds: number;
+  search_workers: number | null;
+  random_seed: number | null;
+}
+
+/** The latest generated or imported schedule with its independent check and readable tables. */
+export interface ScheduleReview {
+  source: "generation" | "import";
+  received_at: string;
+  planning_month: PlanningMonth;
+  planning_units: PlanningUnit[];
+  shifts: Shift[];
+  calendar: CalendarDay[];
+  solution: Solution & { check: ScheduleCheck; configuration: RunConfiguration };
+  tables: { duties: DutyRow[]; employees: EmployeeRow[]; staffing: StaffingRow[] };
+}
+
+/** Why the backend refused an uploaded pair of files. */
+export type BundleProblem = "malformed" | "mismatch" | "no_schedule" | "references" | "check";

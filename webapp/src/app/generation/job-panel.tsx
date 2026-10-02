@@ -1,48 +1,18 @@
-import { Info, LoaderCircle } from "lucide-react";
+import Link from "next/link";
+import { Info } from "lucide-react";
 import { BulletList } from "@/components/bullet-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { monthLabel } from "@/lib/labels";
-import type { CheckStatus, GenerationJob, PlanningUnit, Rule, ScheduleCheck, SolutionStatus } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { Outcome } from "@/components/outcome";
+import { buttonVariants } from "@/components/ui/button";
+import { CHECK_STATUS, RULES, SOLVER_STATUS, monthLabel } from "@/lib/labels";
+import { selectionSearch } from "@/lib/selection";
+import type { GenerationJob, PlanningUnit, Rule, ScheduleCheck } from "@/lib/types";
 import { RefreshWhileRunning } from "./refresh-while-running";
 
 const STATES: Record<GenerationJob["state"], string> = {
   running: "Läuft",
   completed: "Abgeschlossen",
   failed: "Fehlgeschlagen",
-};
-
-/** What the solver found, with a short explanation. */
-const SOLVER_STATUS: Record<SolutionStatus, [string, string]> = {
-  optimal: ["Optimale Lösung", "Bestmöglich nach den umgesetzten Regeln"],
-  feasible: ["Lösung gefunden", "Optimum nicht nachgewiesen"],
-  infeasible: ["Keine Lösung möglich", "Eingaben widersprechen sich"],
-  unknown: ["Keine Lösung innerhalb der Laufzeit", "Längere Laufzeit versuchen"],
-  model_invalid: ["Modell ungültig", "Backend-Protokoll prüfen"],
-};
-
-/** The independent schedule check, apart from the solver status. */
-const CHECK_STATUS: Record<CheckStatus, [string, string]> = {
-  accepted: ["Regeln eingehalten", "Alle geprüften Regeln erfüllt"],
-  rejected: ["Regelverstöße", "Der Plan ist nicht verwendbar"],
-  incomplete: ["Unvollständig geprüft", "Für eine Regel fehlen Eingaben"],
-};
-
-/** German names of the checked rules, as the backend reports them. */
-const RULES: Record<Rule, string> = {
-  input: "Ungültige Dienste",
-  staffing: "Mindestbesetzung",
-  eligibility: "Zuordnung und Qualifikation",
-  one_duty_per_day: "Ein Dienst pro Tag",
-  availability: "Verfügbarkeit",
-  monthly_balance: "Monatskonto",
-  work_and_breaks: "Arbeitszeit und Pausen",
-  work_average: "Durchschnittliche Arbeitszeit",
-  rest: "Ruhezeit",
-  consecutive_nights: "Nächte in Folge",
-  night_recovery: "Erholung nach Nachtdiensten",
-  replacement_rest: "Ersatzruhetag",
-  annual_free_sundays: "Freie Sonntage im Jahr",
 };
 
 /** Count per rule, e.g. "Ruhezeit: 2". */
@@ -63,29 +33,44 @@ function checkOutcome(check: ScheduleCheck | null | undefined, running: boolean)
 
 const TIME = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", timeStyle: "medium" });
 
-/** One outcome of the job: a small label, the value and a muted explanation. */
-function Outcome({
-  label,
-  value,
-  detail,
-  tone,
-  busy,
+/** The check's violations and open items per rule, and a link to review the schedule with the job's scope. */
+function CheckDetails({
+  check,
+  month,
+  stationIds,
 }: {
-  label: string;
-  value: string;
-  detail: string;
-  tone?: string;
-  busy?: boolean;
+  check: ScheduleCheck;
+  month: GenerationJob["request"]["planning_month"];
+  stationIds: number[];
 }) {
+  const search = selectionSearch(`${month.year}-${String(month.month).padStart(2, "0")}`, stationIds);
+  const blocking = check.not_assessed.filter((row) => row.blocking);
+  const open = check.not_assessed.filter((row) => !row.blocking);
   return (
-    <div className="rounded-lg border bg-muted/30 p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className={cn("mt-1 flex items-center gap-1.5 font-medium", tone)}>
-        {busy && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
-        {value}
-      </p>
-      <p className="mt-0.5 text-sm text-muted-foreground">{detail}</p>
-    </div>
+    <>
+      {(check.findings.length > 0 || check.not_assessed.length > 0) && (
+        <div className="grid gap-4 text-sm sm:grid-cols-2">
+          {check.findings.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-muted-foreground">Verstöße</p>
+              <BulletList items={perRule(check.findings)} />
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <p className="text-muted-foreground">Nicht bewertet</p>
+            <BulletList
+              items={[
+                ...perRule(blocking).map((item) => `${item} (fehlende Eingaben)`),
+                ...perRule(open).map((item) => `${item} (über den Monat hinaus)`),
+              ]}
+            />
+          </div>
+        </div>
+      )}
+      <Link className={buttonVariants({ variant: "outline" })} href={`/review${search}`}>
+        Dienstplan prüfen
+      </Link>
+    </>
   );
 }
 
@@ -102,7 +87,6 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
       : ["Kein Ergebnis", "Der Job ist fehlgeschlagen"];
   const check = solution?.check;
   const [checkValue, checkDetail, checkTone] = checkOutcome(check, job.state === "running");
-  const open = check?.not_assessed.filter((row) => !row.blocking) ?? [];
   const times = `${TIME.format(new Date(job.started_at))} – ${
     job.finished_at ? TIME.format(new Date(job.finished_at)) : "…"
   } Uhr`;
@@ -149,27 +133,7 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
           </dl>
         )}
 
-        {check && (check.findings.length > 0 || check.not_assessed.length > 0) && (
-          <div className="grid gap-4 text-sm sm:grid-cols-2">
-            {check.findings.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-muted-foreground">Verstöße</p>
-                <BulletList items={perRule(check.findings)} />
-              </div>
-            )}
-            <div className="space-y-1.5">
-              <p className="text-muted-foreground">Nicht bewertet</p>
-              <BulletList
-                items={[
-                  ...perRule(check.not_assessed.filter((row) => row.blocking)).map(
-                    (item) => `${item} (fehlende Eingaben)`,
-                  ),
-                  ...perRule(open).map((item) => `${item} (über den Monat hinaus)`),
-                ]}
-              />
-            </div>
-          </div>
-        )}
+        {check && <CheckDetails check={check} month={month} stationIds={stationIds} />}
 
         <p className="flex items-center gap-2 border-t pt-4 text-sm text-muted-foreground">
           <Info className="size-4 shrink-0" />

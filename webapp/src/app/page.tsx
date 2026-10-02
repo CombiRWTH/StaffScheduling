@@ -15,7 +15,7 @@ interface Area {
   title: string;
   description: string;
   icon: LucideIcon;
-  href?: string;
+  href: string;
   color: string;
 }
 
@@ -50,8 +50,9 @@ const areas: Area[] = [
   },
   {
     title: "Dienstplan prüfen",
-    description: "Generierte Dienstpläne prüfen, exportieren und veröffentlichen",
+    description: "Den generierten oder importierten Dienstplan prüfen und herunterladen",
     icon: CalendarCheck,
+    href: "/review",
     color: areaColors.reviewRoster.icon,
   },
 ];
@@ -69,11 +70,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {areas.map(({ title, description, icon: Icon, href, color }) => {
-          const card = (
-            <Card
-              className={cn("h-full gap-0 transition-shadow", href ? "cursor-pointer hover:shadow-lg" : "opacity-60")}
-            >
+        {areas.map(({ title, description, icon: Icon, href, color }) => (
+          <Link key={title} href={`${href}${search}`} className="rounded-xl">
+            <Card className="h-full cursor-pointer gap-0 transition-shadow hover:shadow-lg">
               <CardHeader>
                 <div className={cn("w-fit rounded-lg p-3", color)}>
                   <Icon className="h-6 w-6" />
@@ -82,22 +81,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 <CardDescription>{description}</CardDescription>
               </CardHeader>
               <CardContent className="mt-auto pt-6">
-                <span className={cn(buttonVariants({ variant: "outline" }), "w-full", !href && "opacity-50")}>
-                  {href ? "Öffnen" : "Noch nicht unterstützt"}
-                </span>
+                <span className={cn(buttonVariants({ variant: "outline" }), "w-full")}>Öffnen</span>
               </CardContent>
             </Card>
-          );
-          return href ? (
-            <Link key={title} href={`${href}${search}`} className="rounded-xl">
-              {card}
-            </Link>
-          ) : (
-            <div key={title} aria-disabled="true">
-              {card}
-            </div>
-          );
-        })}
+          </Link>
+        ))}
       </div>
     </div>
   );

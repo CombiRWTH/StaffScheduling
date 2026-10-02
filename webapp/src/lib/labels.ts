@@ -1,6 +1,6 @@
 // German labels for canonical values, and locale-independent date text shared by server and client.
 import { MONTHS } from "@/lib/selection";
-import type { AvailabilityType, StaffLevel, WishType } from "@/lib/types";
+import type { AvailabilityType, CheckStatus, Rule, ShiftType, SolutionStatus, StaffLevel, WishType } from "@/lib/types";
 
 export const STAFF_LEVEL_LABELS: Record<StaffLevel, string> = {
   professional: "Fachkraft",
@@ -22,6 +22,48 @@ export const WISH_LABELS: Record<WishType, string> = {
   free_shift: "Schicht frei",
   preferred_day: "Wunschtag",
   preferred_shift: "Wunschschicht",
+};
+
+/** What the solver found, with a short explanation. */
+export const SOLVER_STATUS: Record<SolutionStatus, [string, string]> = {
+  optimal: ["Optimale Lösung", "Bestmöglich nach den umgesetzten Regeln"],
+  feasible: ["Lösung gefunden", "Optimum nicht nachgewiesen"],
+  infeasible: ["Keine Lösung möglich", "Eingaben widersprechen sich"],
+  unknown: ["Keine Lösung innerhalb der Laufzeit", "Längere Laufzeit versuchen"],
+  model_invalid: ["Modell ungültig", "Backend-Protokoll prüfen"],
+};
+
+/** The independent schedule check, apart from the solver status. */
+export const CHECK_STATUS: Record<CheckStatus, [string, string]> = {
+  accepted: ["Regeln eingehalten", "Alle geprüften Regeln erfüllt"],
+  rejected: ["Regelverstöße", "Der Plan ist nicht verwendbar"],
+  incomplete: ["Unvollständig geprüft", "Für eine Regel fehlen Eingaben"],
+};
+
+/** German names of the checked rules, as the backend reports them. */
+export const RULES: Record<Rule, string> = {
+  input: "Ungültige Dienste",
+  staffing: "Mindestbesetzung",
+  eligibility: "Zuordnung und Qualifikation",
+  one_duty_per_day: "Ein Dienst pro Tag",
+  availability: "Verfügbarkeit",
+  monthly_balance: "Monatskonto",
+  work_and_breaks: "Arbeitszeit und Pausen",
+  work_average: "Durchschnittliche Arbeitszeit",
+  rest: "Ruhezeit",
+  consecutive_nights: "Nächte in Folge",
+  night_recovery: "Erholung nach Nachtdiensten",
+  replacement_rest: "Ersatzruhetag",
+  annual_free_sundays: "Freie Sonntage im Jahr",
+};
+
+export const SHIFT_TYPE_LABELS: Record<ShiftType, string> = {
+  early: "Früh",
+  intermediate: "Zwischen",
+  late: "Spät",
+  night: "Nacht",
+  management: "Leitung",
+  other: "Sonstige",
 };
 
 export const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
