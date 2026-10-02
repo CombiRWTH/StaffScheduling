@@ -1,0 +1,5 @@
+planning_unit_id,planning_unit_name,date,shift_id,shift_code,staff_level,required_count,assigned_count,missing_count
+77,PE 77,2026-03-02,1113,F,mfa,1,0,1
+77,PE 77,2026-03-02,1113,F,trainee,1,0,1
+77,PE 77,2026-03-03,1113,F,mfa,1,0,1
+77,PE 77,2026-03-03,1113,F,trainee,1,0,1
