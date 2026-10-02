@@ -16,7 +16,8 @@ concurrency:
 
 jobs:
   quality:
-    name: Quality and Git hooks
+    # main's branch protection requires a check with this exact name; keep it when editing this job.
+    name: Pre-commit Checks
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
