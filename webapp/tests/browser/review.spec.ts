@@ -52,21 +52,26 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   await expect(summary(page).getByRole("heading")).toHaveText("Juni 2026 · Example Station North");
   await expect(summary(page)).toContainText("Generiert");
   await expect(summary(page)).toContainText("Regeln eingehalten");
-  await expect(summary(page)).toContainText("Kann veröffentlicht werden");
+  await expect(summary(page)).toContainText("Kann veröffentlicht werden; Lücken werden nicht veröffentlicht");
+  // Required slots nobody can fill are listed prominently, apart from the duties.
+  const gaps = summary(page).getByRole("region", { name: "Lücken" });
+  await expect(gaps).toContainText("1 unbesetzte Pflichtstelle (Lücken)");
+  await expect(gaps).toContainText("05.06.2026 · Example Station North · F · Fachkraft: 1 von 2 fehlen");
   // Solver internals and obligations beyond the month are technical detail, collapsed until opened.
   const details = summary(page).getByText("Technische Details");
-  await expect(summary(page).getByText("Stufe 1: Gesundheitsereignisse")).toBeHidden();
+  await expect(summary(page).getByText("Stufe 1: Lücken")).toBeHidden();
   // Keyboard users open the collapsed section like any other control.
   await details.press("Enter");
-  await expect(summary(page).getByText("Stufe 1: Gesundheitsereignisse")).toBeVisible();
-  await expect(summary(page).getByText("Stufe 3: Überzählige Zwischendienste")).toBeVisible();
+  await expect(summary(page).getByText("Stufe 1: Lücken")).toBeVisible();
+  await expect(summary(page).getByText("Stufe 4: Überzählige Zwischendienste")).toBeVisible();
   await expect(summary(page)).toContainText("Freie Sonntage im Jahr");
 
   const grid = page.getByLabel("Dienstplan", { exact: true });
   await expect(grid.getByRole("rowheader", { name: /Example Jumper Three/ })).toBeVisible();
   await expect(grid.getByText("Besetzung Example Station North")).toBeVisible();
-  // June 5 and 6 each need one professional in the early shift; the solver may assign more.
-  await expect(grid.getByText(/^[1-9]\/1$/)).toHaveCount(2);
+  // June 6 needs one professional in the early shift, the solver may assign more; June 5 stays short by its gap.
+  await expect(grid.getByText(/^[1-9]\/1$/)).toHaveCount(1);
+  await expect(grid.getByText("1/2", { exact: true })).toHaveClass(/text-destructive/);
   // The jumper-pool MFA's duties at the station are transfers; the station employee works at home.
   const mfa = grid.getByRole("row", { name: /Example MFA One/ });
   const team = grid.getByRole("row", { name: /Example Team Two/ });
@@ -91,6 +96,11 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
       "shift_code,shift_type,start_at,end_at,net_work_minutes,staff_level,origin_unit_id,origin_unit_name," +
       "origin_unit_type",
   );
+  const gapRows = (await download(page, "gaps.csv")).trim().split("\n");
+  expect(gapRows).toEqual([
+    "planning_unit_id,planning_unit_name,date,shift_id,shift_code,staff_level,required_count,assigned_count,missing_count",
+    "101,Example Station North,2026-06-05,1113,F,professional,2,1,1",
+  ]);
   const employees = await download(page, "employees.csv");
   expect(employees.trim().split("\n")).toHaveLength(4);
   const result = JSON.parse(await download(page, "result.json"));

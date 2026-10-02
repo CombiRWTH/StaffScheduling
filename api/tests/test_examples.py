@@ -18,6 +18,7 @@ from app.domain import Assignment, Availability, CheckStatus, DemandRequirement,
 from app.settings import Settings
 from app.solver.bundle import (
     EMPLOYEES_FILE,
+    GAPS_FILE,
     INPUT_FILE,
     RESULT_FILE,
     SCHEDULE_FILE,
@@ -67,7 +68,7 @@ def check_examples(directory: Path, months: Sequence[PlanningMonth], stations: i
 
 def _check_folder(folder: Path, month: PlanningMonth, problems: list[str]) -> ScheduleBundle | None:
     label = month.label
-    files = (INPUT_FILE, RESULT_FILE, SCHEDULE_FILE, EMPLOYEES_FILE)
+    files = (INPUT_FILE, RESULT_FILE, SCHEDULE_FILE, EMPLOYEES_FILE, GAPS_FILE)
     if missing := [name for name in files if not (folder / name).is_file() or not (folder / name).stat().st_size]:
         problems.append(f"{label}: missing or empty {', '.join(missing)}.")
         return None
@@ -81,7 +82,7 @@ def _check_folder(folder: Path, month: PlanningMonth, problems: list[str]) -> Sc
         return None
     problems.extend(
         f"{label}: {name} differs from the rendering of the pair."
-        for name in (RESULT_FILE, SCHEDULE_FILE, EMPLOYEES_FILE)
+        for name in (RESULT_FILE, SCHEDULE_FILE, EMPLOYEES_FILE, GAPS_FILE)
         if (folder / name).read_bytes() != bundle.files[name]
     )
     if (check := bundle.check).status != CheckStatus.ACCEPTED:

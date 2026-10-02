@@ -297,7 +297,7 @@ export function clearPublication(month: string, stationIds: number[]) {
 }
 
 /** The downloadable files of the schedule under review. */
-export const REVIEW_FILES = ["input.json", "result.json", "schedule.csv", "employees.csv"] as const;
+export const REVIEW_FILES = ["input.json", "result.json", "schedule.csv", "employees.csv", "gaps.csv"] as const;
 export type ReviewFile = (typeof REVIEW_FILES)[number];
 
 /** One file of the schedule under review as the API's attachment response, or `null` without a review. */

@@ -1,4 +1,4 @@
-"""The portable bundle of one monthly run: input.json, result.json, schedule.csv and employees.csv.
+"""The portable bundle of one monthly run: input.json, result.json, schedule.csv, employees.csv and gaps.csv.
 
 The files are readable, solvable and checkable without TimeOffice. A result names the SHA-256 of the
 exact input.json bytes it was solved from, so a pair can be verified with the standard library. Every
@@ -32,7 +32,7 @@ from app.domain import (
     month_calendar,
     schedule_tables,
 )
-from app.domain.schedule import DutyRow, EmployeeRow
+from app.domain.schedule import DutyRow, EmployeeRow, GapRow
 from app.solver.models import Solution
 
 FORMAT_VERSION = 2
@@ -40,7 +40,8 @@ INPUT_FILE: Final = "input.json"
 RESULT_FILE: Final = "result.json"
 SCHEDULE_FILE: Final = "schedule.csv"
 EMPLOYEES_FILE: Final = "employees.csv"
-type FileName = Literal["input.json", "result.json", "schedule.csv", "employees.csv"]
+GAPS_FILE: Final = "gaps.csv"
+type FileName = Literal["input.json", "result.json", "schedule.csv", "employees.csv", "gaps.csv"]
 
 
 class ScheduleInput(SchedulingBaseModel):
@@ -153,7 +154,7 @@ class ScheduleBundle:
         stored = _found_check(solution)
         if solution.configuration.policy != POLICY:
             raise InvalidBundle(BundleProblem.POLICY, f"{RESULT_FILE} was solved with other rule settings.")
-        check = check_schedule(dataset, solution.assignments)
+        check = check_schedule(dataset, solution.assignments, solution.gaps)
         if any(finding.rule == Rule.INPUT for finding in check.findings):
             raise InvalidBundle(
                 BundleProblem.REFERENCES,
@@ -169,12 +170,13 @@ class ScheduleBundle:
 
     @cached_property
     def files(self) -> dict[FileName, bytes]:
-        """All four files; input.json keeps its digested bytes."""
+        """All five files; input.json keeps its digested bytes, gaps.csv has its header also without gaps."""
         return {
             INPUT_FILE: self.input_json,
             RESULT_FILE: to_json(self.result),
             SCHEDULE_FILE: _csv(DutyRow, self.tables.duties),
             EMPLOYEES_FILE: _csv(EmployeeRow, self.tables.employees),
+            GAPS_FILE: _csv(GapRow, self.tables.gaps),
         }
 
 

@@ -20,6 +20,7 @@ from app.domain.demand import (
     DemandConfiguration,
     DemandPattern,
     DemandRequirement,
+    Gap,
     MonthlyDemand,
     PatternRequirement,
     expand_pattern,
@@ -39,13 +40,14 @@ from app.domain.planning_month import PlanningMonth
 from app.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitMembership, PlanningUnitType
 from app.domain.publication import PublicationProblem, PublicationRejected, PublicationRequest, PublicationResult
 from app.domain.rules import POLICY, RulePolicy
-from app.domain.schedule import DutyRow, EmployeeRow, ScheduleTables, StaffingRow, schedule_tables
+from app.domain.schedule import DutyRow, EmployeeRow, GapRow, ScheduleTables, StaffingRow, schedule_tables
 from app.domain.shift import Shift, ShiftId, ShiftOption, ShiftType, WorkSegment
 from app.domain.wish import Wish, WishEntry, WishType
 
 __all__ = [
     "DutyRow",
     "EmployeeRow",
+    "GapRow",
     "ScheduleTables",
     "StaffingRow",
     "schedule_tables",
@@ -94,6 +96,7 @@ __all__ = [
     "PublicationResult",
     "RulePolicy",
     "DemandRequirement",
+    "Gap",
     "Wish",
     "WishEntry",
     "WishType",

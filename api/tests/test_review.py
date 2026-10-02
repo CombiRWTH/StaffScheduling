@@ -19,6 +19,9 @@ from app.api.generation import get_generation
 from app.api.review import get_review
 from app.domain import (
     Assignment,
+    CheckStatus,
+    Gap,
+    GapRow,
     PlanningMonth,
     PlanningUnitMembership,
     SchedulingDataset,
@@ -30,6 +33,7 @@ from app.main import app
 from app.settings import Settings
 from app.solver.bundle import (
     EMPLOYEES_FILE,
+    GAPS_FILE,
     INPUT_FILE,
     RESULT_FILE,
     SCHEDULE_FILE,
@@ -69,20 +73,23 @@ def january() -> SchedulingDataset:
 JANUARY_DUTIES = (duty(1, jan(30), EARLY), duty(2, jan(31), NIGHT))
 
 
-def found(data: SchedulingDataset, assignments: tuple[Assignment, ...]) -> Solution:
+def found(data: SchedulingDataset, assignments: tuple[Assignment, ...], gaps: tuple[Gap, ...] = ()) -> Solution:
     return Solution(
         status=SolutionStatus.OPTIMAL,
         configuration=CONFIGURATION,
         wall_time_seconds=1.5,
         assignments=assignments,
+        gaps=gaps,
         stages=(StageReport(name="health_events", status=SolutionStatus.OPTIMAL, value=0, best_bound=0),),
-        check=check_schedule(data, assignments),
+        check=check_schedule(data, assignments, gaps),
     )
 
 
-def bundle_of(data: SchedulingDataset, assignments: tuple[Assignment, ...]) -> ScheduleBundle:
+def bundle_of(
+    data: SchedulingDataset, assignments: tuple[Assignment, ...], gaps: tuple[Gap, ...] = ()
+) -> ScheduleBundle:
     schedule_input = ScheduleInput.of(data)
-    return ScheduleBundle.solved(schedule_input, to_json(schedule_input), found(data, assignments))
+    return ScheduleBundle.solved(schedule_input, to_json(schedule_input), found(data, assignments, gaps))
 
 
 def csv_rows(content: bytes) -> list[dict[str, str]]:
@@ -264,6 +271,46 @@ def _edit(content: bytes, change: Callable[[dict[str, Any]], None]) -> bytes:
     return json.dumps(document).encode()
 
 
+def test_gaps_round_trip_and_an_undeclared_gap_is_no_bundle() -> None:
+    # Employee 1 leaves the required early of January 30 open, within the balance band.
+    missing = Gap(
+        planning_unit_id=NORTH,
+        date=jan(30),
+        shift_id=EARLY.shift_id,
+        staff_level=StaffLevel.PROFESSIONAL,
+        missing_count=1,
+    )
+    files = bundle_of(january(), (duty(2, jan(31), NIGHT),), (missing,)).files
+
+    assert csv_rows(files[GAPS_FILE]) == [
+        {
+            "planning_unit_id": str(NORTH),
+            "planning_unit_name": "North",
+            "date": "2026-01-30",
+            "shift_id": str(EARLY.shift_id),
+            "shift_code": "F",
+            "staff_level": "professional",
+            "required_count": "1",
+            "assigned_count": "0",
+            "missing_count": "1",
+        }
+    ]
+    imported = ScheduleBundle.read(files[INPUT_FILE], files[RESULT_FILE])
+    assert imported.result.solution.gaps == (missing,)
+    assert imported.check.status == CheckStatus.ACCEPTED
+    assert imported.files == files
+    # Without gaps the header stays.
+    assert bundle_of(january(), JANUARY_DUTIES).files[GAPS_FILE].decode().splitlines() == [
+        ",".join(GapRow.model_fields)
+    ]
+    # A result that hides the gap carries a stale check, so it is no bundle.
+    hidden = json.loads(files[RESULT_FILE])
+    hidden["solution"]["gaps"] = []
+    with pytest.raises(InvalidBundle) as error:
+        ScheduleBundle.read(files[INPUT_FILE], json.dumps(hidden).encode())
+    assert error.value.problem == BundleProblem.CHECK
+
+
 @pytest.mark.parametrize(
     ("file", "change", "problem", "message"),
     [
@@ -358,6 +405,7 @@ def test_http_review_downloads_and_imports_only_valid_pairs(
         (RESULT_FILE, json_type),
         (SCHEDULE_FILE, csv_type),
         (EMPLOYEES_FILE, csv_type),
+        (GAPS_FILE, csv_type),
     ):
         response = http.get(f"/review/files/{name}")
         assert response.status_code == 200

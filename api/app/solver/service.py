@@ -62,19 +62,22 @@ class SolverService:
         started = monotonic()
         status, solver, stages = self._solve_stages(built, configuration)
         assignments = built.schedule(solver) if solver else ()
+        gaps = built.declared_gaps(solver) if solver else ()
         solution = Solution(
             status=status,
             configuration=configuration,
             wall_time_seconds=monotonic() - started,
             assignments=assignments,
+            gaps=gaps,
             stages=stages,
-            check=check_schedule(dataset, assignments) if solver else None,
+            check=check_schedule(dataset, assignments, gaps) if solver else None,
             diagnostics=built.diagnostics,
         )
         logger.info(
-            "Solved status=%s assignments=%s stages=%s check=%s wall_time_seconds=%.3f",
+            "Solved status=%s assignments=%s gaps=%s stages=%s check=%s wall_time_seconds=%.3f",
             status.value,
             len(solution.assignments),
+            sum(gap.missing_count for gap in gaps),
             [(stage.name, stage.status.value, stage.value) for stage in stages],
             solution.check.status.value if solution.check else None,
             solution.wall_time_seconds,

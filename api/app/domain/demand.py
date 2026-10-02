@@ -30,6 +30,24 @@ class DemandRequirement(SchedulingBaseModel):
         return (self.planning_unit_id, self.date, self.shift_id, self.staff_level)
 
 
+class Gap(SchedulingBaseModel):
+    """Required slots of one demand row that no assignment fills (Lücke).
+
+    Gaps are reported next to the assignments, never as assignments, so guest staff can be requested
+    for them; publication writes only duties.
+    """
+
+    planning_unit_id: PlanningUnitId
+    date: Date
+    shift_id: ShiftId
+    staff_level: StaffLevel
+    missing_count: int = Field(gt=0)
+
+    @property
+    def demand_key(self) -> DemandKey:
+        return (self.planning_unit_id, self.date, self.shift_id, self.staff_level)
+
+
 # An upper bound that no station reaches, so a typo cannot save an absurd minimum.
 MAX_REQUIRED_COUNT = 99
 

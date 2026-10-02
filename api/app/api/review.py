@@ -4,7 +4,7 @@ from typing import Annotated, Any, Protocol
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, UploadFile, status
 
-from app.solver.bundle import EMPLOYEES_FILE, INPUT_FILE, RESULT_FILE, SCHEDULE_FILE, FileName
+from app.solver.bundle import EMPLOYEES_FILE, GAPS_FILE, INPUT_FILE, RESULT_FILE, SCHEDULE_FILE, FileName
 from app.solver.review import ScheduleReview
 
 router = APIRouter()
@@ -30,6 +30,7 @@ MEDIA_TYPES: dict[FileName, str] = {
     RESULT_FILE: "application/json",
     SCHEDULE_FILE: "text/csv; charset=utf-8",
     EMPLOYEES_FILE: "text/csv; charset=utf-8",
+    GAPS_FILE: "text/csv; charset=utf-8",
 }
 
 

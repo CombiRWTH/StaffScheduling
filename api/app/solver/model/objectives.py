@@ -23,6 +23,11 @@ class Tier:
     reward: bool = False
 
 
+def gaps(model: CandidateModel) -> Expr:
+    """Required slots that no candidate fills, as the staffing rule declares them."""
+    return sum(model.gaps.values(), 0)
+
+
 def six_day_windows(model: CandidateModel) -> Expr:
     """Fully worked six-day windows, each counted on its last day inside the month."""
     events: list[Expr] = []
@@ -93,6 +98,7 @@ def surplus_intermediate(model: CandidateModel) -> Expr:
 
 # The objective tiers, highest priority first.
 OBJECTIVES: tuple[Tier, ...] = (
+    Tier("gaps", (gaps,)),
     Tier("health_events", (six_day_windows, backward_transitions)),
     Tier("balance_deviation_minutes", (balance_deviation,)),
     Tier("surplus_intermediate_duties", (surplus_intermediate,), reward=True),

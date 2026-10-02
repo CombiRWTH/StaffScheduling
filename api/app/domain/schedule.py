@@ -1,4 +1,4 @@
-"""The readable tables of a month's schedule: one row per duty, per employee and per staffing need.
+"""The readable tables of a month's schedule: one row per duty, per employee, per staffing need and per gap.
 
 Review and the CSV files show the same rows, so a reviewed schedule and its downloads cannot differ.
 """
@@ -85,17 +85,32 @@ class StaffingRow(SchedulingBaseModel):
     assigned_count: int
 
 
+class GapRow(SchedulingBaseModel):
+    """Required slots of one station, date, shift and qualification that no duty fills."""
+
+    planning_unit_id: int
+    planning_unit_name: str
+    date: Date
+    shift_id: int
+    shift_code: str
+    staff_level: StaffLevel
+    required_count: int
+    assigned_count: int
+    missing_count: int
+
+
 class ScheduleTables(SchedulingBaseModel):
     duties: tuple[DutyRow, ...]
     employees: tuple[EmployeeRow, ...]
     staffing: tuple[StaffingRow, ...]
+    gaps: tuple[GapRow, ...]
 
 
 def schedule_tables(dataset: SchedulingDataset, assignments: Iterable[Assignment]) -> ScheduleTables:
     """The tables of the month's assignments.
 
     Every assignment must reference the dataset, which a schedule check without input findings proves.
-    Duties are sorted by date, station, start and employee; employees and staffing by their IDs.
+    Duties are sorted by date, station, start and employee; employees, staffing and gaps by their IDs.
     """
     employees = {row.employee_id: row for row in dataset.employees}
     units = {row.planning_unit_id: row for row in dataset.planning_units}
@@ -170,4 +185,19 @@ def schedule_tables(dataset: SchedulingDataset, assignments: Iterable[Assignment
         )
         for unit_id, day, shift_id, level in sorted({*required, *assigned})
     )
-    return ScheduleTables(duties=tuple(duties), employees=tuple(rows), staffing=staffing)
+    gaps = tuple(
+        GapRow(
+            planning_unit_id=row.planning_unit_id,
+            planning_unit_name=units[row.planning_unit_id].display_name,
+            date=row.date,
+            shift_id=row.shift_id,
+            shift_code=shifts[row.shift_id].code,
+            staff_level=row.staff_level,
+            required_count=row.required_count,
+            assigned_count=row.assigned_count,
+            missing_count=row.required_count - row.assigned_count,
+        )
+        for row in staffing
+        if row.assigned_count < row.required_count
+    )
+    return ScheduleTables(duties=tuple(duties), employees=tuple(rows), staffing=staffing, gaps=gaps)

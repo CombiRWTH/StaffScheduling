@@ -61,6 +61,7 @@ export function solverStatusText(status: SolutionStatus) {
 
 /** The objective tiers in the check's scores, named for the staff admin. */
 export const OBJECTIVE_LABELS: Record<Stage["name"], string> = {
+  gaps: "Lücken",
   health_events: "Gesundheitsereignisse",
   six_day_windows: "Sechs-Tage-Folgen",
   backward_transitions: "Rückwärtswechsel",
@@ -90,7 +91,7 @@ export function formatSearchTime(seconds: number, limit: number) {
  * The check's rules that the input cannot decide, as "rule date–date": `missing` lacks input and blocks
  * acceptance, `later` lies beyond the month and does not.
  */
-export function checkGaps(check: ScheduleCheck | null | undefined) {
+export function missingInputs(check: ScheduleCheck | null | undefined) {
   const text = (row: ScheduleCheck["not_assessed"][number]) =>
     `${RULES[row.rule]} ${formatDate(row.start)}–${formatDate(row.end)}`;
   const rows = check?.not_assessed ?? [];
@@ -103,7 +104,7 @@ export function checkGaps(check: ScheduleCheck | null | undefined) {
 // What a solver diagnostic means for the staff admin; the backend's English detail stays for developers.
 const DIAGNOSTIC_HINTS: Record<string, (count: number) => string> = {
   "staffing.too_few_candidates": (count) =>
-    `Mindestbesetzung nicht erreichbar: Für ${count} ${count === 1 ? "Schicht" : "Schichten"} gibt es zu wenige einsetzbare Mitarbeiter. Mindestbesetzung, Verfügbarkeit und Zuordnungen prüfen.`,
+    `Mindestbesetzung nicht erreichbar: Für ${count} ${count === 1 ? "Schicht" : "Schichten"} gibt es zu wenige einsetzbare Mitarbeiter; sie bleiben als Lücken offen. Mindestbesetzung, Verfügbarkeit und Zuordnungen prüfen.`,
   "balance.unreachable": (count) =>
     `Monatskonto nicht erreichbar: ${count} ${count === 1 ? "Mitarbeiter kann" : "Mitarbeiter können"} keinen Dienst übernehmen, ${count === 1 ? "hat" : "haben"} aber Soll-Stunden. Verfügbarkeit und Zuordnungen prüfen.`,
   "shift.breaks_rules": (count) =>

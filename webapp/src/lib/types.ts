@@ -205,6 +205,7 @@ export interface ScheduleCheck {
     employee_id: number | null;
   }[];
   scores: {
+    gaps: number;
     six_day_windows: number;
     backward_transitions: number;
     health_events: number;
@@ -220,6 +221,8 @@ export interface Solution {
   diagnostics: { code: string; severity: Severity; message: string }[];
   /** Present with a found schedule only. */
   check: ScheduleCheck | null;
+  /** Required slots the schedule leaves unfilled; never published as duties. */
+  gaps: { planning_unit_id: number; date: string; shift_id: number; staff_level: StaffLevel; missing_count: number }[];
   /** Every objective tier in solving order; `status` is optimal exactly when every stage is. */
   stages: Stage[];
 }
@@ -294,6 +297,19 @@ interface StaffingRow {
   assigned_count: number;
 }
 
+/** Unfilled required slots of one station, date, shift and qualification, as the review and `gaps.csv` show them. */
+interface GapRow {
+  planning_unit_id: number;
+  planning_unit_name: string;
+  date: string;
+  shift_id: number;
+  shift_code: string;
+  staff_level: StaffLevel;
+  required_count: number;
+  assigned_count: number;
+  missing_count: number;
+}
+
 /** The effective settings of one solve; `policy` holds the rule parameters in minutes and days. */
 interface RunConfiguration {
   policy: { balance_tolerance_minutes: number } & Record<string, number>;
@@ -312,7 +328,7 @@ export interface ScheduleReview {
   calendar: CalendarDay[];
   /** Always a found schedule: it has its stages and check. */
   solution: Solution & { check: ScheduleCheck; configuration: RunConfiguration };
-  tables: { duties: DutyRow[]; employees: EmployeeRow[]; staffing: StaffingRow[] };
+  tables: { duties: DutyRow[]; employees: EmployeeRow[]; staffing: StaffingRow[]; gaps: GapRow[] };
 }
 
 /** Why the backend refused an uploaded pair of files. */

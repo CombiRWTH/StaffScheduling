@@ -125,6 +125,44 @@
       "title": "Finding",
       "type": "object"
     },
+    "Gap": {
+      "additionalProperties": false,
+      "description": "Required slots of one demand row that no assignment fills (Lücke).\n\nGaps are reported next to the assignments, never as assignments, so guest staff can be requested\nfor them; publication writes only duties.",
+      "properties": {
+        "planning_unit_id": {
+          "exclusiveMinimum": 0,
+          "title": "Planning Unit Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "shift_id": {
+          "exclusiveMinimum": 0,
+          "title": "Shift Id",
+          "type": "integer"
+        },
+        "staff_level": {
+          "$ref": "#/$defs/StaffLevel"
+        },
+        "missing_count": {
+          "exclusiveMinimum": 0,
+          "title": "Missing Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "planning_unit_id",
+        "date",
+        "shift_id",
+        "staff_level",
+        "missing_count"
+      ],
+      "title": "Gap",
+      "type": "object"
+    },
     "InputReference": {
       "additionalProperties": false,
       "properties": {
@@ -440,6 +478,11 @@
       "additionalProperties": false,
       "description": "The raw objective tiers, highest priority first; each solver stage reports one of them.",
       "properties": {
+        "gaps": {
+          "description": "Required slots that no assignment fills, recomputed from the assignments.",
+          "title": "Gaps",
+          "type": "integer"
+        },
         "six_day_windows": {
           "title": "Six Day Windows",
           "type": "integer"
@@ -458,6 +501,7 @@
         }
       },
       "required": [
+        "gaps",
         "six_day_windows",
         "backward_transitions",
         "balance_deviation_minutes",
@@ -481,11 +525,20 @@
         },
         "assignments": {
           "default": [],
-          "description": "Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `stages` and `check`.",
+          "description": "Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `gaps`, `stages` and `check`.",
           "items": {
             "$ref": "#/$defs/Assignment"
           },
           "title": "Assignments",
+          "type": "array"
+        },
+        "gaps": {
+          "default": [],
+          "description": "The demand the schedule leaves unfilled; the check recomputes it from the assignments.",
+          "items": {
+            "$ref": "#/$defs/Gap"
+          },
+          "title": "Gaps",
           "type": "array"
         },
         "stages": {

@@ -18,6 +18,7 @@ from app.domain import (
     POLICY,
     Assignment,
     AvailabilityType,
+    DemandRequirement,
     DutyTimes,
     MonthlyWorkAccount,
     SchedulingDataset,
@@ -63,14 +64,16 @@ class CandidateModel:
         # Indices of candidates that fixed context duties alone exclude.
         self.ruled_out: set[int] = set()
         self.diagnostics: list[SolverDiagnostic] = []
+        # Every demand row's unfilled slots, which the staffing rule declares.
+        self.gaps: dict[DemandRequirement, cp_model.IntVar] = {}
         # Every employee's slots, ordered by start.
         self.timelines = {
             employee_id: sorted(slots, key=lambda slot: slot.times.start)
             for employee_id, slots in self._slots().items()
         }
 
-    def diagnose(self, code: str, message: str) -> None:
-        self.diagnostics.append(SolverDiagnostic(code=code, severity=DiagnosticSeverity.ERROR, message=message))
+    def diagnose(self, code: str, message: str, severity: DiagnosticSeverity = DiagnosticSeverity.ERROR) -> None:
+        self.diagnostics.append(SolverDiagnostic(code=code, severity=severity, message=message))
 
     def at_most(self, slots: Sequence[Slot], limit: int, unless: Sequence[Slot] = ()) -> None:
         """At most `limit` of the slots are worked, one more for each worked slot of `unless`.

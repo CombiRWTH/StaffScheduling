@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 from ortools.sat.python import cp_model
 
-from app.domain import Assignment, SchedulingDataset
+from app.domain import Assignment, DemandRequirement, Gap, SchedulingDataset
 from app.solver.diagnostics import SolverDiagnostic
 from app.solver.model.candidates import CandidateModel, Expr
 from app.solver.model.constraints import HARD_RULES
@@ -21,6 +21,7 @@ from app.solver.model.objectives import Tier, tier_objectives
 class ScheduleModel:
     model: cp_model.CpModel
     candidates: dict[Assignment, cp_model.IntVar]
+    gaps: dict[DemandRequirement, cp_model.IntVar]
     # Every objective tier with its expression, highest priority first.
     tiers: tuple[tuple[Tier, Expr], ...]
     diagnostics: tuple[SolverDiagnostic, ...]
@@ -34,6 +35,20 @@ class ScheduleModel:
             )
         )
 
+    def declared_gaps(self, solver: cp_model.CpSolver) -> tuple[Gap, ...]:
+        """The demand rows the solved model leaves unfilled, with their missing slots, in demand order."""
+        return tuple(
+            Gap(
+                planning_unit_id=row.planning_unit_id,
+                date=row.date,
+                shift_id=row.shift_id,
+                staff_level=row.staff_level,
+                missing_count=missing,
+            )
+            for row, variable in self.gaps.items()
+            if (missing := solver.value(variable))
+        )
+
 
 def build_model(dataset: SchedulingDataset) -> ScheduleModel:
     """The month's complete model, without an objective; the solver sets one per stage."""
@@ -41,4 +56,4 @@ def build_model(dataset: SchedulingDataset) -> ScheduleModel:
     for rule in HARD_RULES:
         rule(model)
     tiers = tier_objectives(model)
-    return ScheduleModel(model.cp, model.candidates, tiers, tuple(model.diagnostics))
+    return ScheduleModel(model.cp, model.candidates, model.gaps, tiers, tuple(model.diagnostics))

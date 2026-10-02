@@ -34,7 +34,8 @@ def browser_timeoffice(request: Request) -> TimeOfficeService:
 app.dependency_overrides[get_planning_source] = browser_timeoffice
 
 # Station North has saved staffing in June, July and August; September has none, so generation refuses it.
-# August asks for two professionals a shift, but only one works at the station, so it is infeasible.
+# June 5 asks for two professionals, but only one works at the station, so one slot stays a gap.
+# Nobody is a member in August, so its accounts are unreachable and the month is infeasible.
 for month in (6, 7, 8):
     planning_month = PlanningMonth(year=2026, month=month)
     cells = tuple(
@@ -42,7 +43,7 @@ for month in (6, 7, 8):
             date=planning_month.start.replace(day=day),
             shift_id=1113,
             staff_level=StaffLevel.PROFESSIONAL,
-            required_count=2 if month == 8 else 1,
+            required_count=2 if (month, day) == (6, 5) or month == 8 else 1,
         )
         for day in (5, 6)
     )

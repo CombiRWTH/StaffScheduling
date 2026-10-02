@@ -19,7 +19,7 @@ from app.domain.availability import AvailabilityType
 from app.domain.calendar import is_working_day
 from app.domain.core import SchedulingBaseModel
 from app.domain.dataset import SchedulingDataset
-from app.domain.demand import DemandKey
+from app.domain.demand import DemandKey, Gap
 from app.domain.duty import DutyTimes, duty_times
 from app.domain.monthly_work_account import MonthlyWorkAccount
 from app.domain.rules import APPROVED_FREE, BLOCKING_AVAILABILITY, POLICY
@@ -85,6 +85,8 @@ class NotAssessed(SchedulingBaseModel):
 class ScheduleScores(SchedulingBaseModel):
     """The raw objective tiers, highest priority first; each solver stage reports one of them."""
 
+    gaps: int
+    """Required slots that no assignment fills, recomputed from the assignments."""
     six_day_windows: int
     backward_transitions: int
     balance_deviation_minutes: int
@@ -116,15 +118,18 @@ class _Duty:
 ASSESSED = tuple(rule for rule in Rule if rule != Rule.ANNUAL_FREE_SUNDAYS)
 
 
-def check_schedule(dataset: SchedulingDataset, assignments: Iterable[Assignment]) -> ScheduleCheck:
-    """Check the month's assignments against every hard rule and score them.
+def check_schedule(
+    dataset: SchedulingDataset, assignments: Iterable[Assignment], gaps: Iterable[Gap] = ()
+) -> ScheduleCheck:
+    """Check the month's assignments and declared gaps against every hard rule and score them.
 
-    Malformed assignments (unknown references, outside the month, duplicates) are findings and take
-    no part in the other checks.
+    Staffing holds when every demand row's shortfall is exactly its declared gap. Malformed
+    assignments (unknown references, outside the month, duplicates) are findings and take no part in
+    the other checks.
     """
     check = _Check(dataset)
     duties = check.valid_duties(tuple(assignments))
-    check.staffing(duties)
+    check.staffing(duties, tuple(gaps))
     check.eligibility(duties)
     check.one_duty_per_day(duties)
     check.availability(duties)
@@ -219,17 +224,39 @@ class _Check:
                 duties.append(_Duty(row, shift, duty_times(row.date, shift), in_month=True))
         return duties
 
-    def staffing(self, duties: list[_Duty]) -> None:
-        covered = Counter(duty.assignment.demand_key for duty in duties)
-        for row in self.dataset.demand_requirements:
-            if (count := covered[row.demand_key]) < row.required_count:
+    def staffing(self, duties: list[_Duty], gaps: tuple[Gap, ...]) -> None:
+        declared = Counter[DemandKey]()
+        for gap in gaps:
+            declared[gap.demand_key] += gap.missing_count
+        missing = self.missing(duties)
+        for gap in gaps:
+            if gap.demand_key not in missing:
                 self.fail(
                     Rule.STAFFING,
-                    f"{count} of {row.required_count} required {row.staff_level.value} staff.",
+                    "A gap is declared for a shift without demand.",
+                    planning_unit_id=gap.planning_unit_id,
+                    date=gap.date,
+                    shift_id=gap.shift_id,
+                )
+        covered = Counter(duty.assignment.demand_key for duty in duties)
+        for row in self.dataset.demand_requirements:
+            if (gap := declared[row.demand_key]) != missing[row.demand_key]:
+                self.fail(
+                    Rule.STAFFING,
+                    f"{covered[row.demand_key]} of {row.required_count} required {row.staff_level.value} staff, "
+                    f"but {gap} declared as gaps.",
                     planning_unit_id=row.planning_unit_id,
                     date=row.date,
                     shift_id=row.shift_id,
                 )
+
+    def missing(self, duties: list[_Duty]) -> dict[DemandKey, int]:
+        """Every demand row's required slots that no duty fills."""
+        covered = Counter(duty.assignment.demand_key for duty in duties)
+        return {
+            row.demand_key: max(0, row.required_count - covered[row.demand_key])
+            for row in self.dataset.demand_requirements
+        }
 
     def eligibility(self, duties: list[_Duty]) -> None:
         memberships = self.dataset.planning_unit_memberships
@@ -433,6 +460,7 @@ class _Check:
             duty.assignment.demand_key for duty in duties if duty.shift.type == ShiftType.INTERMEDIATE
         )
         return ScheduleScores(
+            gaps=sum(self.missing(duties).values()),
             six_day_windows=six_day,
             backward_transitions=backward,
             balance_deviation_minutes=sum(abs(balance) for _, balance in self.balances(duties)),

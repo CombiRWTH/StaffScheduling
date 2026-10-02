@@ -14,6 +14,7 @@ from ortools.sat.python import cp_model
 
 from app.domain import POLICY, ShiftType, dates_between, is_working_day
 from app.domain.demand import DemandKey
+from app.solver.diagnostics import DiagnosticSeverity
 from app.solver.model.candidates import CandidateModel, Expr, Slot, by_day, is_constant
 
 type Constraint = Callable[[CandidateModel], None]
@@ -117,7 +118,11 @@ def _replacement_rest(model: CandidateModel, slots: list[Slot]) -> None:
 
 
 def staffing(model: CandidateModel) -> None:
-    """Every dated demand row gets at least its required count of candidates credited with its qualification."""
+    """Every dated demand row gets its required count of candidates credited with its qualification, or a gap.
+
+    The gap is exactly the unfilled slots, `max(0, required - credited)`, for every schedule; the
+    gap objective tier minimizes it.
+    """
     covering: defaultdict[DemandKey, list[cp_model.IntVar]] = defaultdict(list)
     for duty, variable in model.candidates.items():
         covering[duty.demand_key].append(variable)
@@ -129,8 +134,12 @@ def staffing(model: CandidateModel) -> None:
                 "staffing.too_few_candidates",
                 f"Station {row.planning_unit_id} needs {row.required_count} {row.staff_level.value} on "
                 f"{row.date} (shift {row.shift_id}), but only {possible} can work it.",
+                DiagnosticSeverity.WARNING,
             )
-        model.cp.add(sum(variables) >= row.required_count)
+        name = f"gap_{row.planning_unit_id}_{row.date:%Y%m%d}_{row.shift_id}_{row.staff_level}"
+        gap = model.cp.new_int_var(0, row.required_count, name)
+        model.cp.add_max_equality(gap, [0, row.required_count - sum(variables, 0)])
+        model.gaps[row] = gap
 
 
 def monthly_balance(model: CandidateModel) -> None:

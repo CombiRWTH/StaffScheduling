@@ -3,7 +3,7 @@ from typing import Literal, Self
 
 from pydantic import model_validator
 
-from app.domain import Assignment, RulePolicy, ScheduleCheck, SchedulingBaseModel
+from app.domain import Assignment, Gap, RulePolicy, ScheduleCheck, SchedulingBaseModel
 from app.solver.diagnostics import SolverDiagnostic
 
 
@@ -51,7 +51,9 @@ class Solution(SchedulingBaseModel):
     configuration: RunConfiguration
     wall_time_seconds: float
     assignments: tuple[Assignment, ...] = ()
-    """Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `stages` and `check`."""
+    """Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `gaps`, `stages` and `check`."""
+    gaps: tuple[Gap, ...] = ()
+    """The demand the schedule leaves unfilled; the check recomputes it from the assignments."""
     stages: tuple[StageReport, ...] = ()
     """Every objective tier in solving order. The status is OPTIMAL exactly when every stage is."""
     check: ScheduleCheck | None = None
@@ -70,6 +72,8 @@ class Solution(SchedulingBaseModel):
             stage.status == SolutionStatus.OPTIMAL for stage in self.stages
         ):
             raise ValueError("A solution is optimal exactly when every stage is.")
-        if self.assignments and not self.found:
-            raise ValueError("Only a found schedule has assignments.")
+        if (self.assignments or self.gaps) and not self.found:
+            raise ValueError("Only a found schedule has assignments and gaps.")
+        if len({gap.demand_key for gap in self.gaps}) != len(self.gaps):
+            raise ValueError("A demand row has at most one gap.")
         return self

@@ -7,7 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   CHECK_STATUS,
   RULES,
-  checkGaps,
+  STAFF_LEVEL_LABELS,
+  missingInputs,
   formatDate,
   OBJECTIVE_LABELS,
   formatHours,
@@ -35,8 +36,11 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
   const employeeName = new Map(tables.employees.map((row) => [row.employee_id, row.employee_name]));
   const [checkValue, checkDetail] = CHECK_STATUS[check.status];
   const publishable = check.status === "accepted" && tables.duties.length > 0;
+  const missing = tables.gaps.reduce((total, row) => total + row.missing_count, 0);
   const hint = publishable
-    ? "Kann veröffentlicht werden"
+    ? missing > 0
+      ? "Kann veröffentlicht werden; Lücken werden nicht veröffentlicht"
+      : "Kann veröffentlicht werden"
     : check.status === "accepted"
       ? "Ohne Dienste nicht veröffentlichbar"
       : checkDetail;
@@ -51,7 +55,7 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
       .filter(Boolean)
       .join(" · "),
   );
-  const gaps = checkGaps(check);
+  const inputs = missingInputs(check);
 
   return (
     <Card aria-label="Dienstplan zur Prüfung">
@@ -72,9 +76,28 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
         <ProblemBox
           sections={[
             ["Verstöße", findings],
-            ["Fehlende Eingaben", gaps.missing],
+            ["Fehlende Eingaben", inputs.missing],
           ]}
         />
+
+        {missing > 0 && (
+          <section aria-label="Lücken" className="space-y-1.5 rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
+            <p className="font-medium text-amber-800">
+              {missing} {missing === 1 ? "unbesetzte Pflichtstelle" : "unbesetzte Pflichtstellen"} (Lücken)
+            </p>
+            <p className="text-muted-foreground">
+              Kein einsetzbarer Mitarbeiter ist frei; für diese Schichten Gastpersonal anfragen.
+            </p>
+            <div className="max-h-64 overflow-y-auto">
+              <BulletList
+                items={tables.gaps.map(
+                  (row) =>
+                    `${formatDate(row.date)} · ${row.planning_unit_name} · ${row.shift_code} · ${STAFF_LEVEL_LABELS[row.staff_level]}: ${row.missing_count} von ${row.required_count} fehlen`,
+                )}
+              />
+            </div>
+          </section>
+        )}
 
         <Disclosure title="Technische Details">
           <div className="grid gap-6 md:grid-cols-2">
@@ -97,6 +120,7 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
             <Facts
               title="Bewertung"
               facts={[
+                ["Lücken", String(check.scores.gaps)],
                 [
                   "Gesundheitsereignisse",
                   `${check.scores.health_events} (${check.scores.six_day_windows} Sechs-Tage-Folgen, ${check.scores.backward_transitions} Rückwärtswechsel)`,
@@ -106,10 +130,10 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
               ]}
             />
           </div>
-          {gaps.later.length > 0 && (
+          {inputs.later.length > 0 && (
             <div className="space-y-1.5">
               <p className="text-muted-foreground">Über den Monat hinaus, hier nicht bewertet</p>
-              <BulletList items={gaps.later} />
+              <BulletList items={inputs.later} />
             </div>
           )}
           {solution.diagnostics.length > 0 && (

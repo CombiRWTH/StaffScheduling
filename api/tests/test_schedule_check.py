@@ -27,6 +27,7 @@ from app.domain import (
     Assignment,
     AvailabilityType,
     CheckStatus,
+    Gap,
     MonthlyWorkAccount,
     PlanningMonth,
     Rule,
@@ -117,6 +118,38 @@ def test_staffing_counts_the_qualification_each_duty_is_credited_as() -> None:
         )
         == set()
     )
+
+
+def test_a_shortfall_is_accepted_only_as_exactly_its_declared_gap() -> None:
+    data = dataset(memberships=member(1), accounts=[account(1, 420)], demand=[need(jan(10), EARLY, count=2)])
+    schedule = [duty(1, jan(10), EARLY)]
+
+    def gap(missing: int, day: int = 10) -> Gap:
+        return Gap(
+            planning_unit_id=NORTH,
+            date=jan(day),
+            shift_id=EARLY.shift_id,
+            staff_level=StaffLevel.PROFESSIONAL,
+            missing_count=missing,
+        )
+
+    accepted = check_schedule(data, schedule, [gap(1)])
+    assert accepted.status == CheckStatus.ACCEPTED
+    assert accepted.scores.gaps == 1
+    # An undeclared shortfall, a wrong count and a gap without demand are all staffing violations.
+    for declared in ([], [gap(2)], [gap(1), gap(1, day=11)]):
+        check = check_schedule(data, schedule, declared)
+        assert {finding.rule for finding in check.findings} == {Rule.STAFFING}
+        assert check.scores.gaps == 1
+    # A declared gap the assignments fill is no gap.
+    filled = [*schedule, duty(2, jan(10), EARLY)]
+    two = dataset(
+        memberships=[*member(1), *member(2)],
+        accounts=[account(1, 420), account(2, 420)],
+        demand=[need(jan(10), EARLY, count=2)],
+    )
+    assert rules(two, filled) == set()
+    assert {finding.rule for finding in check_schedule(two, filled, [gap(1)]).findings} == {Rule.STAFFING}
 
 
 def test_a_jumper_pool_employee_cannot_cover_both_stations_at_once() -> None:

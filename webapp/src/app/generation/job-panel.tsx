@@ -10,7 +10,7 @@ import {
   CHECK_STATUS,
   RULES,
   SOLVER_STATUS,
-  checkGaps,
+  missingInputs,
   diagnosticHints,
   formatSearchTime,
   formatStages,
@@ -96,6 +96,7 @@ function jobFacts(job: GenerationJob): [string, string][] {
     ["Solver", solution ? SOLVER_STATUS[solution.status][0] : running ? "Wird berechnet …" : "Kein Ergebnis"],
     ["Prüfung", check ? CHECK_STATUS[check.status][0] : running ? "Wartet auf Plan" : "Kein Plan zu prüfen"],
     ["Dienste", solution ? String(solution.assignments.length) : "–"],
+    ["Lücken", check ? String(check.scores.gaps) : "–"],
   ];
 }
 
@@ -121,7 +122,7 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
   const { solution } = job;
   const check = solution?.check;
   const period = monthLabel(month.year, month.month);
-  const gaps = checkGaps(check);
+  const inputs = missingInputs(check);
   const diagnostics = solution?.diagnostics ?? [];
 
   return (
@@ -158,7 +159,7 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
           sections={[
             ["Hinweise", diagnosticHints(diagnostics)],
             ["Verstöße", perRule(check?.findings ?? [])],
-            ["Fehlende Eingaben", gaps.missing],
+            ["Fehlende Eingaben", inputs.missing],
           ]}
         />
 
@@ -171,10 +172,10 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
                 facts={diagnostics.map((row, index) => [`${index + 1}. ${row.severity} ${row.code}`, row.message])}
               />
             )}
-            {gaps.later.length > 0 && (
+            {inputs.later.length > 0 && (
               <div className="space-y-1.5">
                 <p className="text-muted-foreground">Über den Monat hinaus, hier nicht bewertet</p>
-                <BulletList items={gaps.later} />
+                <BulletList items={inputs.later} />
               </div>
             )}
           </Disclosure>

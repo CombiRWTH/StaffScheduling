@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 // The offline API (api/tests/browser_server.py) has saved staffing for Station North in June,
 // July and August, none in September. June and August solve for real for at most three seconds;
-// July fails at runtime and August's demand is infeasible, each after a two-second run. Jobs live
+// July fails at runtime and August's accounts are unreachable, each after a two-second run. Jobs live
 // in that process only.
 
 const latest = (page: Page) => page.getByLabel("Letzte Generierung");
@@ -58,7 +58,11 @@ test("a running job survives navigation, rejects a second run and ends with its 
   // The independent check accepts the plan; the headline says what to do next.
   await expect(latest(page)).toContainText("Dienstplan erstellt, Regeln eingehalten");
   await expect(latest(page)).toContainText("nicht automatisch veröffentlicht");
-  await expect(latest(page).getByText("Hinweise", { exact: true })).toHaveCount(0);
+  // June 5 needs one professional more than the station has: the hint explains the gap.
+  await expect(latest(page).getByText("Hinweise", { exact: true })).toBeVisible();
+  await expect(latest(page)).toContainText(
+    "Für 1 Schicht gibt es zu wenige einsetzbare Mitarbeiter; sie bleiben als Lücken offen",
+  );
   // What lies beyond the month is technical detail, opened by keyboard.
   await latest(page).getByText("Technische Details").press("Enter");
   await expect(latest(page).getByText("Über den Monat hinaus, hier nicht bewertet")).toBeVisible();
@@ -74,6 +78,7 @@ test("infeasible and failed runs are reported differently", async ({ page }) => 
   // The hints name the demand no employee can cover, for staff admins and developers alike.
   await expect(latest(page).getByText("Hinweise", { exact: true })).toBeVisible();
   await expect(latest(page)).toContainText("Mindestbesetzung nicht erreichbar: Für 2 Schichten");
+  await expect(latest(page)).toContainText("Monatskonto nicht erreichbar: 2 Mitarbeiter");
   // The solver's own English messages stay in the technical details for developers.
   await expect(
     latest(page)

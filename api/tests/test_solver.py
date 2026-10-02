@@ -28,14 +28,17 @@ from app.domain import (
     Availability,
     AvailabilityType,
     CheckStatus,
+    Gap,
     PlanningMonth,
     ScheduleCheck,
     ScheduleScores,
     SchedulingDataset,
+    Shift,
     StaffLevel,
     check_schedule,
 )
 from app.settings import Settings
+from app.solver.diagnostics import DiagnosticSeverity
 from app.solver.model.objectives import OBJECTIVES
 from app.solver.models import Solution, SolutionStatus
 from app.solver.service import SolverService
@@ -149,7 +152,17 @@ def test_trusted_context_constrains_the_first_days_of_the_month() -> None:
     assert [row for row in solution.assignments if row.date == jan(1)] == [duty(2, jan(1), NIGHT)]
 
 
-def test_unmet_demand_is_infeasible_and_diagnosed() -> None:
+def gap(day: date, shift_: Shift, missing: int = 1, level: StaffLevel = StaffLevel.PROFESSIONAL, unit: int = NORTH):
+    return Gap(
+        planning_unit_id=unit,
+        date=day,
+        shift_id=shift_.shift_id,
+        staff_level=level,
+        missing_count=missing,
+    )
+
+
+def test_unmet_demand_returns_exactly_the_missing_slots_as_gaps() -> None:
     data = dataset(
         memberships=[*member(1, StaffLevel.MFA), *member(2, StaffLevel.ASSISTANT)],
         accounts=[account(1, 420), account(2, 0)],
@@ -157,18 +170,54 @@ def test_unmet_demand_is_infeasible_and_diagnosed() -> None:
     )
     solution = solve(data)
 
+    assert solution.status == SolutionStatus.OPTIMAL
+    assert solution.assignments == (duty(1, jan(5), EARLY, level=StaffLevel.MFA),)
+    assert solution.gaps == (gap(jan(5), EARLY, level=StaffLevel.MFA),)
+    assert checked(solution).status == CheckStatus.ACCEPTED
+    assert stages_are_scores(solution)
+    assert [(row.code, row.severity) for row in solution.diagnostics] == [
+        ("staffing.too_few_candidates", DiagnosticSeverity.WARNING)
+    ]
+
+
+def test_a_gap_is_never_traded_for_health_events() -> None:
+    # Filling both duties steps back from late to early; leaving one open would avoid that.
+    data = dataset(
+        memberships=member(1),
+        accounts=[account(1, 435 + 420)],
+        demand=[need(jan(10), LATE), need(jan(12), EARLY)],
+    )
+    solution = solve(data)
+
+    assert solution.gaps == ()
+    assert checked(solution).scores.backward_transitions == 1
+    assert stages_are_scores(solution)
+
+
+def test_a_non_staffing_conflict_stays_infeasible() -> None:
+    # Gaps relax only staffing: the jumper pool employee still has to reach the account.
+    data = dataset(
+        memberships=member(1, home=JUMPER_POOL),
+        accounts=[account(1, 1000)],
+        demand=[need(jan(5), EARLY)],
+    )
+    solution = solve(data)
+
     assert solution.status == SolutionStatus.INFEASIBLE
-    assert (solution.assignments, solution.check, solution.stages) == ((), None, ())
-    assert [row.code for row in solution.diagnostics] == ["staffing.too_few_candidates"]
+    assert (solution.assignments, solution.gaps, solution.check, solution.stages) == ((), (), None, ())
+    assert "balance.unreachable" in [row.code for row in solution.diagnostics]
 
 
 def test_a_jumper_pool_employee_cannot_fill_both_stations_on_one_date() -> None:
     data = dataset(
         memberships=member(1, StaffLevel.ASSISTANT, home=JUMPER_POOL, replacements=[NORTH, SOUTH]),
-        accounts=[account(1, 840)],
+        accounts=[account(1, 420)],
         demand=[need(jan(5), EARLY, level=StaffLevel.ASSISTANT, unit=unit) for unit in (NORTH, SOUTH)],
     )
-    assert solve(data).status == SolutionStatus.INFEASIBLE
+    solution = solve(data)
+
+    assert len(solution.assignments) == len(solution.gaps) == 1
+    assert checked(solution).status == CheckStatus.ACCEPTED
 
 
 def test_a_month_needs_every_account_before_it_solves() -> None:
@@ -191,7 +240,7 @@ def test_the_night_before_the_october_clock_change_is_never_assigned() -> None:
     )
     solution = solve(data)
 
-    assert solution.status == SolutionStatus.INFEASIBLE
+    assert solution.gaps == (gap(date(2026, 10, 24), NIGHT),)
     assert {row.code for row in solution.diagnostics} >= {"shift.breaks_rules", "staffing.too_few_candidates"}
 
 
