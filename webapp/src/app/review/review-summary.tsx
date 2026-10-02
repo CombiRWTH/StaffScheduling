@@ -2,7 +2,7 @@ import { CircleAlert, CircleCheck, CircleX } from "lucide-react";
 import { BulletList } from "@/components/bullet-list";
 import { Disclosure } from "@/components/disclosure";
 import { Card, CardContent } from "@/components/ui/card";
-import { CHECK_STATUS, RULES, SOLVER_STATUS, formatDate, monthLabel } from "@/lib/labels";
+import { CHECK_STATUS, RULES, SOLVER_STATUS, formatDate, formatHours, monthLabel } from "@/lib/labels";
 import type { CheckStatus, ScheduleCheck, ScheduleReview } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -133,7 +133,7 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
                   "Gesundheitsereignisse",
                   `${check.scores.health_events} (${check.scores.six_day_windows} Sechs-Tage-Folgen, ${check.scores.backward_transitions} Rückwärtswechsel)`,
                 ],
-                ["Abweichung der Monatskonten", `${check.scores.balance_deviation_minutes} min`],
+                ["Abweichung der Monatskonten", formatHours(check.scores.balance_deviation_minutes)],
                 ["Überzählige Zwischendienste", String(check.scores.surplus_intermediate_duties)],
               ]}
             />

@@ -8,7 +8,7 @@ import { GenerationForm } from "./generation-form";
 import { JobPanel } from "./job-panel";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Dienstplan erstellen · Schichtplanung" };
+export const metadata: Metadata = { title: "Dienstplan erstellen · Schichtplan Manager" };
 
 const USED = [
   "Mitarbeiter und Zuordnungen",
@@ -38,12 +38,7 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
 
   return (
     <div className="py-6">
-      <PageHeader
-        title="Dienstplan erstellen"
-        parent={{ href: "/", label: "Übersicht" }}
-        description="Einen Dienstplan für den ganzen Planungsmonat und die gewählten Stationen generieren."
-        scope={scope}
-      />
+      <PageHeader title="Dienstplan erstellen" parent={{ href: "/", label: "Übersicht" }} scope={scope} />
       {scope.error && (
         <div className="mb-6">
           <LoadError title="Stationen nicht geladen" message={scope.error} />

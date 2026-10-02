@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Employee, PlanningInspection, PlanningUnit, WorkCredit } from "@/lib/types";
-import { AVAILABILITY_LABELS, STAFF_LEVEL_LABELS, formatDate } from "@/lib/labels";
+import { AVAILABILITY_LABELS, STAFF_LEVEL_LABELS, formatDate, formatHours } from "@/lib/labels";
 import { MONTHS } from "@/lib/selection";
 
 const UNIT_TYPE_LABELS: Record<PlanningUnit["type"], string> = { station: "Station", jumper_pool: "Springerpool" };
@@ -53,9 +53,6 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
           <CardDescription>
             {formatMonth(inspection.planning_month.start)} · {stations}
           </CardDescription>
-          <p className="text-xs text-muted-foreground">
-            Springerpool-Herkunft und Einsatzberechtigung auf einer Station sind getrennte Angaben.
-          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-3">
@@ -180,18 +177,18 @@ function EmployeeDetails({
       <section className="space-y-2">
         <h3 className="text-sm font-semibold">Monatskonto</h3>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="text-muted-foreground">Ziel</dt>
-          <dd>{account.target_minutes} min</dd>
+          <dt className="text-muted-foreground">Soll</dt>
+          <dd>{formatHours(account.target_minutes)}</dd>
           <dt className="text-muted-foreground">Ist</dt>
-          <dd>{account.actual_minutes === null ? "nicht verfügbar" : `${account.actual_minutes} min`}</dd>
+          <dd>{account.actual_minutes === null ? "nicht verfügbar" : formatHours(account.actual_minutes)}</dd>
           <dt className="text-muted-foreground">Gutschriften</dt>
-          <dd>{account.credited_minutes} min</dd>
+          <dd>{formatHours(account.credited_minutes)}</dd>
         </dl>
         {account.credit_details.length ? (
           <ul className="space-y-1 text-sm">
             {account.credit_details.map((credit) => (
               <li key={`${credit.date}:${credit.kind}:${credit.source}`}>
-                {formatDate(credit.date)} · {credit.minutes} min · {CREDIT_LABELS[credit.kind]} · {credit.source}
+                {formatDate(credit.date)} · {formatHours(credit.minutes)} · {CREDIT_LABELS[credit.kind]}
               </li>
             ))}
           </ul>
@@ -207,8 +204,6 @@ function EmployeeDetails({
               <li key={`${row.date}:${row.availability_type}:${row.reason}:${row.source}:${row.shift_ids}`}>
                 {formatDate(row.date)} · {AVAILABILITY_LABELS[row.availability_type]}
                 {row.reason && ` · ${row.reason}`}
-                {row.shift_ids && ` · Erlaubte Schichten: ${row.shift_ids.join(", ")}`}
-                {row.source && <span className="text-muted-foreground"> · {row.source}</span>}
               </li>
             ))}
           </ul>

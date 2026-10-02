@@ -72,8 +72,8 @@ export function StaffingEditor({ month, configuration }: { month: string; config
       <CardHeader>
         <CardTitle>Tägliche Mindestbesetzung</CardTitle>
         <CardDescription>
-          Ganze Zahlen von 0 bis {MAX_REQUIRED_COUNT}; leer oder 0 bedeutet: niemand erforderlich. Geänderte Felder sind
-          markiert, bis sie gespeichert oder zurückgesetzt werden.
+          Benötigte Personen je Schicht, 0 bis {MAX_REQUIRED_COUNT}; leer heißt 0. Geänderte Felder bleiben markiert,
+          bis sie gespeichert oder zurückgesetzt sind.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

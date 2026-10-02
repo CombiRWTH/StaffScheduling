@@ -168,7 +168,7 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
           <Disclosure title="Technische Details">
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
               {[
-                ["Job", job.job_id],
+                ["Job-ID", job.job_id],
                 ["Solver-Status", solution ? SOLVER_STATUS[solution.status].join(" – ") : "Kein Ergebnis"],
                 [
                   "Suchzeit",

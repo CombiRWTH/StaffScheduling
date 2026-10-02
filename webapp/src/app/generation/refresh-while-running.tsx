@@ -27,7 +27,7 @@ export function RefreshWhileRunning({ startedAt, timeoutSeconds }: { startedAt: 
 
   return overdue ? (
     <p role="alert" className="text-sm text-destructive">
-      Der Job läuft länger als erwartet. Seite neu laden; bleibt er hängen, Backend-Protokoll prüfen.
+      Die Generierung läuft länger als erwartet. Seite neu laden; bleibt sie hängen, Backend-Protokoll prüfen.
     </p>
   ) : null;
 }

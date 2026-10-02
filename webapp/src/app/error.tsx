@@ -10,7 +10,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-20">
-      <h2 className="text-2xl font-bold">Etwas ist schiefgelaufen!</h2>
+      <h2 className="text-2xl font-bold">Etwas ist schiefgelaufen</h2>
       <p className="text-muted-foreground">Ein unerwarteter Fehler ist aufgetreten.</p>
       <Button onClick={() => reset()}>Erneut versuchen</Button>
     </div>

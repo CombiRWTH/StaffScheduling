@@ -23,9 +23,9 @@ Each employee appears once by stable positive ID. Display names may change witho
 
 ## Inspect existing work and availability
 
-Details show monthly target minutes, available actual minutes and the dated credit items with their total. A source actual total is displayed separately and is never treated as approved credit. Zero is displayed only when explicitly supplied; absent actual totals show **nicht verfügbar**. Every participant requires a target account; credits come from TimeOffice's daily absence accounts.
+Details show the monthly account in hours and minutes (for example _160:00 h_): **Soll** (target), **Ist** (TimeOffice's actual total, where available) and **Gutschriften** with their dated items. A source actual total is displayed separately and is never treated as approved credit. Zero is displayed only when explicitly supplied; absent actual totals show **nicht verfügbar**. Every participant requires a target account; credits come from TimeOffice's daily absence accounts.
 
-Credits list full dates, minute amounts, approved-absence/trusted-work kind and provenance. **Abwesenheiten und Einschränkungen** lists native dated absences and project availability with reasons, sources and allowed-shift IDs where applicable; edit them under [Verfügbarkeit](configuration.md#availability-and-wishes). A month without credited absences shows **Keine Gutschriften**. This view does not prorate targets, calculate a candidate's balance, edit employees or run generation.
+Credits list full dates, hours and their kind (_Genehmigte Abwesenheit_ or _Anerkannte Arbeit_). **Verfügbarkeit** lists native dated absences and project availability with their type and reason; the allowed shifts of _Nur bestimmte Schichten_ are shown and edited under [Verfügbarkeit](configuration.md#availability-and-wishes). A month without credited absences shows **Keine Gutschriften**. This view does not prorate targets, calculate a candidate's balance, edit employees or run generation.
 
 Connected prerequisites include read access to the configured TimeOffice tables, the [project tables](../architecture/timeoffice.md#project-tables) and complete [monthly accounts](../architecture/timeoffice.md#monthly-accounts-and-credits) for every employee of the selection. Missing setup/data must be corrected by the authorized database preparer; refreshing cannot create it.
 

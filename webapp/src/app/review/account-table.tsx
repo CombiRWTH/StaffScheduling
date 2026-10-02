@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { STAFF_LEVEL_LABELS } from "@/lib/labels";
+import { STAFF_LEVEL_LABELS, formatHours } from "@/lib/labels";
 import type { ScheduleReview } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +19,7 @@ export function AccountTable({ review }: { review: ScheduleReview }) {
       <CardHeader>
         <CardTitle>Monatskonten</CardTitle>
         <CardDescription>
-          Saldo = geplante Minuten + Gutschriften − Soll; zulässig sind ±{tolerance} min.
+          Saldo = Geplant + Gutschriften − Soll; zulässig sind ±{formatHours(tolerance)}.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -41,17 +41,16 @@ export function AccountTable({ review }: { review: ScheduleReview }) {
                 <TableCell>{row.employee_id}</TableCell>
                 <TableCell>{row.employee_name}</TableCell>
                 <TableCell>{STAFF_LEVEL_LABELS[row.staff_level]}</TableCell>
-                <TableCell className="text-right tabular-nums">{row.target_minutes} min</TableCell>
-                <TableCell className="text-right tabular-nums">{row.credited_minutes} min</TableCell>
-                <TableCell className="text-right tabular-nums">{row.generated_minutes} min</TableCell>
+                <TableCell className="text-right tabular-nums">{formatHours(row.target_minutes)}</TableCell>
+                <TableCell className="text-right tabular-nums">{formatHours(row.credited_minutes)}</TableCell>
+                <TableCell className="text-right tabular-nums">{formatHours(row.generated_minutes)}</TableCell>
                 <TableCell
                   className={cn(
                     "text-right tabular-nums",
                     outside.has(row.employee_id) && "font-semibold text-destructive",
                   )}
                 >
-                  {row.balance_minutes > 0 ? "+" : ""}
-                  {row.balance_minutes} min
+                  {formatHours(row.balance_minutes, { signed: true })}
                 </TableCell>
               </TableRow>
             ))}

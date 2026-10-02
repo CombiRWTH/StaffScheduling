@@ -6,7 +6,7 @@ import { StaffingEditor } from "./staffing-editor";
 import { StationTabs } from "./station-tabs";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Mindestbesetzung · Schichtplanung" };
+export const metadata: Metadata = { title: "Mindestbesetzung · Schichtplan Manager" };
 
 export default async function StaffingPage({
   searchParams,
@@ -20,12 +20,7 @@ export default async function StaffingPage({
   const selected = scope.stations.filter((unit) => selectedIds.has(unit.planning_unit_id));
   return (
     <div className="py-6">
-      <PageHeader
-        title="Mindestbesetzung"
-        parent={{ href: "/", label: "Übersicht" }}
-        description="Benötigtes Personal je Station, Tag, Schicht und Qualifikation im Planungsmonat."
-        scope={scope}
-      />
+      <PageHeader title="Mindestbesetzung" parent={{ href: "/", label: "Übersicht" }} scope={scope} />
       {!stationId ? (
         <p className="py-12 text-center text-muted-foreground">Bitte mindestens eine Station auswählen.</p>
       ) : scope.error ? (

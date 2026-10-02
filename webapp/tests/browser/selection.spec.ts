@@ -48,8 +48,8 @@ test("select both stations, inspect stable employees and jumper pool facts, then
 
   await page.getByRole("button", { name: "Details für Example MFA One" }).click();
   const details = page.getByRole("row").filter({ hasText: "Zuordnungen" });
-  await expect(details.getByText("9600 min", { exact: true })).toBeVisible();
-  await expect(details.getByText("480 min", { exact: true })).toBeVisible();
+  await expect(details.getByText("160:00 h", { exact: true })).toBeVisible();
+  await expect(details.getByText("8:00 h", { exact: true })).toBeVisible();
   await expect(details.getByText(/01\.12\.2025 – 30\.06\.2026 · MFA · Heimat/)).toBeVisible();
   await expect(details.getByText(/· MFA · Ersatz/)).toHaveCount(2);
   await expect(details.getByText(/01\.01\.2026 · Urlaub · U/)).toBeVisible();

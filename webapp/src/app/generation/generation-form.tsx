@@ -69,7 +69,7 @@ export function GenerationForm({
       </div>
       <p id="generation-timeout-hint" className="text-xs text-muted-foreground sm:text-right">
         Suchzeit des Solvers in Sekunden, {MIN_SECONDS}–{MAX_SECONDS}; das Laden der Daten kommt hinzu.
-        {running && " Eine neue Generierung ist nach dem laufenden Job möglich."}
+        {running && " Eine neue Generierung ist möglich, sobald die laufende beendet ist."}
       </p>
       {error && (
         <p role="alert" className="text-destructive">

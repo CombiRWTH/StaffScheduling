@@ -9,7 +9,7 @@ import { EmployeePicker } from "./employee-picker";
 import Loading from "./loading";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Verfügbarkeit · Schichtplanung" };
+export const metadata: Metadata = { title: "Verfügbarkeit · Schichtplan Manager" };
 
 export default async function AvailabilityPage({
   searchParams,
@@ -20,12 +20,7 @@ export default async function AvailabilityPage({
   const scope = await loadPlanningScope("/availability", params);
   return (
     <div className="py-6">
-      <PageHeader
-        title="Verfügbarkeit"
-        parent={{ href: "/", label: "Übersicht" }}
-        description="Einschränkungen und Wünsche eines Mitarbeiters im Planungsmonat."
-        scope={scope}
-      />
+      <PageHeader title="Verfügbarkeit" parent={{ href: "/", label: "Übersicht" }} scope={scope} />
       {!scope.stationIds.length ? (
         <p className="py-12 text-center text-muted-foreground">Bitte mindestens eine Station auswählen.</p>
       ) : scope.error ? (

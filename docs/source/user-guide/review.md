@@ -30,7 +30,7 @@ Only a duty worked outside its origin — the employee's home station or jumper 
 
 Search by name or ID, or open **Vollbild** (leave with the button or Esc). The legend under the table explains the marks. On narrow screens the grid scrolls horizontally; the employee column stays in place.
 
-_Monatskonten_ lists every employee's target, credited, generated minutes and balance (generated + credited − target) as the backend computed them; a balance outside the allowed band is marked when the check reports it.
+_Monatskonten_ lists every employee's **Soll**, **Gutschriften**, **Geplant** and **Saldo** (Geplant + Gutschriften − Soll) in hours and minutes, as the backend computed them; a balance outside the allowed band is marked when the check reports it.
 
 ## Import and validate a portable bundle
 

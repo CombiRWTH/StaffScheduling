@@ -7,18 +7,13 @@ import { EmployeeTable } from "./employee-table";
 import Loading from "./loading";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Mitarbeiter · Schichtplanung" };
+export const metadata: Metadata = { title: "Mitarbeiter · Schichtplan Manager" };
 
 export default async function EmployeesPage({ searchParams }: { searchParams: Promise<ScopeSearchParams> }) {
   const scope = await loadPlanningScope("/employees", await searchParams);
   return (
     <div className="py-6">
-      <PageHeader
-        title="Mitarbeiter"
-        parent={{ href: "/", label: "Übersicht" }}
-        description="Mitarbeiter der gewählten Stationen und des zugehörigen Springerpools, nur lesend."
-        scope={scope}
-      />
+      <PageHeader title="Mitarbeiter" parent={{ href: "/", label: "Übersicht" }} scope={scope} />
       {!scope.stationIds.length ? (
         <p className="py-12 text-center text-muted-foreground">Bitte mindestens eine Station auswählen.</p>
       ) : scope.error ? (

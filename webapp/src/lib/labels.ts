@@ -68,6 +68,13 @@ export const SHIFT_TYPE_LABELS: Record<ShiftType, string> = {
 
 export const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
+/** Minutes as hours and minutes, the way staff read work accounts, e.g. "160:00 h"; `signed` adds + or −. */
+export function formatHours(minutes: number, { signed = false } = {}) {
+  const sign = minutes < 0 ? "−" : signed && minutes > 0 ? "+" : "";
+  const total = Math.abs(minutes);
+  return `${sign}${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")} h`;
+}
+
 /** `DD.MM.YYYY` from an ISO date's text, so server and browser render identically regardless of locale. */
 export function formatDate(value: string) {
   const [year, month, day] = value.split("-");

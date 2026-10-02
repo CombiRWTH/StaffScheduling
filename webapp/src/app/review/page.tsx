@@ -14,7 +14,7 @@ import { ReviewSummary } from "./review-summary";
 import { ScheduleGrid } from "./schedule-grid";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Dienstplan prüfen · Schichtplanung" };
+export const metadata: Metadata = { title: "Dienstplan prüfen · Schichtplan Manager" };
 
 /** The review's month as `YYYY-MM` and its stations, for comparing with and linking to a selection. */
 function reviewScope(review: ScheduleReview) {
@@ -68,12 +68,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="py-6">
-      <PageHeader
-        title="Dienstplan prüfen"
-        parent={{ href: "/", label: "Übersicht" }}
-        description="Den zuletzt generierten oder importierten Dienstplan prüfen und veröffentlichen."
-        scope={scope}
-      />
+      <PageHeader title="Dienstplan prüfen" parent={{ href: "/", label: "Übersicht" }} scope={scope} />
       <div className="space-y-6">
         {"error" in current && <LoadError title="Dienstplan nicht geladen" message={current.error} />}
         {review && matches ? (

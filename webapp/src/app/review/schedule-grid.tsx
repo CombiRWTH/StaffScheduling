@@ -162,7 +162,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
       <CardHeader>
         <CardTitle>Dienstplan</CardTitle>
         <CardDescription>
-          Dienste je Mitarbeiter und Tag; Zeiten und Herkunft beim Zeigen auf einen Dienst und für Screenreader.
+          Dienste je Mitarbeiter und Tag; Zeiten und Herkunft beim Zeigen auf einen Dienst.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -305,7 +305,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
               ))}
             <span className="flex items-center gap-1.5">
               <span className={cn("inline-block size-3 rounded", SHIFT_COLORS.other, TRANSFER_BORDER)} />
-              Einsatz außerhalb der Herkunft des Tages{codes && ", mit der Station des Einsatzes"}
+              Einsatz außerhalb der Herkunft{codes && "; das Kürzel nennt die Station"}
             </span>
             <span className="flex items-center gap-1.5">
               <span className={cn("relative mr-1 inline-block size-3 rounded", SHIFT_COLORS.other)}>
@@ -314,7 +314,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
               Herkunft unbekannt
             </span>
             {codeLegend.length > 0 && <span>{codeLegend.join(", ")}</span>}
-            <span>Grund oder Kürzel (U, FB, Fr, nur …): Abwesenheit oder Einschränkung</span>
+            <span>U, FB, Fr, nur … oder Grund: Abwesenheit oder Einschränkung</span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block size-3 rounded ring-2 ring-inset ring-destructive" />
               Regelverstoß

@@ -84,7 +84,7 @@ The webapp follows plain App Router conventions. Pages are server components tha
 
 UI conventions for every page:
 
-- Pages render `PageHeader` with a title, a one-line description and the planning selection. Every page below the overview passes `parent`, which shows a back arrow before the title; it returns to the parent page and keeps the month/station selection.
+- Pages render `PageHeader` with only a title and the planning selection, so the header stays the same height and alignment everywhere; what each page is for is said once, on the overview cards. Every page below the overview passes `parent`, which shows a back arrow before the title; it returns to the parent page and keeps the month/station selection.
 - The URL is the only selection state. A missing or invalid month means January of the current year; navigation links carry the selection.
 - The sidebar lists only implemented areas; there are no placeholder pages or disabled entries.
 - Use the domain's German terms consistently: Verfügbarkeit (page for availability entries, called Einschränkung, and wishes), Abwesenheit (native TimeOffice absence), Zuordnungen (dated unit assignments), Mindestbesetzung, Wochenmuster, Dienstplan, Herkunft (a duty's dated origin). The solver's relative gap is the _Optimalitätslücke_; never call it just "Lücke", which reads as missing staff.
@@ -99,5 +99,6 @@ UI conventions for every page:
 - Controls in the page header keep a predictable width: the station picker shows a count ("2 Stationen"), not the names.
 - An editor opens on a sensible default (the first day of the month) instead of an empty "nothing selected" state.
 - State a page-wide fact such as "nur lesend" once, and keep button labels short verbs ("Starten", "Speichern").
+- Show work accounts in hours and minutes (`formatHours`, e.g. "160:00 h") and use one set of account terms everywhere: Soll, Ist, Gutschriften, Geplant, Saldo. Do not show backend provenance strings or raw IDs (such as shift IDs); show what they mean in German or leave them out.
 
 The offline browser fixture substitutes SQL query results, while using the actual FastAPI routes, TimeOffice queries and Next.js pages. It is test infrastructure, never a production data fallback. [Testing](../development/testing.md#staff-admin-browser-flows) describes reproduction and limitations.
