@@ -1,6 +1,6 @@
 # Evidence and current limitations
 
-This checkout provides a reproducible development foundation with checked monthly generation, review, validated import, portable downloads and scoped publication to TimeOffice. The final example dataset remains unfinished. These limits describe current code and executed checks; they are not promises inferred from visible controls.
+This checkout provides a reproducible development foundation with checked monthly generation, review, validated import, portable downloads and scoped publication to TimeOffice. The example schedules in `plaene/` cover January to March 2026 without wishes; April, May, June and the set with wishes are missing. These limits describe current code and executed checks; they are not promises inferred from visible controls.
 
 ## What this section proves
 
@@ -55,7 +55,7 @@ Every stage value equals the score the check recomputes, and each 300-second bun
 
 On the earlier example units, a weighted June run (120 s, 1096 duties, 0 findings) stayed `incomplete` for lack of May context, which the six-month sequence supplies. The first June run was infeasible: the prepared July context left no professional able to work the June 30 night (a fourth night in a row, or a duty inside the 48-hour recovery). The solver's diagnostic named this shortage, and the context was corrected by removing three trusted July 3 night duties; no rule was relaxed.
 
-Jobs are lost on API restart. Monthly runs are independent; the coordinated six-month example files are pending. The application writes key-scoped saves to the project tables (availability, wishes, demand) and, only through explicit publication and clear, the worked rows of the stations' target plans.
+Jobs are lost on API restart. Monthly runs are independent; the example sequence in `plaene/` takes each accepted month as the next month's context and is committed for January to March. The application writes key-scoped saves to the project tables (availability, wishes, demand) and, only through explicit publication and clear, the worked rows of the stations' target plans.
 
 ## Review, import and export
 
@@ -68,7 +68,7 @@ Jobs are lost on API restart. Monthly runs are independent; the coordinated six-
 | Webapp `/review/files/{name}`, all four files (before `gaps.csv`)           | Attachments of the reviewed bundle          | `200`; 233 kB input, 183 kB result, 160 kB schedule, 69 kB employee tables |
 | Example validator (`check_examples`) on the downloaded folder, January only | Accepted single month of both stations      | No problem; open: following month's start, annual free Sundays             |
 
-The pair passed the same validation as an import. A single month cannot show the sequence checks; they are covered by the offline tests until the six accepted months exist. Messages of findings and the API's import details are English; the webapp names import problems in German. The review is lost on API restart and is not a saved library.
+The pair passed the same validation as an import. A single month cannot show the sequence checks; the committed January to March pass them ([examples](examples.md#validate-monthly-and-sequence-results)). Messages of findings and the API's import details are English; the webapp names import problems in German. The review is lost on API restart and is not a saved library.
 
 The pages at revision `22d1c6c` were checked read-only against the same example units through the running Compose webapp (page loads only; no write was triggered):
 
@@ -117,7 +117,7 @@ After removing the prepared rows every count and checksum equalled the starting 
 
 ## Quality gates
 
-The latest executed offline suite reports **140 passed** and one skipped (the committed examples, which do not exist yet), including the solver integration tests; no test is excluded to manufacture success. The removed solver plugin tests are replaced by the schedule-check boundary examples (`test_schedule_check.py`) and production solves (`test_solver.py`).
+The latest executed offline suite reports **140 passed** and one skipped (the committed examples, which then did not exist; they are skipped until both sets hold six months), including the solver integration tests; no test is excluded to manufacture success. The removed solver plugin tests are replaced by the schedule-check boundary examples (`test_schedule_check.py`) and production solves (`test_solver.py`).
 
 Webapp strict TypeScript and the native production build pass. The twenty-four controlled browser scenarios (selection/inspection, unavailable/incomplete reads, back navigation, the overview's planning cards in order, the sidebar of implemented areas, year entry and the January default, mobile navigation, availability edit/reload/delete with wishes, failed availability save, demand save/reload/reset/pattern with per-cell change marks, invalid count, failed demand save, generation without result or with incomplete input, a running generation across navigation with busy rejection and its accepted schedule check, infeasible versus failed runs, review of a generated schedule with its status, collapsed technical details, jumper-pool transfer markers and downloads, import of a matching pair and rejection of a mismatched pair without losing the review, imported home changes and unknown origins in the grid, a schedule of another scope, publication and clear each cancelled and then confirmed, a publication refused after the schedule under review changed, a failed publication that changes nothing, and no publication of an incompletely checked schedule) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
 

@@ -4,18 +4,17 @@ Accepted example schedules of stations `PE 77` and `PE 79` with their jumper poo
 
 | Folder                          | Content                                                                  |
 | ------------------------------- | ------------------------------------------------------------------------ |
-| `2026-01/` … `2026-06/`         | The example schedules without preferences: no employee wishes            |
-| `mit-wuenschen/2026-01/` … `06/` | The same months with 32 demonstration wishes, showing fair wish handling |
+| `2026-01/` … `2026-03/`         | The example schedules without preferences: no employee wishes; April, May, June not generated yet |
+| `mit-wuenschen/`                | Planned: the same months with 32 demonstration wishes; not generated yet  |
 | `backup/`                       | An older dataset of an earlier project state; not part of these sets     |
 
-Each month folder holds one run that planned both stations together, so each set contains six monthly schedules per station:
+Each month folder holds one run that planned both stations together, one monthly schedule per station:
 
 - `schedule.csv`: one row per duty.
 - `employees.csv`: one row per employee in planning, also without duties.
 - `gaps.csv`: required slots that no duty fills; only the header when there are none.
 - `input.json` and `result.json`: the complete input and solution, which the tests check and solve again.
 
-<!-- results -->
 
 ## Requested fields
 

@@ -1,6 +1,6 @@
 # Examples and reproduction
 
-For readers trying to inspect or reproduce the example schedules in `plaene/`. They were generated from the prepared TimeOffice inputs below and can be checked and solved again without TimeOffice.
+For readers trying to inspect or reproduce the example schedules in `plaene/`. They were generated from the prepared TimeOffice inputs below and can be checked and solved again without TimeOffice. Committed are the months January to March 2026 of the set without wishes (`plaene/2026-01` to `plaene/2026-03`), each accepted by the schedule check. April, May, June of that set and the whole set with wishes are not generated yet; the command below produces them.
 
 Return to the [documentation overview](../index.md).
 
@@ -10,10 +10,10 @@ Stations `PE 77` and `PE 79` of the TimeOffice test database and their jumper po
 
 There are two sets of the same six months, each a folder `2026-MM/` per month with the five [bundle files](#bundle-files): 30 files per set.
 
-| Set                             | Wishes                      | Purpose                                                                  |
-| ------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| `plaene/2026-MM/`               | none                        | The requested example schedules without preferences ("ohne Präferenzen") |
-| `plaene/mit-wuenschen/2026-MM/` | the 32 demonstration wishes | The same inputs with wishes, showing the wish-fairness objective         |
+| Set                             | Wishes                      | Purpose                                                                                              |
+| ------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `plaene/2026-MM/`               | none                        | The requested example schedules without preferences ("ohne Präferenzen"); January to March committed |
+| `plaene/mit-wuenschen/2026-MM/` | the 32 demonstration wishes | The same inputs with wishes, showing the wish-fairness objective; not generated yet                  |
 
 The set with wishes goes beyond the request because fair wish satisfaction is one of the planning goals; its inputs differ from the first set only in their wishes, and each set has its own month-to-month context. `plaene/backup/` holds an older dataset of an earlier project state (stations 77 and 78, another format). It is not an input of these sets and not checked by the tests below.
 
@@ -106,7 +106,7 @@ The test validates both committed sets, `plaene/2026-01` to `plaene/2026-06` and
 - every month plans the same two stations and jumper pools, with duties at both stations;
 - consecutive months agree: the trusted context duties of a month on the other month's dates equal that month's schedule (both directions), and the availability of the first date of the later month equals the earlier month's context availability.
 
-Non-blocking open items stay visible in each result's check: the following month's start (checked by the next month with this schedule as context) and annual free Sundays, which need the whole year and are never reported as passed. Tests with small two-month bundles show that the validator accepts a consistent sequence and reports each kind of problem.
+Non-blocking open items stay visible in each result's check: the following month's start (checked by the next month with this schedule as context) and annual free Sundays, which need the whole year and are never reported as passed. Until both sets hold all six months, the committed-set and reproduction tests are skipped; the committed January to March pass `check_examples` for those months. Tests with small two-month bundles show that the validator accepts a consistent sequence and reports each kind of problem.
 
 ## Interpret objectives and solver settings
 
