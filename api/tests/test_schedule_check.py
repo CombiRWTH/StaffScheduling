@@ -4,8 +4,10 @@ from datetime import date
 
 import pytest
 from scheduling import (
+    BACK_TO_BACK_WEEKENDS,
     EARLY,
     INTERMEDIATE,
+    ISOLATED_WORKDAYS,
     JANUARY,
     JUMPER_POOL,
     LATE,
@@ -451,6 +453,20 @@ def test_six_fully_worked_days_count_as_one_health_event(days: int, windows: int
         check_schedule(dataset(memberships=member(1), accounts=[account(1, 0)]), schedule).scores.six_day_windows
         == windows
     )
+
+
+@pytest.mark.parametrize(("data", "schedule", "events"), ISOLATED_WORKDAYS)
+def test_isolated_workdays_need_known_free_neighbours(
+    data: SchedulingDataset, schedule: tuple[Assignment, ...], events: int
+) -> None:
+    assert check_schedule(data, schedule).scores.isolated_workdays == events
+
+
+@pytest.mark.parametrize(("data", "schedule", "events"), BACK_TO_BACK_WEEKENDS)
+def test_back_to_back_weekends_count_worked_pairs_from_the_preceding_context(
+    data: SchedulingDataset, schedule: tuple[Assignment, ...], events: int
+) -> None:
+    assert check_schedule(data, schedule).scores.back_to_back_weekends == events
 
 
 def test_backward_transitions_skip_off_days_and_intermediate_duties() -> None:

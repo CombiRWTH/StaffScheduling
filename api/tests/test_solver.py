@@ -1,14 +1,15 @@
 """Production solves of small months: every hard rule is modelled, the objective stages keep their order."""
 
-from collections.abc import Sequence
 from datetime import date
 from typing import Any
 
 import pytest
 from ortools.sat.python import cp_model
 from scheduling import (
+    BACK_TO_BACK_WEEKENDS,
     EARLY,
     INTERMEDIATE,
+    ISOLATED_WORKDAYS,
     JANUARY,
     JUMPER_POOL,
     LATE,
@@ -25,7 +26,6 @@ from scheduling import (
 )
 
 from app.domain import (
-    POLICY,
     Assignment,
     Availability,
     AvailabilityType,
@@ -147,7 +147,7 @@ def test_a_later_stage_without_time_keeps_the_previous_schedule_as_feasible(monk
     assert stages_are_scores(solution)
 
 
-def term_value(term: Term, data: SchedulingDataset, schedule: list[Assignment]) -> int:
+def term_value(term: Term, data: SchedulingDataset, schedule: tuple[Assignment, ...]) -> int:
     """The term's value with every candidate fixed to the schedule and no objective pushing it."""
     model = CandidateModel(data)
     expr = term(model)
@@ -158,71 +158,20 @@ def term_value(term: Term, data: SchedulingDataset, schedule: list[Assignment]) 
     return int(solver.value(expr))
 
 
-APRIL = PlanningMonth(year=2026, month=4)
+@pytest.mark.parametrize(("data", "schedule", "_events"), ISOLATED_WORKDAYS)
+def test_the_isolated_workdays_term_is_the_checked_score(
+    data: SchedulingDataset, schedule: tuple[Assignment, ...], _events: int
+) -> None:
+    assert term_value(isolated_workdays, data, schedule) == check_schedule(data, schedule).scores.isolated_workdays
 
 
-def health_case(
-    schedule: list[Assignment], context: Sequence[Assignment] = (), month: PlanningMonth = JANUARY, **coverage: int
-) -> tuple[SchedulingDataset, list[Assignment]]:
-    data = dataset(
-        memberships=member(1),
-        accounts=[account(1, 0, month=month)],
-        month=month,
-        context_duties=context,
-        covered_days_before=coverage.get("before", POLICY.preceding_context_days),
-        covered_days_after=coverage.get("after", 0),
+@pytest.mark.parametrize(("data", "schedule", "_events"), BACK_TO_BACK_WEEKENDS)
+def test_the_back_to_back_weekends_term_is_the_checked_score(
+    data: SchedulingDataset, schedule: tuple[Assignment, ...], _events: int
+) -> None:
+    assert term_value(back_to_back_weekends, data, schedule) == (
+        check_schedule(data, schedule).scores.back_to_back_weekends
     )
-    return data, schedule
-
-
-@pytest.mark.parametrize(
-    ("case", "expected"),
-    [
-        # A two-day block is not isolated; the later single day is.
-        (health_case([duty(1, jan(13), EARLY), duty(1, jan(14), EARLY), duty(1, jan(20), LATE)]), 1),
-        (health_case([duty(1, jan(1), EARLY)]), 1),
-        # The trusted duty of December 31 keeps January 1 from being isolated.
-        (health_case([duty(1, jan(1), EARLY)], [duty(1, date(2025, 12, 31), EARLY)]), 0),
-        # A single night counts, although the recovery keeps the next day free.
-        (health_case([duty(1, jan(14), NIGHT)]), 1),
-        # Without following context the month's last date is never isolated; with it, it is.
-        (health_case([duty(1, jan(31), EARLY)]), 0),
-        (health_case([duty(1, jan(31), EARLY)], after=POLICY.following_context_days), 1),
-    ],
-)
-def test_isolated_workdays_term_is_the_checked_score(
-    case: tuple[SchedulingDataset, list[Assignment]], expected: int
-) -> None:
-    data, schedule = case
-    assert check_schedule(data, schedule).scores.isolated_workdays == expected
-    assert term_value(isolated_workdays, data, schedule) == expected
-
-
-@pytest.mark.parametrize(
-    ("case", "expected"),
-    [
-        # January 2026 starts on a Thursday: weekends are 3/4, 10/11, 17/18, 24/25 and 31/February 1.
-        (health_case([duty(1, jan(10), EARLY), duty(1, jan(18), LATE)]), 1),
-        (health_case([duty(1, jan(10), EARLY), duty(1, jan(17), EARLY), duty(1, jan(24), EARLY)]), 2),
-        # Two free weekends in a row are no event.
-        (health_case([duty(1, jan(10), EARLY), duty(1, jan(24), EARLY)]), 0),
-        # A Friday night touches its Saturday.
-        (health_case([duty(1, jan(9), NIGHT), duty(1, jan(17), EARLY)]), 1),
-        # The earlier weekend of January 4 has its Friday six days before the month: not counted.
-        (health_case([duty(1, jan(3), EARLY)], [duty(1, date(2025, 12, 27), EARLY)], before=14), 0),
-        # April 2026 starts on a Wednesday: the Friday of March 27 is the first preceding context day.
-        (
-            health_case([duty(1, date(2026, 4, 4), EARLY)], [duty(1, date(2026, 3, 27), NIGHT)], month=APRIL),
-            1,
-        ),
-    ],
-)
-def test_back_to_back_weekends_term_is_the_checked_score(
-    case: tuple[SchedulingDataset, list[Assignment]], expected: int
-) -> None:
-    data, schedule = case
-    assert check_schedule(data, schedule).scores.back_to_back_weekends == expected
-    assert term_value(back_to_back_weekends, data, schedule) == expected
 
 
 def test_trusted_context_constrains_the_first_days_of_the_month() -> None:
@@ -360,6 +309,24 @@ def test_one_isolated_workday_fewer_outweighs_a_wish() -> None:
 
     assert solution.assignments == (duty(1, jan(13), EARLY), duty(1, jan(14), EARLY))
     assert checked(solution).scores.isolated_workdays == 0
+    assert [row.status for row in checked(solution).wishes] == [WishStatus.DENIED]
+
+
+def test_one_back_to_back_weekend_fewer_outweighs_a_wish() -> None:
+    # The required weekend of January 10 and 11 needs a second two-day block for the balance. The preferred
+    # Saturday of January 17 would make the next weekend worked too; January 14 and 15 would not.
+    blocks = (10, 11, 14, 15, 17, 18)
+    data = dataset(
+        memberships=member(1),
+        accounts=[account(1, 4 * 420)],
+        demand=[need(jan(10), EARLY), need(jan(11), EARLY)],
+        availability=only(1, dict.fromkeys(blocks, (EARLY.shift_id,))),
+        wishes=[wish(17, WishType.PREFERRED_DAY)],
+    )
+    solution = solve(data)
+
+    assert solution.assignments == tuple(duty(1, jan(day), EARLY) for day in (10, 11, 14, 15))
+    assert checked(solution).scores.back_to_back_weekends == 0
     assert [row.status for row in checked(solution).wishes] == [WishStatus.DENIED]
 
 

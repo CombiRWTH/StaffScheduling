@@ -538,11 +538,11 @@ class _Check:
                 day in worked and self.known_free(day - one, worked) and self.known_free(day + one, worked)
                 for day in self.month.dates
             )
-            weekend = {
+            worked_weekend = {
                 sunday: any(duty.times.touches(sunday - one) or duty.times.touches(sunday) for duty in timeline)
                 for sunday in {*sundays, *(sunday - week for sunday in sundays)}
             }
-            weekends += sum(weekend[sunday - week] and weekend[sunday] for sunday in sundays)
+            weekends += sum(worked_weekend[sunday - week] and worked_weekend[sunday] for sunday in sundays)
             ranked = [duty for duty in timeline if duty.shift.type in SHIFT_ORDER and duty.assignment.date >= lookback]
             backward += sum(
                 later.in_month and SHIFT_ORDER[later.shift.type] < SHIFT_ORDER[earlier.shift.type]

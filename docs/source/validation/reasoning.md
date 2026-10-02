@@ -40,6 +40,8 @@ Earlier legacy objectives (assignment-count balancing, overtime-only penalties, 
 - **Free days next to weekends.** A comfort preference without a source in the problem statement. With isolated workdays penalized, free days already tend to cluster.
 - **Spreading intermediate duties over the week.** The problem statement's preference (a weekday intermediate duty versus an extra early or late person) is ambiguous, and as a hard rule it could make months unsolvable while being met by no intermediate duty at all. The lowest tier still rewards extra intermediate duties where they fit, but with no weekday or weekend order and no even spread.
 - **Shorter night runs.** The hard maximum of three nights plus 48 hours of recovery already applies the BAuA recommendation, so a second preference for one or two nights would duplicate it. Runs of one, two and three nights are not weighed against each other; the isolated-workday event leans toward two or three.
+- **Weekend pairs across some month starts.** A pair of worked weekends counts only when the earlier weekend's Friday lies within the five preceding context days, so months starting Thursday to Sunday count no pair ending with their first weekend. Extending the context would need more prepared data.
+- **Isolated workdays at a month edge without context.** A date outside the month is never assumed free, so without trusted context the month's first or last date is never an isolated workday. Without following context this applies to every last date.
 
 ## Modeling choices and alternatives
 
@@ -70,8 +72,6 @@ A wish is one employee and one date at any station; a jumper pool employee's wis
 - Annual free Sundays need the whole year and are not assessed.
 - Month-local averaging and replacement rest can reject a schedule that a longer legal period would allow.
 - Backward shift steps look back at most five days before the month.
-- A pair of worked weekends counts only when the earlier weekend's Friday lies within those five days, so months starting Thursday to Sunday count no pair ending with their first weekend.
-- Without following context, the month's last date is never an isolated workday.
 - Time-limited stages return feasible schedules with a weak proven bound; the schedule itself is checked. Each stage but the last gets half of the time left, so real months need about 300 seconds.
 - Minors, other employment regimes and employer-specific agreements would need their own rule sources.
 

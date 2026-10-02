@@ -109,12 +109,13 @@ def back_to_back_weekends(model: CandidateModel) -> Expr:
 
 
 def _starts(model: CandidateModel, starting: dict[Date, list[Slot]], day: Date) -> Expr:
-    """1 when a duty starts on the date, also when it lies outside the month and its trusted context."""
+    """1 when a duty starts on the date, also when it lies outside the month and its trusted context.
+
+    A date holds either candidates or at most one context duty, so the sum is 0 or 1.
+    """
     if day not in model.month and not model.context.covers(day):
         return 1
-    if any(slot.fixed for slot in starting[day]):
-        return 1
-    return sum((variable for slot in starting[day] for variable in slot.variables), 0)
+    return sum((slot.expr for slot in starting[day]), 0)
 
 
 def _worked_weekend(model: CandidateModel, slots: list[Slot], sunday: Date) -> Expr:

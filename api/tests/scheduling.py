@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from datetime import date, timedelta
 
 from app.domain import (
+    POLICY,
     Assignment,
     Availability,
     AvailabilityType,
@@ -168,3 +169,56 @@ def dataset(
             availability=tuple(context_availability),
         ),
     )
+
+
+APRIL = PlanningMonth(year=2026, month=4)
+
+
+def alone(
+    context: Iterable[Assignment] = (),
+    month: PlanningMonth = JANUARY,
+    *,
+    before: int = POLICY.preceding_context_days,
+    after: int = 0,
+) -> SchedulingDataset:
+    """One North professional with a zero target and the policy's preceding context days."""
+    return dataset(
+        memberships=member(1),
+        accounts=[account(1, 0, month=month)],
+        month=month,
+        context_duties=context,
+        covered_days_before=before,
+        covered_days_after=after,
+    )
+
+
+# One employee's schedules with their isolated workdays: (dataset, schedule, events).
+ISOLATED_WORKDAYS = (
+    # A two-day block is not isolated; the later single day is.
+    (alone(), (duty(1, jan(13), EARLY), duty(1, jan(14), EARLY), duty(1, jan(20), LATE)), 1),
+    (alone(), (duty(1, jan(1), EARLY),), 1),
+    # The trusted duty of December 31 keeps January 1 from being isolated.
+    (alone([duty(1, date(2025, 12, 31), EARLY)]), (duty(1, jan(1), EARLY),), 0),
+    # A single night counts, although the recovery keeps the next day free.
+    (alone(), (duty(1, jan(14), NIGHT),), 1),
+    # Without context a month edge is never free: neither January 1 nor January 31 is isolated.
+    (alone(before=0), (duty(1, jan(1), EARLY),), 0),
+    (alone(), (duty(1, jan(31), EARLY),), 0),
+    (alone(after=POLICY.following_context_days), (duty(1, jan(31), EARLY),), 1),
+)
+
+# One employee's schedules with their back-to-back worked weekends: (dataset, schedule, events).
+# January 2026 starts on a Thursday: weekends are 3/4, 10/11, 17/18, 24/25 and 31/February 1.
+BACK_TO_BACK_WEEKENDS = (
+    (alone(), (duty(1, jan(10), EARLY), duty(1, jan(18), LATE)), 1),
+    (alone(), (duty(1, jan(10), EARLY), duty(1, jan(17), EARLY), duty(1, jan(24), EARLY)), 2),
+    # Two free weekends in a row are no event.
+    (alone(), (duty(1, jan(10), EARLY), duty(1, jan(24), EARLY)), 0),
+    # A Friday night touches its Saturday.
+    (alone(), (duty(1, jan(9), NIGHT), duty(1, jan(17), EARLY)), 1),
+    # The earlier weekend of January 4 has its Friday six days before the month: not counted, even
+    # with more trusted context.
+    (alone([duty(1, date(2025, 12, 27), EARLY)], before=14), (duty(1, jan(3), EARLY),), 0),
+    # April 2026 starts on a Wednesday: the Friday night of March 27 lies in the five preceding days.
+    (alone([duty(1, date(2026, 3, 27), NIGHT)], APRIL), (duty(1, date(2026, 4, 4), EARLY),), 1),
+)
