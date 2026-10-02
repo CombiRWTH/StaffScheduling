@@ -76,7 +76,7 @@ The solver engine depends only on `domain/`. `main.py` connects it to the adapte
 | Runtime/dependency pins             | service manifests/locks, Dockerfiles and consuming workflow/tool settings      |
 | Documentation                       | `docs/source/` and `docs/mkdocs.yml`                                           |
 
-Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. Domain terms are defined in the repository's `GLOSSARY.md`; decisions that are hard to reverse are recorded in `docs/adr/` (for example, why the webapp was rebuilt rather than adapted, why TimeOffice sits behind one service, why monthly configuration lives in project tables, and why generation jobs live in one API process). The [limitations](../validation/index.md) page records remaining compatibility work.
+Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. Domain terms are defined in the repository's `GLOSSARY.md`; decisions that are hard to reverse are recorded in `docs/adr/` (for example, why the webapp was rebuilt rather than adapted, why TimeOffice sits behind one service, why monthly configuration lives in project tables, why generation jobs live in one API process, and why credits come from TimeOffice's daily absence accounts). The [limitations](../validation/index.md) page records remaining compatibility work.
 
 ## Selection and inspection boundary
 
@@ -90,5 +90,9 @@ UI conventions for every page:
 - Use the domain's German terms consistently: Verfügbarkeit (page for availability entries, called Einschränkung, and wishes), Abwesenheit (native TimeOffice absence), Zuordnungen (dated unit assignments), Mindestbesetzung, Wochenmuster, Dienstplan.
 - A page-local choice such as the employee or station lives in the URL next to the selection (`employee=`, `station=`).
 - A failed save shows the error and keeps the user's input; success is shown only after the API confirmed the write.
+- Tables hold plain text; badges are only for short lists such as units. Employee lists show the ID before the name and stay sorted by name.
+- Controls in the page header keep a predictable width: the station picker shows a count ("2 Stationen"), not the names.
+- An editor opens on a sensible default (the first day of the month) instead of an empty "nothing selected" state.
+- State a page-wide fact such as "nur lesend" once, and keep button labels short verbs ("Starten", "Speichern").
 
 The offline browser fixture substitutes SQL query results, while using the actual FastAPI routes, TimeOffice queries and Next.js pages. It is test infrastructure, never a production data fallback. [Testing](../development/testing.md#staff-admin-browser-flows) describes reproduction and limitations.
