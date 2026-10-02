@@ -1,0 +1,700 @@
+{
+  "$defs": {
+    "Assignment": {
+      "additionalProperties": false,
+      "description": "One employee's duty: a shift starting on `date` at a station.\n\n`staff_level` is the qualification the duty is credited as towards demand; it comes from the\nemployee's membership at that station, which can differ from their employee-level qualification.\nIts key is (employee_id, date, planning_unit_id, shift_id).",
+      "properties": {
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "planning_unit_id": {
+          "exclusiveMinimum": 0,
+          "title": "Planning Unit Id",
+          "type": "integer"
+        },
+        "shift_id": {
+          "exclusiveMinimum": 0,
+          "title": "Shift Id",
+          "type": "integer"
+        },
+        "staff_level": {
+          "$ref": "#/$defs/StaffLevel"
+        }
+      },
+      "required": [
+        "employee_id",
+        "date",
+        "planning_unit_id",
+        "shift_id",
+        "staff_level"
+      ],
+      "title": "Assignment",
+      "type": "object"
+    },
+    "Availability": {
+      "additionalProperties": false,
+      "description": "A date on which an employee must not be planned, or only for the listed shifts.\n\nAvailability always binds planning; soft preferences are a `Wish`.",
+      "properties": {
+        "availability_type": {
+          "$ref": "#/$defs/AvailabilityType"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "shift_ids": {
+          "anyOf": [
+            {
+              "items": {
+                "exclusiveMinimum": 0,
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The allowed shifts; only and required for AVAILABLE_ONLY.",
+          "title": "Shift Ids"
+        },
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "native_absence": {
+          "default": false,
+          "description": "An approved absence of the roster system, read-only here; its `reason` is the absence code.",
+          "title": "Native Absence",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "availability_type",
+        "employee_id",
+        "date"
+      ],
+      "title": "Availability",
+      "type": "object"
+    },
+    "AvailabilityType": {
+      "description": "Employee availability on a date.",
+      "enum": [
+        "unavailable",
+        "vacation",
+        "training",
+        "free_day",
+        "available_only"
+      ],
+      "title": "AvailabilityType",
+      "type": "string"
+    },
+    "CalendarDay": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "weekday": {
+          "description": "ISO weekday, Monday=1 to Sunday=7; it stays the actual weekday on a public holiday.",
+          "maximum": 7,
+          "minimum": 1,
+          "title": "Weekday",
+          "type": "integer"
+        },
+        "public_holiday": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Public Holiday"
+        }
+      },
+      "required": [
+        "date",
+        "weekday"
+      ],
+      "title": "CalendarDay",
+      "type": "object"
+    },
+    "DemandRequirement": {
+      "additionalProperties": false,
+      "description": "Minimum staffing demand for one planning unit, date, shift and staff level; an unfilled slot is a gap.",
+      "properties": {
+        "planning_unit_id": {
+          "exclusiveMinimum": 0,
+          "title": "Planning Unit Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "shift_id": {
+          "exclusiveMinimum": 0,
+          "title": "Shift Id",
+          "type": "integer"
+        },
+        "staff_level": {
+          "$ref": "#/$defs/StaffLevel"
+        },
+        "required_count": {
+          "exclusiveMinimum": 0,
+          "title": "Required Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "planning_unit_id",
+        "date",
+        "shift_id",
+        "staff_level",
+        "required_count"
+      ],
+      "title": "DemandRequirement",
+      "type": "object"
+    },
+    "Employee": {
+      "additionalProperties": false,
+      "description": "Employee known to the scheduling dataset.\n\nThe domain model intentionally does not expose raw TimeOffice profession or\nqualification IDs. The TimeOffice adapter maps those source details into the\nreduced solver-facing fields below.",
+      "properties": {
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "display_name": {
+          "minLength": 1,
+          "title": "Display Name",
+          "type": "string"
+        },
+        "staff_level": {
+          "$ref": "#/$defs/StaffLevel"
+        }
+      },
+      "required": [
+        "employee_id",
+        "display_name",
+        "staff_level"
+      ],
+      "title": "Employee",
+      "type": "object"
+    },
+    "MonthlyWorkAccount": {
+      "additionalProperties": false,
+      "description": "An employee's monthly target and verified credits, in minutes.\n\n`actual_minutes` is TimeOffice's informational actual-hours total; planning never uses it,\nbecause it can include polluted roster work. The balance uses verified credits only.",
+      "properties": {
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "target_minutes": {
+          "minimum": 0,
+          "title": "Target Minutes",
+          "type": "integer"
+        },
+        "actual_minutes": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actual Minutes"
+        },
+        "credit_details": {
+          "default": [],
+          "description": "Dated credits of the month; empty means nothing is credited.",
+          "items": {
+            "$ref": "#/$defs/WorkCredit"
+          },
+          "title": "Credit Details",
+          "type": "array"
+        }
+      },
+      "required": [
+        "employee_id",
+        "target_minutes"
+      ],
+      "title": "MonthlyWorkAccount",
+      "type": "object"
+    },
+    "PlanningMonth": {
+      "additionalProperties": false,
+      "properties": {
+        "year": {
+          "maximum": 2200,
+          "minimum": 2000,
+          "title": "Year",
+          "type": "integer"
+        },
+        "month": {
+          "maximum": 12,
+          "minimum": 1,
+          "title": "Month",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "year",
+        "month"
+      ],
+      "title": "PlanningMonth",
+      "type": "object"
+    },
+    "PlanningUnit": {
+      "additionalProperties": false,
+      "description": "Stable organizational scheduling unit.\n\nThis mirrors the TimeOffice concept \"Planungseinheit\": a station or a jumper pool.",
+      "properties": {
+        "planning_unit_id": {
+          "exclusiveMinimum": 0,
+          "title": "Planning Unit Id",
+          "type": "integer"
+        },
+        "display_name": {
+          "minLength": 1,
+          "title": "Display Name",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/PlanningUnitType"
+        }
+      },
+      "required": [
+        "planning_unit_id",
+        "display_name",
+        "type"
+      ],
+      "title": "PlanningUnit",
+      "type": "object"
+    },
+    "PlanningUnitMembership": {
+      "additionalProperties": false,
+      "description": "Active employee membership interval in a PlanningUnit.\n\nThis comes from TimeOffice `TPlanungseinheitenPersonal`.\n\nMultiple intervals for the same employee and planning unit are valid because\neligibility can change inside the planning month.",
+      "properties": {
+        "planning_unit_id": {
+          "exclusiveMinimum": 0,
+          "title": "Planning Unit Id",
+          "type": "integer"
+        },
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid Until"
+        },
+        "staff_level": {
+          "$ref": "#/$defs/StaffLevel"
+        },
+        "is_home": {
+          "title": "Is Home",
+          "type": "boolean"
+        },
+        "is_replacement": {
+          "title": "Is Replacement",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "planning_unit_id",
+        "employee_id",
+        "valid_from",
+        "staff_level",
+        "is_home",
+        "is_replacement"
+      ],
+      "title": "PlanningUnitMembership",
+      "type": "object"
+    },
+    "PlanningUnitType": {
+      "description": "Type of planning unit. Every unit is a pool of employees; the type decides whether it is planned.\n\nSTATION:\n    Has staffing demand and receives assignments.\n\nJUMPER_POOL:\n    Home of employees who stand in at stations. By definition it has no\n    demand and receives no assignments. Its home membership never creates\n    eligibility; a replacement membership at the station does.",
+      "enum": [
+        "station",
+        "jumper_pool"
+      ],
+      "title": "PlanningUnitType",
+      "type": "string"
+    },
+    "ScheduleContext": {
+      "additionalProperties": false,
+      "description": "Trusted duties outside the month and the approved availability its last duties can reach.\n\nDuties are complete from `covered_from` to `covered_until`, both inclusive: inside that span a\ndate without a duty is known to be free, outside it nothing is known. The month itself is never\ncontext; `covered_from` equal to the month start means no preceding context, `covered_until`\nequal to the month end no following context. `availability` holds the first date after the month,\nwhich a night duty of the last date reaches. Context never counts towards demand or accounts.",
+      "properties": {
+        "covered_from": {
+          "format": "date",
+          "title": "Covered From",
+          "type": "string"
+        },
+        "covered_until": {
+          "format": "date",
+          "title": "Covered Until",
+          "type": "string"
+        },
+        "duties": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "title": "Duties",
+          "type": "array"
+        },
+        "availability": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Availability"
+          },
+          "title": "Availability",
+          "type": "array"
+        }
+      },
+      "required": [
+        "covered_from",
+        "covered_until"
+      ],
+      "title": "ScheduleContext",
+      "type": "object"
+    },
+    "SchedulingDataset": {
+      "additionalProperties": false,
+      "description": "The complete input of one full-month run for the selected stations.\n\nThe station units are the only destinations; jumper pools are origin context. Every employee\nhas exactly one account; `context` carries the trusted duties around the month. Solver and\nschedule check read the same dataset, so it validates all references once.",
+      "properties": {
+        "planning_month": {
+          "$ref": "#/$defs/PlanningMonth"
+        },
+        "planning_units": {
+          "items": {
+            "$ref": "#/$defs/PlanningUnit"
+          },
+          "title": "Planning Units",
+          "type": "array"
+        },
+        "shifts": {
+          "items": {
+            "$ref": "#/$defs/Shift"
+          },
+          "title": "Shifts",
+          "type": "array"
+        },
+        "demand_requirements": {
+          "items": {
+            "$ref": "#/$defs/DemandRequirement"
+          },
+          "title": "Demand Requirements",
+          "type": "array"
+        },
+        "employees": {
+          "items": {
+            "$ref": "#/$defs/Employee"
+          },
+          "title": "Employees",
+          "type": "array"
+        },
+        "planning_unit_memberships": {
+          "items": {
+            "$ref": "#/$defs/PlanningUnitMembership"
+          },
+          "title": "Planning Unit Memberships",
+          "type": "array"
+        },
+        "availability": {
+          "items": {
+            "$ref": "#/$defs/Availability"
+          },
+          "title": "Availability",
+          "type": "array"
+        },
+        "wishes": {
+          "description": "Soft preferences of the month; generation considers them, they never bind.",
+          "items": {
+            "$ref": "#/$defs/Wish"
+          },
+          "title": "Wishes",
+          "type": "array"
+        },
+        "monthly_work_accounts": {
+          "items": {
+            "$ref": "#/$defs/MonthlyWorkAccount"
+          },
+          "title": "Monthly Work Accounts",
+          "type": "array"
+        },
+        "context": {
+          "$ref": "#/$defs/ScheduleContext"
+        }
+      },
+      "required": [
+        "planning_month",
+        "planning_units",
+        "shifts",
+        "demand_requirements",
+        "employees",
+        "planning_unit_memberships",
+        "availability",
+        "wishes",
+        "monthly_work_accounts",
+        "context"
+      ],
+      "title": "SchedulingDataset",
+      "type": "object"
+    },
+    "Shift": {
+      "additionalProperties": false,
+      "description": "Scheduling-relevant view of a TimeOffice shift.\n\n`segments` are the evidenced active-work stretches; the gaps between them are unpaid breaks.\n`net_work_minutes` is the paid time booked on the monthly account, which can differ from the\nelapsed work time on a daylight-saving night. A shift lasts less than 24 hours and may end\non the next date; the TimeOffice adapter maps raw shift IDs and segments into this model.",
+      "properties": {
+        "shift_id": {
+          "exclusiveMinimum": 0,
+          "title": "Shift Id",
+          "type": "integer"
+        },
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ShiftType"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/WorkSegment"
+          },
+          "minItems": 1,
+          "title": "Segments",
+          "type": "array"
+        },
+        "net_work_minutes": {
+          "exclusiveMinimum": 0,
+          "title": "Net Work Minutes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "shift_id",
+        "code",
+        "type",
+        "segments",
+        "net_work_minutes"
+      ],
+      "title": "Shift",
+      "type": "object"
+    },
+    "ShiftType": {
+      "description": "Reduced shift type used by scheduling rules.\n\nThis is not a full TimeOffice shift taxonomy. It only contains categories\nrelevant for demand, night rules and the shift-order objective.",
+      "enum": [
+        "early",
+        "late",
+        "night",
+        "intermediate",
+        "management",
+        "other"
+      ],
+      "title": "ShiftType",
+      "type": "string"
+    },
+    "StaffLevel": {
+      "description": "Reduced staffing level used by demand and solver logic.\n\nThis is mapped from TimeOffice source data such as Berufe/Qualis.\nThe solver should depend on this enum, not on raw TimeOffice IDs.",
+      "enum": [
+        "professional",
+        "assistant",
+        "trainee",
+        "mfa"
+      ],
+      "title": "StaffLevel",
+      "type": "string"
+    },
+    "Wish": {
+      "additionalProperties": false,
+      "description": "An employee's soft preference for one date at any station; at most one per employee and date.\n\nGeneration considers it as one objective tier (see `OBJECTIVES`); it never binds.",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/WishType"
+        },
+        "shift_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shift Id"
+        },
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "employee_id",
+        "date"
+      ],
+      "title": "Wish",
+      "type": "object"
+    },
+    "WishType": {
+      "enum": [
+        "free_day",
+        "free_shift",
+        "preferred_day",
+        "preferred_shift"
+      ],
+      "title": "WishType",
+      "type": "string"
+    },
+    "WorkCredit": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "minutes": {
+          "minimum": 0,
+          "title": "Minutes",
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "approved_absence",
+            "trusted_work"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "date",
+        "minutes",
+        "kind",
+        "source"
+      ],
+      "title": "WorkCredit",
+      "type": "object"
+    },
+    "WorkSegment": {
+      "additionalProperties": false,
+      "description": "One stretch of active work, in local minutes after midnight of the duty's start date.",
+      "properties": {
+        "start_minute": {
+          "exclusiveMaximum": 2880,
+          "minimum": 0,
+          "title": "Start Minute",
+          "type": "integer"
+        },
+        "end_minute": {
+          "exclusiveMinimum": 0,
+          "maximum": 2880,
+          "title": "End Minute",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start_minute",
+        "end_minute"
+      ],
+      "title": "WorkSegment",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "input.json: everything one full-month run reads, wishes included; no TimeOffice plan or credential.",
+  "properties": {
+    "format_version": {
+      "const": 2,
+      "title": "Format Version",
+      "type": "integer"
+    },
+    "timezone": {
+      "const": "Europe/Berlin",
+      "title": "Timezone",
+      "type": "string"
+    },
+    "calendar": {
+      "description": "Every date of the month with its ISO weekday and NRW public holiday; must equal the application's.",
+      "items": {
+        "$ref": "#/$defs/CalendarDay"
+      },
+      "title": "Calendar",
+      "type": "array"
+    },
+    "dataset": {
+      "$ref": "#/$defs/SchedulingDataset"
+    }
+  },
+  "required": [
+    "format_version",
+    "timezone",
+    "calendar",
+    "dataset"
+  ],
+  "title": "ScheduleInput",
+  "type": "object"
+}

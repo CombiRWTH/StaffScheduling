@@ -1,0 +1,1728 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://combirwth.github.io/StaffScheduling/architecture/solver/">
+      
+      
+        <link rel="prev" href="../api/">
+      
+      
+        <link rel="next" href="../timeoffice/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Solver - Staff Scheduling</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#solver-and-schedule-check" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Staff Scheduling" class="md-header__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Staff Scheduling
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Solver
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Staff Scheduling" class="md-nav__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Staff Scheduling
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Try it
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Try it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use the app
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Use the app
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/selection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Select and inspect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure monthly inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generate schedules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review, import and export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/publication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publish and clear
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand the system
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand the system
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solver
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#candidates-and-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Candidates and context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hard-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hard rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#objective" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objective
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-or-changing-a-hard-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding or changing a hard rule
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-an-objective" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding an objective
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../timeoffice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TimeOffice adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Develop
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Develop
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/checks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checks and tooling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../validation/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validate
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validate
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/reasoning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reasoning and requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples and reproduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#candidates-and-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Candidates and context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hard-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hard rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#objective" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objective
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-or-changing-a-hard-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding or changing a hard rule
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-an-objective" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding an objective
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="solver-and-schedule-check">Solver and schedule check<a class="headerlink" href="#solver-and-schedule-check" title="Permanent link">&para;</a></h1>
+<p>One run solves exactly one full calendar month for the selected stations with OR-Tools CP-SAT. Every schedule it finds is then judged by an independent schedule check. Solver status, schedule check and job state are three separate results. The rules and their sources are explained in <a href="../../validation/reasoning/">reasoning and requirements</a>; executed evidence is in <a href="../../validation/#solver-and-schedule-check">current limitations</a>.</p>
+<h2 id="modules">Modules<a class="headerlink" href="#modules" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>domain/duty.py</code></td>
+<td><code>duty_times(date, shift)</code>: a duty's Europe/Berlin start, end and work segments as UTC instants</td>
+</tr>
+<tr>
+<td><code>domain/rules.py</code></td>
+<td><code>RulePolicy</code>: every hard-rule parameter, the context days a month needs and which dates need replacement rest</td>
+</tr>
+<tr>
+<td><code>domain/acceptance.py</code></td>
+<td><code>check_schedule(dataset, assignments, gaps)</code>: every hard rule, the objective scores and the wish outcomes, from actual assignments</td>
+</tr>
+<tr>
+<td><code>solver/model/</code></td>
+<td><code>build_model(dataset)</code>: the candidates, each rule of <code>HARD_RULES</code> and the tiers of <code>OBJECTIVES</code>; see <a href="#model-structure">model structure</a></td>
+</tr>
+<tr>
+<td><code>solver/service.py</code></td>
+<td><code>SolverService.solve(dataset, timeout)</code>: build, validate, solve one stage per tier, extract schedule and gaps, run <code>check_schedule</code></td>
+</tr>
+<tr>
+<td><code>solver/generation.py</code></td>
+<td>The transient generation job around one solve; see <a href="../api/#generation">API generation</a></td>
+</tr>
+</tbody>
+</table>
+<p><code>check_schedule</code> never sees solver variables. It recomputes duty times, accounts and sequences from the <code>SchedulingDataset</code> and the assignments, so it judges a solver result and any other assignment list alike. Solver and check implement every rule separately; they share only <code>RulePolicy</code> and the duty times of <code>duty.py</code>, so an error in one implementation shows as a disagreement with the other.</p>
+<h2 id="candidates-and-context">Candidates and context<a class="headerlink" href="#candidates-and-context" title="Permanent link">&para;</a></h2>
+<p>The model has one Boolean per candidate duty: employee, station, start date, shift and the qualification it is credited as. A candidate exists when the employee has an active membership at the station on that date with that qualification, no approved availability forbids the duty and the shift's own work and break pattern is allowed on that date. A candidate that the employee's trusted context duties alone rule out (a rest, night-run or recovery conflict whatever else is chosen) is fixed to zero by those constraints and not counted as possible in the staffing diagnostic. Several memberships give several candidates, of which at most one can be chosen; the chosen one is the assignment's <code>staff_level</code>. Jumper pools are origin context and never destinations.</p>
+<p><code>SchedulingDataset.context</code> holds trusted duties outside the month with explicit coverage (<code>covered_from</code>, <code>covered_until</code>) and the approved availability of the first date after the month. Inside the coverage a date without a duty is free; outside it nothing is known. A month needs the 5 dates before it and checks the 3 dates after it (<code>preceding_context_days</code>, <code>following_context_days</code>). Context constrains rest, nights, recovery, replacement rest, six-day windows and shift order across the month boundary. It never counts towards demand or monthly accounts. Duties inside the month cannot be supplied as fixed input; the adapter refuses them.</p>
+<h2 id="hard-rules">Hard rules<a class="headerlink" href="#hard-rules" title="Permanent link">&para;</a></h2>
+<p>All parameters are in <code>RulePolicy</code> and reported with every run.</p>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Staffing</td>
+<td>For every dated demand row (station, shift, qualification): credited candidates + gap ≥ the required count, with gap = max(0, required − credited) exactly; see gaps</td>
+</tr>
+<tr>
+<td>One duty per day</td>
+<td>At most one candidate per employee and start date, across all stations and qualifications</td>
+</tr>
+<tr>
+<td>Availability</td>
+<td>Blocking entries forbid every duty touching the date; allowed-shift entries narrow each other; no night before an approved vacation or free day</td>
+</tr>
+<tr>
+<td>Monthly balance</td>
+<td>Generated paid minutes + verified credits − target ∈ [−460, 460] minutes for every employee, including employees without any possible duty</td>
+</tr>
+<tr>
+<td>Work and breaks</td>
+<td>Per duty, from its segments: at most 10 hours of work; over 6 h at least 30 and over 9 h at least 45 minutes of break in parts of ≥ 15 minutes; ≤ 6 h without a break</td>
+</tr>
+<tr>
+<td>Work average</td>
+<td>Every employee's work in the month stays ≤ 8 hours × Werktage (Mon–Sat, not a holiday), so duties up to 10 hours are always balanced within the month</td>
+</tr>
+<tr>
+<td>Rest</td>
+<td>At least 11 elapsed hours between the end and the next start of any two duties, including context</td>
+</tr>
+<tr>
+<td>Consecutive nights</td>
+<td>At most three night duties on consecutive dates, including context</td>
+</tr>
+<tr>
+<td>Night recovery</td>
+<td>No duty starts within 48 elapsed hours after the end of the final night of a block</td>
+</tr>
+<tr>
+<td>Replacement rest</td>
+<td>Each worked Sunday or Werktag holiday of the month gets its own duty-free Werktag of the same month within ±13 days (Sunday) or ±55 days (holiday)</td>
+</tr>
+</tbody>
+</table>
+<p>A duty touches a date when its interval overlaps that local day from 00:00 to 24:00, so a Saturday night counts as Sunday work. Elapsed time follows daylight-saving changes; paid minutes do not. A shift time that a clock change skips or repeats is rejected when the input is built.</p>
+<h2 id="objective">Objective<a class="headerlink" href="#objective" title="Permanent link">&para;</a></h2>
+<p>Only staffing is relaxed, through gaps; every other hard rule stays hard, so a month can still be <code>infeasible</code>. After the hard rules, the solver optimizes six tiers in this order (<code>docs/adr/0010-lexicographic-staged-objective.md</code> records why stages replace weights):</p>
+<ol>
+<li><strong>Gaps</strong>: the required slots no assignment fills, summed over every dated demand row. A gap is never a fake assignment; it is reported next to the assignments so guest staff can be requested. A zero-gap schedule wins wherever one exists.</li>
+<li><strong>Health events</strong>, one unit per event of four kinds. <strong>Six-day windows</strong>: six fully worked days in a row (a window counts on its last day, inside the month; seven days in a row are two windows). <strong>Backward transitions</strong>: backward steps between successive early, late and night duties (early → late → night is forward; off days do not reset the comparison; intermediate and other duties have no position). The first ranked duty of the month is compared with the last ranked duty of the five preceding context days, if any. <strong>Isolated workdays</strong>: a month date with a duty starting on it while no duty starts on the date before or after. A single night counts too, so night duties tend to come in blocks of two or three. A neighbouring date outside the month is free only inside the trusted context, so without context neither the month's first nor its last date is isolated. <strong>Back-to-back worked weekends</strong>: two consecutive weekends that both have a duty touching their Saturday or Sunday (a Friday night touches its Saturday) are one event. A pair counts in the month of its later Sunday, and only when the earlier weekend's Friday lies within the five preceding context days, so months starting Thursday to Sunday count no pair ending with their first weekend.</li>
+<li><strong>Station transfers</strong>: duties of employees whose dated origin is a station, worked at another station through a replacement membership (Ersatz). Duties of jumper pool employees never count. An organisational transfer is not made merely to grant a wish.</li>
+<li><strong>Wish cost</strong>: denied wishes, free (free day, free shift) and preferred (preferred day, preferred shift) counted apart per employee; the k-th denial in a group costs k³, so S denials cost (S(S+1)/2)². This convex cost spreads unavoidable denials over employees. Each wish is one strike. A free day is denied by any duty touching the date, also a night from the evening before; a free shift by that shift starting on the date; a preferred day or shift is granted by such a duty starting on the date at any station. A wish that the inputs of its own date rule out is reported as not grantable and costs nothing: a preferred day or shift when binding availability, a missing station membership or the shift's own work pattern leaves no duty to start; a free day when a trusted context duty touches it. A free shift is always grantable. Rules across days, such as the rest after a context night, only deny a wish: whether they rule it out depends on the rest of the schedule.</li>
+<li><strong>Balance deviation</strong>: the sum of every employee's absolute monthly balance, in minutes.</li>
+<li><strong>Surplus intermediate duties</strong>, as a reward: intermediate duties beyond the required ones, per demand row; a gap in one row never offsets a surplus in another.</li>
+</ol>
+<p>The tiers are solved as <strong>lexicographic stages</strong>, one CP-SAT solve per tier in <code>OBJECTIVES</code> order. A stage optimizes its tier, then adds <code>tier ≤ value reached</code> (<code>≥</code> for the reward) and hints the next stage with its schedule, so one unit of a higher tier is never traded for any lower-tier change and no tier needs a weight. The requested timeout is the total; each stage gets half of the time left, the last stage all of it. A stage that proves its optimum early passes its time on, and lower tiers get less time, in line with their priority. Every tier expression is exact for any schedule that keeps the hard rules, not only an optimal one, so each stage's value equals the matching field of the check's <code>scores</code>. Reordering the tiers is a change to <code>OBJECTIVES</code> only.</p>
+<h2 id="result">Result<a class="headerlink" href="#result" title="Permanent link">&para;</a></h2>
+<p><code>Solution</code> contains:</p>
+<ul>
+<li><code>status</code>: <code>optimal</code> exactly when every stage is; <code>feasible</code> when a found schedule has a stage the time limit ended; <code>infeasible</code> (proven), <code>unknown</code> (neither a schedule nor a proof in time) or <code>model_invalid</code>. Only the first stage can end without a schedule; a later stage that finds no schedule in its time keeps the previous one and is reported <code>feasible</code> without a bound. A later stage that proves infeasibility would be a model error and fails the run.</li>
+<li><code>configuration</code>: the <code>RulePolicy</code>, the total timeout, search workers and seed.</li>
+<li><code>wall_time_seconds</code> and <code>diagnostics</code>.</li>
+<li>With a found schedule only: <code>assignments</code>, <code>gaps</code> (station, date, shift, qualification and <code>missing_count</code> per unfilled demand row), <code>stages</code> and <code>check</code>. Each stage has the tier <code>name</code>, <code>status</code> (<code>optimal</code> or <code>feasible</code>), <code>value</code> (the tier in the returned schedule) and <code>best_bound</code> (CP-SAT's proven bound for that stage, <code>null</code> when it found no schedule in its time).</li>
+</ul>
+<p><code>diagnostics</code> name causes the build can see, such as demand without enough candidates (<code>staffing.too_few_candidates</code>, a warning that explains predictable gaps, counted after availability and context conflicts), an employee who cannot reach the balance band without duties (<code>balance.unreachable</code>, an error that makes the month infeasible) or a shift whose pattern breaks the daily rules. A <code>feasible</code> stage can be improved by up to its distance from the bound; a weak bound does not mean the schedule breaks a rule.</p>
+<p><code>check</code> has <code>status</code> <code>accepted</code> (every promised rule checked and kept), <code>rejected</code> (a hard-rule finding) or <code>incomplete</code> (no finding, but a promised check lacks input), plus <code>findings</code>, <code>not_assessed</code>, <code>scores</code>, <code>wishes</code> and <code>wish_counts</code>. Staffing holds when every demand row's shortfall is exactly its declared gap, so an undeclared shortfall, a wrong count or a gap on a filled row is a staffing finding; a schedule with gaps can be accepted. <code>wishes</code> lists every input wish with <code>status</code> <code>granted</code>, <code>denied</code> or <code>not_grantable</code>. Not-assessed items give the rule, the exact date window and the reason, and say whether they block acceptance:</p>
+<table>
+<thead>
+<tr>
+<th>Not assessed</th>
+<th>Blocking</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rest, nights, recovery and scores at the month start without 5 context days</td>
+<td>yes</td>
+<td>A six-day window ending on the first date reaches five days back; a night three days earlier still reaches the month</td>
+</tr>
+<tr>
+<td>Rest, nights and recovery after the month without 3 following context days</td>
+<td>no</td>
+<td>The next month's run checks them with this schedule as its preceding context</td>
+</tr>
+<tr>
+<td>Annual free Sundays</td>
+<td>no</td>
+<td>Needs the whole year</td>
+</tr>
+</tbody>
+</table>
+<p>Replacement rest and the work average are decided within the month, so they never depend on other months and no replacement day is claimed twice.</p>
+<h2 id="settings">Settings<a class="headerlink" href="#settings" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Environment variable</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SOLVER_MAX_TIME_SECONDS</code></td>
+<td><code>30</code></td>
+<td>Total search limit when a caller passes none</td>
+</tr>
+<tr>
+<td><code>SOLVER_NUM_SEARCH_WORKERS</code></td>
+<td>unset</td>
+<td>Leave OR-Tools worker selection unchanged</td>
+</tr>
+<tr>
+<td><code>SOLVER_RANDOM_SEED</code></td>
+<td>unset</td>
+<td>Optional search seed</td>
+</tr>
+<tr>
+<td><code>SOLVER_LOG_SEARCH_PROGRESS</code></td>
+<td><code>false</code></td>
+<td>Enable solver progress logs</td>
+</tr>
+</tbody>
+</table>
+<p><code>POST /generation</code> passes the requested <code>timeout_seconds</code> as the total search limit of all stages; the other settings apply unchanged and are reported in <code>configuration</code>. Each stage but the last gets half of the time left, so the top tiers need more total time than one weighted solve did: the example months use 300 seconds. A fixed seed alone does not make parallel search reproducible. Set settings in root <code>.env</code> for Compose and recreate the API after changes.</p>
+<h2 id="model-structure">Model structure<a class="headerlink" href="#model-structure" title="Permanent link">&para;</a></h2>
+<p><code>build_model</code> is the only entry point; <code>SolverService</code> and the tests call nothing else. Inside <code>solver/model/</code>, each rule and each objective term is one function, listed in one tuple, so it can be read, changed and tested on its own:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>candidates.py</code></td>
+<td><code>CandidateModel</code>: the CP-SAT model, one variable per candidate, every employee's <code>timelines</code> of candidate and fixed context <code>Slot</code>s ordered by start, the diagnostics, and helpers for limits over slots (<code>at_most</code>), monthly balances and 0/1 logic (<code>any_of</code>, <code>logical_and</code>, <code>and_not</code>)</td>
+</tr>
+<tr>
+<td><code>constraints.py</code></td>
+<td>One function <code>(model) -&gt; None</code> per hard rule and <code>HARD_RULES</code>, their order</td>
+</tr>
+<tr>
+<td><code>objectives.py</code></td>
+<td>One function <code>(model) -&gt; Expr</code> per objective term, <code>OBJECTIVES</code> (the tiers, highest priority first, each naming its terms) and <code>tier_objectives</code>, each tier with its expression for the stages</td>
+</tr>
+</tbody>
+</table>
+<p>Availability and the work and break pattern of a single duty decide which candidates exist, in <code>candidates.py</code>; they are not constraints. Staffing and the balance band come last in <code>HARD_RULES</code>, because their diagnostics and balances skip the candidates that context duties rule out in the rules before them. The staffing rule also creates the gap variables (<code>model.gaps</code>) that the gap tier sums and the solution reports.</p>
+<h2 id="adding-or-changing-a-hard-rule">Adding or changing a hard rule<a class="headerlink" href="#adding-or-changing-a-hard-rule" title="Permanent link">&para;</a></h2>
+<p>Change the parameter in <code>RulePolicy</code>, or the rule in both places. In the model, a rule about a single duty filters candidates in <code>candidates.py</code>; any other rule is a function in <code>constraints.py</code> added to <code>HARD_RULES</code>. Use <code>model.at_most</code> for limits over slots, so context duties count as worked and the staffing diagnostic sees what they rule out. Implement the rule again, independently, in <code>domain/acceptance.py</code> with its own <code>Rule</code> member. Add a discriminating boundary example to <code>api/tests/test_schedule_check.py</code> and, where the model encodes it, a production solve to <code>api/tests/test_solver.py</code>. Keep domain inputs independent of TimeOffice and run the <a href="../../development/checks/">shared checks</a>.</p>
+<h2 id="adding-an-objective">Adding an objective<a class="headerlink" href="#adding-an-objective" title="Permanent link">&para;</a></h2>
+<p>An objective is a term the solver minimizes (or, as a reward, maximizes) after every hard rule holds and every higher tier is fixed. Health events, for example, are one tier of four terms (six-day windows, backward transitions, isolated workdays and back-to-back worked weekends), all counts weighted alike.</p>
+<ol>
+<li><strong>Define the score.</strong> State what is counted, its unit (a count of events or duties, or minutes), whether it is a penalty or a reward, and its priority among the tiers. A new concern of the same unit and priority as an existing tier becomes a term of that tier; otherwise it is a new tier. Record the reasoning in <a href="../../validation/reasoning/">reasoning and requirements</a>.</li>
+<li><strong>Score it independently.</strong> Add the field to <code>ScheduleScores</code> in <code>domain/acceptance.py</code> and compute it in the check's <code>scores</code> from assignments and context alone, never from solver variables. A tier of several terms is a computed field, like <code>health_events</code>. The <a href="../../validation/examples/#interpret-objectives-and-solver-settings">portable scoring contract</a> describes how scores and stages relate in every result.</li>
+<li><strong>Model the term.</strong> Add a function <code>(model: CandidateModel) -&gt; Expr</code> to <code>objectives.py</code>. Its expression must equal the check's score exactly for every schedule that keeps the hard rules, not just at the optimum: a time-limited stage returns a merely feasible schedule, and a one-sided encoding (an indicator that is only pushed down by the objective) would then report a wrong value. Use equalities such as <code>any_of</code>, <code>add_max_equality</code> or ordered booleans. Loop over <code>model.timelines</code> per employee; fixed context slots count as worked (<code>slot.expr</code> is 1).</li>
+<li><strong>Place it.</strong> Add the function to a tier's terms in <code>OBJECTIVES</code>, or add a new <code>Tier</code> at its priority, named exactly like its <code>ScheduleScores</code> field. Mark a reward with <code>reward=True</code>. The tier becomes one more stage and gets half of the time left before it; no weight or bound is needed.</li>
+<li><strong>Report it.</strong> The stage appears in <code>solution.stages</code> and the score in <code>check.scores</code> of every API response and portable <code>result.json</code>. Run the API tests once to rewrite the published <a href="../../validation/schema/result.schema.json">result schema</a> and commit it; update <code>webapp/src/lib/types.ts</code>, the stage label in <code>webapp/src/lib/labels.ts</code>, the review's <strong>Technische Details</strong>, the <a href="#objective">objective section</a> above and the <a href="../../validation/examples/">example file reference</a>. Bundles from before the change no longer re-check identically, so regenerate committed examples.</li>
+<li><strong>Verify it.</strong> Add a boundary example of the score to <code>api/tests/test_schedule_check.py</code>. In <code>api/tests/test_solver.py</code>, every solve asserts <code>stages_are_scores</code>; add boundary tests against the neighbouring tiers, small months in which one unit of the higher tier is the price of a better lower tier, like the existing ones for gaps over health, health over a station transfer, a station transfer over a wish, health over a wish, wishes over balance and balance over intermediate duties: one unit of the higher tier must never be traded for any change of the lower one. <code>test_objective_tiers_are_checked_scores</code> fails until the tier name is a score field. <a href="../../development/testing/#unit-responsibilities">Testing</a> lists what both test files already cover.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.indexes", "navigation.sections", "navigation.top", "navigation.tracking", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1640 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://combirwth.github.io/StaffScheduling/architecture/api/">
+      
+      
+        <link rel="prev" href="../domain/">
+      
+      
+        <link rel="next" href="../solver/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>API contracts - Staff Scheduling</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Staff Scheduling" class="md-header__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Staff Scheduling
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API contracts
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Staff Scheduling" class="md-nav__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Staff Scheduling
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Try it
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Try it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use the app
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Use the app
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/selection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Select and inspect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure monthly inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generate schedules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review, import and export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/publication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publish and clear
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand the system
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand the system
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contracts
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#selection-and-employee-reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selection and employee reads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monthly-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monthly configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#review-import-and-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review, import and download
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#publication-and-clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publication and clear
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#side-effects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Side effects
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../solver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../timeoffice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TimeOffice adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Develop
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Develop
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/checks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checks and tooling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../validation/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validate
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validate
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/reasoning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reasoning and requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples and reproduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#selection-and-employee-reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selection and employee reads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monthly-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monthly configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#review-import-and-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review, import and download
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#publication-and-clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publication and clear
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#side-effects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Side effects
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h1>
+<p>This reference describes the source definitions. Executed live checks are listed under <a href="../../validation/">current limitations</a>.</p>
+<p>The FastAPI application is <code>api/app/main.py</code>. With Compose running, open <a href="http://localhost:8000/docs">http://localhost:8000/docs</a> for interactive request/response schemas, or <a href="http://localhost:8000/openapi.json">http://localhost:8000/openapi.json</a> for OpenAPI. Schemas reflect the current checkout.</p>
+<h2 id="routes">Routes<a class="headerlink" href="#routes" title="Permanent link">&para;</a></h2>
+<p>Consult OpenAPI for exact bodies and responses.</p>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Methods</th>
+<th>Current behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/status</code></td>
+<td>GET</td>
+<td>Process liveness without a TimeOffice query</td>
+</tr>
+<tr>
+<td><code>/planning/options</code></td>
+<td>GET</td>
+<td>Named stations with unique full-month targets</td>
+</tr>
+<tr>
+<td><code>/employees</code></td>
+<td>GET</td>
+<td>Complete canonical combined month/station/jumper pool inspection</td>
+</tr>
+<tr>
+<td><code>/planning/employees</code></td>
+<td>GET</td>
+<td>The selection's employees by ID and name, without monthly accounts</td>
+</tr>
+<tr>
+<td><code>/availability</code></td>
+<td>GET</td>
+<td>One employee's month: native absences, availability, wishes and shifts</td>
+</tr>
+<tr>
+<td><code>/availability/{employee_id}/{date}</code></td>
+<td>PUT, DELETE</td>
+<td>Replace or delete that employee's availability on that date</td>
+</tr>
+<tr>
+<td><code>/wishes/{employee_id}/{date}</code></td>
+<td>PUT, DELETE</td>
+<td>Replace or delete that employee's wish on that date</td>
+</tr>
+<tr>
+<td><code>/demand</code></td>
+<td>GET, PUT</td>
+<td>Read or replace the dated staffing demand of one station month</td>
+</tr>
+<tr>
+<td><code>/demand/pattern</code></td>
+<td>POST</td>
+<td>Expand a weekly pattern into the month's dated demand; saves nothing</td>
+</tr>
+<tr>
+<td><code>/generation</code></td>
+<td>POST, GET</td>
+<td>Start a full-month generation; read the latest job</td>
+</tr>
+<tr>
+<td><code>/review</code></td>
+<td>GET</td>
+<td>The schedule under review with its check and readable tables</td>
+</tr>
+<tr>
+<td><code>/review/import</code></td>
+<td>POST</td>
+<td>Validate an uploaded <code>input</code>/<code>result</code> pair and review it</td>
+</tr>
+<tr>
+<td><code>/review/files/{name}</code></td>
+<td>GET</td>
+<td>Download <code>input.json</code>, <code>result.json</code>, <code>schedule.csv</code>, <code>employees.csv</code> or <code>gaps.csv</code></td>
+</tr>
+<tr>
+<td><code>/publication</code></td>
+<td>POST</td>
+<td>Publish the accepted schedule under review to its stations' targets</td>
+</tr>
+<tr>
+<td><code>/publication</code></td>
+<td>DELETE</td>
+<td>Remove the published duties of the named stations' month</td>
+</tr>
+</tbody>
+</table>
+<p>Next's <code>GET /api/health</code> calls API <code>/status</code> server-side: it is healthy only for a valid liveness response, otherwise <code>503</code>. Database availability is separate. Direct TimeOffice failures return <code>503</code> with sanitized <code>detail</code>, <code>integration: timeoffice</code> and the failed <code>stage</code>. See the <a href="../../getting-started/installation/#database-configuration">read-only diagnostic</a>.</p>
+<h2 id="selection-and-employee-reads">Selection and employee reads<a class="headerlink" href="#selection-and-employee-reads" title="Permanent link">&para;</a></h2>
+<p><code>GET /planning/options?year=2026&amp;month=1</code> returns the canonical <code>planning_month</code> (inclusive derived start/end) and named <code>planning_units</code> with station type. Only stations with a unique configured full-month target are offered. Empty options are distinct from a source failure.</p>
+<p><code>GET /employees?year=2026&amp;month=1&amp;planning_unit_ids=101&amp;planning_unit_ids=102</code> accepts repeated positive station IDs and deduplicates them. The numbers here are illustrative, not connected target IDs. The response contains <code>selected_station_ids</code>, <code>planning_units</code> including relevant jumper pool/home units, the reference <code>shifts</code> (ID, code, type) that availability entries may allow, and deduplicated employees. Each employee has <code>employee_id</code>, <code>display_name</code>, <code>staff_level</code>, full dated <code>memberships</code>, <code>account</code> and <code>availability</code> (native absences plus project availability). Accounts expose target, actual and credited minutes and the dated <code>credit_details</code> they sum.</p>
+<p>Invalid query values return <code>422</code>, as does an invalid selection: a jumper pool, an unconfigured unit or a station without a target plan for the month. Unavailable connectivity/query access returns sanitized <code>503</code>. Incomplete or ambiguous prepared facts return <code>409</code> and no employee table. <code>associated_jumper_pool_ids</code> lists the jumper pools that members of the selected stations call home; a replacement membership in a jumper pool is not an association. These routes run synchronous reads in FastAPI's worker thread pool. They never create tables, read demand, write output, load files or invoke the solver. All-or-error source validation prevents partially successful station inspection.</p>
+<p>The webapp calls these routes from server components through <code>webapp/src/lib/api.ts</code> with a ten-second timeout. Browser URLs contain the canonical month/station selection; SQL connection details remain server-side.</p>
+<h2 id="monthly-configuration">Monthly configuration<a class="headerlink" href="#monthly-configuration" title="Permanent link">&para;</a></h2>
+<p><code>GET /availability?employee_id=1&amp;year=2026&amp;month=1</code> returns <code>absences</code> (approved TimeOffice absences, read-only), <code>availability</code>, <code>wishes</code>, the month's <code>calendar</code> and the reference <code>shifts</code> (<code>shift_id</code>, <code>code</code>, <code>type</code>) for one employee month. <code>GET /planning/employees</code> takes the same station selection as <code>/employees</code> and returns only <code>employee_id</code> and <code>display_name</code>, so choosing an employee does not depend on complete monthly accounts. The employee needs a membership in a configured unit during the month.</p>
+<p><code>PUT /availability/{employee_id}/{date}</code> takes <code>availability_type</code> (<code>unavailable</code>, <code>vacation</code>, <code>training</code>, <code>free_day</code>, <code>available_only</code>), <code>shift_ids</code> (only and required for <code>available_only</code>) and an optional nonblank <code>reason</code>. <code>PUT /wishes/{employee_id}/{date}</code> takes <code>type</code> (<code>free_day</code>, <code>free_shift</code>, <code>preferred_day</code>, <code>preferred_shift</code>) and <code>shift_id</code> for the shift wishes. A PUT replaces the entry of exactly that employee and date and returns the saved entry; <code>DELETE</code> removes it and returns <code>204</code>, also when nothing was stored.</p>
+<p><code>GET /demand?planning_unit_id=101&amp;year=2026&amp;month=1</code> returns <code>demand</code> (<code>null</code> until the station month is saved once), the month's <code>calendar</code> (<code>date</code>, ISO <code>weekday</code>, NRW <code>public_holiday</code> name) and <code>shifts</code>. <code>PUT /demand</code> takes <code>planning_unit_id</code>, <code>planning_month</code> (<code>year</code>, <code>month</code>) and the complete <code>cells</code> (<code>date</code>, <code>shift_id</code>, <code>staff_level</code>, <code>required_count</code> from 1 to 99); the station is given once. It replaces that station month; an empty list saves "nobody required". <code>POST /demand/pattern</code> takes the same station and month plus pattern <code>cells</code> (<code>day_type</code> <code>monday</code>…<code>sunday</code> or <code>holiday</code>, <code>shift_id</code>, <code>staff_level</code>, <code>required_count</code> from 0 to 99). It checks the station and shifts like a save and returns the resulting <code>MonthlyDemand</code> without saving it.</p>
+<p>Malformed bodies, non-integer or out-of-range counts, an employee without membership, non-reference shifts, out-of-month or duplicate demand, jumper pools and stations without a target plan return <code>422</code> before any write. Incomplete source facts return <code>409</code>; unavailable TimeOffice returns sanitized <code>503</code>. Writes report success only after commit.</p>
+<h2 id="generation">Generation<a class="headerlink" href="#generation" title="Permanent link">&para;</a></h2>
+<p><code>POST /generation</code> takes <code>planning_unit_ids</code> (at least one station), <code>planning_month</code> (<code>year</code>, <code>month</code>) and <code>timeout_seconds</code> (30 to 3600; the total CP-SAT search limit of all objective stages). It reads and validates the whole month's input synchronously, then returns <code>202</code> with the running job while the solve continues in a background thread. Before any job exists it returns <code>422</code> for invalid bodies and selections (jumper pools, stations without a target plan), <code>409</code> for incomplete input (a station without saved demand, incomplete employee facts, missing shift times), sanitized <code>503</code> when TimeOffice is unavailable, and <code>423</code> while another generation runs.</p>
+<p><code>GET /generation</code> returns the latest job since the API process started, or <code>404</code> when there is none, also after a restart. A job has <code>job_id</code>, the <code>request</code>, <code>state</code> (<code>running</code>, <code>completed</code>, <code>failed</code>), <code>started_at</code>/<code>finished_at</code>, and either <code>solution</code> (when completed) or a generic <code>error</code> (when failed; the exception is logged, not returned). <code>solution</code> carries the CP-SAT <code>status</code> (<code>optimal</code>, <code>feasible</code>, <code>infeasible</code>, <code>model_invalid</code>, <code>unknown</code>), the effective <code>configuration</code> (rule policy, timeout, workers, seed), <code>wall_time_seconds</code> and <code>diagnostics</code>. With a found schedule it also has (see <a href="../solver/#result">solver result</a>):</p>
+<ul>
+<li><code>assignments</code>: <code>employee_id</code>, <code>date</code>, <code>planning_unit_id</code>, <code>shift_id</code>, credited <code>staff_level</code></li>
+<li><code>gaps</code>: station, date, shift, qualification, <code>missing_count</code></li>
+<li><code>stages</code>: per objective tier <code>name</code>, <code>status</code>, <code>value</code>, <code>best_bound</code>; <code>null</code> for a stage that found no schedule in its time</li>
+<li><code>check</code>: the independent check with <code>status</code> (<code>accepted</code>, <code>rejected</code>, <code>incomplete</code>), <code>findings</code>, <code>not_assessed</code>, <code>scores</code>, <code>wishes</code> with their outcomes and <code>wish_counts</code></li>
+</ul>
+<p><code>completed</code> with <code>infeasible</code> is a finished job without a schedule.</p>
+<p>The input is the <code>SchedulingDataset</code> from <code>TimeOfficeService.read_generation_input</code>: the selection's employee inspection, the reference shifts from <code>TDiensteSollzeiten</code>, each station's saved demand and the <a href="../timeoffice/#read-and-write-boundaries">trusted context</a> around the month. Units are the selected stations and their associated jumper pools. Worked roster rows enter only from trusted context plans outside the month, so earlier output in the target plan never becomes input. Project wishes of every inspected employee, jumper pool members included, are input; native TimeOffice wish rows are not.</p>
+<p>One <code>Generation</code> object (<code>api/app/solver/generation.py</code>) owns the process-local lock, the single background worker and the latest job; the lock is released on success and failure. Jobs are not persisted. Run one API process.</p>
+<h2 id="review-import-and-download">Review, import and download<a class="headerlink" href="#review-import-and-download" title="Permanent link">&para;</a></h2>
+<p>One <code>Review</code> object (<code>api/app/solver/review.py</code>) holds the schedule under review in memory: every generation that finds a schedule replaces it before its job reports <code>completed</code>, and so does a valid import. A generation without a schedule and a rejected import leave it unchanged; a restart forgets it.</p>
+<p><code>GET /review</code> returns <code>404</code> without a schedule, otherwise <code>source</code> (<code>generation</code>, <code>import</code>), <code>received_at</code>, the <code>planning_month</code>, <code>planning_units</code>, <code>shifts</code> and <code>calendar</code> of the input, the <code>solution</code> and <code>tables</code>: <code>duties</code>, <code>employees</code>, <code>staffing</code> (required against assigned count per station, date, shift and qualification) and <code>gaps</code> (the staffing rows with missing slots, with station name and shift code). The duty, employee and gap rows are the rows of the CSV files.</p>
+<p><code>POST /review/import</code> takes multipart files <code>input</code> and <code>result</code>. It returns the new review, or <code>422</code> with <code>detail</code> and <code>problem</code>: <code>malformed</code> (not JSON, schema violation, unknown field, other format version or calendar), <code>mismatch</code> (the result names another input digest or month), <code>no_schedule</code>, <code>policy</code> (solved with other rule settings), <code>references</code> (assignments of unknown employees, stations or shifts, outside the month or duplicated) or <code>check</code> (a stored check that differs from the independent re-check). Validation runs in the worker thread pool.</p>
+<p><code>GET /review/files/{name}</code> returns the file as an attachment (<code>application/json</code> or <code>text/csv; charset=utf-8</code>), or <code>404</code> without a schedule. <code>input.json</code> keeps the exact bytes its digest names. The format is described under <a href="../../validation/examples/#bundle-files">bundle files</a>; <code>ScheduleBundle</code> (<code>api/app/solver/bundle.py</code>) owns parsing, pairing, re-checking and rendering, so imports, downloads and the <a href="../../validation/examples/#validate-monthly-and-sequence-results">example tests</a> share one implementation. A generated schedule becomes a bundle directly with the solver's check; only uploaded pairs are re-validated.</p>
+<h2 id="publication-and-clear">Publication and clear<a class="headerlink" href="#publication-and-clear" title="Permanent link">&para;</a></h2>
+<p><code>POST /publication</code> takes <code>planning_month</code> (<code>year</code>, <code>month</code>), <code>planning_unit_ids</code> and <code>received_at</code> of the schedule under review, as <code>GET /review</code> returned them. The route takes the assignments only from <code>Review.publishable</code>; only then does <code>TimeOfficeService.publish</code> write. After commit, the response names the month and stations, <code>removed_duties</code> (the replaced earlier publication) and <code>published_duties</code> (written and read back).</p>
+<table>
+<thead>
+<tr>
+<th>Response</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>409</code> <code>changed</code></td>
+<td>No schedule under review, or it differs in arrival, month or stations</td>
+</tr>
+<tr>
+<td><code>409</code> <code>not_accepted</code></td>
+<td>The schedule's check is not <code>accepted</code></td>
+</tr>
+<tr>
+<td><code>409</code> <code>conflict</code></td>
+<td>An employee has an absence or another duty (entered in TimeOffice or in another plan) on a duty's date</td>
+</tr>
+<tr>
+<td><code>409</code> <code>read_back</code></td>
+<td>The written duties read back differently</td>
+</tr>
+<tr>
+<td><code>409</code> <code>concurrent</code></td>
+<td>A concurrent writer or an existing row collided; applies to every write route</td>
+</tr>
+<tr>
+<td><code>409</code> without <code>problem</code></td>
+<td>Ambiguous targets, a qualification no station membership books, or incomplete shift data</td>
+</tr>
+<tr>
+<td><code>422</code></td>
+<td>A schedule without duties, or duties outside the named stations or month</td>
+</tr>
+<tr>
+<td><code>503</code></td>
+<td>TimeOffice failed; with stage <code>commit</code> the connection failed while committing</td>
+</tr>
+</tbody>
+</table>
+<p>Every failure rolls the transaction back, except a <code>503</code> with stage <code>commit</code>, whose outcome is unknown.</p>
+<p><code>DELETE /publication?year=2026&amp;month=1&amp;planning_unit_ids=101</code> takes the same repeated station IDs as <code>/employees</code> and returns the same result with <code>published_duties</code> 0. Jumper pools and stations without a target plan return <code>422</code>. Publication and clear run one at a time in the API process; see <a href="../timeoffice/#publication">TimeOffice publication</a> for the transaction.</p>
+<p>The webapp waits up to two minutes for either write, adds <em>Nichts wurde geändert</em> to a rolled-back failure, and reports an unanswered request or a failed commit as an unknown outcome.</p>
+<h2 id="side-effects">Side effects<a class="headerlink" href="#side-effects" title="Permanent link">&para;</a></h2>
+<p>The configuration PUT/DELETE routes write the <a href="../timeoffice/#project-tables">project tables</a>; <code>POST</code> and <code>DELETE /publication</code> write the marked duty rows of the named stations' target plans. Generation, review and import write nothing; downloads are rendered in memory. No route creates tables or writes plan, account, absence or wish rows.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.indexes", "navigation.sections", "navigation.top", "navigation.tracking", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
