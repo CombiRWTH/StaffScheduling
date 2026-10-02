@@ -6,16 +6,21 @@ from app.domain import (
     Availability,
     AvailabilityEntry,
     DemandConfiguration,
+    DemandPattern,
     EmployeeCalendar,
+    EmployeeSummary,
     InvalidSelection,
     MonthlyDemand,
     PlanningInspection,
     PlanningMonth,
     PlanningOptions,
+    PlanningUnit,
+    PlanningUnitMembership,
     PlanningUnitType,
     Wish,
     WishEntry,
     build_inspection,
+    expand_pattern,
     inspection_employee_ids,
     month_calendar,
 )
@@ -52,18 +57,7 @@ class TimeOfficeService:
         """The complete read-only employee scope of the selected stations and their pool, or an error."""
         selected = tuple(dict.fromkeys(planning_unit_ids))
         with self._engine.connect() as connection:
-            self._require_stations(connection, selected, planning_month)
-            units = queries.read_units(connection, self._facts)
-            memberships = queries.read_memberships(
-                connection, self._facts, [unit.planning_unit_id for unit in units], planning_month
-            )
-            employee_ids = sorted(
-                inspection_employee_ids(
-                    selected_station_ids=selected,
-                    memberships=memberships,
-                    shared_pool_ids={u.planning_unit_id for u in units if u.type == PlanningUnitType.SHARED_POOL},
-                )
-            )
+            units, memberships, employee_ids = self._selection_scope(connection, selected, planning_month)
             employees = queries.read_employees(connection, self._facts, employee_ids)
             accounts = queries.read_accounts(connection, self._facts, employee_ids, planning_month)
             absences = queries.read_absences(connection, self._facts, employee_ids, planning_month)
@@ -84,6 +78,16 @@ class TimeOfficeService:
             allowed_shift_ids=set(self._facts.reference_shift_ids),
         )
 
+    def list_employees(
+        self, *, planning_unit_ids: tuple[int, ...], planning_month: PlanningMonth
+    ) -> tuple[EmployeeSummary, ...]:
+        """The selection's employees by name, without requiring their monthly accounts or evidence."""
+        selected = tuple(dict.fromkeys(planning_unit_ids))
+        with self._engine.connect() as connection:
+            _, _, employee_ids = self._selection_scope(connection, selected, planning_month)
+            employees = queries.read_employees(connection, self._facts, employee_ids)
+        return tuple(EmployeeSummary(employee_id=row.employee_id, display_name=row.display_name) for row in employees)
+
     def get_employee_calendar(self, *, employee_id: int, planning_month: PlanningMonth) -> EmployeeCalendar:
         """One employee's native absences, project availability and wishes in the month."""
         with self._engine.connect() as connection:
@@ -94,6 +98,7 @@ class TimeOfficeService:
                 absences=queries.read_absences(connection, self._facts, [employee_id], planning_month),
                 availability=project_tables.read_availability(connection, [employee_id], planning_month),
                 wishes=project_tables.read_wishes(connection, [employee_id], planning_month),
+                calendar=month_calendar(planning_month),
                 shifts=queries.read_shift_options(connection, self._facts),
             )
 
@@ -131,10 +136,33 @@ class TimeOfficeService:
 
     def save_demand(self, demand: MonthlyDemand) -> None:
         """Replace the complete demand of one station month; an empty month saves 'nobody required'."""
-        self._require_shifts(tuple(row.shift_id for row in demand.requirements))
+        self._require_shifts(tuple(cell.shift_id for cell in demand.cells))
         with self._engine.begin() as connection:
             self._require_stations(connection, (demand.planning_unit_id,), demand.planning_month)
             project_tables.replace_demand(connection, demand)
+
+    def preview_demand(self, pattern: DemandPattern) -> MonthlyDemand:
+        """The month a weekly pattern would produce for a plannable station; nothing is saved."""
+        self._require_shifts(tuple(cell.shift_id for cell in pattern.cells))
+        with self._engine.connect() as connection:
+            self._require_stations(connection, (pattern.planning_unit_id,), pattern.planning_month)
+        return expand_pattern(pattern)
+
+    def _selection_scope(
+        self, connection: Connection, selected: tuple[int, ...], month: PlanningMonth
+    ) -> tuple[tuple[PlanningUnit, ...], tuple[PlanningUnitMembership, ...], list[int]]:
+        """Configured units, their month memberships and the selection's employee IDs (stations plus home pools)."""
+        self._require_stations(connection, selected, month)
+        units = queries.read_units(connection, self._facts)
+        memberships = queries.read_memberships(
+            connection, self._facts, [unit.planning_unit_id for unit in units], month
+        )
+        employee_ids = inspection_employee_ids(
+            selected_station_ids=selected,
+            memberships=memberships,
+            shared_pool_ids={unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.SHARED_POOL},
+        )
+        return units, memberships, sorted(employee_ids)
 
     def _require_stations(self, connection: Connection, selected: tuple[int, ...], month: PlanningMonth) -> None:
         unit_types = self._facts.planning_unit_type_by_id
@@ -147,10 +175,7 @@ class TimeOfficeService:
 
     def _require_employee(self, connection: Connection, employee_id: int, month: PlanningMonth) -> None:
         """Availability and wishes belong to employees with a membership in a configured unit that month."""
-        memberships = queries.read_memberships(
-            connection, self._facts, sorted(self._facts.planning_unit_type_by_id), month
-        )
-        if employee_id not in {row.employee_id for row in memberships}:
+        if employee_id not in queries.read_planned_employee_ids(connection, self._facts, [employee_id], month):
             raise InvalidSelection(f"Employee {employee_id} has no planning membership in the month.")
 
     def _require_shifts(self, shift_ids: tuple[int, ...]) -> None:

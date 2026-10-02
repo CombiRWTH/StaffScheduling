@@ -13,7 +13,7 @@ from sqlalchemy import Connection, text
 
 from app.domain import (
     Availability,
-    DemandRequirement,
+    DemandCell,
     EmployeeMonthEvidence,
     MonthlyDemand,
     PlanningMonth,
@@ -157,7 +157,7 @@ def read_demand(connection: Connection, planning_unit_id: int, month: PlanningMo
     rows = select_rows(
         connection,
         """
-        SELECT planning_unit_id, demand_date, shift_id, staff_level, required_count
+        SELECT demand_date, shift_id, staff_level, required_count
         FROM dbo.StaffSchedulingDemand
         WHERE planning_unit_id = :planning_unit_id AND demand_date BETWEEN :start AND :end
         ORDER BY demand_date, shift_id, staff_level
@@ -169,9 +169,8 @@ def read_demand(connection: Connection, planning_unit_id: int, month: PlanningMo
     return MonthlyDemand(
         planning_unit_id=planning_unit_id,
         planning_month=month,
-        requirements=tuple(
-            DemandRequirement(
-                planning_unit_id=row["planning_unit_id"],
+        cells=tuple(
+            DemandCell(
                 date=row["demand_date"],
                 shift_id=row["shift_id"],
                 staff_level=row["staff_level"],
@@ -213,7 +212,7 @@ def replace_demand(connection: Connection, demand: MonthlyDemand) -> None:
         ),
         {**scope, "planning_month": month.start},
     )
-    if demand.requirements:
+    if demand.cells:
         connection.execute(
             text(
                 """
@@ -225,11 +224,11 @@ def replace_demand(connection: Connection, demand: MonthlyDemand) -> None:
             [
                 {
                     **scope,
-                    "demand_date": row.date,
-                    "shift_id": row.shift_id,
-                    "staff_level": row.staff_level.value,
-                    "required_count": row.required_count,
+                    "demand_date": cell.date,
+                    "shift_id": cell.shift_id,
+                    "staff_level": cell.staff_level.value,
+                    "required_count": cell.required_count,
                 }
-                for row in demand.requirements
+                for cell in demand.cells
             ],
         )

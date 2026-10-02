@@ -7,13 +7,13 @@ import pytest
 from fastapi.testclient import TestClient
 from inspection_fixture import InspectionSource
 
-from app.api.planning import get_planning_source
+from app.api.shared import get_planning_source
 from app.domain import (
     AvailabilityEntry,
     AvailabilityType,
     DayType,
+    DemandCell,
     DemandPattern,
-    DemandRequirement,
     InvalidSelection,
     MonthlyDemand,
     PatternRequirement,
@@ -120,10 +120,8 @@ def test_invalid_or_failed_writes_leave_saved_entries_unchanged(source: Inspecti
     assert source.tables["StaffSchedulingAvailability"] == before
 
 
-def _requirement(day: int, shift_id: int, level: StaffLevel, count: int, unit: int = 101) -> DemandRequirement:
-    return DemandRequirement(
-        planning_unit_id=unit, date=date(2026, 1, day), shift_id=shift_id, staff_level=level, required_count=count
-    )
+def _cell(day: int, shift_id: int, level: StaffLevel, count: int) -> DemandCell:
+    return DemandCell(date=date(2026, 1, day), shift_id=shift_id, staff_level=level, required_count=count)
 
 
 def test_dated_demand_round_trips_per_station_month(source: InspectionSource) -> None:
@@ -136,25 +134,25 @@ def test_dated_demand_round_trips_per_station_month(source: InspectionSource) ->
     north = MonthlyDemand(
         planning_unit_id=101,
         planning_month=JANUARY,
-        requirements=(
-            _requirement(1, EARLY, StaffLevel.PROFESSIONAL, 2),
-            _requirement(2, EARLY, StaffLevel.PROFESSIONAL, 3),
-            _requirement(2, INTERMEDIATE, StaffLevel.MFA, 1),
+        cells=(
+            _cell(1, EARLY, StaffLevel.PROFESSIONAL, 2),
+            _cell(2, EARLY, StaffLevel.PROFESSIONAL, 3),
+            _cell(2, INTERMEDIATE, StaffLevel.MFA, 1),
         ),
     )
     south = MonthlyDemand(
         planning_unit_id=102,
         planning_month=JANUARY,
-        requirements=(_requirement(3, NIGHT, StaffLevel.ASSISTANT, 1, 102),),
+        cells=(_cell(3, NIGHT, StaffLevel.ASSISTANT, 1),),
     )
     service.save_demand(north)
     service.save_demand(south)
     assert service.get_demand(planning_unit_id=101, planning_month=JANUARY).demand == north
 
-    service.save_demand(MonthlyDemand(planning_unit_id=101, planning_month=JANUARY, requirements=()))
+    service.save_demand(MonthlyDemand(planning_unit_id=101, planning_month=JANUARY, cells=()))
     emptied = service.get_demand(planning_unit_id=101, planning_month=JANUARY).demand
     assert emptied is not None
-    assert emptied.requirements == ()
+    assert emptied.cells == ()
     assert service.get_demand(planning_unit_id=102, planning_month=JANUARY).demand == south
 
 
@@ -164,13 +162,11 @@ def test_demand_rejects_pools_unplanned_months_and_unknown_shifts(source: Inspec
         service.get_demand(planning_unit_id=201, planning_month=JANUARY)
     with pytest.raises(InvalidSelection, match="No TimeOffice target plan"):
         service.save_demand(
-            MonthlyDemand(planning_unit_id=101, planning_month=PlanningMonth(year=2026, month=2), requirements=())
+            MonthlyDemand(planning_unit_id=101, planning_month=PlanningMonth(year=2026, month=2), cells=())
         )
     with pytest.raises(InvalidSelection, match="Unknown shift"):
         service.save_demand(
-            MonthlyDemand(
-                planning_unit_id=101, planning_month=JANUARY, requirements=(_requirement(1, 42, StaffLevel.MFA, 1),)
-            )
+            MonthlyDemand(planning_unit_id=101, planning_month=JANUARY, cells=(_cell(1, 42, StaffLevel.MFA, 1),))
         )
     assert source.tables["StaffSchedulingDemandMonth"] == []
 
@@ -203,7 +199,8 @@ def test_pattern_applies_weekday_rows_and_the_holiday_row() -> None:
             ),
         )
     )
-    by_date = {row.date.day: row.required_count for row in demand.requirements}
+    by_date = {cell.date.day: cell.required_count for cell in demand.cells}
+    assert {row.planning_unit_id for row in demand.requirements} == {101}
     # Good Friday (3rd) and Easter Monday (6th) take the holiday row; zero cells produce no requirement.
     assert by_date == {3: 1, 6: 1, 10: 2, 17: 2, 24: 2}
 
@@ -229,18 +226,36 @@ def test_http_contract_validates_before_saving(source: InspectionSource, client:
     assert source.tables["StaffSchedulingWish"] == []
 
     month = {"year": 2026, "month": 1}
-    row = {"planning_unit_id": 101, "date": "2026-01-02", "shift_id": EARLY, "staff_level": "mfa", "required_count": 1}
-    for requirements in ([{**row, "date": "2026-02-01"}], [row, row], [{**row, "required_count": 0}]):
-        body = {"planning_unit_id": 101, "planning_month": month, "requirements": requirements}
+    row = {"date": "2026-01-02", "shift_id": EARLY, "staff_level": "mfa", "required_count": 1}
+    invalid = ({**row, "date": "2026-02-01"}, row, {**row, "required_count": 0}, {**row, "required_count": 100})
+    for cells in ([invalid[0]], [row, row], [invalid[2]], [invalid[3]], [{**row, "required_count": 1.5}]):
+        body = {"planning_unit_id": 101, "planning_month": month, "cells": cells}
         assert client.put("/demand", json=body).status_code == 422
     assert source.tables["StaffSchedulingDemand"] == []
-    assert client.put(
-        "/demand", json={"planning_unit_id": 101, "planning_month": month, "requirements": [row]}
-    ).is_success
-    assert client.get("/demand?planning_unit_id=101&year=2026&month=1").json()["demand"]["requirements"] == [row]
+    assert client.put("/demand", json={"planning_unit_id": 101, "planning_month": month, "cells": [row]}).is_success
+    assert client.get("/demand?planning_unit_id=101&year=2026&month=1").json()["demand"]["cells"] == [row]
 
     cell = {"day_type": "holiday", "shift_id": EARLY, "staff_level": "mfa", "required_count": 1}
     preview = client.post("/demand/pattern", json={"planning_unit_id": 101, "planning_month": month, "cells": [cell]})
-    assert [requirement["date"] for requirement in preview.json()["requirements"]] == ["2026-01-01"]
-    duplicate = {"planning_unit_id": 101, "planning_month": month, "cells": [cell, cell]}
-    assert client.post("/demand/pattern", json=duplicate).status_code == 422
+    assert [row["date"] for row in preview.json()["cells"]] == ["2026-01-01"]
+    for pattern in (
+        {"planning_unit_id": 101, "planning_month": month, "cells": [cell, cell]},
+        {"planning_unit_id": 201, "planning_month": month, "cells": [cell]},
+        {"planning_unit_id": 101, "planning_month": {"year": 2026, "month": 2}, "cells": [cell]},
+        {"planning_unit_id": 101, "planning_month": month, "cells": [{**cell, "shift_id": 42}]},
+        {"planning_unit_id": 101, "planning_month": month, "cells": [{**cell, "required_count": 100}]},
+    ):
+        assert client.post("/demand/pattern", json=pattern).status_code == 422
+
+    names = client.get("/planning/employees?year=2026&month=1&planning_unit_ids=101")
+    assert sorted(names.json(), key=lambda row: row["employee_id"]) == [
+        {"employee_id": 1, "display_name": "Example MFA One"},
+        {"employee_id": 2, "display_name": "Example Team Two"},
+        {"employee_id": 3, "display_name": "Example Pool Three"},
+    ]
+    source.missing_evidence = True
+    assert client.get("/employees?year=2026&month=1&planning_unit_ids=101").status_code == 409
+    # Choosing whose availability to edit does not need the inspection's monthly evidence.
+    assert client.get("/planning/employees?year=2026&month=1&planning_unit_ids=101").status_code == 200
+    calendar = client.get("/availability?employee_id=1&year=2026&month=1").json()["calendar"]
+    assert (len(calendar), calendar[0]["public_holiday"], calendar[0]["weekday"]) == (31, "Neujahr", 4)

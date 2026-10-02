@@ -1,7 +1,9 @@
 -- Project tables next to the TimeOffice schema. An authorized preparer runs this
 -- file once against the prepared test database; the API never creates tables.
--- The runtime login needs SELECT on all four tables and INSERT/DELETE on the
--- availability, wish and demand tables.
+-- It is for a database without these tables; see the TimeOffice adapter docs for
+-- migrating an evidence table from the earlier script with a constraints column.
+-- The runtime login needs SELECT on all five tables and INSERT/DELETE on the
+-- availability, wish and both demand tables.
 
 -- An evidence row declares an employee's complete verified monthly credits.
 -- An empty JSON array is explicit verified absence of credits, never a default.

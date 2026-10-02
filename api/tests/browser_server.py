@@ -6,7 +6,7 @@ import uvicorn
 from fastapi import Request
 from inspection_fixture import InspectionSource
 
-from app.api.planning import get_planning_source
+from app.api.shared import get_planning_source
 from app.main import app
 from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable
 

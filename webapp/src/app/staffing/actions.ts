@@ -1,22 +1,17 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { previewPattern, putDemand } from "@/lib/api";
-import type { DemandRequirement, PatternRequirement } from "@/lib/types";
+import type { DemandCell, PatternRequirement } from "@/lib/types";
+import { writeResult } from "@/lib/write-result";
 
-export async function saveDemand(month: string, stationId: number, requirements: DemandRequirement[]) {
-  try {
-    await putDemand(month, stationId, requirements);
-  } catch (error) {
-    return { ok: false as const, error: (error as Error).message };
-  }
-  revalidatePath("/staffing");
-  return { ok: true as const };
+export async function saveDemand(month: string, stationId: number, cells: DemandCell[]) {
+  return writeResult(() => putDemand(month, stationId, cells), "/staffing");
 }
 
-export async function expandPattern(month: string, stationId: number, cells: PatternRequirement[]) {
+/** The month's cells for a weekly pattern, computed by the backend; nothing is saved. */
+export async function expandPattern(month: string, stationId: number, pattern: PatternRequirement[]) {
   try {
-    return { ok: true as const, requirements: (await previewPattern(month, stationId, cells)).requirements };
+    return { ok: true as const, cells: (await previewPattern(month, stationId, pattern)).cells };
   } catch (error) {
     return { ok: false as const, error: (error as Error).message };
   }

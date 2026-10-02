@@ -1,10 +1,12 @@
+import { Suspense } from "react";
 import { PageHeader } from "@/components/page-header";
 import { LoadError } from "@/components/load-error";
-import { getEmployeeCalendar, getEmployees } from "@/lib/api";
+import { getEmployeeCalendar, getPlanningEmployees } from "@/lib/api";
 import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
 import { selectionSearch } from "@/lib/selection";
 import { AvailabilityCalendar } from "./availability-calendar";
 import { EmployeePicker } from "./employee-picker";
+import Loading from "./loading";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Verfügbarkeit · Schichtplanung" };
@@ -29,7 +31,10 @@ export default async function AvailabilityPage({
       ) : scope.error ? (
         <LoadError title="Verfügbarkeit nicht geladen" message={scope.error} />
       ) : (
-        <EmployeeAvailability month={scope.month} stationIds={scope.stationIds} employee={params.employee} />
+        // A new key per scope and employee shows the loading state instead of the previous calendar.
+        <Suspense key={`${scope.month}:${scope.stationIds}:${params.employee}`} fallback={<Loading />}>
+          <EmployeeAvailability month={scope.month} stationIds={scope.stationIds} employee={params.employee} />
+        </Suspense>
       )}
     </div>
   );
@@ -46,7 +51,7 @@ async function EmployeeAvailability({
 }) {
   let employees;
   try {
-    employees = (await getEmployees(month, stationIds)).employees;
+    employees = await getPlanningEmployees(month, stationIds);
   } catch (error) {
     return <LoadError title="Verfügbarkeit nicht geladen" message={(error as Error).message} />;
   }
@@ -62,7 +67,7 @@ async function EmployeeAvailability({
     <div className="space-y-4">
       <EmployeePicker
         href={`/availability${selectionSearch(month, stationIds)}`}
-        employees={employees.map(({ employee_id, display_name }) => ({ employee_id, display_name }))}
+        employees={employees}
         selectedId={selected.employee_id}
       />
       {"error" in calendar ? (

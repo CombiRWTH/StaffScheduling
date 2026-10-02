@@ -10,7 +10,18 @@ import { STAFF_LEVEL_LABELS, WEEKDAYS, formatDate } from "@/lib/labels";
 import type { DayType, DemandConfiguration, StaffLevel } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { expandPattern, saveDemand } from "./actions";
-import { countAt, gridOf, requirementsOf, sameGrid, withCount, withLevelFrom, type DemandGrid } from "./demand-grid";
+import {
+  MAX_REQUIRED_COUNT,
+  cellsOf,
+  countAt,
+  gridOf,
+  isValidCount,
+  parseCount,
+  sameGrid,
+  withCount,
+  withLevelFrom,
+  type DemandGrid,
+} from "./demand-grid";
 
 const LEVELS = Object.keys(STAFF_LEVEL_LABELS) as StaffLevel[];
 const DAY_TYPES: Array<{ type: DayType; label: string }> = [
@@ -21,14 +32,9 @@ const DAY_TYPES: Array<{ type: DayType; label: string }> = [
   { type: "holiday", label: "Feiertag" },
 ];
 
-function parseCount(value: string) {
-  const count = Number(value);
-  return Number.isInteger(count) && count >= 0 ? count : 0;
-}
-
 export function StaffingEditor({ month, configuration }: { month: string; configuration: DemandConfiguration }) {
   const { calendar, shifts, planning_unit_id: stationId } = configuration;
-  const [saved, setSaved] = useState<DemandGrid>(() => gridOf(configuration.demand?.requirements ?? []));
+  const [saved, setSaved] = useState<DemandGrid>(() => gridOf(configuration.demand?.cells ?? []));
   const [grid, setGrid] = useState<DemandGrid>(saved);
   const [level, setLevel] = useState<StaffLevel>("professional");
   const [isSaved, setIsSaved] = useState(configuration.demand !== null);
@@ -42,9 +48,8 @@ export function StaffingEditor({ month, configuration }: { month: string; config
   }
 
   function save() {
-    const requirements = requirementsOf(grid, stationId);
     startTransition(async () => {
-      const result = await saveDemand(month, stationId, requirements);
+      const result = await saveDemand(month, stationId, cellsOf(grid));
       if (result.ok) {
         setSaved(grid);
         setIsSaved(true);
@@ -114,7 +119,9 @@ export function StaffingEditor({ month, configuration }: { month: string; config
       <Card>
         <CardHeader>
           <CardTitle>{STAFF_LEVEL_LABELS[level]} je Tag</CardTitle>
-          <CardDescription>Leere oder 0 bedeutet: keine Mindestbesetzung.</CardDescription>
+          <CardDescription>
+            Ganze Zahlen von 0 bis {MAX_REQUIRED_COUNT}; leer oder 0 bedeutet: keine Mindestbesetzung.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -144,8 +151,9 @@ export function StaffingEditor({ month, configuration }: { month: string; config
                       <Input
                         type="number"
                         min={0}
-                        max={99}
+                        max={MAX_REQUIRED_COUNT}
                         aria-label={`${shift.code} am ${formatDate(day.date)}`}
+                        aria-invalid={!isValidCount(countAt(grid, day.date, shift.shift_id, level))}
                         value={countAt(grid, day.date, shift.shift_id, level)}
                         onChange={(event) => setCount(day.date, shift.shift_id, event.target.value)}
                         className="mx-auto w-16 text-center"
@@ -189,7 +197,7 @@ function PatternCard({
         day_type: type,
         shift_id: shift.shift_id,
         staff_level: level,
-        required_count: pattern[`${type}|${shift.shift_id}`] ?? 0,
+        required_count: pattern[`${level}|${type}|${shift.shift_id}`] ?? 0,
       })),
     );
     startPreview(async () => {
@@ -199,7 +207,7 @@ function PatternCard({
         setError(result.error);
         return;
       }
-      setPreview(withLevelFrom(grid, gridOf(result.requirements), level));
+      setPreview(withLevelFrom(grid, gridOf(result.cells), level));
     });
   }
 
@@ -233,13 +241,14 @@ function PatternCard({
                     <Input
                       type="number"
                       min={0}
-                      max={99}
+                      max={MAX_REQUIRED_COUNT}
                       aria-label={`Muster ${shift.code} ${label}`}
-                      value={pattern[`${type}|${shift.shift_id}`] ?? 0}
+                      aria-invalid={!isValidCount(pattern[`${level}|${type}|${shift.shift_id}`] ?? 0)}
+                      value={pattern[`${level}|${type}|${shift.shift_id}`] ?? 0}
                       onChange={(event) => {
                         setPattern((current) => ({
                           ...current,
-                          [`${type}|${shift.shift_id}`]: parseCount(event.target.value),
+                          [`${level}|${type}|${shift.shift_id}`]: parseCount(event.target.value),
                         }));
                         setPreview(null);
                       }}

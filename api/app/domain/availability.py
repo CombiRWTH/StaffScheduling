@@ -4,6 +4,7 @@ from typing import Self
 
 from pydantic import model_validator
 
+from app.domain.calendar import CalendarDay
 from app.domain.core import NonEmptyStr, SchedulingBaseModel
 from app.domain.employee import EmployeeId
 from app.domain.planning_month import PlanningMonth
@@ -64,4 +65,5 @@ class EmployeeCalendar(SchedulingBaseModel):
     absences: tuple[Availability, ...]
     availability: tuple[Availability, ...]
     wishes: tuple[Wish, ...]
+    calendar: tuple[CalendarDay, ...]
     shifts: tuple[ShiftOption, ...]

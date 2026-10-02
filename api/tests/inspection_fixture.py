@@ -155,7 +155,11 @@ class InspectionSource:
                 (2, 101, True, False, "81302-028"),
                 (3, 201, True, False, "81301-010"),
             ]:
-                if unit in params["planning_unit_ids"] and params["start"].month != 3:
+                if (
+                    unit in params["planning_unit_ids"]
+                    and employee in params.get("employee_ids", [employee])
+                    and params["start"].month != 3
+                ):
                     rows.append(
                         {
                             "planning_unit_id": unit,

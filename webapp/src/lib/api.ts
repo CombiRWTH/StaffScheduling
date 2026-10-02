@@ -1,8 +1,10 @@
 import "server-only";
 import type {
   AvailabilityEntry,
+  DemandCell,
   DemandConfiguration,
   EmployeeCalendar,
+  EmployeeSummary,
   MonthlyDemand,
   PatternRequirement,
   PlanningInspection,
@@ -39,14 +41,26 @@ async function request<T>(
   return response.status === 204 ? (undefined as T) : response.json();
 }
 
-function monthQuery(month: string) {
-  const [year, monthNumber] = month.split("-");
-  return new URLSearchParams({ year, month: String(Number(monthNumber)) });
-}
-
-function monthBody(month: string) {
+/** The `YYYY-MM` selection month as the API's year and month numbers. */
+function planningMonth(month: string) {
   const [year, monthNumber] = month.split("-").map(Number);
   return { year, month: monthNumber };
+}
+
+function monthQuery(month: string) {
+  const { year, month: monthNumber } = planningMonth(month);
+  return new URLSearchParams({ year: String(year), month: String(monthNumber) });
+}
+
+function selectionQuery(month: string, stationIds: number[]) {
+  const params = monthQuery(month);
+  for (const id of stationIds) params.append("planning_unit_ids", String(id));
+  return params;
+}
+
+/** PUT an entry at `path`, or DELETE it when `entry` is `null`. */
+function putOrDelete(path: string, entry: object | null, invalid: string) {
+  return entry ? request<void>("PUT", path, { body: entry, invalid }) : request<void>("DELETE", path, { invalid });
 }
 
 export function getPlanningOptions(month: string) {
@@ -54,9 +68,12 @@ export function getPlanningOptions(month: string) {
 }
 
 export function getEmployees(month: string, stationIds: number[]) {
-  const params = monthQuery(month);
-  for (const id of stationIds) params.append("planning_unit_ids", String(id));
-  return request<PlanningInspection>("GET", "/employees", { params });
+  return request<PlanningInspection>("GET", "/employees", { params: selectionQuery(month, stationIds) });
+}
+
+/** The selection's employees by name; unlike `getEmployees` it needs no complete monthly evidence. */
+export function getPlanningEmployees(month: string, stationIds: number[]) {
+  return request<EmployeeSummary[]>("GET", "/planning/employees", { params: selectionQuery(month, stationIds) });
 }
 
 const INVALID_ENTRY = "Eintrag ungültig. Mitarbeiter, Datum, Art und Schichten prüfen.";
@@ -69,21 +86,15 @@ export function getEmployeeCalendar(month: string, employeeId: number) {
 
 /** Replace the employee's availability on that date; `null` removes it. */
 export function setAvailability(employeeId: number, date: string, entry: AvailabilityEntry | null) {
-  const path = `/availability/${employeeId}/${date}`;
-  return entry
-    ? request<void>("PUT", path, { body: entry, invalid: INVALID_ENTRY })
-    : request<void>("DELETE", path, { invalid: INVALID_ENTRY });
+  return putOrDelete(`/availability/${employeeId}/${date}`, entry, INVALID_ENTRY);
 }
 
 /** Replace the employee's wish on that date; `null` removes it. */
 export function setWish(employeeId: number, date: string, entry: WishEntry | null) {
-  const path = `/wishes/${employeeId}/${date}`;
-  return entry
-    ? request<void>("PUT", path, { body: entry, invalid: INVALID_ENTRY })
-    : request<void>("DELETE", path, { invalid: INVALID_ENTRY });
+  return putOrDelete(`/wishes/${employeeId}/${date}`, entry, INVALID_ENTRY);
 }
 
-const INVALID_DEMAND = "Mindestbesetzung ungültig. Station, Datum, Schichten und Anzahlen prüfen.";
+const INVALID_DEMAND = "Mindestbesetzung ungültig. Station, Datum, Schichten und Anzahlen (0–99) prüfen.";
 
 export function getDemand(month: string, stationId: number) {
   const params = monthQuery(month);
@@ -91,13 +102,13 @@ export function getDemand(month: string, stationId: number) {
   return request<DemandConfiguration>("GET", "/demand", { params, invalid: INVALID_DEMAND });
 }
 
-export function putDemand(month: string, stationId: number, requirements: MonthlyDemand["requirements"]) {
-  const body = { planning_unit_id: stationId, planning_month: monthBody(month), requirements };
+export function putDemand(month: string, stationId: number, cells: DemandCell[]) {
+  const body = { planning_unit_id: stationId, planning_month: planningMonth(month), cells };
   return request<MonthlyDemand>("PUT", "/demand", { body, invalid: INVALID_DEMAND });
 }
 
 export function previewPattern(month: string, stationId: number, cells: PatternRequirement[]) {
-  const body = { planning_unit_id: stationId, planning_month: monthBody(month), cells };
+  const body = { planning_unit_id: stationId, planning_month: planningMonth(month), cells };
   return request<MonthlyDemand>("POST", "/demand/pattern", { body, invalid: INVALID_DEMAND });
 }
 

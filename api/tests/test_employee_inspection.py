@@ -9,7 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 from inspection_fixture import InspectionSource
 
-from app.api.planning import get_planning_source
+from app.api.shared import get_planning_source
 from app.domain import PlanningMonth, StaffLevel
 from app.main import app
 

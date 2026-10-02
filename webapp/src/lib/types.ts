@@ -65,10 +65,17 @@ export interface Wish extends WishEntry {
   date: string;
 }
 
+export type ShiftType = "early" | "late" | "night" | "intermediate" | "management" | "other";
+
 export interface ShiftOption {
   shift_id: number;
   code: string;
-  type: "early" | "late" | "night" | "intermediate" | "management" | "other";
+  type: ShiftType;
+}
+
+export interface EmployeeSummary {
+  employee_id: number;
+  display_name: string;
 }
 
 export interface EmployeeCalendar {
@@ -78,6 +85,7 @@ export interface EmployeeCalendar {
   absences: Availability[];
   availability: Availability[];
   wishes: Wish[];
+  calendar: CalendarDay[];
   shifts: ShiftOption[];
 }
 
@@ -88,8 +96,8 @@ export interface CalendarDay {
   public_holiday: string | null;
 }
 
-export interface DemandRequirement {
-  planning_unit_id: number;
+/** How many of a qualification one shift needs on one date of the month's station (1–99). */
+export interface DemandCell {
   date: string;
   shift_id: number;
   staff_level: StaffLevel;
@@ -99,7 +107,7 @@ export interface DemandRequirement {
 export interface MonthlyDemand {
   planning_unit_id: number;
   planning_month: PlanningMonth;
-  requirements: DemandRequirement[];
+  cells: DemandCell[];
 }
 
 export interface DemandConfiguration {

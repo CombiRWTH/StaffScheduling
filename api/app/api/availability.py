@@ -1,14 +1,25 @@
 """An employee's monthly availability and wishes; every write names exactly one employee and date."""
 
 from datetime import date
-from typing import Annotated
+from typing import Annotated, Protocol
 
-from fastapi import APIRouter, Path, status
+from fastapi import APIRouter, Depends, Path, status
 
-from app.api.planning import Month, Source, Year, planning_errors
+from app.api.shared import Month, Year, get_planning_source, planning_errors
 from app.domain import AvailabilityEntry, EmployeeCalendar, PlanningMonth, PositiveId, WishEntry
 
 router = APIRouter()
+
+
+class AvailabilitySource(Protocol):
+    def get_employee_calendar(self, *, employee_id: int, planning_month: PlanningMonth) -> EmployeeCalendar: ...
+
+    def set_availability(self, *, employee_id: int, day: date, entry: AvailabilityEntry | None) -> None: ...
+
+    def set_wish(self, *, employee_id: int, day: date, entry: WishEntry | None) -> None: ...
+
+
+Source = Annotated[AvailabilitySource, Depends(get_planning_source)]
 
 EmployeePath = Annotated[PositiveId, Path()]
 

@@ -12,20 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AVAILABILITY_LABELS, WEEKDAYS, WISH_LABELS, formatDate } from "@/lib/labels";
 import type { Availability, AvailabilityType, EmployeeCalendar, ShiftOption, WishType } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { saveAvailability, saveWish, type SaveResult } from "./actions";
+import type { WriteResult } from "@/lib/write-result";
+import { saveAvailability, saveWish } from "./actions";
 
 const NONE = "none";
-
-/** ISO weekday (Monday=1) of an ISO date, independent of the browser's timezone. */
-function isoWeekday(date: string) {
-  const [year, month, day] = date.split("-").map(Number);
-  return ((new Date(Date.UTC(year, month - 1, day)).getUTCDay() + 6) % 7) + 1;
-}
-
-function monthDates(start: string, end: string) {
-  const prefix = start.slice(0, 8);
-  return Array.from({ length: Number(end.slice(8)) }, (_, index) => `${prefix}${String(index + 1).padStart(2, "0")}`);
-}
 
 function availabilityText(row: Availability, shifts: ShiftOption[]) {
   const codes = row.shift_ids?.map((id) => shifts.find((shift) => shift.shift_id === id)?.code ?? id).join(", ");
@@ -34,8 +24,7 @@ function availabilityText(row: Availability, shifts: ShiftOption[]) {
 
 export function AvailabilityCalendar({ calendar }: { calendar: EmployeeCalendar }) {
   const [selected, setSelected] = useState<string | null>(null);
-  const { start, end } = calendar.planning_month;
-  const dates = monthDates(start, end);
+  const days = calendar.calendar;
   const absences = new Map(calendar.absences.map((row) => [row.date, row]));
   const availability = new Map(calendar.availability.map((row) => [row.date, row]));
   const wishes = new Map(calendar.wishes.map((row) => [row.date, row]));
@@ -60,10 +49,10 @@ export function AvailabilityCalendar({ calendar }: { calendar: EmployeeCalendar 
             ))}
           </div>
           <div className="mt-1 grid grid-cols-7 gap-1">
-            {Array.from({ length: isoWeekday(start) - 1 }, (_, index) => (
+            {Array.from({ length: (days[0]?.weekday ?? 1) - 1 }, (_, index) => (
               <div key={`blank-${index}`} />
             ))}
-            {dates.map((date) => {
+            {days.map(({ date, weekday, public_holiday }) => {
               const absence = absences.get(date);
               const entry = availability.get(date);
               const wish = wishes.get(date);
@@ -77,10 +66,15 @@ export function AvailabilityCalendar({ calendar }: { calendar: EmployeeCalendar 
                   className={cn(
                     "flex min-h-20 flex-col gap-0.5 rounded-md border p-1 text-left text-[11px] transition-colors hover:bg-muted",
                     selected === date && "ring-2 ring-ring",
-                    isoWeekday(date) > 5 && "bg-muted/40",
+                    (weekday > 5 || public_holiday) && "bg-muted/40",
                   )}
                 >
-                  <span className="text-sm font-medium">{Number(date.slice(8))}</span>
+                  <span className="text-sm font-medium">
+                    {Number(date.slice(8))}
+                    {public_holiday && (
+                      <span className="ml-1 text-[10px] font-normal text-muted-foreground">{public_holiday}</span>
+                    )}
+                  </span>
                   {absence && (
                     <span className="rounded bg-secondary px-1">{availabilityText(absence, calendar.shifts)}</span>
                   )}
@@ -136,8 +130,8 @@ export function AvailabilityCalendar({ calendar }: { calendar: EmployeeCalendar 
 /** Runs one save or delete; on failure the entered values stay and the error is shown instead of success. */
 function useSave() {
   const [pending, startTransition] = useTransition();
-  const [result, setResult] = useState<SaveResult | null>(null);
-  const run = (action: () => Promise<SaveResult>, onSuccess?: () => void) =>
+  const [result, setResult] = useState<WriteResult | null>(null);
+  const run = (action: () => Promise<WriteResult>, onSuccess?: () => void) =>
     startTransition(async () => {
       setResult(null);
       const outcome = await action();
@@ -147,7 +141,7 @@ function useSave() {
   return { pending, result, run };
 }
 
-function SaveStatus({ result, success }: { result: SaveResult | null; success: string }) {
+function SaveStatus({ result, success }: { result: WriteResult | null; success: string }) {
   if (!result) return null;
   return result.ok ? (
     <p role="status" className="text-sm text-green-700">

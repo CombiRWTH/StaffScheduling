@@ -23,24 +23,41 @@ class DemandRequirement(SchedulingBaseModel):
     required_count: int = Field(gt=0)
 
 
+# An upper bound that no station reaches, so a typo cannot save an absurd minimum.
+MAX_REQUIRED_COUNT = 99
+
+
+class DemandCell(SchedulingBaseModel):
+    """How many of a qualification one shift needs on one date of the month's station."""
+
+    date: Date
+    shift_id: ShiftId
+    staff_level: StaffLevel
+    required_count: int = Field(gt=0, le=MAX_REQUIRED_COUNT)
+
+
 class MonthlyDemand(SchedulingBaseModel):
     """The complete demand of one station month; an omitted date/shift/qualification requires nobody."""
 
     planning_unit_id: PlanningUnitId
     planning_month: PlanningMonth
-    requirements: tuple[DemandRequirement, ...]
+    cells: tuple[DemandCell, ...]
 
     @model_validator(mode="after")
     def validate_scope(self) -> Self:
-        keys = [(row.date, row.shift_id, row.staff_level) for row in self.requirements]
+        keys = [(cell.date, cell.shift_id, cell.staff_level) for cell in self.cells]
         if len(set(keys)) != len(keys):
             raise ValueError("Duplicate demand for one date, shift and qualification.")
-        for row in self.requirements:
-            if row.planning_unit_id != self.planning_unit_id:
-                raise ValueError("Demand requirement belongs to another station.")
-            if not self.planning_month.start <= row.date <= self.planning_month.end:
-                raise ValueError("Demand date is outside the planning month.")
+        if any(not self.planning_month.start <= cell.date <= self.planning_month.end for cell in self.cells):
+            raise ValueError("Demand date is outside the planning month.")
         return self
+
+    @property
+    def requirements(self) -> tuple[DemandRequirement, ...]:
+        """The cells as solver requirements of this station."""
+        return tuple(
+            DemandRequirement(planning_unit_id=self.planning_unit_id, **cell.model_dump()) for cell in self.cells
+        )
 
 
 class DemandConfiguration(SchedulingBaseModel):
@@ -59,7 +76,7 @@ class PatternRequirement(SchedulingBaseModel):
     day_type: DayType
     shift_id: ShiftId
     staff_level: StaffLevel
-    required_count: int = Field(ge=0)
+    required_count: int = Field(ge=0, le=MAX_REQUIRED_COUNT)
 
 
 class DemandPattern(SchedulingBaseModel):
@@ -82,9 +99,8 @@ def expand_pattern(pattern: DemandPattern) -> MonthlyDemand:
     return MonthlyDemand(
         planning_unit_id=pattern.planning_unit_id,
         planning_month=pattern.planning_month,
-        requirements=tuple(
-            DemandRequirement(
-                planning_unit_id=pattern.planning_unit_id,
+        cells=tuple(
+            DemandCell(
                 date=day.date,
                 shift_id=cell.shift_id,
                 staff_level=cell.staff_level,

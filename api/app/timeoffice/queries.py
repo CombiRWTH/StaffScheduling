@@ -127,6 +127,29 @@ def read_memberships(
     )
 
 
+def read_planned_employee_ids(
+    connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
+) -> set[int]:
+    """Which of these employees have a planned membership in a configured unit during the month."""
+    rows = select_rows(
+        connection,
+        """
+        SELECT DISTINCT pep.RefPersonal AS employee_id
+        FROM TPlanungseinheitenPersonal pep
+        WHERE pep.RefPersonal IN :employee_ids
+            AND pep.RefPlanungseinheiten IN :planning_unit_ids
+            AND CONVERT(date, pep.VonDat) <= :end
+            AND (pep.BisDat IS NULL OR CONVERT(date, pep.BisDat) >= :start)
+            AND ISNULL(pep.KeinEPlan, 0) = 0
+        """,
+        employee_ids=list(employee_ids),
+        planning_unit_ids=sorted(facts.planning_unit_type_by_id),
+        start=month.start,
+        end=month.end,
+    )
+    return {row["employee_id"] for row in rows}
+
+
 def read_employees(connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int]) -> tuple[Employee, ...]:
     """Employee master data; every requested employee must exist and have a name."""
     rows = select_rows(
@@ -198,7 +221,7 @@ def read_accounts(
 def read_absences(
     connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
 ) -> tuple[Availability, ...]:
-    """Dated roster absences as constraints; ignored codes are dropped, unknown codes fail."""
+    """Dated roster absences as availability; ignored codes are dropped, unknown codes fail."""
     rows = select_rows(
         connection,
         """
@@ -229,14 +252,14 @@ def read_absences(
             continue
         if code not in facts.availability_type_by_absence_code:
             raise ValueError(f"Unmapped TimeOffice absence code {code!r} for employee_id={row['employee_id']}.")
-        constraint = Availability(
+        absence = Availability(
             employee_id=row["employee_id"],
             date=day.date(),
             availability_type=facts.availability_type_by_absence_code[code],
             reason=code,
             source="TimeOffice absence",
         )
-        absences[constraint] = None
+        absences[absence] = None
     return tuple(absences)
 
 

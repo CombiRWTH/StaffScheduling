@@ -43,3 +43,10 @@ class Employee(SchedulingBaseModel):
 
     staff_level: StaffLevel
     capabilities: tuple[Capability, ...] = ()
+
+
+class EmployeeSummary(SchedulingBaseModel):
+    """Who an employee is, for choosing one; monthly facts belong to an inspection."""
+
+    employee_id: EmployeeId
+    display_name: NonEmptyStr

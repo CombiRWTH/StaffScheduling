@@ -1,31 +1,37 @@
 // The unsaved staffing demand of one station month. Cells are addressed by date, shift and
 // qualification; a missing cell requires nobody. How cells are keyed stays inside this module.
-import type { DemandRequirement, StaffLevel } from "@/lib/types";
+import type { DemandCell, StaffLevel } from "@/lib/types";
 
-type Cell = Omit<DemandRequirement, "planning_unit_id">;
-export type DemandGrid = ReadonlyMap<string, Cell>;
+export type DemandGrid = ReadonlyMap<string, DemandCell>;
+
+export const MAX_REQUIRED_COUNT = 99;
 
 const keyOf = (date: string, shiftId: number, level: StaffLevel) => `${date}|${shiftId}|${level}`;
 
-export function gridOf(requirements: readonly DemandRequirement[]): DemandGrid {
-  return new Map(
-    requirements.map(({ date, shift_id, staff_level, required_count }) => [
-      keyOf(date, shift_id, staff_level),
-      { date, shift_id, staff_level, required_count },
-    ]),
-  );
+/** Whether the backend accepts a count: a whole number from 0 to 99. */
+export function isValidCount(count: number) {
+  return Number.isInteger(count) && count >= 0 && count <= MAX_REQUIRED_COUNT;
+}
+
+/** An input's text as a count: empty means zero; anything else is kept as typed, even if invalid. */
+export function parseCount(text: string) {
+  return text.trim() === "" ? 0 : Number(text);
+}
+
+export function gridOf(cells: readonly DemandCell[]): DemandGrid {
+  return new Map(cells.map((cell) => [keyOf(cell.date, cell.shift_id, cell.staff_level), cell]));
 }
 
 export function countAt(grid: DemandGrid, date: string, shiftId: number, level: StaffLevel): number {
   return grid.get(keyOf(date, shiftId, level))?.required_count ?? 0;
 }
 
-/** A copy with one cell changed; a count of zero removes the cell. */
+/** A copy with one cell changed; zero removes the cell, an invalid count is kept for the API to reject. */
 export function withCount(grid: DemandGrid, date: string, shiftId: number, level: StaffLevel, count: number) {
   const next = new Map(grid);
   const key = keyOf(date, shiftId, level);
-  if (count > 0) next.set(key, { date, shift_id: shiftId, staff_level: level, required_count: count });
-  else next.delete(key);
+  if (count === 0) next.delete(key);
+  else next.set(key, { date, shift_id: shiftId, staff_level: level, required_count: count });
   return next as DemandGrid;
 }
 
@@ -35,9 +41,9 @@ export function sameGrid(left: DemandGrid, right: DemandGrid): boolean {
   );
 }
 
-/** The complete month as API requirements for one station. */
-export function requirementsOf(grid: DemandGrid, stationId: number): DemandRequirement[] {
-  return [...grid.values()].map((cell) => ({ planning_unit_id: stationId, ...cell }));
+/** The complete month as the cells the API saves. */
+export function cellsOf(grid: DemandGrid): DemandCell[] {
+  return [...grid.values()];
 }
 
 /** `grid` with every cell of `level` taken from `source`, and the sorted dates whose counts change. */

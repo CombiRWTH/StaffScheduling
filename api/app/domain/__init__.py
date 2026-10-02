@@ -4,6 +4,7 @@ from app.domain.calendar import CalendarDay, DayType, month_calendar
 from app.domain.core import MinuteOfDay, NonEmptyStr, NonNegativeInt, PositiveId, SchedulingBaseModel
 from app.domain.dataset import SchedulingDataset
 from app.domain.demand import (
+    DemandCell,
     DemandConfiguration,
     DemandPattern,
     DemandRequirement,
@@ -11,7 +12,7 @@ from app.domain.demand import (
     PatternRequirement,
     expand_pattern,
 )
-from app.domain.employee import Capability, Employee, EmployeeId, StaffLevel
+from app.domain.employee import Capability, Employee, EmployeeId, EmployeeSummary, StaffLevel
 from app.domain.inspection import (
     EmployeeInspection,
     EmployeeMonthEvidence,
@@ -45,6 +46,7 @@ __all__ = [
     "PlanningUnitMembership",
     "EmployeeId",
     "Employee",
+    "EmployeeSummary",
     "StaffLevel",
     "Capability",
     "Assignment",
@@ -74,6 +76,7 @@ __all__ = [
     "CalendarDay",
     "DayType",
     "month_calendar",
+    "DemandCell",
     "DemandConfiguration",
     "DemandPattern",
     "MonthlyDemand",

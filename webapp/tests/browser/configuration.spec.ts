@@ -41,10 +41,21 @@ test("edit, reload and delete availability, and keep wishes separate", async ({ 
   await expect(day(page, "05.01.2026")).not.toContainText("Freier Tag");
   await expect(day(page, "05.01.2026")).toContainText("Urlaub · Arzttermin");
 
+  // The other direction: availability edits and deletes leave an existing wish alone.
+  await choose(page, "Art des Wunsches", "Wunschtag");
+  await page.getByRole("button", { name: "Wunsch speichern" }).click();
+  await expect(day(page, "05.01.2026")).toContainText("Wunschtag");
+  await choose(page, "Art der Einschränkung", "Fortbildung");
+  await page.getByRole("button", { name: "Einschränkung speichern" }).click();
+  await expect(day(page, "05.01.2026")).toContainText("Fortbildung · Arzttermin");
+  await expect(day(page, "05.01.2026")).toContainText("Wunschtag");
   await page.getByRole("button", { name: "Einschränkung entfernen" }).click();
-  await expect(day(page, "05.01.2026")).not.toContainText("Urlaub");
+  await expect(day(page, "05.01.2026")).not.toContainText("Fortbildung");
+  await expect(day(page, "05.01.2026")).toContainText("Wunschtag");
+  await page.getByRole("button", { name: "Wunsch entfernen" }).click();
   await page.reload();
   await expect(day(page, "05.01.2026")).toHaveText("5");
+  await expect(day(page, "01.01.2026")).toContainText("Neujahr");
 });
 
 test("a failed availability save keeps the entry and shows no success", async ({ page }) => {
@@ -99,9 +110,27 @@ test("save and reload dated demand, reset edits and apply a previewed pattern", 
   await expect(cell("F", "05.01.2026")).toHaveValue("3");
   await expect(cell("F", "01.01.2026")).toHaveValue("1");
   await expect(cell("F", "03.01.2026")).toHaveValue("0");
+  // Each qualification has its own pattern.
+  await page.getByRole("tab", { name: "MFA" }).click();
+  await expect(page.getByLabel("Muster F Mo", { exact: true })).toHaveValue("0");
+  await page.getByRole("tab", { name: "Fachkraft" }).click();
+  await expect(page.getByLabel("Muster F Mo", { exact: true })).toHaveValue("3");
   await page.getByRole("button", { name: "Zurücksetzen" }).click();
   await expect(cell("F", "05.01.2026")).toHaveValue("0");
   await expect(cell("F", "03.01.2026")).toHaveValue("2");
+});
+
+test("an invalid count is rejected by the API and kept for correction", async ({ page }) => {
+  await page.goto("/staffing?month=2026-01&stations=101,102");
+  const input = page.getByLabel("S am 07.01.2026", { exact: true });
+  await input.fill("-1");
+  await expect(input).toHaveAttribute("aria-invalid", "true");
+  await page.getByRole("button", { name: "Speichern" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Mindestbesetzung ungültig" })).toBeVisible();
+  await expect(input).toHaveValue("-1");
+  await input.fill("");
+  await expect(input).toHaveValue("0");
+  await expect(input).toHaveAttribute("aria-invalid", "false");
 });
 
 test("a failed demand save keeps the unsaved edits", async ({ page }) => {

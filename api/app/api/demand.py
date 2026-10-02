@@ -1,18 +1,24 @@
 """Dated minimum staffing of one station month, and the weekly pattern that previews it."""
 
-from fastapi import APIRouter
+from typing import Annotated, Protocol
 
-from app.api.planning import Month, Source, Year, planning_errors
-from app.domain import (
-    DemandConfiguration,
-    DemandPattern,
-    MonthlyDemand,
-    PlanningMonth,
-    PlanningUnitId,
-    expand_pattern,
-)
+from fastapi import APIRouter, Depends
+
+from app.api.shared import Month, Year, get_planning_source, planning_errors
+from app.domain import DemandConfiguration, DemandPattern, MonthlyDemand, PlanningMonth, PlanningUnitId
 
 router = APIRouter()
+
+
+class DemandSource(Protocol):
+    def get_demand(self, *, planning_unit_id: int, planning_month: PlanningMonth) -> DemandConfiguration: ...
+
+    def save_demand(self, demand: MonthlyDemand) -> None: ...
+
+    def preview_demand(self, pattern: DemandPattern) -> MonthlyDemand: ...
+
+
+Source = Annotated[DemandSource, Depends(get_planning_source)]
 
 INVALID = "Invalid staffing: choose a station with a target plan for the month and reference shifts."
 INCOMPLETE = "Staffing data is incomplete. Verify the station and reference shifts."
@@ -34,6 +40,7 @@ def put_demand(demand: MonthlyDemand, source: Source) -> MonthlyDemand:
 
 
 @router.post("/demand/pattern")
-def preview_pattern(pattern: DemandPattern) -> MonthlyDemand:
+def preview_pattern(pattern: DemandPattern, source: Source) -> MonthlyDemand:
     """The month's dated demand for a weekly pattern under the NRW calendar; nothing is saved."""
-    return expand_pattern(pattern)
+    with planning_errors(invalid=INVALID, incomplete=INCOMPLETE):
+        return source.preview_demand(pattern)
