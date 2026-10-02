@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 from math import isfinite
 from typing import Any, cast
 
-from sqlalchemy import BindParameter, Connection, RowMapping, bindparam, text
+from sqlalchemy import BindParameter, Connection, RowMapping, TextClause, bindparam, text
 
 from app.domain import (
     Assignment,
@@ -59,12 +59,15 @@ def read_units(connection: Connection, facts: TimeOfficeFacts) -> tuple[Planning
     return tuple(units)
 
 
-def read_units_with_target_plan(
+def read_target_plans(
     connection: Connection, facts: TimeOfficeFacts, unit_ids: Sequence[int], month: PlanningMonth
-) -> set[int]:
-    """Units that have exactly one editable full-month target plan; plan IDs stay inside the adapter."""
+) -> dict[int, int]:
+    """The plan ID of each unit's one editable full-month target plan, by unit; units without one are absent.
+
+    Reads and publication select targets with this one rule; several candidates fail instead of being chosen.
+    """
     if not unit_ids:
-        return set()
+        return {}
     rows = select_rows(
         connection,
         """
@@ -84,12 +87,12 @@ def read_units_with_target_plan(
         planning_interval_id=facts.monthly_planning_interval_id,
         planning_status_id=facts.target_planning_status_id,
     )
-    found = [row["planning_unit_id"] for row in rows]
+    plans = {row["planning_unit_id"]: row["plan_id"] for row in rows}
     if any(row["plan_planning_unit_id"] != row["planning_unit_id"] for row in rows):
         raise ValueError("A TimeOffice target plan references a different planning unit.")
-    if len(set(found)) != len(found):
+    if len(plans) != len(rows):
         raise ValueError("Multiple TimeOffice target plans found for one planning unit.")
-    return set(found)
+    return plans
 
 
 def read_memberships(
@@ -125,7 +128,7 @@ def read_memberships(
             employee_id=row["employee_id"],
             valid_from=row["valid_from"].date(),
             valid_until=row["valid_until"].date() if row["valid_until"] else None,
-            staff_level=_staff_level(row["membership_profession_code"], facts, f"membership of {row['employee_id']}"),
+            staff_level=staff_level(row["membership_profession_code"], facts, f"membership of {row['employee_id']}"),
             is_home=row["is_home"],
             is_replacement=row["is_replacement"],
         )
@@ -184,7 +187,7 @@ def read_employees(connection: Connection, facts: TimeOfficeFacts, employee_ids:
             Employee(
                 employee_id=row["employee_id"],
                 display_name=name,
-                staff_level=_staff_level(row["employee_profession_code"], facts, f"employee {row['employee_id']}"),
+                staff_level=staff_level(row["employee_profession_code"], facts, f"employee {row['employee_id']}"),
             )
         )
     return tuple(employees)
@@ -443,11 +446,7 @@ def read_context_duties(
     end: date,
     shifts: Sequence[Shift],
 ) -> tuple[Assignment, ...]:
-    """Worked duties from `start` to `end` in the trusted context plans of the configured stations.
-
-    TimeOffice stores one roster row per work segment; together they must reproduce the shift's
-    catalog segments on that date, so a drifted or hand-edited duty fails instead of being guessed.
-    """
+    """Worked duties from `start` to `end` in the trusted context plans of the configured stations."""
     rows = select_rows(
         connection,
         """
@@ -477,13 +476,25 @@ def read_context_duties(
         start=start,
         end=end,
     )
+    return duties_from_segments(rows, shifts, facts, "context duty")
+
+
+def duties_from_segments(
+    rows: Sequence[RowMapping], shifts: Sequence[Shift], facts: TimeOfficeFacts, kind: str
+) -> tuple[Assignment, ...]:
+    """Worked roster rows, one per work segment, grouped into duties by employee and date.
+
+    The segments of a duty must reproduce its shift's catalog segments on that date, so a drifted
+    or hand-edited duty fails instead of being guessed. Rows need the columns `employee_id`,
+    `duty_date`, `planning_unit_id`, `shift_id`, `profession_code`, `segment_start` and `segment_end`.
+    """
     by_duty: dict[tuple[int, date], list[RowMapping]] = {}
     for row in rows:
         by_duty.setdefault((row["employee_id"], row["duty_date"].date()), []).append(row)
     catalog = {shift.shift_id: shift for shift in shifts}
     duties: list[Assignment] = []
     for (employee_id, day), segments in by_duty.items():
-        where = f"context duty of employee_id={employee_id} on {day}"
+        where = f"{kind} of employee_id={employee_id} on {day}"
         first = segments[0]
         if len({(row["shift_id"], row["planning_unit_id"]) for row in segments}) > 1:
             raise ValueError(f"The {where} mixes shifts or stations.")
@@ -504,7 +515,7 @@ def read_context_duties(
                 date=day,
                 planning_unit_id=first["planning_unit_id"],
                 shift_id=shift.shift_id,
-                staff_level=_staff_level(first["profession_code"], facts, where),
+                staff_level=staff_level(first["profession_code"], facts, where),
             )
         )
     return tuple(duties)
@@ -512,12 +523,16 @@ def read_context_duties(
 
 def select_rows(connection: Connection, sql: str, **params: Any) -> Sequence[RowMapping]:
     """Run one SELECT; list parameters expand into IN clauses. An empty IN list reads nothing."""
-    lists = [name for name, value in params.items() if isinstance(value, list)]
-    if any(not params[name] for name in lists):
+    if any(isinstance(value, list) and not value for value in params.values()):
         return []
+    return connection.execute(statement(sql, params), params).mappings().all()
+
+
+def statement(sql: str, params: dict[str, Any]) -> TextClause:
+    """The SQL text with each list parameter expanding into an IN clause; lists must not be empty."""
+    lists = [name for name, value in params.items() if isinstance(value, list)]
     binds: list[BindParameter[Any]] = [bindparam(name, expanding=True) for name in lists]
-    query = text(sql).bindparams(*binds)
-    return connection.execute(query, params).mappings().all()
+    return text(sql).bindparams(*binds)
 
 
 def _text(value: Any) -> str | None:
@@ -525,7 +540,8 @@ def _text(value: Any) -> str | None:
     return str(value).strip() or None if value is not None else None
 
 
-def _staff_level(profession_code: Any, facts: TimeOfficeFacts, context: str) -> StaffLevel:
+def staff_level(profession_code: Any, facts: TimeOfficeFacts, context: str) -> StaffLevel:
+    """The qualification of a TimeOffice profession code; an unmapped code fails, naming `context`."""
     code = _text(profession_code)
     if code is None or code not in facts.staff_level_by_profession_code:
         raise ValueError(f"No qualification mapping for TimeOffice profession {code!r} ({context}).")

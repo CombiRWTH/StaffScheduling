@@ -4,7 +4,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from app.api import availability, demand, generation, planning, review
+from app.api import availability, demand, generation, planning, publication, review
+from app.domain import PublicationRejected
 from app.logging import configure_logging
 from app.settings import get_settings
 from app.solver.bundle import InvalidBundle
@@ -23,7 +24,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     source = TimeOfficeService(engine)
     solver = SolverService(settings)
     app.state.planning_source = source
-    app.state.review = Review()
+    app.state.review = Review(publish=source.publish)
     app.state.generation = Generation(
         read_input=source.read_generation_input, solve=solver.solve, on_solved=app.state.review.generated
     )
@@ -40,6 +41,7 @@ app.include_router(availability.router)
 app.include_router(demand.router)
 app.include_router(generation.router)
 app.include_router(review.router)
+app.include_router(publication.router)
 
 
 @app.exception_handler(TimeOfficeUnavailable)
@@ -53,6 +55,11 @@ async def timeoffice_unavailable(_request: Request, error: TimeOfficeUnavailable
 @app.exception_handler(InvalidBundle)
 async def invalid_bundle(_request: Request, error: InvalidBundle) -> JSONResponse:
     return JSONResponse(status_code=422, content={"detail": str(error), "problem": error.problem})
+
+
+@app.exception_handler(PublicationRejected)
+async def publication_rejected(_request: Request, error: PublicationRejected) -> JSONResponse:
+    return JSONResponse(status_code=409, content={"detail": str(error), "problem": error.problem})
 
 
 @app.get("/status")

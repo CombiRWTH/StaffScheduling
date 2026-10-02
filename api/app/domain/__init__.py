@@ -37,6 +37,7 @@ from app.domain.inspection import (
 from app.domain.monthly_work_account import MonthlyWorkAccount, WorkCredit
 from app.domain.planning_month import PlanningMonth
 from app.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitMembership, PlanningUnitType
+from app.domain.publication import PublicationProblem, PublicationRejected, PublicationResult
 from app.domain.rules import POLICY, RulePolicy
 from app.domain.schedule import DutyRow, EmployeeRow, ScheduleTables, StaffingRow, schedule_tables
 from app.domain.shift import Shift, ShiftId, ShiftOption, ShiftType, WorkSegment
@@ -87,6 +88,9 @@ __all__ = [
     "duty_times",
     "PLANNING_TIMEZONE",
     "POLICY",
+    "PublicationProblem",
+    "PublicationRejected",
+    "PublicationResult",
     "RulePolicy",
     "DemandRequirement",
     "Wish",

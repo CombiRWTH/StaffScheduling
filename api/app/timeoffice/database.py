@@ -54,7 +54,8 @@ def create_db_engine(settings: Settings) -> Engine:
             "TrustServerCertificate": "yes" if settings.db_trust_server_certificate else "no",
         },
     )
-    engine = create_engine(url, hide_parameters=True, pool_timeout=settings.db_timeout_seconds)
+    # fast_executemany sends a multi-row INSERT (a published month) as one batch instead of a round trip per row.
+    engine = create_engine(url, hide_parameters=True, pool_timeout=settings.db_timeout_seconds, fast_executemany=True)
 
     @event.listens_for(engine, "do_connect")
     def connect(

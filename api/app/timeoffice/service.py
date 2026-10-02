@@ -1,9 +1,11 @@
 from datetime import date, timedelta
+from threading import Lock
 
 from sqlalchemy import Connection, Engine
 
 from app.domain import (
     POLICY,
+    Assignment,
     Availability,
     AvailabilityEntry,
     DemandConfiguration,
@@ -18,6 +20,7 @@ from app.domain import (
     PlanningUnit,
     PlanningUnitMembership,
     PlanningUnitType,
+    PublicationResult,
     ScheduleContext,
     SchedulingDataset,
     Shift,
@@ -29,7 +32,7 @@ from app.domain import (
     inspection_employee_ids,
     month_calendar,
 )
-from app.timeoffice import project_tables, queries
+from app.timeoffice import project_tables, queries, roster
 from app.timeoffice.facts import TIMEOFFICE_FACTS, TimeOfficeFacts
 
 
@@ -44,13 +47,17 @@ class TimeOfficeService:
     def __init__(self, engine: Engine, facts: TimeOfficeFacts = TIMEOFFICE_FACTS) -> None:
         self._engine = engine
         self._facts = facts
+        # Publication and clear run one at a time in this process, each in a serializable transaction
+        # so a concurrent writer elsewhere makes one of them fail and roll back instead of interleaving.
+        self._publication_lock = Lock()
+        self._serializable = engine.execution_options(isolation_level="SERIALIZABLE")
 
     def get_planning_options(self, *, planning_month: PlanningMonth) -> PlanningOptions:
         """Named stations that have a full-month target plan in TimeOffice."""
         with self._engine.connect() as connection:
             units = queries.read_units(connection, self._facts)
             stations = [unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.STATION]
-            planned = queries.read_units_with_target_plan(connection, self._facts, stations, planning_month)
+            planned = queries.read_target_plans(connection, self._facts, stations, planning_month)
         return PlanningOptions(
             planning_month=planning_month,
             planning_units=tuple(unit for unit in units if unit.planning_unit_id in planned),
@@ -154,6 +161,49 @@ class TimeOfficeService:
             self._require_stations(connection, (pattern.planning_unit_id,), pattern.planning_month)
         return expand_pattern(pattern)
 
+    def publish(
+        self, *, planning_month: PlanningMonth, planning_unit_ids: tuple[int, ...], assignments: tuple[Assignment, ...]
+    ) -> PublicationResult:
+        """Replace the published duties of the named stations' month with `assignments`, or change nothing.
+
+        Everything is validated before the old duties are deleted, inside the writing transaction: the stations
+        and their single target plans, duties of those stations in the month with reference shifts and one per
+        employee and date, a membership profession booking each duty's qualification, and no absence or other
+        duty of the employee that date (`PublicationRejected`). The written duties are read back before the
+        commit. An empty schedule is refused; `clear` removes published duties.
+        """
+        selected = tuple(dict.fromkeys(planning_unit_ids))
+        if not assignments:
+            raise InvalidSelection("An empty schedule is not published; clear the stations instead.")
+        with self._publication_lock, self._serializable.begin() as connection:
+            plans = self._require_stations(connection, selected, planning_month)
+            plan_ids = list(plans.values())
+            shifts = queries.read_shifts(connection, self._facts)
+            rows = roster.duty_rows(connection, self._facts, plans, shifts, planning_month, assignments)
+            removed = roster.count_output(connection, plan_ids)
+            roster.delete_output(connection, plan_ids)
+            roster.insert_rows(connection, rows)
+            written = roster.read_output(connection, self._facts, plan_ids, shifts)
+            if len(written) != len(assignments) or set(written) != set(assignments):
+                raise ValueError("The published duties read back differently from the schedule.")
+        return PublicationResult(
+            planning_month=planning_month,
+            planning_unit_ids=selected,
+            removed_duties=removed,
+            published_duties=len(written),
+        )
+
+    def clear(self, *, planning_month: PlanningMonth, planning_unit_ids: tuple[int, ...]) -> PublicationResult:
+        """Remove the published duties of exactly the named stations' month; absences, wishes and other plans stay."""
+        selected = tuple(dict.fromkeys(planning_unit_ids))
+        with self._publication_lock, self._serializable.begin() as connection:
+            plan_ids = list(self._require_stations(connection, selected, planning_month).values())
+            removed = roster.count_output(connection, plan_ids)
+            roster.delete_output(connection, plan_ids)
+        return PublicationResult(
+            planning_month=planning_month, planning_unit_ids=selected, removed_duties=removed, published_duties=0
+        )
+
     def _inspect(
         self, connection: Connection, selected: tuple[int, ...], planning_month: PlanningMonth
     ) -> PlanningInspection:
@@ -226,14 +276,19 @@ class TimeOfficeService:
         )
         return units, memberships, sorted(employee_ids)
 
-    def _require_stations(self, connection: Connection, selected: tuple[int, ...], month: PlanningMonth) -> None:
+    def _require_stations(
+        self, connection: Connection, selected: tuple[int, ...], month: PlanningMonth
+    ) -> dict[int, int]:
+        """The target plan ID of each selected configured station, by station; anything else fails."""
         unit_types = self._facts.planning_unit_type_by_id
         if not selected:
             raise InvalidSelection("At least one station must be selected.")
         if any(unit_types.get(unit_id) != PlanningUnitType.STATION for unit_id in selected):
             raise InvalidSelection("Select configured stations; a jumper pool is origin context only.")
-        if missing := set(selected) - queries.read_units_with_target_plan(connection, self._facts, selected, month):
+        plans = queries.read_target_plans(connection, self._facts, selected, month)
+        if missing := set(selected) - plans.keys():
             raise InvalidSelection(f"No TimeOffice target plan for planning_unit_ids={sorted(missing)}.")
+        return plans
 
     def _require_employee(self, connection: Connection, employee_id: int, month: PlanningMonth) -> None:
         """Availability and wishes belong to employees with a membership in a configured unit that month."""

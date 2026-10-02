@@ -2,7 +2,7 @@
 
 import copy
 import re
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import replace
 from datetime import datetime, timedelta
@@ -37,6 +37,10 @@ SHIFT_SEGMENTS = {
     ],
 }
 
+# TBerufe.Prim of the fixture's profession codes, as roster rows and memberships reference them.
+PROFESSION_IDS = {"81102-004": 124, "81302-028": 651, "81301-010": 334}
+PROFESSION_CODES = {prim: code for code, prim in PROFESSION_IDS.items()}
+
 # Key columns of each project table, used to apply the adapter's scoped DELETEs.
 PROJECT_TABLES = {
     "StaffSchedulingAvailability": ("employee_id", "availability_date"),
@@ -69,6 +73,11 @@ class InspectionSource:
         self.tables: dict[str, list[dict[str, Any]]] = {name: [] for name in PROJECT_TABLES}
         # Writes naming one of these employee or station IDs fail like a lost connection.
         self.failing_ids: set[int] = set()
+        # Writable TPlanPersonalKommtGeht rows (published duties, test wishes, absences and other plans' duties),
+        # keyed like TimeOffice by (employee_id, roster_date, status_id, number) without the plan.
+        self.roster: list[dict[str, Any]] = []
+        # Called before roster rows are inserted, so a test can hold a publication mid-transaction.
+        self.before_roster_insert: Callable[[], None] = lambda: None
         self.facts = replace(
             TIMEOFFICE_FACTS,
             planning_unit_type_by_id=MappingProxyType(
@@ -83,6 +92,7 @@ class InspectionSource:
         connection = engine.connect.return_value.__enter__.return_value
         connection.execute.side_effect = self.execute
         engine.begin.side_effect = self._transaction
+        engine.execution_options.return_value = engine
         self.connection = connection
         self.service = TimeOfficeService(
             facts=self.facts,
@@ -91,14 +101,80 @@ class InspectionSource:
 
     @contextmanager
     def _transaction(self) -> Generator[MagicMock]:
-        before = copy.deepcopy(self.tables)
+        before = copy.deepcopy((self.tables, self.roster))
         try:
             yield self.connection
         except BaseException:
-            self.tables = before
+            self.tables, self.roster = before
             raise
 
+    @staticmethod
+    def is_output(row: dict[str, Any], plan_ids: list[int]) -> bool:
+        """A worked row of one of the target plans, as publication's SQL defines its output."""
+        return row["plan_id"] in plan_ids and not row.get("wish") and not row.get("absence")
+
+    def _write_roster(self, sql: str, params: dict[str, Any] | list[dict[str, Any]]) -> None:
+        if sql.lstrip().startswith("DELETE"):
+            assert isinstance(params, dict)
+            self.roster = [row for row in self.roster if not self.is_output(row, params["plan_ids"])]
+            return
+        assert isinstance(params, list)
+        self.before_roster_insert()
+        for row in params:
+            if row["employee_id"] in self.failing_ids:
+                raise TimeOfficeUnavailable("query", "TimeOffice query failed.")
+            key = (row["employee_id"], row["roster_date"], row["status_id"], row["number"])
+            if any((r["employee_id"], r["roster_date"], r["status_id"], r["number"]) == key for r in self.roster):
+                raise TimeOfficeUnavailable("query", "TimeOffice query failed.")
+            self.roster.append(dict(row))
+
+    def _roster_rows(self, sql: str, params: dict[str, Any]) -> list[dict[str, Any]]:
+        """Publication's reads of the writable roster."""
+        plan_ids = params["plan_ids"]
+        if "COUNT(*) AS duties" in sql:
+            duties = {(r["employee_id"], r["roster_date"]) for r in self.roster if self.is_output(r, plan_ids)}
+            return [{"duties": len(duties)}]
+        if "AND NOT (" in sql:
+            # The fixture's static approved absence of employee 1 on the 1st, then the writable rows.
+            first = datetime.combine(params["start"], datetime.min.time())
+            kept: list[dict[str, Any]] = [
+                {"employee_id": 1, "roster_date": first, "status_id": 20, "number": 1, "is_wish": False},
+                *(
+                    {
+                        **{k: r[k] for k in ("employee_id", "roster_date", "status_id", "number")},
+                        "is_wish": bool(r.get("wish")),
+                    }
+                    for r in self.roster
+                    if not self.is_output(r, plan_ids)
+                ),
+            ]
+            return [
+                row
+                for row in kept
+                if row["employee_id"] in params["employee_ids"]
+                and params["start"] <= row["roster_date"].date() <= params["end"]
+            ]
+        output = sorted(
+            (r for r in self.roster if self.is_output(r, plan_ids)),
+            key=lambda r: (r["employee_id"], r["roster_date"], r["number"]),
+        )
+        return [
+            {
+                "employee_id": r["employee_id"],
+                "duty_date": r["roster_date"],
+                "planning_unit_id": r["planning_unit_id"],
+                "shift_id": r["shift_id"],
+                "profession_code": PROFESSION_CODES[r["profession_id"]],
+                "segment_start": r["segment_start"],
+                "segment_end": r["segment_end"],
+            }
+            for r in output
+        ]
+
     def _write(self, sql: str, params: dict[str, Any] | list[dict[str, Any]]) -> None:
+        if "TPlanPersonalKommtGeht" in sql:
+            self._write_roster(sql, params)
+            return
         first = params[0] if isinstance(params, list) else params
         if {first.get("employee_id"), first.get("planning_unit_id")} & self.failing_ids:
             raise TimeOfficeUnavailable("query", "TimeOffice query failed.")
@@ -134,13 +210,14 @@ class InspectionSource:
             and (params["start"] <= row[day] <= params["end"] if "start" in params else row[day] == params[day])
         ]
 
-    def execute(self, query: Any, params: dict[str, Any]) -> MagicMock:
+    def execute(self, query: Any, params: dict[str, Any] | list[dict[str, Any]]) -> MagicMock:
         sql = str(query)
         self.queries.append(sql)
         rows: list[dict[str, Any]] = []
         if sql.lstrip().startswith(("INSERT", "DELETE")):
             self._write(sql, params)
             return MagicMock()
+        assert isinstance(params, dict)
         if "FROM dbo.StaffSchedulingDemandMonth" in sql:
             rows = self._project_rows("StaffSchedulingDemandMonth", params)
         elif "FROM dbo.StaffSchedulingDemand" in sql:
@@ -200,8 +277,9 @@ class InspectionSource:
                         {
                             "planning_unit_id": unit,
                             "employee_id": employee,
-                            "membership_profession_id": 1,
                             "membership_profession_code": code,
+                            "profession_id": PROFESSION_IDS[code],
+                            "profession_code": code,
                             "valid_from": datetime(2025, 12, 1),
                             "valid_until": datetime(2026, 6, 30),
                             "is_home": home,
@@ -263,6 +341,8 @@ class InspectionSource:
                 for unit in params["station_ids"]
                 if self.context_plans
             ]
+        elif "FROM TPlanPersonalKommtGeht" in sql and "plan_ids" in params:
+            rows = self._roster_rows(sql, params)
         elif "FROM TPlanPersonalKommtGeht" in sql and "p.RefStati = :context_status_id" in sql:
             # The night of December 31, one row per catalog segment; a drifted one ends late.
             night = datetime(2025, 12, 31)
