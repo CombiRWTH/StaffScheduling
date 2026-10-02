@@ -8,13 +8,13 @@ Return to the [documentation overview](index.md).
 
 A run uses, for the selection:
 
-- the employees of the selected stations and of the pools their members call home, with dated memberships and qualifications ([Mitarbeiter](selection.md));
-- monthly accounts and the prepared credit evidence;
+- the employees of the selected stations and of the jumper pools their members call home, with dated memberships and qualifications ([Mitarbeiter](selection.md));
+- monthly accounts with their dated absence credits;
 - native TimeOffice absences and project availability entries ([Verfügbarkeit](configuration.md));
 - the saved **Mindestbesetzung** of every selected station for that month;
 - the four reference shifts with their TimeOffice target times and paid minutes.
 
-It does not use wishes, existing worked shifts in any TimeOffice roster (including earlier output in the target plan), or preceding/following months. Pool employees can only be planned at a station where they have a membership. A station whose staffing was never saved is refused instead of being planned with zero demand.
+It does not use wishes, existing worked shifts in any TimeOffice roster (including earlier output in the target plan), or preceding/following months. Jumper pool employees can only be planned at a station where they have a membership. A station whose staffing was never saved is refused instead of being planned with zero demand.
 
 Check the employee page for completeness first: generation reads the same facts and refuses incomplete ones.
 

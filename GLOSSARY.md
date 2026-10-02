@@ -1,6 +1,6 @@
 # Staff scheduling
 
-Monthly shift planning for hospital stations and their shared pool: inspecting who can be planned, generating a schedule and publishing it to the hospital's roster system. German labels are the terms shown in the webapp.
+Monthly shift planning for hospital stations and their jumper pools: inspecting who can be planned, generating a schedule and publishing it to the hospital's roster system. German labels are the terms shown in the webapp.
 
 ## Planning scope
 
@@ -9,24 +9,24 @@ One full calendar month; every plan, account, availability entry and staffing de
 _Avoid_: period, interval, case
 
 **Planning unit**:
-An organisational unit employees belong to: either a station or a shared pool.
+An organisational unit employees belong to: either a station or a jumper pool. Every planning unit is a pool of employees; only its type decides whether it is planned.
 _Avoid_: unit of work, case, department
 
 **Station** (Station):
-A planning unit with its own staffing demand that a schedule is generated for.
+A planning unit with its own staffing demand that receives assignments.
 _Avoid_: ward, case, destination unit
 
-**Shared pool** (Pool):
-A planning unit of employees who are based there and stand in at stations; it has no staffing demand of its own.
-_Avoid_: jumper pool, Springer, float team
+**Jumper pool** (Springerpool):
+A planning unit whose employees are based there and stand in at stations. By definition it has no staffing demand and receives no assignments; its employees are assigned at stations where they hold a replacement membership.
+_Avoid_: shared pool, pool (on its own), float team
 
 **Planning selection** (Planungsauswahl):
 The planning month together with the chosen stations; every view works on one selection.
 _Avoid_: scope, filter, case
 
-**Associated pool** (Zugehöriger Pool):
-A shared pool that at least one member of a selected station has as home unit; its employees join the inspection without becoming eligible for the stations.
-_Avoid_: linked pool
+**Associated jumper pool** (Zugehöriger Springerpool):
+A jumper pool that at least one member of a selected station has as home unit; its employees join the inspection without becoming eligible for the stations.
+_Avoid_: linked jumper pool
 
 ## People and memberships
 
@@ -51,7 +51,7 @@ A membership that lets an employee stand in at a unit that is not their home uni
 _Avoid_: secondary membership, jumper assignment
 
 **Eligibility**:
-Whether an employee may be planned at a station on a date, given by a membership there; a pool home alone grants none.
+Whether an employee may be planned at a station on a date, given by a membership there; a jumper pool home alone grants none.
 _Avoid_: access, permission
 
 ## Monthly facts
@@ -61,12 +61,8 @@ An employee's target and actual working minutes for the planning month.
 _Avoid_: hour bank, balance
 
 **Work credit** (Gutschrift):
-Dated minutes counted towards the target without being worked, such as approved absence or trusted work.
+Dated minutes counted towards the target without being worked, such as approved absence or trusted work. TimeOffice books absence credits per date in its daily absence-hour accounts.
 _Avoid_: bonus, adjustment
-
-**Evidence declaration** (Monatsnachweis):
-The prepared statement that an employee's work credits for a month are complete, with its source.
-_Avoid_: proof file, attestation
 
 **Availability** (Verfügbarkeit; one entry: Einschränkung):
 A date on which an employee must not be planned, or may only be planned for certain shifts. It always binds planning.

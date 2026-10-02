@@ -6,12 +6,12 @@ This reference describes inspected source definitions. Connected database behavi
 
 ## SchedulingDataset
 
-One `SchedulingDataset` aggregates a `PlanningMonth` and tuples of planning units, plans, shifts, dated staffing requirements, employees, memberships, Sunday work history, wishes, assignments, availability and monthly accounts. The solver consumes it. `build_scheduling_dataset` (`dataset.py`) builds one from a validated employee inspection, the timed reference shifts and the saved demand of each selected station: it refuses a station without saved demand, keeps only the selected stations and their associated pools, and leaves wishes, existing assignments and plans empty. `staffing_role` (`shift.py`) makes the intermediate shift optional coverage and every other shift part of the minimum.
+One `SchedulingDataset` aggregates a `PlanningMonth` and tuples of planning units, plans, shifts, dated staffing requirements, employees, memberships, Sunday work history, wishes, assignments, availability and monthly accounts. The solver consumes it. `build_scheduling_dataset` (`dataset.py`) builds one from a validated employee inspection, the timed reference shifts and the saved demand of each selected station: it refuses a station without saved demand, keeps only the selected stations and their associated jumper pools, and leaves wishes, existing assignments and plans empty. `staffing_role` (`shift.py`) makes the intermediate shift optional coverage and every other shift part of the minimum.
 
 | Concept                     | Meaning and important fields                                                                           |
 | --------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `PlanningMonth`             | Full calendar month identified by year and month                                                       |
-| `PlanningUnit`              | Positive ID, display name and type: station or shared pool                                             |
+| `PlanningUnit`              | Positive ID, display name and type: station or jumper pool                                             |
 | `PlanningUnitMembership`    | Employee/unit link with date validity, staffing level and home/replacement flags                       |
 | `Employee`                  | Stable ID, display name, professional/assistant/trainee/MFA staffing level; legacy solver capabilities |
 | `Shift`                     | ID/code/type, staffing role, start/end minutes of day and net work minutes                             |
@@ -20,12 +20,12 @@ One `SchedulingDataset` aggregates a `PlanningMonth` and tuples of planning unit
 | `Assignment`                | Employee, date, shift, assignment type and applicable unit                                             |
 | `Availability`              | Binding date entry: unavailable/vacation/training/free day, or only listed shifts                      |
 | `Wish`                      | Soft free/preferred day or shift of one employee and date; distinct from availability                  |
-| `MonthlyWorkAccount`        | Target/actual minutes, optional verified credits and provenance                                        |
+| `MonthlyWorkAccount`        | Target/actual minutes and the month's dated credits                                                    |
 | `EmployeeSundayWorkHistory` | Imported Sunday work context                                                                           |
 
 Work durations and accounts use minutes; dates use calendar dates. Shift clock minutes are in `[0, 1440)`, and overnight end times can be earlier than start times. Net work time is stored separately from elapsed clock time.
 
-A `PLANNED` assignment belongs to a selected unit and requires its unit ID. `EXTERNAL` work blocks the person without satisfying selected-unit demand and omits its source unit ID. `GENERATED` assignments represent solver output. Membership intervals determine eligibility; a shared-pool type does not create membership automatically.
+A `PLANNED` assignment belongs to a selected unit and requires its unit ID. `EXTERNAL` work blocks the person without satisfying selected-unit demand and omits its source unit ID. `GENERATED` assignments represent solver output. Membership intervals determine eligibility; a jumper-pool type does not create membership automatically.
 
 ## Validation and output
 
@@ -37,11 +37,11 @@ For exact fields and validators, read the model modules rather than copying fron
 
 ## Complete employee inspection
 
-`api/app/domain/inspection.py` composes existing canonical employee, unit, membership, account and availability models into a `PlanningInspection`. It contains one month, selected station IDs, the relevant unit catalog and one entry per stable employee ID. It exposes no plan IDs, source rows, split-name aliases or special capabilities. `associated_pool_ids` names the pools that members of the selected stations call home, computed by the same rule that adds those pools' employees. A selection that cannot be planned (a pool, an unconfigured unit or a station without a target plan) raises `InvalidSelection` instead of an incomplete-data error. Inspection validates only its own read responsibilities; it does not require staffing demand, a solve result or the full legacy dataset to be valid.
+`api/app/domain/inspection.py` composes existing canonical employee, unit, membership, account and availability models into a `PlanningInspection`. It contains one month, selected station IDs, the relevant unit catalog and one entry per stable employee ID. It exposes no plan IDs, source rows, split-name aliases or special capabilities. `associated_jumper_pool_ids` names the jumper pools that members of the selected stations call home, computed by the same rule that adds those jumper pools' employees. A selection that cannot be planned (a jumper pool, an unconfigured unit or a station without a target plan) raises `InvalidSelection` instead of an incomplete-data error. Inspection validates only its own read responsibilities; it does not require staffing demand, a solve result or the full legacy dataset to be valid.
 
-Every employee requires exactly one account and monthly evidence declaration of credits. `WorkCredit` carries a full date, nonnegative integer minutes, `approved_absence`/`trusted_work` kind and source. Explicitly declared empty credits sum to zero; absent credit evidence remains unknown and is rejected by inspection. Actual hours never become credits. Native absences preserve their reason and source; project availability retains dates, allowed-shift IDs and reason. Unknown shifts and out-of-month credit or availability dates fail the read.
+Every employee requires exactly one account. `WorkCredit` carries a full date, nonnegative integer minutes, `approved_absence`/`trusted_work` kind and source; an account's `credit_details` are complete for the month, and an empty tuple means nothing is credited. The adapter fills them from its source, so a missing credit is a source problem, not an optional field. Actual hours never become credits. Native absences preserve their reason and source; project availability retains dates, allowed-shift IDs and reason. Unknown shifts and out-of-month credit or availability dates fail the read.
 
-Dated home origin and dated destination membership are separate. Associated pool employees are visible even without selected-station eligibility. Active memberships need exactly one evidenced home unit on each active day. Qualifications, including MFA, are preserved at identity and membership level; they are not interchangeable. The current solver migration/independent acceptance remains separately unfinished.
+Dated home origin and dated destination membership are separate. Associated jumper pool employees are visible even without selected-station eligibility. Active memberships need exactly one evidenced home unit on each active day. Qualifications, including MFA, are preserved at identity and membership level; they are not interchangeable. The current solver migration/independent acceptance remains separately unfinished.
 
 Computed fields such as month start/end and account credited total are derived. Use Pydantic `model_dump(round_trip=True)` when serializing input for reparsing; do not supply derived fields as independent input.
 
