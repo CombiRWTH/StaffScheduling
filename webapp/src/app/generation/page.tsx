@@ -1,8 +1,6 @@
-import { BulletList } from "@/components/bullet-list";
 import { LoadError } from "@/components/load-error";
 import { PageHeader } from "@/components/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { getLatestGeneration } from "@/lib/api";
 import { monthLabel } from "@/lib/labels";
 import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
@@ -19,9 +17,9 @@ const USED = [
   "Einschränkungen",
   "Mindestbesetzung",
   "Arbeitszeit-, Pausen- und Ruheregeln",
-  "Gesicherte Dienste vor und nach dem Monat",
+  "gesicherte Dienste vor und nach dem Monat",
 ];
-const NOT_USED = ["Wünsche", "Bestehende Dienste im Dienstplan"];
+const NOT_USED = ["Wünsche", "bestehende Dienste im Dienstplan"];
 
 export default async function GenerationPage({ searchParams }: { searchParams: Promise<ScopeSearchParams> }) {
   const params = await searchParams;
@@ -53,46 +51,28 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
       )}
 
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Neue Generierung</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <dl className="grid gap-x-8 gap-y-5 text-sm sm:grid-cols-2">
-              <div className="space-y-1">
-                <dt className="text-muted-foreground">Zeitraum</dt>
-                <dd className="font-medium">
-                  {period.name} <span className="font-normal text-muted-foreground">({period.range})</span>
-                </dd>
-              </div>
-              <div className="space-y-1">
-                <dt className="text-muted-foreground">Stationen</dt>
-                <dd className="flex flex-wrap gap-1.5">
-                  {selected.length ? (
-                    selected.map((unit) => (
-                      <Badge key={unit.planning_unit_id} variant="secondary">
-                        {unit.display_name}
-                      </Badge>
-                    ))
-                  ) : (
-                    <span>Bitte mindestens eine Station auswählen.</span>
-                  )}
-                </dd>
-              </div>
-              <div className="space-y-1.5">
-                <dt className="text-muted-foreground">Berücksichtigt</dt>
-                <dd>
-                  <BulletList items={USED} />
-                </dd>
-              </div>
-              <div className="space-y-1.5">
-                <dt className="text-muted-foreground">Nicht berücksichtigt</dt>
-                <dd>
-                  <BulletList items={NOT_USED} />
-                </dd>
-              </div>
-            </dl>
-            <GenerationForm month={scope.month} stationIds={scope.stationIds} running={running} />
+        <Card aria-label="Neue Generierung">
+          <CardContent className="space-y-3 text-sm">
+            <GenerationForm
+              month={scope.month}
+              stationIds={scope.stationIds}
+              running={running}
+              scope={
+                <div className="space-y-1">
+                  <h2 className="text-lg font-semibold">
+                    {period.name}
+                    {selected.length > 0 && <> · {selected.map((unit) => unit.display_name).join(", ")}</>}
+                  </h2>
+                  <p className="text-muted-foreground">
+                    {selected.length ? `Ganzer Monat, ${period.range}` : "Bitte mindestens eine Station auswählen."}
+                  </p>
+                </div>
+              }
+            />
+            <p className="border-t pt-3 text-muted-foreground">
+              <span className="font-medium text-foreground">Berücksichtigt:</span> {USED.join(", ")}.{" "}
+              <span className="font-medium text-foreground">Nicht berücksichtigt:</span> {NOT_USED.join(", ")}.
+            </p>
           </CardContent>
         </Card>
 
@@ -102,12 +82,12 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
           <JobPanel job={latest.job} units={scope.stations} />
         ) : (
           <Card aria-label="Letzte Generierung" className="border-dashed shadow-none">
-            <CardHeader>
-              <CardTitle>Letzte Generierung</CardTitle>
-              <CardDescription>
+            <CardContent className="text-sm">
+              <h2 className="text-lg font-semibold">Letzte Generierung</h2>
+              <p className="text-muted-foreground">
                 Kein Ergebnis verfügbar. Generierungen werden nur bis zum Neustart des Backends vorgehalten.
-              </CardDescription>
-            </CardHeader>
+              </p>
+            </CardContent>
           </Card>
         )}
       </div>

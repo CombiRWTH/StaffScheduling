@@ -12,7 +12,7 @@ const confirmation = (page: Page, name: string) => page.getByRole("dialog", { na
 /** Generate June for one station and open its review; the station name tells the new job from the previous one. */
 async function generate(page: Page, station: { id: string; name: string }) {
   await page.goto(`/generation?month=2026-06&stations=${station.id}`);
-  await page.getByLabel("Maximale Laufzeit (Sekunden)").fill("30");
+  await page.getByLabel("Maximale Laufzeit").fill("30");
   await page.getByRole("button", { name: "Starten" }).click();
   const latest = page.getByLabel("Letzte Generierung");
   await expect(latest).toContainText(`Juni 2026 (01.06.2026–30.06.2026) · ${station.name}`);

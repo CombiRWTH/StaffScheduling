@@ -10,7 +10,7 @@ const summary = (page: Page) => page.getByLabel("Dienstplan zur Prüfung");
 
 async function generateJune(page: Page) {
   await page.goto("/generation?month=2026-06&stations=101");
-  await page.getByLabel("Maximale Laufzeit (Sekunden)").fill("30");
+  await page.getByLabel("Maximale Laufzeit").fill("30");
   await page.getByRole("button", { name: "Starten" }).click();
   // The scope tells this job from a previous one of another station that is already finished.
   await expect(page.getByLabel("Letzte Generierung")).toContainText(

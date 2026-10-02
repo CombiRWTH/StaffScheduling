@@ -10,15 +10,17 @@ import { generate } from "./actions";
 const MIN_SECONDS = 30;
 const MAX_SECONDS = 3600;
 
-/** Solver time limit and start button; the job itself is shown by the page. */
+/** The scope to generate, the solver time limit and the start button in one row; the job is shown by the page. */
 export function GenerationForm({
   month,
   stationIds,
   running,
+  scope,
 }: {
   month: string;
   stationIds: number[];
   running: boolean;
+  scope: React.ReactNode;
 }) {
   const [timeoutSeconds, setTimeoutSeconds] = useState("30");
   const [error, setError] = useState<string | null>(null);
@@ -33,31 +35,44 @@ export function GenerationForm({
   }
 
   return (
-    <div className="space-y-4 border-t pt-6">
-      <div className="space-y-2">
-        <Label htmlFor="generation-timeout">Maximale Laufzeit (Sekunden)</Label>
-        <Input
-          id="generation-timeout"
-          className="w-32"
-          type="number"
-          min={MIN_SECONDS}
-          max={MAX_SECONDS}
-          value={timeoutSeconds}
-          onChange={(event) => setTimeoutSeconds(event.target.value)}
-          aria-describedby="generation-timeout-hint"
-        />
-        <p id="generation-timeout-hint" className="text-xs text-muted-foreground">
-          Suchzeit des Solvers, {MIN_SECONDS}–{MAX_SECONDS}. Das Laden der Daten kommt hinzu.
-        </p>
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        {scope}
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="space-y-1">
+            <Label htmlFor="generation-timeout" className="text-xs font-normal text-muted-foreground">
+              Maximale Laufzeit
+            </Label>
+            <div className="relative">
+              <Input
+                id="generation-timeout"
+                className="w-24 pr-7 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                type="number"
+                min={MIN_SECONDS}
+                max={MAX_SECONDS}
+                value={timeoutSeconds}
+                onChange={(event) => setTimeoutSeconds(event.target.value)}
+                aria-describedby="generation-timeout-hint"
+              />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                s
+              </span>
+            </div>
+          </div>
+          <Button disabled={pending || running || stationIds.length === 0} onClick={start}>
+            {pending ? "Eingaben werden geprüft …" : "Starten"}
+          </Button>
+        </div>
       </div>
-      <Button disabled={pending || running || stationIds.length === 0} onClick={start}>
-        {pending ? "Eingaben werden geprüft …" : "Starten"}
-      </Button>
-      {running && (
-        <p className="text-sm text-muted-foreground">Eine neue Generierung ist nach dem laufenden Job möglich.</p>
-      )}
+      <p id="generation-timeout-hint" className="text-xs text-muted-foreground sm:text-right">
+        Suchzeit des Solvers in Sekunden, {MIN_SECONDS}–{MAX_SECONDS}; das Laden der Daten kommt hinzu.
+        {running && " Eine neue Generierung ist nach dem laufenden Job möglich."}
+      </p>
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-destructive">
           {error}
         </p>
       )}

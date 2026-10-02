@@ -22,29 +22,35 @@ Check the employee page for completeness first: generation reads the same facts 
 ## Start a full-month run
 
 1. Choose the month and one or more stations in the header.
-2. Open **Dienstplan erstellen**. The card _Neue Generierung_ repeats the period and stations and lists which inputs are and are not used; a run always covers the whole month.
-3. Enter the **maximale Laufzeit** in seconds (30–3600, default 30). This is the solver's search limit; reading the data and preparing the model come on top.
+2. Open **Dienstplan erstellen**. The card _Neue Generierung_ names the month and stations it will plan (always the whole month) and, in one line, which inputs are and are not used.
+3. Next to **Starten**, enter the **maximale Laufzeit** in seconds (30–3600, default 30). This is the solver's search limit; reading the data and preparing the model come on top.
 4. Select **Starten**.
 
-The backend first reads and checks all inputs. If something is missing, a message appears under the button and no job starts: an incomplete or unsaved input asks to save every station's staffing and to check the employee data; an invalid selection or time limit names what to choose; an unreachable TimeOffice or a failed TimeOffice query (schema, permissions) says so. Otherwise the job appears under _Letzte Generierung_ as **Läuft**.
+The backend first reads and checks all inputs. If something is missing, a message appears under the start row and no job starts: an incomplete or unsaved input asks to save every station's staffing and to check the employee data; an invalid selection or time limit names what to choose; an unreachable TimeOffice or a failed TimeOffice query (schema, permissions) says so. Otherwise the job appears under _Letzte Generierung_ as running.
 
 ## Follow status and handle failures
 
 The page refreshes itself every two seconds while the job runs. You can leave it and come back through **Erstellen**: the latest job is shown again.
 
-The card _Letzte Generierung_ shows the job's month and stations and three separate outcomes:
+The card _Letzte Generierung_ names the job's month and stations and states its outcome in one line with what to do next:
 
-| Outcome       | Values                                                                                                                                                                                                                                |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ablauf        | **Läuft**, **Abgeschlossen** (the solver finished, whatever it found) or **Fehlgeschlagen** (an unexpected error; details are in the API log)                                                                                         |
-| Solver-Status | **Optimale Lösung**, **Lösung gefunden** (optimum not proven), **Keine Lösung möglich** (proven infeasible), **Keine Lösung innerhalb der Laufzeit**, or **Modell ungültig**                                                          |
-| Prüfung       | **Regeln eingehalten** (every checked rule kept), **Regelverstöße** (the schedule breaks a rule and is not usable), **Unvollständig geprüft** (a rule lacked input, for example the days before the month) or **Kein Plan zu prüfen** |
+| Headline                                        | Meaning and next step                                                                                 |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Dienstplan wird berechnet …                     | The job runs, up to its time limit.                                                                   |
+| Dienstplan erstellt, Regeln eingehalten         | Accepted: open **Dienstplan prüfen** to review and publish it; nothing is published automatically.    |
+| Dienstplan erstellt, aber unvollständig geprüft | A check promised for the month lacked input (for example the days before the month); not publishable. |
+| Dienstplan erstellt, aber mit Regelverstößen    | The schedule breaks a rule and is not usable.                                                         |
+| Kein Dienstplan möglich                         | The inputs contradict each other (proven infeasible); the hints name where.                           |
+| Keine Lösung innerhalb der Laufzeit             | Start again with a longer time limit.                                                                 |
+| Generierung fehlgeschlagen / Modell ungültig    | An unexpected error; details are in the API log. The page deliberately shows no internal error text.  |
 
-Below them are the counts of generated duties and solver diagnostics, and the violated and not-assessed rules by name with their counts. The [review](review.md) shows the optimality gap and the solver details. _Nicht bewertet … (über den Monat hinaus)_ lists obligations that a month cannot decide, such as annual free Sundays; they do not prevent acceptance. _(fehlende Eingaben)_ means a check promised for the month had no input and the schedule is not accepted. Nothing is published automatically.
+A row of facts follows: **Ablauf** (Läuft, Abgeschlossen, Fehlgeschlagen), **Zeit**, **Solver** (Optimale Lösung, Lösung gefunden, Keine Lösung möglich, Keine Lösung innerhalb der Laufzeit, Modell ungültig), **Prüfung** (Regeln eingehalten, Regelverstöße, Unvollständig geprüft, Kein Plan zu prüfen) and the number of **Dienste**.
 
-With a found schedule, **Dienstplan prüfen** opens its [review](review.md): every duty, finding, account and the downloads.
+When a run is not usable, the box **Hinweise** says why: the solver's warnings and errors, the violated rules with their counts and the rules that lacked input (_fehlende Eingaben_). For **Kein Dienstplan möglich**, a hint such as "needs 2 professional … but only 0 can work it" names the station, date and shift whose demand no employee can cover after availability and the context duties are taken into account; check that day's staffing demand, availability, memberships and context duties. Hints come from the backend in English.
 
-If the job runs well beyond its time limit, the page stops refreshing and asks you to reload; if it stays on **Läuft**, check the API log. For **Keine Lösung möglich**, read the diagnostics in the job (`GET /generation`): a message such as "needs 2 professional … but only 0 can work it" names the station, date and shift whose demand no employee can cover after availability and the context duties are taken into account. Then check that day's staffing demand, availability, memberships and context duties. For **Fehlgeschlagen**, check the API log; the page deliberately shows no internal error text.
+The collapsed **Technische Details** are for developers: the job ID, the solver status with its explanation, the search time used, the optimality gap, every diagnostic code with its severity, and obligations a month cannot decide (_über den Monat hinaus_, such as annual free Sundays), which do not prevent acceptance. The same data is available from `GET /generation`.
+
+With a found schedule, **Dienstplan prüfen** opens its [review](review.md): every duty, finding, account and the downloads. If the job runs well beyond its time limit, the page stops refreshing and asks you to reload; if it stays running, check the API log.
 
 ## Restart and concurrency behavior
 
