@@ -78,6 +78,6 @@ docs-check:
 connectivity:
     docker compose exec -T api python -m app.timeoffice.database
 
-# Only tests explicitly marked for the authorized external test database.
+# Only tests explicitly marked for the authorized external test database, in the API image with its ODBC driver.
 test-timeoffice:
-    cd api && uv run --frozen python -m pytest -m timeoffice
+    docker compose run --build --rm --no-deps -v ./api/tests:/project/api/tests:ro -e TIMEOFFICE_PREPARATION api python -m pytest -p no:cacheprovider -m timeoffice

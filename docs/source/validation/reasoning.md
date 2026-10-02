@@ -4,13 +4,13 @@ For reviewers assessing why the scheduling model and its evaluation fit the task
 
 ## Problem and agreed planning scope
 
-The assignment asks for monthly hospital rosters that meet minimum staffing by qualification and shift, keep approved absences and free days, stay within ±7.67 hours of each employee's monthly target, and respect working-time law and occupational-science findings. This project plans two fictional stations and their shared jumper pool for January to June 2026: one run per full month with both stations selected. The population is adult; the examples carry a small fictional set of employee wishes, including jumper pool employees, and no special capabilities (such as rounds or night-watch roles). Qualifications are Fachkraft, Hilfskraft, Azubi and MFA; they never substitute for each other.
+The assignment asks for monthly hospital rosters that meet minimum staffing by qualification and shift, keep approved absences and free days, stay within ±7.67 hours of each employee's monthly target, and respect working-time law and occupational-science findings. This project plans two stations of the TimeOffice test database and their shared jumper pool for January to June 2026: one run per full month with both stations selected. The population is adult; the examples carry a small demonstration set of employee wishes, including jumper pool employees, and no special capabilities (such as rounds or night-watch roles). Qualifications are Fachkraft, Hilfskraft, Azubi and MFA; they never substitute for each other.
 
 ## Requirements, sources and assumptions
 
 | Requirement                                        | Source                                                   | Assumption made                                                                                      |
 | -------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Minimum staffing per station, shift, qualification | Chair's minimum-staffing table, profiles 85 and 79       | NRW public holidays use the weekend row; blank cells mean no minimum                                 |
+| Minimum staffing per station, shift, qualification | Chair's minimum-staffing table, keys 77 and 79           | NRW holidays use the weekend row; professionals as listed, other levels sized near the real staff    |
 | Monthly balance ±7.67 h                            | Problem statement                                        | 460 whole minutes; credits are verified TimeOffice absence credits, counted once                     |
 | Daily work, breaks, rest                           | [ArbZG](https://www.gesetze-im-internet.de/arbzg/) §§3–5 | Ordinary adult baseline: no hospital rest reduction and no collective/church (AVR) exception applied |
 | Work average for duties up to 10 h                 | ArbZG §3, §6(2)                                          | Every month is its own compensation period: work ≤ 8 h × Werktage, for night and other workers alike |

@@ -19,7 +19,7 @@ This reference describes the adapter and the prepared test database. Executed li
 
 Follow [database configuration](../getting-started/installation.md#database-configuration) for `.env` and the password file. Docker includes ODBC Driver 18. `database.py` constructs the SQLAlchemy URL with `Encrypt=yes` and verifies the server certificate (`TrustServerCertificate=no`) unless `DB_TRUST_SERVER_CERTIFICATE=true`. Its shared connection boundary checks missing configuration/driver, applies bounded login/query waits, and translates driver failures into safe integration errors for all adapter callers. FastAPI returns these as `503` with `integration`, `stage` and actionable `detail`; liveness remains independent. No connection strings, SQL or raw driver errors are returned.
 
-`just connectivity` runs the explicit diagnostic in the API container. It checks configuration/ODBC/DNS, encrypted login and `SELECT 1`, then disposes the engine. It bypasses all application queries. Offline boundary checks cover missing configuration, missing driver, sanitized login/query failures and a simulated successful diagnostic. The configured test server presents a self-signed certificate; with `DB_TRUST_SERVER_CERTIFICATE=true` all diagnostic stages pass and live read-only queries succeed. On the test database the project tables and the [prepared example units](#prepared-example-units) exist; the live checks run against them are listed under [current limitations](../validation/index.md#webapp-integration). See [testing](../development/testing.md).
+`just connectivity` runs the explicit diagnostic in the API container. It checks configuration/ODBC/DNS, encrypted login and `SELECT 1`, then disposes the engine. It bypasses all application queries. Offline boundary checks cover missing configuration, missing driver, sanitized login/query failures and a simulated successful diagnostic. The configured test server presents a self-signed certificate; with `DB_TRUST_SERVER_CERTIFICATE=true` all diagnostic stages pass and live read-only queries succeed. On the test database the project tables and the [prepared units](#prepared-units) exist; the live checks run against them are listed under [current limitations](../validation/index.md#webapp-integration). See [testing](../development/testing.md).
 
 The adapter reads TimeOffice tables including `TPlanungseinheiten`, `TPlanungseinheitenPersonal`, `TPersonal`, `TPlan`, `TDienste`, `TPlanPersonalKommtGeht` and monthly/daily account tables. Actual SQL and join/filter rules are in `queries.py`; this reference does not substitute a copied schema diagram for the database's current schema.
 
@@ -78,23 +78,38 @@ A duty is stored as TimeOffice stores worked duties: one `TPlanPersonalKommtGeht
 
 Intentional reductions and limits: source detail beyond the reference shift's segments is not written (no deployment type or readiness times), and reading back accepts only rows that reproduce a reference shift. Planners must not put the marker text into `Info` of their own duties. No `TPlanPersonal` rows are created; the prepared plans have none, and whether the TimeOffice client lists published employees without them is not verified. A conflict names the employee and date in the API's `detail`. The runtime login needs SELECT, INSERT and DELETE on `TPlanPersonalKommtGeht` in addition to the reads; the test login's `db_datawriter` role covers this.
 
-## Prepared example units
+## Prepared units
 
-The test database holds a fictional example scope for January–June 2026, created by additive SQL. Existing units, employees and rosters are unchanged. Every prepared row is identified by its `BSP` business key (Beispiel), so it can be removed again in reverse dependency order.
+`facts.py` configures three existing units of the test database, planned with their existing employees for January–June 2026:
 
-| Unit (`KurzBez`) | `Prim` | Role                                            |
-| ---------------- | ------ | ----------------------------------------------- |
-| `BSP-A`          | 427    | Station with demand profile 85                  |
-| `BSP-B`          | 428    | Station with demand profile 79                  |
-| `BSP-JUMP`       | 429    | Jumper pool (`IstPoolPlanungseinheit`) for both |
+| Unit (`KurzBez`) | `Prim` | Role                                                                  |
+| ---------------- | ------ | --------------------------------------------------------------------- |
+| `PE 77`          | 77     | Station                                                               |
+| `PE 79`          | 79     | Station                                                               |
+| `PE 408`         | 408    | Jumper pool for both stations (no demand group, its staff homed here) |
 
-`facts.py` configures only these three units. The population, contracts, absences and boundary context are described in [examples and reproduction](../validation/examples.md#input-data-and-boundary-context). Native facts that later work depends on:
+Employees (`TPersonal`), their contracts, home memberships and the stations' monthly target plans are native. Every other input the [checklist below](#supporting-another-unit) needs is prepared by the SQL files in `api/tests/timeoffice_preparation/`, applied in name order:
 
-- Each station month has one target plan (status 20, interval 1, exact month bounds), empty of worked rows until a schedule is published. Jumper pool absences sit in jumper pool plans of the same form; the jumper pool is never selectable.
-- Trusted boundary duties for 2025-12-18..31 and 2026-07-01..07 are worked roster rows in approved station plans (status 30) spanning December 2025 and July 2026. Generation reads them as context; a context plan is complete for every date it spans.
+| File                               | Prepares                                                                                                                                                          |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `01-replacement-memberships.sql`   | Replacement memberships of the 7 jumper pool employees at both stations, 2025-12-01 to 2026-07-31                                                                 |
+| `02-exclude-rotating-trainees.sql` | `KeinEPlan` on 15 station memberships of rotating trainees, whose home is a school unit and who are members for part of a month only                              |
+| `03-monthly-targets.sql`           | 151 missing account-1 targets, derived like the native ones: NRW working days × weekly hours ÷ 5                                                                  |
+| `04-vacations-and-credits.sql`     | One Monday–Friday vacation week (`U`) per professional and per assistant and MFA of 77, with its daily vacation credit; jumper pool absences sit in its June plan |
+| `05-context-plans.sql`             | Empty trusted context plans (status 30, day interval 4) for 2025-12-18..31 and 2026-07-01..07, so the context is known to be free                                 |
+| `06-demand.sql`                    | Dated demand of all twelve station months (see [examples](../validation/examples.md#input-data-and-boundary-context))                                             |
+| `07-availability-and-wishes.sql`   | 7 project availability rows and 32 demonstration wishes                                                                                                           |
+| `readiness.sql`                    | Read-only checklist per unit and month; every row carries `ok`                                                                                                    |
+
+Each file ends with a read-back. The files converge: they insert missing rows, update differing ones and, for demand, availability and wishes, delete other rows inside their own scope, so a second run changes nothing. They never write `TPersonal`, and no other unit's rows. `just test-timeoffice` runs every file in one transaction against the configured database, fails unless every read-back `ok` is 1 and no write changes a row, and rolls back; with `TIMEOFFICE_PREPARATION=apply` it commits each file instead (see [live verification](../development/testing.md#live-timeoffice-verification)).
+
+Native facts that this preparation and later work depend on:
+
+- Each station month has one target plan (status 20, interval 1, exact month bounds). The adapter neither creates nor changes plans. June's plan of 77 holds native duties of one employee on 2026-06-08..12; generation ignores them, and project availability blocks those dates so that publication does not conflict with them. Jumper pool absences sit in the jumper pool's own plan of the same form; the jumper pool is never selectable.
+- Trusted context comes from approved plans (status 30) of the stations; a context plan is complete for every date it spans. Month-shaped context plans would collide with native plans on the unique index `TPlan(RefPlanungseinheiten, VonDat, RefPlanungsIntervalle)`, so the prepared ones use the day interval.
 - A worked duty is one roster row per `TDiensteSollzeiten` segment (`lfdNr` 1..n, paid `Minuten` per segment). An absence row sets `RefgAbw` and `RefDienstAbw` to the absence code and `Minuten` to 0.
 - The roster primary key is `(RefPersonal, Datum, RefStati, lfdNr)` and does not include the plan. An employee therefore has at most one row set per date and row status across all plans, absences included.
-- `TPersonal.PersNr`, `MagnetKarte` and `IdentifikationMAPortal` are unique; the prepared employees use the staff number for all three.
+- Generation must select both stations together: the jumper pool's monthly balance is hard, so a run for one station alone would have to give the jumper pool its whole target there, and publishing the second station would then conflict with those duties.
 
 ## Supporting another unit
 

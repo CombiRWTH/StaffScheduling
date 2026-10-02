@@ -1,31 +1,37 @@
 # Examples and reproduction
 
-For readers trying to inspect or reproduce the example schedules. The prepared TimeOffice inputs below exist; how they were checked is recorded under [current limitations](index.md#webapp-integration). The bundle format, the TimeOffice-free tests and the validator below are implemented and tested; the accepted six-month example files are not yet part of the repository.
+For readers trying to inspect or reproduce the example schedules. The prepared TimeOffice inputs below exist and can be reproduced; how they were checked is recorded under [current limitations](index.md#webapp-integration). The bundle format, the TimeOffice-free tests and the validator below are implemented and tested; the accepted six-month example files are not yet part of the repository.
 
 Return to the [documentation overview](../index.md).
 
 ## Example scope and file inventory
 
-Two fictional stations and one jumper pool, planned together for each month from January to June 2026: twelve station months. Station `BSP-A` uses demand profile 85 and `BSP-B` profile 79 of the chair's minimum-staffing table; the profile numbers are labels, not database keys. The TimeOffice units and their keys are listed in the [adapter reference](../architecture/timeoffice.md#prepared-example-units). Exported files are not yet part of the repository.
+Stations `PE 77` and `PE 79` of the TimeOffice test database and their jumper pool `PE 408`, planned together for each month from January to June 2026: twelve station months. The units and their keys are listed in the [adapter reference](../architecture/timeoffice.md#prepared-units). Exported files are not yet part of the repository.
 
 ## Input data and boundary context
 
-All people, contracts and absences are invented for the example, all of them adults. Names follow the pattern `Beispiel A Anna` (surname = home unit) and staff numbers `BSP-A-P01` (P professional, H assistant, AZ trainee, MFA medical assistant).
+The employees are the units' existing test-database employees, all of them adults; the test database holds no real persons. Their contracts, home memberships and native targets are used unchanged. In scope every month: 53 employees (46 station staff, 7 jumper pool), by profession 40 professionals, 8 assistants, 1 MFA and 4 trainees. Everything else is prepared by the tracked SQL in `api/tests/timeoffice_preparation/`; [reproduce the inputs](#reproduce-the-timeoffice-inputs) below.
 
-| Home unit  | Professional | Assistant | Trainee | MFA |
-| ---------- | ------------ | --------- | ------- | --- |
-| `BSP-A`    | 9            | 4         | 6       | 3   |
-| `BSP-B`    | 13           | 6         | 6       | 3   |
-| `BSP-JUMP` | 5            | 2         | –       | –   |
+- **Eligibility.** Station staff are members of their station. The jumper pool staff have the jumper pool as home and replacement memberships at both stations from 2025-12-01 to 2026-07-31. Rotating trainees, whose home is a school unit and who are station members for part of a month only, are excluded from planning (`KeinEPlan`).
+- **Targets.** Native targets are kept. Missing ones are derived by the native rule: weekly hours (38.5 when the contract states none) ÷ 5 for each Monday–Friday that is not an NRW public holiday.
+- **Absences.** Each professional of both stations and the jumper pool, and each assistant and the MFA of `PE 77`, has one Monday–Friday vacation week (`U`), credited with the weekly hours ÷ 5 per day in TimeOffice's daily accounts. The jumper pool's vacations fall in June.
+- **Demand.** Professionals follow the chair's minimum-staffing table for keys 77 and 79 (its weekday and weekend/holiday rows; NRW holidays take the weekend row). The table's other levels exceed the real staff, so they are sized near it, so that the jumper pool visibly jumps and gaps stay small: at `PE 77` assistants early 2 and late 2 on weekdays (early 2, late 1 on weekends and holidays), one trainee and one MFA early on weekdays; at `PE 79` one assistant early every day and no trainee or MFA demand. Qualifications stay separate.
+- **Capacity.** Per qualification and month, available hours (target − credits) of the home staff against demand hours are 1.37–1.65 for professionals at `PE 77`, 1.03–1.26 at `PE 79`, and 0.64–1.12 for assistants; the trainee demand at `PE 77` relies on the jumper pool's trainee alone. Every shortfall is smaller than the jumper pool's hours of that qualification. The one deliberate gap is the MFA's vacation week, 2026-02-09..13: no other MFA exists, so its early demand stays unfilled for five days. This is an hours and headcount check only; it does not show that a schedule satisfying every rule exists.
+- **Boundary context.** Empty trusted context plans cover 2025-12-18 to 2025-12-31 and 2026-07-01 to 2026-07-07: January starts and June ends next to known free days. For February to June the preceding accepted month supplies the context.
+- **Availability.** One employee is unavailable on 2026-06-08..12, where native duties remain in the June target plan; two employees may work only early (2026-03-10) or early and intermediate shifts (2026-04-14).
+- **Wishes.** 32 demonstration wishes: two per station and month and one of a jumper pool employee per month, covering free days, free shifts, preferred days and preferred shifts. Two are not grantable by design: a late shift on the early-only day 2026-03-10, and a wish on 2026-03-25 inside the employee's own vacation.
+- **Not included.** Stations 78 and 85, special capabilities, replacement memberships of station staff and history before 2025-12-18. Annual free Sundays need the whole year and cannot be assessed from this data.
 
-- **Contracts.** Full time is 39 hours a week; some staff work 29.25 or 19.5 hours. The monthly target is the weekly hours ÷ 5 for each Monday–Friday that is not an NRW public holiday. Holiday-rich months therefore have lower targets but the same demand.
-- **Eligibility.** Station staff are members of their station only. Jumper pool staff have the jumper pool as home and replacement memberships at both stations. Memberships run from 2025-12-01 to 2026-07-31, which covers the boundary context.
-- **Absences.** Everyone has three five-workday vacation blocks (`U`) spread over the half year. Each trainee also has one school week (`SC`) per month outside their vacation. Each absence workday is credited with the weekly hours ÷ 5 in TimeOffice's daily accounts.
-- **Demand.** Saved per station month from the profile's weekday and weekend/holiday rows (NRW holidays take the weekend row). Professional, assistant, trainee and MFA demand stay separate.
-- **Capacity.** Per qualification and month, target minus credits exceeds demand hours by 4–60 % (May is tightest: assistants 1.04, professionals 1.07). This is an hours check only; it does not show that a schedule satisfying every rule exists.
-- **Boundary context.** Fictional worked duties for 2025-12-18 to 2025-12-31 and 2026-07-01 to 2026-07-07 respect one duty per day, no early shift after a late shift, no day shift directly after a night, at most three nights in a row followed by two free days, and at most five consecutive working days; the shortest rest between duties is 14 hours. They meet the stations' demand on every context day. These properties were checked on the duties read back from the database, separately from the code that produced them. Generation reads this context as trusted duties around the month. Three professionals' July 3 nights were removed afterwards, because with them no professional could work the June 30 night within the night and recovery rules.
-- **Wishes.** 38 fictional wishes, two per unit and month (`BSP-A`, `BSP-B`, `BSP-JUMP`) plus one more in January (`BSP-A`) and April (`BSP-JUMP`), covering free days, free shifts, preferred days and preferred shifts; two of them (`Beispiel A Anna` on 2026-01-05, `Beispiel Springer Frieda` on 2026-04-27) fall on the employee's own vacation and are not grantable by design.
-- **Not included.** Special capabilities, replacement memberships of station staff and history before 2025-12-18. Annual free Sundays need the whole year and cannot be assessed from this data.
+## Reproduce the TimeOffice inputs
+
+With the [database configuration](../getting-started/installation.md#database-configuration) for the authorized test database and Docker:
+
+```sh
+just test-timeoffice                                   # verify: every file converged, every check ok
+TIMEOFFICE_PREPARATION=apply just test-timeoffice      # prepare a copy that lacks the inputs, then verify again
+```
+
+The verification runs each preparation file in one transaction, fails on any read-back other than `ok` = 1 or any write that would change a row, and rolls back. Apply commits the files in order; each is committed only when its read-back is ok, and a failing file stops the run with the later files unapplied. Then open **Mitarbeiter** for both stations and each month: the inspection must be complete. There is no reverse script; on a shared database, record what a first apply writes before running it.
 
 ## Bundle files
 
