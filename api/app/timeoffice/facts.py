@@ -31,11 +31,11 @@ INTERNAL_TRAINING_CREDIT_ACCOUNT_ID = 93  # FI_STD, ABW: Fortbildung intern Std.
 EXTERNAL_TRAINING_CREDIT_ACCOUNT_ID = 95  # FE_STD, ABW: Fortbildung extern Std.
 SCHOOL_CREDIT_ACCOUNT_ID = 97  # ST_STD, ABW: Schule Stunden
 
-# TPlanungseinheiten.Prim of the prepared example units (KurzBez BSP-A, BSP-B, BSP-JUMP).
+# TPlanungseinheiten.Prim of the planned units (KurzBez PE 77, PE 79, PE 408).
 # Supporting another unit means adding it here; see the TimeOffice adapter docs for the checklist.
-EXAMPLE_STATION_A_ID = 427  # demand profile 85
-EXAMPLE_STATION_B_ID = 428  # demand profile 79
-EXAMPLE_JUMPER_POOL_ID = 429
+STATION_77_ID = 77
+STATION_79_ID = 79
+JUMPER_POOL_408_ID = 408
 
 # TDienste.Prim values of the reduced reference shifts; the only shift IDs the planning model uses.
 # There are 2 Prim for the Early Shift: 1113 and 3000
@@ -134,9 +134,9 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     generated_duty_info=GENERATED_DUTY_INFO,
     planning_unit_type_by_id=MappingProxyType(
         {
-            EXAMPLE_STATION_A_ID: PlanningUnitType.STATION,
-            EXAMPLE_STATION_B_ID: PlanningUnitType.STATION,
-            EXAMPLE_JUMPER_POOL_ID: PlanningUnitType.JUMPER_POOL,
+            STATION_77_ID: PlanningUnitType.STATION,
+            STATION_79_ID: PlanningUnitType.STATION,
+            JUMPER_POOL_408_ID: PlanningUnitType.JUMPER_POOL,
         }
     ),
     reference_shift_type_by_id=MappingProxyType(
