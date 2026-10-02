@@ -19,7 +19,7 @@ The table heading names the month and selected stations; each row shows the empl
 
 Each employee appears once by stable positive ID. Display names may change without changing identity. Search by name, ID, qualification or unit name; the unit filter limits employees by membership. Expand a row for all dated unit assignments (**Zuordnungen**), including home/replacement flags and membership qualifications. Professional, assistant, trainee and MFA remain distinct. Employee-level qualification does not override a different unit membership qualification.
 
-**Heimat** identifies origin; a dated station membership identifies destination eligibility. Jumper pool membership alone grants no station eligibility. Ambiguous or missing home origin for an active membership is an input error, not a guessed jumper classification. Special capabilities are absent from this inspection response.
+**Heimat** identifies origin; a dated station membership identifies destination eligibility. Jumper pool membership alone grants no station eligibility. Ambiguous or missing home origin for an active membership is an input error, not a guessed jumper classification.
 
 ## Inspect existing work and availability
 
