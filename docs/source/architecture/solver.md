@@ -28,14 +28,14 @@ A feasible model satisfies the implemented model, which may differ from the comp
 
 ## Settings
 
-| Environment variable         | Default | Purpose                                            |
-| ---------------------------- | ------- | -------------------------------------------------- |
-| `SOLVER_MAX_TIME_SECONDS`    | `30`    | Default search limit for direct solver-service use |
-| `SOLVER_NUM_SEARCH_WORKERS`  | unset   | Leave OR-Tools worker selection unchanged          |
-| `SOLVER_RANDOM_SEED`         | unset   | Optional search seed                               |
-| `SOLVER_LOG_SEARCH_PROGRESS` | `false` | Enable solver progress logs                        |
+| Environment variable         | Default | Purpose                                   |
+| ---------------------------- | ------- | ----------------------------------------- |
+| `SOLVER_MAX_TIME_SECONDS`    | `30`    | Search limit when a caller passes none    |
+| `SOLVER_NUM_SEARCH_WORKERS`  | unset   | Leave OR-Tools worker selection unchanged |
+| `SOLVER_RANDOM_SEED`         | unset   | Optional search seed                      |
+| `SOLVER_LOG_SEARCH_PROGRESS` | `false` | Enable solver progress logs               |
 
-The engine is currently exercised only by its unit tests; no API route invokes it until the generation slice reconnects it. A fixed seed alone does not guarantee reproducibility with parallel search. Set settings in root `.env` for Compose and recreate the API after changes.
+`POST /generation` passes the requested `timeout_seconds` as the search limit; the other settings apply unchanged. See [API generation](api.md#generation). A fixed seed alone does not guarantee reproducibility with parallel search. Set settings in root `.env` for Compose and recreate the API after changes.
 
 ## Changing a rule
 

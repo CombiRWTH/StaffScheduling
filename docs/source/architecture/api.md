@@ -19,8 +19,9 @@ Consult OpenAPI for exact bodies and responses.
 | `/wishes/{employee_id}/{date}`       | PUT, DELETE | Replace or delete that employee's wish on that date                    |
 | `/demand`                            | GET, PUT    | Read or replace the dated staffing demand of one station month         |
 | `/demand/pattern`                    | POST        | Expand a weekly pattern into the month's dated demand; saves nothing   |
+| `/generation`                        | POST, GET   | Start a full-month generation; read the latest job                     |
 
-Generation, review and publication have no endpoints yet.
+Review and publication have no endpoints yet.
 
 Next's `GET /api/health` makes a server-side request to API `/status`: it returns healthy only for a valid API liveness response, or `503` if the API is unavailable. Database availability is separate. Direct TimeOffice failures return `503` with sanitized `detail`, `integration: timeoffice` and the failed `stage`. See the [read-only diagnostic](../getting-started/installation.md#database-configuration).
 
@@ -44,6 +45,16 @@ The webapp calls these routes from server components through `webapp/src/lib/api
 
 Malformed bodies, non-integer or out-of-range counts, an employee without membership, non-reference shifts, out-of-month or duplicate demand, pools and stations without a target plan return `422` before any write. Incomplete source facts return `409`; unavailable TimeOffice returns sanitized `503`. Writes report success only after commit.
 
+## Generation
+
+`POST /generation` takes `planning_unit_ids` (at least one station), `planning_month` (`year`, `month`) and `timeout_seconds` (greater than 0, at most 3600; the CP-SAT search limit). It reads and validates the whole month's input synchronously, then returns `202` with the running job while the solve continues in a background thread. Before any job exists it returns `422` for invalid bodies and selections (pools, stations without a target plan), `409` for incomplete input (a station without saved demand, incomplete employee facts, missing shift times), sanitized `503` when TimeOffice is unavailable, and `423` while another generation runs.
+
+`GET /generation` returns the latest job since the API process started, or `404` when there is none, also after a restart. A job has `job_id`, the `request`, `state` (`running`, `completed`, `failed`), `started_at`/`finished_at`, and either `solution` (when completed) or a generic `error` (when failed; the exception is logged, not returned). `solution` carries the CP-SAT `status` (`optimal`, `feasible`, `infeasible`, `model_invalid`, `unknown`), the generated `assignments` (`employee_id`, `planning_unit_id`, `date`, `shift_id`), `diagnostics` and `audit` findings. `completed` with `infeasible` is a finished job without a schedule. `acceptance` is always `not_assessed`: no independent schedule check exists yet.
+
+The input is the `SchedulingDataset` built by `TimeOfficeService.read_generation_input`: the employee inspection of the selection, the reference shifts with times and paid minutes from `TDiensteSollzeiten`, and the saved demand of each selected station. Units are the selected stations and their associated pools. Roster rows are read only as approved absences; worked shifts of any plan, including earlier output in the target plan, never become input. Wishes, existing or boundary assignments and plans are left empty.
+
+One `Generation` object (`api/app/solver/generation.py`) owns the process-local lock, the single background worker and the latest job; the lock is released on success and failure. Jobs are not persisted. Run one API process.
+
 ## Side effects
 
-Only the configuration PUT/DELETE routes write, and only to the [project tables](timeoffice.md#project-tables). No route creates tables or writes TimeOffice roster, plan or account rows.
+Only the configuration PUT/DELETE routes write, and only to the [project tables](timeoffice.md#project-tables). Generation writes nothing. No route creates tables or writes TimeOffice roster, plan or account rows.

@@ -20,7 +20,7 @@ For developers and technical reviewers tracing responsibilities and data flow. T
 │   │   ├── settings.py       # environment and secret loading
 │   │   ├── api/              # HTTP routes only
 │   │   ├── domain/           # canonical models and domain rules, e.g. inspection
-│   │   ├── solver/           # CP-SAT engine (not yet wired to a route)
+│   │   ├── solver/           # CP-SAT engine and the generation job (generation.py)
 │   │   └── timeoffice/       # adapter: TimeOfficeService facade; queries.py, project_tables.py, facts.py inside
 │   ├── sql/                  # explicit setup of the project tables
 │   ├── tests/
@@ -60,7 +60,7 @@ flowchart LR
 
 Next.js server components call the API at `API_URL`; Compose sets it to `http://api:8000`. Browser traffic enters the webapp. `api/app/main.py` builds the SQLAlchemy engine and the TimeOffice service; shutdown disposes the engine.
 
-The solver engine depends only on `domain/`; the generation slice will connect it through a route and the adapter. The [API reference](api.md) describes the current routes.
+The solver engine depends only on `domain/`. `main.py` connects it to the adapter through `solver/generation.py`: `POST /generation` reads the input with `TimeOfficeService.read_generation_input` and solves it in a background thread. The [API reference](api.md) describes the current routes.
 
 ## Where to make a change
 
@@ -80,7 +80,7 @@ Trace the real callers before changing a boundary. Keep TimeOffice terminology i
 
 ## Selection and inspection boundary
 
-The webapp follows plain App Router conventions. Pages are server components that read `month`/`stations` from `searchParams`, load data through `lib/api.ts` and pass it to small client components. `lib/scope.ts` validates the URL and loads the month's stations; stations unavailable in the month are dropped by a server redirect. The picker only changes the URL. `app/employees/` loads all selected stations together inside a Suspense boundary keyed by scope, so a new scope shows its loading state instead of the previous result. Search, filter and expanded details are local interaction state. Backend `domain/inspection.py` validates completeness; the concrete TimeOffice adapter resolves target plans and reads membership/master/account/absence sources and prepared evidence. `app/availability/` and `app/staffing/` follow the same pattern for monthly configuration: the server page loads the canonical read, a client component owns unsaved edits (`staffing/demand-grid.ts` keeps the unsaved demand cells, their comparison and pattern merge behind a few functions), and server actions in `actions.ts` call the API writes and revalidate the page. Home, employees, availability and staffing are implemented; the sidebar shows every other area greyed out as not yet supported, without routes.
+The webapp follows plain App Router conventions. Pages are server components that read `month`/`stations` from `searchParams`, load data through `lib/api.ts` and pass it to small client components. `lib/scope.ts` validates the URL and loads the month's stations; stations unavailable in the month are dropped by a server redirect. The picker only changes the URL. `app/employees/` loads all selected stations together inside a Suspense boundary keyed by scope, so a new scope shows its loading state instead of the previous result. Search, filter and expanded details are local interaction state. Backend `domain/inspection.py` validates completeness; the concrete TimeOffice adapter resolves target plans and reads membership/master/account/absence sources and prepared evidence. `app/availability/` and `app/staffing/` follow the same pattern for monthly configuration: the server page loads the canonical read, a client component owns unsaved edits (`staffing/demand-grid.ts` keeps the unsaved demand cells, their comparison and pattern merge behind a few functions), and server actions in `actions.ts` call the API writes and revalidate the page. `app/generation/` renders the latest job on the server; a small client component refreshes the page every two seconds while the job runs, and the start button calls a server action. Home, employees, availability, staffing and generation are implemented; the sidebar shows every other area greyed out as not yet supported, without routes.
 
 UI conventions for every page:
 

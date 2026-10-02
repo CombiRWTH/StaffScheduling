@@ -106,7 +106,11 @@ _Avoid_: slot, duty block
 An employee working a specific shift on a specific date.
 _Avoid_: membership, Zuordnung
 
-**Generated candidate**:
+**Generation** (Generierung):
+One solver run over the full month of a planning selection; it yields at most a generated candidate and is kept only until the API restarts.
+_Avoid_: solve job, case, optimization
+
+**Generated candidate** (Entwurf):
 A schedule produced by the solver that has not yet passed independent acceptance.
 _Avoid_: solution, result (when meaning an accepted schedule)
 
