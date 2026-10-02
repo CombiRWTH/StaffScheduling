@@ -1,12 +1,22 @@
 # Domain model
 
-This reference describes inspected source definitions. Connected database behavior and complete user workflows require separate acceptance evidence; see [current limitations](../validation/index.md).
+This reference describes the source definitions. Executed live checks are listed under [current limitations](../validation/index.md).
 
 `api/app/domain/` defines the canonical scheduling contract. Its Pydantic models derive from `SchedulingBaseModel`, which is frozen, forbids extra fields and strips string whitespace. The solver receives domain data rather than TimeOffice rows or frontend file schemas.
 
 ## SchedulingDataset
 
-One `SchedulingDataset` is the complete input of one full-month run: a `PlanningMonth`, the planning units (selected stations and their associated jumper pools), shifts, dated demand requirements, employees, memberships, availability, wishes, one monthly account per employee and the trusted `ScheduleContext`. It validates all references once: unique identities, exactly one account per employee, demand only for its stations and shifts inside the month, and context inside its coverage and outside the month. Every shift on every date of the month must have unambiguous Europe/Berlin times. `build_scheduling_dataset` (`dataset.py`) builds it from a validated employee inspection, the timed reference shifts, the saved demand of each selected station, the context and the wishes of the inspected employees; it refuses a station without saved demand. At most one wish per employee and date, inside the month, for a known shift.
+One `SchedulingDataset` is the complete input of one full-month run: a `PlanningMonth`, the planning units (selected stations and their associated jumper pools), shifts, dated demand requirements, employees, memberships, availability, wishes, one monthly account per employee and the trusted `ScheduleContext`. It validates all references once:
+
+- unique identities and exactly one account per employee,
+- demand only for its stations and shifts inside the month,
+- context inside its coverage and outside the month,
+- unambiguous Europe/Berlin times for every shift on every date of the month,
+- at most one wish per employee and date, inside the month, for a known shift,
+- every membership naming one of its units, with exactly one home membership on each date an employee has any,
+- every credit inside the month.
+
+An imported input therefore cannot carry an ambiguous origin or count a credit twice. `build_scheduling_dataset` (`dataset.py`) builds the dataset from a validated employee inspection, the timed reference shifts, each selected station's saved demand, the context and the inspected employees' wishes. It refuses a station without saved demand.
 
 | Concept                  | Meaning and important fields                                                                                            |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
@@ -29,15 +39,13 @@ An assignment's qualification comes from the employee's membership at that stati
 
 ## Validation and output
 
-Model validators check individual fields and relationships. `acceptance.py` holds the independent schedule check `check_schedule(dataset, assignments, gaps)`, returning a `ScheduleCheck` with status (`accepted`, `rejected`, `incomplete`), findings per `Rule`, not-assessed obligations, `ScheduleScores` and the outcome of every wish; a declared gap that differs from the recomputed shortfall is a staffing finding. `Solution` in `api/app/solver/models.py` carries the solver status, configuration, assignments, gaps, stages, diagnostics and that check. `schedule_tables` (`schedule.py`) renders the readable rows that the review and the portable CSV files of `api/app/solver/bundle.py` share.
+Model validators check individual fields and relationships. `acceptance.py` holds the independent schedule check `check_schedule(dataset, assignments, gaps)`, returning a `ScheduleCheck` with status (`accepted`, `rejected`, `incomplete`), findings per `Rule`, not-assessed obligations, `ScheduleScores` and the outcome of every wish; a declared gap that differs from the recomputed shortfall is a staffing finding. `Solution` in `api/app/solver/models.py` carries the solver status, configuration, assignments, gaps, stages, diagnostics and that check.
 
 For exact fields and validators, read the model modules. [API schemas](api.md) describe HTTP DTOs; [TimeOffice](timeoffice.md) describes source translation.
 
-`SchedulingDataset` also requires every membership to name one of its units, exactly one home membership on each date an employee has any membership, and every credit inside the month, so an imported input cannot carry an ambiguous origin or count a credit twice.
-
 ## Schedule tables
 
-`schedule.py` turns a dataset and its assignments into `ScheduleTables`, the readable rows that review and the CSV files share: a `DutyRow` per assignment (labels, ISO weekday, public-holiday flag, Europe/Berlin start and end with offset, paid minutes, credited qualification and origin), an `EmployeeRow` per participant also without duties (home station or jumper pool of the first date that has one, target, credited, generated minutes, balance, memberships, availability and credits) and a `StaffingRow` per station, date, shift and qualification that is required or assigned. The origin is the employee's home station or jumper pool on the duty date (`home_unit_id`); more than one active home raises instead of guessing.
+`schedule_tables` (`schedule.py`) turns a dataset and its assignments into `ScheduleTables`, the readable rows that the review and the portable CSV files of `api/app/solver/bundle.py` share: a `DutyRow` per assignment (labels, ISO weekday, public-holiday flag, Europe/Berlin start and end with offset, paid minutes, credited qualification and origin), an `EmployeeRow` per participant also without duties (home station or jumper pool of the first date that has one, target, credited, generated minutes, balance, memberships, availability and credits) and a `StaffingRow` per station, date, shift and qualification that is required or assigned. The origin is the employee's home station or jumper pool on the duty date (`home_unit_id`); more than one active home raises instead of guessing.
 
 ## Complete employee inspection
 

@@ -2,40 +2,53 @@
 
 This reference describes the adapter and the prepared test database. Executed live checks are listed under [current limitations](../validation/index.md).
 
-`api/app/timeoffice/` owns the application's Microsoft SQL Server integration. `TimeOfficeService` coordinates queries, their translation into canonical models, scoped writes to the project tables and the publication of schedules into target plans. The solver depends on the [domain model](domain.md), not the database schema.
+`api/app/timeoffice/` owns the Microsoft SQL Server integration. It reads TimeOffice into canonical models, writes the project tables and publishes schedules into target plans. The solver depends only on the [domain model](domain.md).
 
 ## Modules
 
-| Path under `api/app/timeoffice/` | Responsibility                                                                                                                                                                          |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `database.py`                    | SQLAlchemy engine using `mssql+pyodbc`                                                                                                                                                  |
-| `facts.py`                       | Configured units, reference shifts, account IDs, code mappings and planning status                                                                                                      |
-| `queries.py`                     | One function per TimeOffice SELECT, returning canonical models with its code/account translation; `read_accounts` adds its private daily-credit SELECT so callers get complete accounts |
-| `project_tables.py`              | Reads and key-scoped writes of the project tables next to the TimeOffice schema                                                                                                         |
-| `roster.py`                      | Publication's roster statements: validated duty rows, read-back, replacement and clear of the target plans' worked rows                                                                 |
-| `service.py`                     | `TimeOfficeService`, the package's only public entry point; one connection per call                                                                                                     |
+| Path under `api/app/timeoffice/` | Responsibility                                                                      |
+| -------------------------------- | ----------------------------------------------------------------------------------- |
+| `database.py`                    | SQLAlchemy engine using `mssql+pyodbc`                                              |
+| `facts.py`                       | Configured units, reference shifts, account IDs, code mappings and planning status  |
+| `queries.py`                     | One function per TimeOffice SELECT, returning canonical models                      |
+| `project_tables.py`              | Reads and key-scoped writes of the project tables                                   |
+| `roster.py`                      | Publication's duty rows, read-back, replacement and clear                           |
+| `service.py`                     | `TimeOfficeService`, the package's only public entry point; one connection per call |
 
 ## Connection and schema
 
-Follow [database configuration](../getting-started/installation.md#database-configuration) for `.env` and the password file. Docker includes ODBC Driver 18. `database.py` constructs the SQLAlchemy URL with `Encrypt=yes` and verifies the server certificate (`TrustServerCertificate=no`) unless `DB_TRUST_SERVER_CERTIFICATE=true`. Its shared connection boundary checks missing configuration/driver, applies bounded login/query waits, and translates driver failures into safe integration errors for all adapter callers. FastAPI returns these as `503` with `integration`, `stage` and actionable `detail`; liveness remains independent. No connection strings, SQL or raw driver errors are returned.
+Follow [database configuration](../getting-started/installation.md#database-configuration) for `.env` and the password file. Docker includes ODBC Driver 18. `database.py` sets `Encrypt=yes` and verifies the server certificate (`TrustServerCertificate=no`) unless `DB_TRUST_SERVER_CERTIFICATE=true`.
 
-`just connectivity` runs the explicit diagnostic in the API container. It checks configuration/ODBC/DNS, encrypted login and `SELECT 1`, then disposes the engine. It bypasses all application queries. Offline boundary checks cover missing configuration, missing driver, sanitized login/query failures and a simulated successful diagnostic. The configured test server presents a self-signed certificate; with `DB_TRUST_SERVER_CERTIFICATE=true` all diagnostic stages pass and live read-only queries succeed. On the test database the project tables and the [prepared units](#prepared-units) exist; the live checks run against them are listed under [current limitations](../validation/index.md#webapp-integration). See [testing](../development/testing.md).
+The connection boundary checks configuration and driver, bounds login and query waits and sanitizes driver failures. FastAPI returns them as `503` with `integration`, `stage` and an actionable `detail`, never with connection strings, SQL or raw driver errors. Liveness stays independent.
 
-The adapter reads TimeOffice tables including `TPlanungseinheiten`, `TPlanungseinheitenPersonal`, `TPersonal`, `TPlan`, `TDienste`, `TPlanPersonalKommtGeht` and monthly/daily account tables. Actual SQL and join/filter rules are in `queries.py`; this reference does not substitute a copied schema diagram for the database's current schema.
+`just connectivity` checks configuration, ODBC, DNS, encrypted login and `SELECT 1` in the API container, bypassing application queries. Offline tests cover missing configuration and driver, sanitized login and query failures and a simulated success. The test server's certificate is self-signed, so it needs `DB_TRUST_SERVER_CERTIFICATE=true`. See [testing](../development/testing.md) and [current limitations](../validation/index.md#webapp-integration).
+
+The adapter reads `TPlanungseinheiten`, `TPlanungseinheitenPersonal`, `TPersonal`, `TPlan`, `TDienste`, `TDiensteSollzeiten`, `TPlanPersonalKommtGeht` and the monthly and daily account tables. `queries.py` holds the SQL.
 
 ## Read and write boundaries
 
-`TimeOfficeService` is the adapter's whole interface: `get_planning_options`, `inspect_employees`, `list_employees`, `get_employee_calendar`, `set_availability`, `set_wish` (an entry replaces, `None` removes), `get_demand`, `save_demand`, `preview_demand`, `read_generation_input`, `publish` and `clear` take canonical arguments and return canonical domain models. SQL, source rows and TimeOffice terminology stay private to the package (`app.timeoffice` exports only the service, the unavailable error and the engine factory). Each query function translates its own source codes and checks source-level facts such as missing master rows, duplicate target plans or unmapped codes; cross-entity completeness belongs to `domain/inspection.py`. Each router declares the small protocol it needs (`PlanningSource`, `AvailabilitySource`, `DemandSource`, `PublicationTarget`), so another planning database can replace TimeOffice without touching routes or domain, and a new feature adds its own protocol instead of growing a shared one. TimeOffice reductions and fixed reference mappings in `facts.py` remain adapter behavior and must be checked against the chosen data.
+`TimeOfficeService` is the whole interface: `get_planning_options`, `inspect_employees`, `list_employees`, `get_employee_calendar`, `set_availability`, `set_wish` (an entry replaces, `None` removes), `get_demand`, `save_demand`, `preview_demand`, `read_generation_input`, `publish` and `clear`. All take and return canonical models. `app.timeoffice` exports only the service, the unavailable error and the engine factory.
 
-The adapter writes the project tables and, through `publish` and `clear`, the worked rows of the target plans. `read_generation_input` builds the solver's `SchedulingDataset` from the employee inspection, the reference shifts, the saved demand and the trusted context. Each reference shift's `TDiensteSollzeiten` rows are its work segments (an overnight segment ends on the next day). A segment's `Minuten` equals its length, so paid time is worked time; the gaps between segments are unpaid breaks: F 05:55–13:25 has 30 minutes (420 paid), Z 08:30–14:15 none (345), S 13:15–21:00 30 minutes (435) and N 20:10–06:10 15 + 30 minutes (555).
+Each query function translates its own codes and rejects source faults such as missing master rows, duplicate target plans or unmapped codes. Cross-entity completeness belongs to `domain/inspection.py`. Each router declares the protocol it needs (`PlanningSource`, `AvailabilitySource`, `DemandSource`, `PublicationTarget`). Another planning database can thus replace TimeOffice without touching routes or domain. The mappings in `facts.py` must be checked against the chosen data.
 
-Trusted context comes from plans with status 30 (`TRUSTED_CONTEXT_STATUS_ID`) of the configured stations. `read_context_coverage` finds the dates within the 5 days before and 3 days after the month that the rules reach (`RulePolicy`) and that such a plan of every configured station spans; the context covers the gap-free run of those dates next to the month. `read_context_duties` reads their worked rows and groups them per employee and date; the segments must reproduce a reference shift's catalog segments on that date, otherwise the read fails. A context duty inside the month fails too, because fixed in-month input is not supported. Absences and project availability of the first date after the month complete the context. All other roster rows are read only as approved absences, so published output in the target plan never becomes generation input. Publishing into a status-20 target therefore does not make it context for the next month; trusted context stays in status-30 plans.
+`read_generation_input` builds the solver's `SchedulingDataset` from the inspection, reference shifts, saved demand and trusted context. A reference shift's `TDiensteSollzeiten` rows are its work segments; an overnight segment ends the next day. Each segment's `Minuten` equals its length, so gaps between segments are unpaid breaks:
+
+| Shift | Time        | Breaks (min) | Paid (min) |
+| ----- | ----------- | ------------ | ---------- |
+| F     | 05:55–13:25 | 30           | 420        |
+| Z     | 08:30–14:15 | none         | 345        |
+| S     | 13:15–21:00 | 30           | 435        |
+| N     | 20:10–06:10 | 15 + 30      | 555        |
+
+Trusted context comes from status-30 plans (`TRUSTED_CONTEXT_STATUS_ID`) of the configured stations. `read_context_coverage` considers the dates the rules reach (`RulePolicy`), at most 5 days before and 3 after the month. Context covers the gap-free run of those dates, next to the month, that such a plan of every station spans. `read_context_duties` groups their worked rows per employee and date. Each group must reproduce a reference shift's segments, and none may fall inside the month; otherwise the read fails. Absences and project availability of the first date after the month complete the context.
+
+All other roster rows are read only as approved absences. Published output, even in a status-20 target, therefore never becomes input or context.
 
 ## Monthly accounts and credits
 
-Selection and employee inspection are strictly read-only. They never create tables, nor do they require `TPlanPersonal` or existing work duties in an empty target. Target plans are selected internally by configured status/interval and exact month bounds. Memberships across the configured units determine jumper pool/home context; jumper pool origin alone is never destination eligibility. Missing names, identities, unique targets or accounts fail inspection.
+Selection and employee inspection are read-only. They need neither `TPlanPersonal` nor existing duties in a target. Target plans are selected by configured status, interval and exact month bounds. Memberships across the configured units determine jumper pool and home context; jumper pool origin alone never grants eligibility. Missing names, identities, unique targets or accounts fail inspection, as do unknown shifts and ambiguous home origin.
 
-`read_accounts` returns each employee's complete `MonthlyWorkAccount` from native TimeOffice accounts:
+`read_accounts` returns each employee's complete `MonthlyWorkAccount`:
 
 | Value          | Source                                                              | Rule                                         |
 | -------------- | ------------------------------------------------------------------- | -------------------------------------------- |
@@ -43,44 +56,62 @@ Selection and employee inspection are strictly read-only. They never create tabl
 | Actual minutes | `TPersonalKontenJeMonat`, account 55 (`TOTAL`), `Wert2` hours       | Optional; never treated as a credit          |
 | Dated credits  | `TPersonalKontenJeTag` absence-hour accounts, `Wert` hours per date | Each row must fall on an absence of its code |
 
-`docs/adr/0008-credits-from-timeoffice-daily-absence-accounts.md` records why. The credit accounts are 85 `U_STD` (vacation, code `U`), 93 `FI_STD` (internal training, `FI`), 95 `FE_STD` (external training, `FE`) and 97 `ST_STD` (school, `SC`). TimeOffice books these per date, and its monthly account of the same number is their sum. It books a credited absence on every Monday-to-Friday date that is not an NRW public holiday and none on weekends or holidays. A credit row on a date without a roster absence of its code rejects the inspection, and so does a credited absence on such a weekday without its booking. On a weekend or holiday an absence credits nothing. The check uses the absences `read_absences` returns, so both reads share one definition of a roster absence. A unit whose employees work fewer than five days a week would need a different booking rule; it fails this check rather than being credited wrongly. Each credit becomes an `approved_absence` `WorkCredit` with source `TimeOffice <code> absence`. Native absences are loaded separately and keep their reason; project availability comes from its own table. Unknown shifts and ambiguous home origin reject the complete inspection as well.
+The credit accounts are 85 `U_STD` (vacation, code `U`), 93 `FI_STD` (internal training, `FI`), 95 `FE_STD` (external training, `FE`) and 97 `ST_STD` (school, `SC`). `docs/adr/0008-credits-from-timeoffice-daily-absence-accounts.md` records why.
+
+TimeOffice books a credit on every Monday-to-Friday absence date that is not an NRW public holiday. The monthly account of the same number is their sum. Inspection fails for a credit without a roster absence of its code (per `read_absences`) and for a credited weekday absence without its credit. A unit working fewer than five days a week would fail this check rather than be credited wrongly. Each credit becomes an `approved_absence` `WorkCredit` with source `TimeOffice <code> absence`.
 
 ## Project tables
 
-An authorized preparer runs `api/sql/supplemental-tables.sql` once in the declared database. It creates `dbo.StaffSchedulingAvailability`, `dbo.StaffSchedulingWish`, `dbo.StaffSchedulingDemandMonth` and `dbo.StaffSchedulingDemand`. Creating them needs DDL permission; the runtime login needs SELECT, INSERT and DELETE on all four. The API never creates tables. Without them, live inspection, configuration and generation fail with a query-stage `503`. On the test database they exist; its single login holds `db_ddladmin`, `db_datareader` and `db_datawriter`, so setup and runtime privileges are not separated there.
+An authorized preparer runs `api/sql/supplemental-tables.sql` once in the declared database; this needs DDL permission. The API never creates tables. The runtime login needs SELECT, INSERT and DELETE on all four. Without them, inspection, configuration and generation fail with a query-stage `503`. The test database has them; its single login holds `db_ddladmin`, `db_datareader` and `db_datawriter`, so setup and runtime privileges are not separated there.
 
-| Table                         | Key                                 | Meaning                                                                    |
-| ----------------------------- | ----------------------------------- | -------------------------------------------------------------------------- |
-| `StaffSchedulingAvailability` | employee, date                      | Canonical availability type, JSON `shift_ids` for `available_only`, reason |
-| `StaffSchedulingWish`         | employee, date                      | Canonical wish type and optional shift                                     |
-| `StaffSchedulingDemandMonth`  | station, first of month             | The station month's demand has been saved                                  |
-| `StaffSchedulingDemand`       | station, date, shift, qualification | Required count ≥ 1; a missing row in a saved month requires nobody         |
+| Table                             | Key                                 | Meaning                                                                    |
+| --------------------------------- | ----------------------------------- | -------------------------------------------------------------------------- |
+| `dbo.StaffSchedulingAvailability` | employee, date                      | Canonical availability type, JSON `shift_ids` for `available_only`, reason |
+| `dbo.StaffSchedulingWish`         | employee, date                      | Canonical wish type and optional shift                                     |
+| `dbo.StaffSchedulingDemandMonth`  | station, first of month             | The station month's demand has been saved                                  |
+| `dbo.StaffSchedulingDemand`       | station, date, shift, qualification | Required count ≥ 1; a missing row in a saved month requires nobody         |
 
-Employee inspection also reads `StaffSchedulingAvailability`, so the Mitarbeiter page needs these tables too. Every write runs in one transaction and validates first: the employee needs a membership in a configured unit that month (a single scoped membership query), shifts must be reference shifts, and a demand station needs a target plan. An availability or wish save deletes and inserts exactly one employee date; a demand save replaces exactly one station month and marks it saved. Writes need no target-plan rows, roster rows or profession lookups, so they also work on empty prepared targets. Serialize writes as for every shared database change. `docs/adr/0006-monthly-configuration-in-project-tables.md` records why these tables are used instead of native TimeOffice wish rows or the old recurring `StaffSchedulingMinimalStaffing` table, which the API no longer reads.
+The Mitarbeiter page needs the tables too, since inspection reads `StaffSchedulingAvailability`. Every write runs in one transaction and first validates that the employee has a membership in a configured unit that month, that shifts are reference shifts and that a demand station has a target plan. An availability or wish save replaces exactly one employee date. A demand save replaces exactly one station month and marks it saved. Writes need no plan or roster rows, so they work on empty targets. Serialize them like every shared database change.
 
-Intentional mappings: project availability and wishes are invisible in TimeOffice, and native TimeOffice wishes (`Wunschdienst` rows) are not read. `read_generation_input` reads the month's `StaffSchedulingWish` rows of every inspected employee, jumper pool members included. Reference shifts are the four facts in `facts.py` (F `1113`, Z `1453`, S `1605`, N `1690`); their codes come from `TDienste`, their types from the facts. Staff levels and availability types are stored as their canonical values.
+`docs/adr/0006-monthly-configuration-in-project-tables.md` records why these tables replace native `Wunschdienst` rows and the old `StaffSchedulingMinimalStaffing` table; the API reads neither. Generation reads the month's wishes of every inspected employee, jumper pool members included. The four reference shifts are facts in `facts.py`: F `1113`, Z `1453`, S `1605`, N `1690`. Their codes come from `TDienste`, their types from the facts. Staff levels and availability types are stored as canonical values.
 
 ## Publication
 
-`publish` writes a reviewed schedule into the selected stations' target plans for the month; `clear` removes it. The route takes the assignments from `Review.publishable` (`api/app/solver/review.py`), which yields only the accepted schedule under review, so the adapter receives canonical assignments and the station scope, never plan IDs. `docs/adr/0009-publish-marked-duties-into-timeoffice-target-plans.md` records the decision. The published output of a target plan is its worked rows (no absence code in `RefgAbw`/`RefDienstAbw`, no `Wunschdienst`) marked with `Info` = `StaffScheduling` (`GENERATED_DUTY_INFO`). Publication replaces exactly those rows of the named stations' target plans; absences, native wishes, duties entered in TimeOffice, other plans and every other station month are kept.
+`publish` writes the accepted schedule under review into the selected stations' target plans for the month; `clear` removes it. `docs/adr/0009-publish-marked-duties-into-timeoffice-target-plans.md` records the decision. The route takes the assignments from `Review.publishable` (`api/app/solver/review.py`); the adapter never receives plan IDs.
 
-Inside one transaction, before anything is deleted, `publish`:
+!!! warning "Writes to TimeOffice"
 
-1. selects each station's single target plan with the rule `read_target_plans` shares with every read; a missing target is `422`, several fail with `409`,
-2. checks that every duty belongs to a named station and the month, uses a reference shift, and is the employee's only duty that date,
-3. finds the profession (`RefBerufe`) of the employee's active membership at that station whose mapped qualification equals the duty's credited qualification, and fails unless there is exactly one,
-4. reads the employees' kept roster rows of the month and refuses (`conflict`) a duty on a date with an absence or a worked row outside the replaced output, for example an absence entered after generation, a duty entered in TimeOffice in the target plan or a duty in another plan,
-5. counts and deletes the old output, inserts the new rows, reads them back as canonical duties and rolls back (`read_back`) unless they equal the schedule.
+    A target plan's published output is its worked rows marked `Info` = `StaffScheduling` (`GENERATED_DUTY_INFO`). Worked rows carry no absence code in `RefgAbw`/`RefDienstAbw` and are not `Wunschdienst`. Publication deletes and replaces exactly these `TPlanPersonalKommtGeht` rows of the named stations' target plans. Absences, native wishes, duties entered in TimeOffice, other plans and other months are kept. The runtime login needs SELECT, INSERT and DELETE on that table; the test login's `db_datawriter` role covers this.
 
-Only then does it commit. Any failure rolls back the deletion as well. Publication and clear hold a process lock and run in a `SERIALIZABLE` transaction, so a concurrent writer from another process makes one of them fail and roll back rather than interleave target checks and row numbers. The engine translates such collisions (a deadlock victim, SQL Server error 1205 or SQLSTATE `40001`, and a duplicate key, errors 2627 and 2601, read from the driver message) into `TimeOfficeConflict`, which the API returns as `409` with `problem` `concurrent`; other driver failures, including foreign-key or NOT NULL violations, stay sanitized `503`s. The commit runs separately: a failure of the commit itself returns `503` with stage `commit`, because the change may or may not have been saved. Run one API process. Multi-row inserts use pyodbc's `fast_executemany` for every write of the engine, demand saves included; a month publishes in about a second.
+In one transaction, before deleting anything, `publish`:
 
-A duty is stored as TimeOffice stores worked duties: one `TPlanPersonalKommtGeht` row per catalog segment of its reference shift, with the duty's start date as `Datum` (a night's last segment ends on the next day), the segment's wall-clock `VonZeit`/`BisZeit` and `Minuten` (their sum is the shift's paid minutes; on a clock-change night the elapsed time differs by an hour), row status 20, the profession from step 3, the station as `RefPlanungseinheiten` and `RefPeinheitOwner`, also for a jumper pool employee, and the `Info` marker. Because the roster key `(RefPersonal, Datum, RefStati, lfdNr)` excludes the plan, the segments are numbered after the employee's kept rows of that row status on the date; with no such row they are 1..n. A native wish on the date therefore keeps its number.
+1. selects each station's single target plan by the rule all reads share (`read_target_plans`); none is `422`, several are `409`,
+2. checks that every duty lies in a named station and the month, uses a reference shift and is the employee's only duty that date,
+3. finds the profession (`RefBerufe`) of the employee's active station membership whose mapped qualification equals the duty's credited qualification, and fails unless exactly one exists,
+4. refuses (`conflict`, naming employee and date) a duty on a date with an absence or a kept worked row, such as a duty entered in TimeOffice or in another plan,
+5. counts and deletes the old output, inserts the new rows and rolls back (`read_back`) unless they read back as the schedule.
 
-Intentional reductions and limits: source detail beyond the reference shift's segments is not written (no deployment type or readiness times), and reading back accepts only rows that reproduce a reference shift. Planners must not put the marker text into `Info` of their own duties. No `TPlanPersonal` rows are created; the prepared plans have none, and whether the TimeOffice client lists published employees without them is not verified. A conflict names the employee and date in the API's `detail`. The runtime login needs SELECT, INSERT and DELETE on `TPlanPersonalKommtGeht` in addition to the reads; the test login's `db_datawriter` role covers this.
+Only then does it commit; any failure also rolls back the deletion. Publication and clear hold a process lock and run `SERIALIZABLE`, so a concurrent writer from another process fails instead of interleaving. A deadlock (SQL Server error 1205 or SQLSTATE `40001`) or duplicate key (2627, 2601, read from the driver message) becomes `TimeOfficeConflict`, returned as `409` `concurrent`. Other driver failures, including foreign-key or NOT NULL violations, stay sanitized `503`s. A failed commit returns `503` with stage `commit`: the outcome is unknown. Run one API process. All multi-row inserts use pyodbc's `fast_executemany`; a month publishes in about a second.
+
+A duty becomes one `TPlanPersonalKommtGeht` row per segment of its reference shift, as TimeOffice stores worked duties:
+
+| Column                                     | Value                                                             |
+| ------------------------------------------ | ----------------------------------------------------------------- |
+| `Datum`                                    | The duty's start date, also for a night's last segment            |
+| `VonZeit`, `BisZeit`, `Minuten`            | The segment's wall-clock times and paid minutes                   |
+| `RefStati`                                 | Row status 20                                                     |
+| `RefBerufe`                                | The profession from step 3                                        |
+| `RefPlanungseinheiten`, `RefPeinheitOwner` | The station, also for a jumper pool employee                      |
+| `Info`                                     | `StaffScheduling`                                                 |
+| `lfdNr`                                    | After the employee's kept rows of that status and date, else 1..n |
+
+On a clock-change night, elapsed time differs from paid `Minuten` by an hour. The roster key `(RefPersonal, Datum, RefStati, lfdNr)` excludes the plan, hence the numbering; a native wish keeps its number.
+
+Deployment type, readiness times and other source detail are not written. Read-back accepts only rows reproducing a reference shift. Planners must not put the marker into `Info` of their own duties. No `TPlanPersonal` rows are created, and the prepared plans have none; whether the TimeOffice client lists published employees without them is unverified.
 
 ## Prepared units
 
-`facts.py` configures three existing units of the test database, planned with their existing employees for January–June 2026:
+`facts.py` configures three existing units of the test database for January–June 2026:
 
 | Unit (`KurzBez`) | `Prim` | Role                                                                  |
 | ---------------- | ------ | --------------------------------------------------------------------- |
@@ -88,12 +119,12 @@ Intentional reductions and limits: source detail beyond the reference shift's se
 | `PE 79`          | 79     | Station                                                               |
 | `PE 408`         | 408    | Jumper pool for both stations (no demand group, its staff homed here) |
 
-Employees (`TPersonal`), their contracts, home memberships and the stations' monthly target plans are native. Every other input the [checklist below](#supporting-another-unit) needs is prepared by the SQL files in `api/tests/timeoffice_preparation/`, applied in name order:
+Employees, contracts, home memberships and monthly target plans are native. The SQL files in `api/tests/timeoffice_preparation/`, applied in name order, prepare every other input the [checklist](#supporting-another-unit) needs:
 
 | File                               | Prepares                                                                                                                                                          |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `01-replacement-memberships.sql`   | Replacement memberships of the 7 jumper pool employees at both stations, 2025-12-01 to 2026-07-31                                                                 |
-| `02-exclude-rotating-trainees.sql` | `KeinEPlan` on 15 station memberships of rotating trainees, whose home is a school unit and who are members for part of a month only                              |
+| `02-exclude-rotating-trainees.sql` | `KeinEPlan` on 15 station memberships of rotating trainees (home in a school unit, members for part of a month)                                                   |
 | `03-monthly-targets.sql`           | 151 missing account-1 targets, derived like the native ones: NRW working days × weekly hours ÷ 5                                                                  |
 | `04-vacations-and-credits.sql`     | One Monday–Friday vacation week (`U`) per professional and per assistant and MFA of 77, with its daily vacation credit; jumper pool absences sit in its June plan |
 | `05-context-plans.sql`             | Empty trusted context plans (status 30, day interval 4) for 2025-12-18..31 and 2026-07-01..07, so the context is known to be free                                 |
@@ -101,35 +132,37 @@ Employees (`TPersonal`), their contracts, home memberships and the stations' mon
 | `07-availability-and-wishes.sql`   | 7 project availability rows and 32 demonstration wishes                                                                                                           |
 | `readiness.sql`                    | Read-only checklist per unit and month; every row carries `ok`                                                                                                    |
 
-Each file ends with a read-back of the rows it prepares. The files converge: they insert missing rows; `02` sets `KeinEPlan` where it differs; demand, availability and wishes also update differing rows and delete other rows inside their own scope. A second run changes nothing. Native targets are never changed, so the read-back of `03` checks only that every employee-month has a valid target. They never write `TPersonal`, and no other unit's rows. `just test-timeoffice` runs every file in one transaction against the configured database, fails unless every read-back `ok` is 1 and no write changes a row, and rolls back; with `TIMEOFFICE_PREPARATION=apply` it commits each file instead (see [live verification](../development/testing.md#live-timeoffice-verification)).
+Each file ends with a read-back of its rows and converges, so a second run changes nothing. All insert missing rows. `02` sets `KeinEPlan` where it differs. Demand, availability and wishes also update differing rows and delete other rows in their scope. Native targets are never changed, so `03`'s read-back only checks that each employee-month has a valid target. No file writes `TPersonal` or another unit's rows.
 
-Native facts that this preparation and later work depend on:
+`just test-timeoffice` runs every file in one transaction and rolls back. It fails unless every `ok` is 1 and no write changes a row. `TIMEOFFICE_PREPARATION=apply` commits each file instead (see [live verification](../development/testing.md#live-timeoffice-verification)).
 
-- Each station month has one target plan (status 20, interval 1, exact month bounds). The adapter neither creates nor changes plans. June's plan of 77 holds native duties of one employee on 2026-06-08..12; generation ignores them, and project availability blocks those dates so that publication does not conflict with them. Jumper pool absences sit in the jumper pool's own plan of the same form; the jumper pool is never selectable.
-- Trusted context comes from approved plans (status 30) of the stations; a context plan is complete for every date it spans. Month-shaped context plans would collide with native plans on the unique index `TPlan(RefPlanungseinheiten, VonDat, RefPlanungsIntervalle)`, so the prepared ones use the day interval.
-- A worked duty is one roster row per `TDiensteSollzeiten` segment (`lfdNr` 1..n, paid `Minuten` per segment). An absence row sets `RefgAbw` and `RefDienstAbw` to the absence code and `Minuten` to 0.
-- The roster primary key is `(RefPersonal, Datum, RefStati, lfdNr)` and does not include the plan. An employee therefore has at most one row set per date and row status across all plans, absences included.
-- Generation must select both stations together: the jumper pool's monthly balance is hard, so a run for one station alone would have to give the jumper pool its whole target there, and publishing the second station would then conflict with those duties.
+Native facts the preparation relies on:
+
+- Each station month has one target plan (status 20, interval 1, exact month bounds). The adapter neither creates nor changes plans.
+- The jumper pool has its own plan of that form but is never selectable.
+- Month-shaped context plans would collide with native plans on the unique index `TPlan(RefPlanungseinheiten, VonDat, RefPlanungsIntervalle)`, so the prepared ones use the day interval. A context plan is complete for every date it spans.
+- An absence row sets `RefgAbw` and `RefDienstAbw` to the absence code and `Minuten` to 0. The roster key allows one row set per employee, date and row status across all plans, absences included.
+- Generation must select both stations together. The jumper pool's monthly balance is hard, so a one-station run would give the jumper pool its whole target there. Publishing the second station would then conflict.
 
 ## Supporting another unit
 
-To plan an existing TimeOffice unit, check each item with read-only queries first, then add the unit to `planning_unit_type_by_id` in `facts.py`:
+Check each item with read-only queries, then add the unit to `planning_unit_type_by_id` in `facts.py`:
 
 1. **Unit.** Monthly interval (`RefPlanungsIntervalle` 1); decide whether it is a station or a jumper pool.
 2. **Target plans.** Exactly one plan per planned month with status 20, interval 1 and exact month bounds. Generation ignores worked rows already in it; [publication](#publication) replaces them.
-3. **Memberships.** Every `TPlanungseinheitenPersonal` row of the unit that overlaps a planned month (`KeinEPlan` 0) needs a profession mapped in `STAFF_LEVEL_BY_PROFESSION_CODE`. Each employee needs exactly one home unit (`IstHeimat`) on every active date. Jumper pool staff need replacement memberships at the stations they may cover.
+3. **Memberships.** Every `TPlanungseinheitenPersonal` row overlapping a planned month (`KeinEPlan` 0) needs a profession mapped in `STAFF_LEVEL_BY_PROFESSION_CODE`. Each employee needs exactly one home unit (`IstHeimat`) on every active date. Jumper pool staff need replacement memberships at the stations they may cover.
 4. **Employees.** A name and a mapped profession in `TPersonal`.
 5. **Accounts.** A target (account 1) for every employee and planned month.
-6. **Absences and credits.** Every absence code in the months must be mapped or ignored in `facts.py`. Credited absences on non-holiday weekdays need their daily credit rows, and a credit row without a matching absence fails the inspection.
+6. **Absences and credits.** Every absence code in the months must be mapped or ignored in `facts.py`. Credited weekday absences need their daily credit rows.
 7. **Demand.** Save each station month on the Mindestbesetzung page.
 8. **Verify.** Open Mitarbeiter for the unit and month: a complete inspection, or the first source error to resolve.
 
-A unit fails loudly rather than partially: one unmapped profession, missing target or orphan credit rejects the whole selection.
+One unmapped profession, missing target or orphan credit rejects the whole selection.
 
 ## Limitations
 
-- **Wishes and availability live only in the project tables.** Wishes or blocks entered in TimeOffice (`Wunschdienst` rows) are not imported, and wishes and availability entered in the app are not visible in TimeOffice. TimeOffice offers no equivalent that keeps their meaning, so there is no synchronization in either direction.
-- **Context duties must match a reference shift exactly.** A trusted context duty's segments must equal those of one of the four reference shifts. Variant shifts that share a code (for example another `F` or `S` row of `TDienste`) are not mapped, so roster history using them stops generation instead of being guessed.
-- **Duties outside the configured stations are not seen.** Generation ignores an employee's in-month duties in other units or plans; publishing then refuses the conflict instead. A known case is employee 791's native duties in the June target plan of `PE 77` on 2026-06-08..12, which project availability blocks. Context duties come only from the configured stations, so rest against a duty in another unit at the month edge is not checked.
+- **No wish or availability synchronization.** TimeOffice has no equivalent that keeps their meaning, so `Wunschdienst` rows are not imported and app entries stay invisible in TimeOffice.
+- **Context duties must match a reference shift exactly.** Variant shifts sharing a code (another `F` or `S` row of `TDienste`) stop generation instead of being guessed.
+- **Duties outside the configured stations are not seen.** Generation ignores in-month duties in other units or plans; publication then refuses the conflict. Employee 791 has native duties in the June target plan of `PE 77` on 2026-06-08..12; project availability blocks those dates. Rest against another unit's duty at the month edge is not checked.
 - **No Sunday history is read.** The annual minimum of employment-free Sundays is not assessed.
-- **Some mappings are assumptions.** In `facts.py`, profession `-` as trainee, Servicekraft as professional, Praktikant as assistant, and the absence codes `AZV`, `K`, `TB` and `SO` as unavailable are unverified; they are marked there.
+- **Some mappings are assumptions.** In `facts.py`, profession `-` as trainee, Servicekraft as professional, Praktikant as assistant and the absence codes `AZV`, `K`, `TB` and `SO` as unavailable are unverified and marked there.
