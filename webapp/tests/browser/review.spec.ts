@@ -59,9 +59,14 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   await expect(gaps).toContainText("05.06.2026 · Example Station North · F · Fachkraft: 1 von 2 fehlen");
   // Wishes never bind: the review counts and lists what the schedule made of each.
   const wishes = summary(page).getByRole("region", { name: "Wünsche" });
-  await expect(wishes).toContainText("Wünsche: 1 erfüllt · 1 nicht erfüllt · 1 nicht erfüllbar");
-  await expect(wishes).toContainText("05.06.2026 · Example Team Two · Freier Tag: nicht erfüllt");
-  await expect(wishes).toContainText("11.06.2026 · Example Jumper Three · Wunschtag: nicht erfüllbar");
+  const wishTitle = wishes.getByText("Wünsche: 1 erfüllt · 1 nicht erfüllt · 1 nicht erfüllbar");
+  // The table stays collapsed until opened.
+  await expect(wishes.getByRole("table")).toBeHidden();
+  await wishTitle.click();
+  await expect(wishes.getByRole("row", { name: "05.06.2026 Example Team Two Freier Tag nicht erfüllt" })).toBeVisible();
+  await expect(
+    wishes.getByRole("row", { name: "11.06.2026 Example Jumper Three Wunschtag nicht erfüllbar" }),
+  ).toBeVisible();
   // Solver internals and obligations beyond the month are technical detail, collapsed until opened.
   const details = summary(page).getByText("Technische Details");
   await expect(summary(page).getByText("Stufe 1: Lücken")).toBeHidden();

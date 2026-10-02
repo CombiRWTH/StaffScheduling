@@ -8,9 +8,9 @@ One run solves exactly one full calendar month for the selected stations with OR
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `domain/duty.py`       | `duty_times(date, shift)`: a duty's Europe/Berlin start, end and work segments as UTC instants                                           |
 | `domain/rules.py`      | `RulePolicy`: every hard-rule parameter, the context days a month needs and which dates need replacement rest                            |
-| `domain/acceptance.py` | `check_schedule(dataset, assignments)`: every hard rule and the three objective scores, from actual assignments                          |
+| `domain/acceptance.py` | `check_schedule(dataset, assignments, gaps)`: every hard rule, the objective scores and the wish outcomes, from actual assignments       |
 | `solver/model/`        | `build_model(dataset)`: the candidates, each rule of `HARD_RULES` and the tiers of `OBJECTIVES`; see [model structure](#model-structure) |
-| `solver/service.py`    | `SolverService.solve(dataset, timeout)`: build, validate, solve, extract the schedule and run `check_schedule` on it                     |
+| `solver/service.py`    | `SolverService.solve(dataset, timeout)`: build, validate, solve one stage per tier, extract schedule and gaps, run `check_schedule`      |
 | `solver/generation.py` | The transient generation job around one solve; see [API generation](api.md#generation)                                                   |
 
 `check_schedule` never sees solver variables. It recomputes duty times, accounts and sequences from the `SchedulingDataset` and the assignments, so it judges a solver result and any other assignment list alike. Solver and check implement every rule separately; they share only `RulePolicy` and the duty times of `duty.py`, so an error in one implementation shows as a disagreement with the other.
@@ -27,7 +27,7 @@ All parameters are in `RulePolicy` and reported with every run.
 
 | Rule               | Model                                                                                                                                                                 |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Staffing           | For every dated demand row (station, shift, qualification): candidates credited with that qualification ≥ the required count. Zero or omitted means no minimum.       |
+| Staffing           | For every dated demand row (station, shift, qualification): credited candidates + gap ≥ the required count, with gap = max(0, required − credited) exactly; see gaps  |
 | One duty per day   | At most one candidate per employee and start date, across all stations and qualifications                                                                             |
 | Availability       | Blocking entries forbid every duty touching the date; allowed-shift entries narrow each other; no night before an approved vacation or free day                       |
 | Monthly balance    | Generated paid minutes + verified credits − target ∈ [−460, 460] minutes for every employee, including employees without any possible duty                            |
@@ -42,26 +42,28 @@ A duty touches a date when its interval overlaps that local day from 00:00 to 24
 
 ## Objective
 
-After the hard rules, the model minimizes three tiers in order:
+Only staffing is relaxed, through gaps; every other hard rule stays hard, so a month can still be `infeasible`. After the hard rules, the solver optimizes five tiers in this order (`docs/adr/0010-lexicographic-staged-objective.md` records why stages replace weights):
 
-1. **Health events**: fully worked six-day windows (a window counts on its last day, inside the month; seven days in a row are two windows) plus backward steps between successive early, late and night duties (early → late → night is forward; off days do not reset the comparison; intermediate and other duties have no position). The first ranked duty of the month is compared with the last ranked duty of the five preceding context days, if any.
-2. **Balance deviation**: the sum of every employee's absolute monthly balance, in minutes.
-3. **Surplus intermediate duties**, as a reward: intermediate duties beyond the required ones.
+1. **Gaps**: the required slots no assignment fills, summed over every dated demand row. A gap is never a fake assignment; it is reported next to the assignments so guest staff can be requested. A zero-gap schedule wins wherever one exists.
+2. **Health events**: fully worked six-day windows (a window counts on its last day, inside the month; seven days in a row are two windows) plus backward steps between successive early, late and night duties (early → late → night is forward; off days do not reset the comparison; intermediate and other duties have no position). The first ranked duty of the month is compared with the last ranked duty of the five preceding context days, if any.
+3. **Wish cost**: denied wishes, free (free day, free shift) and preferred (preferred day, preferred shift) counted apart per employee; the k-th denial in a group costs k³, so S denials cost (S(S+1)/2)². This convex cost spreads unavoidable denials over employees. Each wish is one strike. A free day is denied by any duty touching the date, also a night from the evening before; a free shift by that shift starting on the date; a preferred day or shift is granted by such a duty starting on the date at any station. A wish that no schedule can grant (binding availability, no station membership, the shift's own pattern, or a trusted context night on a free day) is reported as not grantable and costs nothing.
+4. **Balance deviation**: the sum of every employee's absolute monthly balance, in minutes.
+5. **Surplus intermediate duties**, as a reward: intermediate duties beyond the required ones.
 
-The weighted total is `health × W1 + balance × W2 − surplus × W3`. Weights are derived per run from the input's bounds so that one unit of a higher tier outweighs any possible change of all lower tiers: `W3 = 1`, `W2 = U3 + 1`, `W1 = W2 × U2 + U3 + 1`, with `U3` the employee-days with an intermediate candidate and `U2 = 460 ×` employees. The build fails if the largest possible total could reach 2⁵³, so reported values stay exact. The tier encodings are exact (not bounds), so the solver's objective value equals the weighted total of the scores that `check_schedule` recomputes. The live January example uses `W1 = 41 114 528`, `W2 = 1 568`, `W3 = 1`.
+The tiers are solved as **lexicographic stages**, one CP-SAT solve per tier in `OBJECTIVES` order. A stage optimizes its tier, then adds `tier ≤ value reached` (`≥` for the reward) and hints the next stage with its schedule, so one unit of a higher tier is never traded for any lower-tier change and no tier needs a weight. The requested timeout is the total; each stage gets the remaining time divided by the stages left. Every tier expression is exact for any schedule that keeps the hard rules, not only an optimal one, so each stage's value equals the matching field of the check's `scores`. Reordering the tiers is a change to `OBJECTIVES` only.
 
 ## Result
 
 `Solution` contains:
 
-- `status`: `optimal`, `feasible` (the time limit ended the search), `infeasible` (proven), `unknown` (neither a schedule nor a proof in time) or `model_invalid`.
-- `configuration`: the `RulePolicy`, the weights, timeout, search workers and seed.
+- `status`: `optimal` exactly when every stage is; `feasible` when a found schedule has a stage the time limit ended; `infeasible` (proven), `unknown` (neither a schedule nor a proof in time) or `model_invalid`. Only the first stage can end without a schedule; a later stage that finds nothing better keeps the previous schedule as `feasible`.
+- `configuration`: the `RulePolicy`, the total timeout, search workers and seed.
 - `wall_time_seconds` and `diagnostics`.
-- With a found schedule only: `assignments`, `objective` (`value`, `best_bound`, `relative_gap`) and `check`.
+- With a found schedule only: `assignments`, `gaps` (station, date, shift, qualification and `missing_count` per unfilled demand row), `stages` and `check`. Each stage has the tier `name`, `status` (`optimal` or `feasible`), `value` (the tier in the returned schedule) and `best_bound` (CP-SAT's proven bound for that stage).
 
-`diagnostics` name causes the build can see, such as demand without enough candidates (`staffing.too_few_candidates`, counted after availability and context conflicts), an employee who cannot reach the balance band without duties (`balance.unreachable`) or a shift whose pattern breaks the daily rules. A `feasible` schedule after a time limit can be improved by up to the reported gap; a large gap means the bound is weak, not that the schedule breaks a rule.
+`diagnostics` name causes the build can see, such as demand without enough candidates (`staffing.too_few_candidates`, a warning that explains predictable gaps, counted after availability and context conflicts), an employee who cannot reach the balance band without duties (`balance.unreachable`, an error that makes the month infeasible) or a shift whose pattern breaks the daily rules. A `feasible` stage can be improved by up to its distance from the bound; a weak bound does not mean the schedule breaks a rule.
 
-`check` has `status` `accepted` (every promised rule checked and kept), `rejected` (a hard-rule finding) or `incomplete` (no finding, but a promised check lacks input), plus `findings`, `not_assessed` and `scores`. Not-assessed items give the rule, the exact date window and the reason, and say whether they block acceptance:
+`check` has `status` `accepted` (every promised rule checked and kept), `rejected` (a hard-rule finding) or `incomplete` (no finding, but a promised check lacks input), plus `findings`, `not_assessed`, `scores`, `wishes` and `wish_counts`. Staffing holds when every demand row's shortfall is exactly its declared gap, so an undeclared shortfall, a wrong count or a gap on a filled row is a staffing finding; a schedule with gaps can be accepted. `wishes` lists every input wish with `status` `granted`, `denied` or `not_grantable`. Not-assessed items give the rule, the exact date window and the reason, and say whether they block acceptance:
 
 | Not assessed                                                                | Blocking | Why                                                                                                                  |
 | --------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -73,26 +75,26 @@ Replacement rest and the work average are decided within the month, so they neve
 
 ## Settings
 
-| Environment variable         | Default | Purpose                                   |
-| ---------------------------- | ------- | ----------------------------------------- |
-| `SOLVER_MAX_TIME_SECONDS`    | `30`    | Search limit when a caller passes none    |
-| `SOLVER_NUM_SEARCH_WORKERS`  | unset   | Leave OR-Tools worker selection unchanged |
-| `SOLVER_RANDOM_SEED`         | unset   | Optional search seed                      |
-| `SOLVER_LOG_SEARCH_PROGRESS` | `false` | Enable solver progress logs               |
+| Environment variable         | Default | Purpose                                      |
+| ---------------------------- | ------- | -------------------------------------------- |
+| `SOLVER_MAX_TIME_SECONDS`    | `30`    | Total search limit when a caller passes none |
+| `SOLVER_NUM_SEARCH_WORKERS`  | unset   | Leave OR-Tools worker selection unchanged    |
+| `SOLVER_RANDOM_SEED`         | unset   | Optional search seed                         |
+| `SOLVER_LOG_SEARCH_PROGRESS` | `false` | Enable solver progress logs                  |
 
-`POST /generation` passes the requested `timeout_seconds` as the search limit; the other settings apply unchanged and are reported in `configuration`. A fixed seed alone does not make parallel search reproducible. Set settings in root `.env` for Compose and recreate the API after changes.
+`POST /generation` passes the requested `timeout_seconds` as the total search limit of all stages; the other settings apply unchanged and are reported in `configuration`. Each stage gets a share of it, so the top tiers need more total time than one weighted solve did: the example months use 300 seconds. A fixed seed alone does not make parallel search reproducible. Set settings in root `.env` for Compose and recreate the API after changes.
 
 ## Model structure
 
 `build_model` is the only entry point; `SolverService` and the tests call nothing else. Inside `solver/model/`, each rule and each objective term is one function, listed in one tuple, so it can be read, changed and tested on its own:
 
-| File             | Holds                                                                                                                                                                                                                                                                           |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `candidates.py`  | `CandidateModel`: the CP-SAT model, one variable per candidate, every employee's `timelines` of candidate and fixed context `Slot`s ordered by start, the diagnostics, and helpers for limits over slots (`at_most`), monthly balances and 0/1 logic (`logical_and`, `and_not`) |
-| `constraints.py` | One function `(model) -> None` per hard rule and `HARD_RULES`, their order                                                                                                                                                                                                      |
-| `objectives.py`  | One function `(model) -> Term` per objective term, `OBJECTIVES` (the tiers, highest priority first, each naming its terms) and `set_objective`, which derives the weights and sets the objective                                                                                |
+| File             | Holds                                                                                                                                                                                                                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `candidates.py`  | `CandidateModel`: the CP-SAT model, one variable per candidate, every employee's `timelines` of candidate and fixed context `Slot`s ordered by start, the diagnostics, and helpers for limits over slots (`at_most`), monthly balances and 0/1 logic (`any_of`, `logical_and`, `and_not`) |
+| `constraints.py` | One function `(model) -> None` per hard rule and `HARD_RULES`, their order                                                                                                                                                                                                                |
+| `objectives.py`  | One function `(model) -> Expr` per objective term, `OBJECTIVES` (the tiers, highest priority first, each naming its terms) and `tier_objectives`, each tier with its expression for the stages                                                                                            |
 
-Availability and the work and break pattern of a single duty decide which candidates exist, in `candidates.py`; they are not constraints. Staffing and the balance band come last in `HARD_RULES`, because their diagnostics and balances skip the candidates that context duties rule out in the rules before them.
+Availability and the work and break pattern of a single duty decide which candidates exist, in `candidates.py`; they are not constraints. Staffing and the balance band come last in `HARD_RULES`, because their diagnostics and balances skip the candidates that context duties rule out in the rules before them. The staffing rule also creates the gap variables (`model.gaps`) that the gap tier sums and the solution reports.
 
 ## Adding or changing a hard rule
 
@@ -100,12 +102,11 @@ Change the parameter in `RulePolicy`, or the rule in both places. In the model, 
 
 ## Adding an objective
 
-An objective is a term the solver minimizes (or, as a reward, maximizes) after every hard rule holds. Health events, for example, are one tier of two terms, six-day windows and backward transitions, both counts weighted alike.
+An objective is a term the solver minimizes (or, as a reward, maximizes) after every hard rule holds and every higher tier is fixed. Health events, for example, are one tier of two terms, six-day windows and backward transitions, both counts weighted alike.
 
 1. **Define the score.** State what is counted, its unit (a count of events or duties, or minutes), whether it is a penalty or a reward, and its priority among the tiers. A new concern of the same unit and priority as an existing tier becomes a term of that tier; otherwise it is a new tier. Record the reasoning in [reasoning and requirements](../validation/reasoning.md).
-2. **Score it independently.** Add the field to `ScheduleScores` in `domain/acceptance.py` and compute it in the check's `scores` from assignments and context alone, never from solver variables. A tier of several terms is a computed field, like `health_events`. The [portable scoring contract](../validation/examples.md#interpret-objectives-and-solver-settings) describes how scores, weights and the objective value relate in every result.
-3. **Model the term.** Add a function `(model: CandidateModel) -> Term` to `objectives.py`. Its expression must equal the check's score exactly for every schedule that keeps the hard rules: not a bound or a relaxation, or the reported objective stops matching the check. Loop over `model.timelines` per employee; fixed context slots count as worked (`slot.expr` is 1). `Term.bound` is the largest value the expression can take in this month; it should be tight, because it sets the weights above it.
-4. **Place it.** Add the function to a tier's terms in `OBJECTIVES`, or add a new `Tier` at its priority, named exactly like its new `ObjectiveWeights` field in `solver/models.py`. Mark a reward with `reward=True`.
-5. **Check the weights.** `set_objective` gives the lowest tier weight 1 and every higher tier 1 more than the largest weighted total of all tiers below it, so one unit of a higher tier always outweighs them. It raises `ValueError` when the largest possible total could reach 2⁵³, the limit of exact objective values. Build the largest example month and confirm the weights stay well below it.
-6. **Report it.** The weights appear in `configuration.weights` and the score in `check.scores` of every API response and portable `result.json`. Run the API tests once to rewrite the published [result schema](../validation/schema/result.schema.json) and commit it; update `webapp/src/lib/types.ts`, the review's **Technische Details**, the [objective section](#objective) above and the [example file reference](../validation/examples.md). Bundles from before the change no longer re-check identically, so regenerate committed examples.
-7. **Verify it.** Add a boundary example of the score to `api/tests/test_schedule_check.py`. In `api/tests/test_solver.py`, extend `weighted_total` so every solve still proves objective value = checked weighted total, and add two-schedule boundary tests against the neighbouring tiers, like the existing ones for health over balance and balance over intermediate duties: one unit of the higher tier must outweigh the most the lower one can change. `test_objective_tiers_are_the_reported_weights_and_scores_in_priority_order` fails until the tier name matches its weight and score fields. [Testing](../development/testing.md#unit-responsibilities) lists what both test files already cover.
+2. **Score it independently.** Add the field to `ScheduleScores` in `domain/acceptance.py` and compute it in the check's `scores` from assignments and context alone, never from solver variables. A tier of several terms is a computed field, like `health_events`. The [portable scoring contract](../validation/examples.md#interpret-objectives-and-solver-settings) describes how scores and stages relate in every result.
+3. **Model the term.** Add a function `(model: CandidateModel) -> Expr` to `objectives.py`. Its expression must equal the check's score exactly for every schedule that keeps the hard rules, not just at the optimum: a time-limited stage returns a merely feasible schedule, and a one-sided encoding (an indicator that is only pushed down by the objective) would then report a wrong value. Use equalities such as `any_of`, `add_max_equality` or ordered booleans. Loop over `model.timelines` per employee; fixed context slots count as worked (`slot.expr` is 1).
+4. **Place it.** Add the function to a tier's terms in `OBJECTIVES`, or add a new `Tier` at its priority, named exactly like its `ScheduleScores` field. Mark a reward with `reward=True`. The tier becomes one more stage and shares the timeout; no weight or bound is needed.
+5. **Report it.** The stage appears in `solution.stages` and the score in `check.scores` of every API response and portable `result.json`. Run the API tests once to rewrite the published [result schema](../validation/schema/result.schema.json) and commit it; update `webapp/src/lib/types.ts`, the stage label in `webapp/src/lib/labels.ts`, the review's **Technische Details**, the [objective section](#objective) above and the [example file reference](../validation/examples.md). Bundles from before the change no longer re-check identically, so regenerate committed examples.
+6. **Verify it.** Add a boundary example of the score to `api/tests/test_schedule_check.py`. In `api/tests/test_solver.py`, every solve asserts `stages_are_scores`; add two-schedule boundary tests against the neighbouring tiers, like the existing ones for gaps over health, health over a wish, wishes over balance and balance over intermediate duties: one unit of the higher tier must never be traded for any change of the lower one. `test_objective_tiers_are_checked_scores` fails until the tier name is a score field. [Testing](../development/testing.md#unit-responsibilities) lists what both test files already cover.

@@ -8,8 +8,6 @@ import {
   CHECK_STATUS,
   RULES,
   STAFF_LEVEL_LABELS,
-  WISH_LABELS,
-  WISH_STATUS_LABELS,
   missingInputs,
   formatDate,
   OBJECTIVE_LABELS,
@@ -20,6 +18,7 @@ import {
   solverStatusText,
 } from "@/lib/labels";
 import type { CheckStatus, ScheduleReview } from "@/lib/types";
+import { WishTable } from "./wish-table";
 
 const SOURCES: Record<ScheduleReview["source"], string> = { generation: "Generiert", import: "Importiert" };
 const TIME = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "short", timeStyle: "short" });
@@ -36,7 +35,6 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
   const stations = review.planning_units.filter((unit) => unit.type === "station");
   const unitName = new Map(review.planning_units.map((unit) => [unit.planning_unit_id, unit.display_name]));
   const employeeName = new Map(tables.employees.map((row) => [row.employee_id, row.employee_name]));
-  const shiftCode = new Map(review.shifts.map((shift) => [shift.shift_id, shift.code]));
   const [checkValue, checkDetail] = CHECK_STATUS[check.status];
   const publishable = check.status === "accepted" && tables.duties.length > 0;
   const missing = tables.gaps.reduce((total, row) => total + row.missing_count, 0);
@@ -91,42 +89,16 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
             <p className="text-muted-foreground">
               Kein einsetzbarer Mitarbeiter ist frei; für diese Schichten Gastpersonal anfragen.
             </p>
-            <div className="max-h-64 overflow-y-auto">
-              <BulletList
-                items={tables.gaps.map(
-                  (row) =>
-                    `${formatDate(row.date)} · ${row.planning_unit_name} · ${row.shift_code} · ${STAFF_LEVEL_LABELS[row.staff_level]}: ${row.missing_count} von ${row.required_count} fehlen`,
-                )}
-              />
-            </div>
+            <BulletList
+              items={tables.gaps.map(
+                (row) =>
+                  `${formatDate(row.date)} · ${row.planning_unit_name} · ${row.shift_code} · ${STAFF_LEVEL_LABELS[row.staff_level]}: ${row.missing_count} von ${row.required_count} fehlen`,
+              )}
+            />
           </section>
         )}
 
-        {check.wishes.length > 0 && (
-          <section aria-label="Wünsche" className="space-y-1.5">
-            <p className="font-medium">
-              Wünsche: {check.wish_counts.granted} erfüllt · {check.wish_counts.denied} nicht erfüllt ·{" "}
-              {check.wish_counts.not_grantable} nicht erfüllbar
-            </p>
-            <p className="text-muted-foreground">
-              Wünsche binden nicht; nicht erfüllbare widersprechen einer Verfügbarkeit oder Zuordnung.
-            </p>
-            <div className="max-h-64 overflow-y-auto">
-              <BulletList
-                items={check.wishes.map(
-                  (row) =>
-                    [
-                      formatDate(row.date),
-                      employeeName.get(row.employee_id) ?? `Mitarbeiter ${row.employee_id}`,
-                      [WISH_LABELS[row.type], row.shift_id !== null && shiftCode.get(row.shift_id)]
-                        .filter(Boolean)
-                        .join(" "),
-                    ].join(" · ") + `: ${WISH_STATUS_LABELS[row.status]}`,
-                )}
-              />
-            </div>
-          </section>
-        )}
+        <WishTable review={review} />
 
         <Disclosure title="Technische Details">
           <div className="grid gap-6 md:grid-cols-2">

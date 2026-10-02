@@ -8,7 +8,7 @@ For staff administrators using the application: choose the month and units, insp
 
 ## Planning concepts
 
-The backend models a calendar month, planning units, dated staffing demand, employees and valid unit memberships. Availability entries are binding; wishes are preferences that generation does not consider yet. Work accounts are stored in minutes and shown in hours and minutes (for example _160:00 h_). The [domain reference](../architecture/domain.md) describes the source-defined contract.
+The backend models a calendar month, planning units, dated staffing demand, employees and valid unit memberships. Availability entries are binding; wishes are preferences that generation considers fairly but never guarantees. Work accounts are stored in minutes and shown in hours and minutes (for example _160:00 h_). The [domain reference](../architecture/domain.md) describes the source-defined contract.
 
 ## Planning steps
 

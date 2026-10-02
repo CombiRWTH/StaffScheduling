@@ -33,7 +33,7 @@ test("edit, reload and delete availability, and keep wishes separate", async ({ 
   await expect(day(page, "05.01.2026")).toContainText("Urlaub · Arzttermin");
   await expect(day(page, "01.01.2026")).toContainText("Urlaub · U");
 
-  await expect(page.getByText(/bei der Dienstplanerstellung derzeit nicht berücksichtigt/)).toBeVisible();
+  await expect(page.getByText(/berücksichtigt Wünsche möglichst fair, aber ohne Garantie/)).toBeVisible();
   await choose(page, "Art des Wunsches", "Freier Tag");
   await page.getByRole("button", { name: "Wunsch speichern" }).click();
   await expect(day(page, "05.01.2026")).toContainText("Freier Tag");

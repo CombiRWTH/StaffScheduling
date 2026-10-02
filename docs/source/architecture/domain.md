@@ -6,7 +6,7 @@ This reference describes inspected source definitions. Connected database behavi
 
 ## SchedulingDataset
 
-One `SchedulingDataset` is the complete input of one full-month run: a `PlanningMonth`, the planning units (selected stations and their associated jumper pools), shifts, dated demand requirements, employees, memberships, availability, one monthly account per employee and the trusted `ScheduleContext`. It validates all references once: unique identities, exactly one account per employee, demand only for its stations and shifts inside the month, and context inside its coverage and outside the month. Every shift on every date of the month must have unambiguous Europe/Berlin times. `build_scheduling_dataset` (`dataset.py`) builds it from a validated employee inspection, the timed reference shifts, the saved demand of each selected station and the context; it refuses a station without saved demand. Wishes are not an input.
+One `SchedulingDataset` is the complete input of one full-month run: a `PlanningMonth`, the planning units (selected stations and their associated jumper pools), shifts, dated demand requirements, employees, memberships, availability, wishes, one monthly account per employee and the trusted `ScheduleContext`. It validates all references once: unique identities, exactly one account per employee, demand only for its stations and shifts inside the month, and context inside its coverage and outside the month. Every shift on every date of the month must have unambiguous Europe/Berlin times. `build_scheduling_dataset` (`dataset.py`) builds it from a validated employee inspection, the timed reference shifts, the saved demand of each selected station the context and the wishes of the inspected employees; it refuses a station without saved demand. At most one wish per employee and date, inside the month, for a known shift.
 
 | Concept                  | Meaning and important fields                                                                                            |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
@@ -16,10 +16,11 @@ One `SchedulingDataset` is the complete input of one full-month run: a `Planning
 | `Employee`               | Stable ID, display name and employee-level qualification (professional, assistant, trainee, MFA)                        |
 | `Shift`                  | ID, code, type, work `segments` and paid `net_work_minutes`; start and end derive from the segments                     |
 | `DemandRequirement`      | Positive required count for a specific station, date, shift and qualification                                           |
+| `Gap`                    | Required slots of one demand row that no assignment fills (`missing_count`); reported, never published                  |
 | `Assignment`             | Employee, start date, station, shift and the qualification (`staff_level`) the duty is credited as                      |
 | `ScheduleContext`        | Trusted duties outside the month, their coverage `covered_from`–`covered_until`, availability of the date after         |
 | `Availability`           | Binding date entry: unavailable/vacation/training/free day, or only listed shifts                                       |
-| `Wish`                   | Soft free/preferred day or shift of one employee and date; stored, not used by generation                               |
+| `Wish`                   | Soft free/preferred day or shift of one employee and date at any station; considered by generation, never binding       |
 | `MonthlyWorkAccount`     | Target, informational actual minutes and the month's dated credits; `balance(generated)` = generated + credits − target |
 
 Durations and accounts use whole minutes; dates are calendar dates. A `WorkSegment` gives local minutes after midnight of the duty's start date, so an overnight segment ends after 1440; the gaps between segments are unpaid breaks. A shift starts on its start date and lasts less than 24 hours. `duty.py` turns a date and shift into UTC instants: elapsed work changes on a daylight-saving night, paid minutes do not. `RulePolicy` in `rules.py` holds the hard-rule parameters; see the [solver](solver.md).

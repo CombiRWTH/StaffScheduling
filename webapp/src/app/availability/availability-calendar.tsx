@@ -275,7 +275,7 @@ function WishForm({
       <h3 className="text-sm font-semibold">Wunsch</h3>
       <p className="flex gap-1.5 text-xs text-muted-foreground">
         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        Wünsche werden gespeichert, aber bei der Dienstplanerstellung derzeit nicht berücksichtigt.
+        Die Dienstplanerstellung berücksichtigt Wünsche möglichst fair, aber ohne Garantie; Einschränkungen gehen vor.
       </p>
       <Select value={type} onValueChange={(value) => setType(value as WishType)}>
         <SelectTrigger aria-label="Art des Wunsches" className="w-full">

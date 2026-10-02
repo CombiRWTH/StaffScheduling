@@ -218,7 +218,7 @@ export async function getReview(): Promise<ScheduleReview | null> {
 }
 
 const IMPORT_PROBLEMS: Record<BundleProblem, string> = {
-  malformed: "Dateien ungültig. input.json und result.json im Format Version 1 wählen.",
+  malformed: "Dateien ungültig. input.json und result.json im Format Version 2 wählen.",
   mismatch: "Dateien passen nicht zusammen. result.json gehört zu einer anderen input.json oder einem anderen Monat.",
   no_schedule: "result.json enthält keinen Dienstplan.",
   references:

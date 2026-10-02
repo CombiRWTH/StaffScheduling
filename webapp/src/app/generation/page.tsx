@@ -15,11 +15,12 @@ const USED = [
   "Monatskonten",
   "Abwesenheiten",
   "Einschränkungen",
+  "Wünsche",
   "Mindestbesetzung",
   "Arbeitszeit-, Pausen- und Ruheregeln",
   "gesicherte Dienste vor und nach dem Monat",
 ];
-const NOT_USED = ["Wünsche", "bestehende Dienste im Dienstplan"];
+const NOT_USED = ["bestehende Dienste im Dienstplan"];
 
 export default async function GenerationPage({ searchParams }: { searchParams: Promise<ScopeSearchParams> }) {
   const params = await searchParams;

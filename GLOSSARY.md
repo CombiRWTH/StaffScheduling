@@ -73,7 +73,7 @@ An approved absence read from the roster system, such as vacation; shown next to
 _Avoid_: availability entry, blocker
 
 **Wish** (Wunsch):
-A soft preference for a shift or free day; stored and shown, but not yet considered when generating a schedule.
+An employee's soft preference for a free day or shift, or for working a day or shift, on one date at any station; generation considers it and never binds to it.
 _Avoid_: request, preference rule, availability
 
 **Employee inspection** (Mitarbeiterprüfung):
@@ -110,6 +110,10 @@ _Avoid_: role, employee level (when the membership differs)
 Duties around a planning month from approved context plans, with the dates they cover completely; they constrain the month's boundary rules but never count towards its demand or accounts.
 _Avoid_: history, previous plan, fixed assignments
 
+**Gap** (Lücke):
+An unfilled required slot of a station, date, shift and qualification; reported separately from the assignments so guest staff can be requested, and never published as a duty.
+_Avoid_: shortage draft, placeholder, hidden employee, optimality gap
+
 **Generation** (Generierung):
 One solver run over the full month of a planning selection; it yields at most a generated candidate and is kept only until the API restarts.
 _Avoid_: solve job, case, optimization
@@ -123,7 +127,7 @@ The independent evaluation of a schedule's assignments against every hard rule, 
 _Avoid_: audit, validation (when meaning input validation)
 
 **Accepted schedule**:
-A generated candidate that passed the schedule check with no violation and no missing promised input.
+A generated candidate that passed the schedule check with no violation and no missing promised input; it may contain gaps.
 _Avoid_: optimal schedule, final plan
 
 **Schedule under review** (Dienstplan zur Prüfung):
@@ -131,7 +135,7 @@ The latest generated or validly imported schedule that the review shows and offe
 _Avoid_: saved schedule, library entry
 
 **Portable bundle**:
-The four files of one monthly run: `input.json`, `result.json` paired to it by the SHA-256 digest of its bytes, and the derived `schedule.csv` and `employees.csv`; readable and checkable without TimeOffice.
+The five files of one monthly run: `input.json`, `result.json` paired to it by the SHA-256 digest of its bytes, and the derived `schedule.csv`, `employees.csv` and `gaps.csv`; readable and checkable without TimeOffice.
 _Avoid_: case, export folder, legacy JSON
 
 **Origin** (Herkunft):
@@ -141,6 +145,10 @@ _Avoid_: source unit, pool (alone)
 **Transfer** (Einsatz außerhalb der Herkunft):
 A duty worked at a station other than its origin on that date. A home change within the month changes the origin from its first date on.
 _Avoid_: loan, external duty
+
+**Station transfer** (Einsatz anderer Station):
+A transfer of an employee whose origin is a station; duties of jumper-pool employees are not station transfers.
+_Avoid_: jumping, Ersatzeinsatz
 
 **Published schedule**:
 An accepted schedule written to the roster system for its stations and month.

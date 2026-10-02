@@ -14,7 +14,7 @@ Choose the month and stations, then open **Verfügbarkeit**. Pick an employee of
 
 The first day of the month is open for editing; click another day to switch. Change the entry and press **Einschränkung speichern** or **Wunsch speichern**. **Einschränkung entfernen** and **Wunsch entfernen** delete only that day's entry. An employee has at most one availability entry and one wish per day; saving replaces it.
 
-Wishes are saved and shown, but generation does not consider them yet. The page says so next to the wish form. The final examples contain no wishes.
+Generation considers wishes after gaps and health rules and before the monthly balance, spreading unavoidable denials fairly over employees; a wish never binds and always yields to an Einschränkung or absence. The page says so next to the wish form. The review shows what became of every wish; see [review](review.md#read-the-status-and-act-on-it).
 
 ## Dated staffing requirements
 
@@ -24,9 +24,9 @@ Edits stay unsaved until **Speichern**. Every cell whose value differs from the 
 
 To fill a month quickly, open **Wochenmuster anwenden**. Enter counts for Monday to Sunday and a holiday row for the shown qualification, then press **Vorschau**. Each qualification has its own pattern while the page is open. The backend applies the pattern to the month with its NRW calendar; public holidays take the holiday row. The preview lists the dates whose values change. **Übernehmen** replaces those dates in the unsaved grid and marks the changed cells like direct edits; **Verwerfen** keeps the grid as it was. Save afterwards to persist the result. The pattern itself is not stored and does not affect other months.
 
-## Objective weights
+## Objective order
 
-There are no weight settings. The previously stored but ignored objective weights were removed; optimization controls are omitted until they work. Solver settings arrive with generation.
+There are no weight settings. Generation optimizes gaps, health, wishes, monthly accounts and intermediate duties strictly in this order, one after the other; see the [solver reference](../architecture/solver.md#objective). The order is fixed in code.
 
 ## Save scope and validation failures
 
