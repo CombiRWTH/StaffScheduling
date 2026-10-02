@@ -19,8 +19,10 @@ from app.domain import (
     PlanningMonth,
     PlanningUnit,
     PlanningUnitMembership,
+    Shift,
     ShiftOption,
     StaffLevel,
+    staffing_role,
 )
 from app.timeoffice.facts import TimeOfficeFacts
 
@@ -285,6 +287,51 @@ def read_shift_options(connection: Connection, facts: TimeOfficeFacts) -> tuple[
     )
 
 
+def read_shifts(connection: Connection, facts: TimeOfficeFacts) -> tuple[Shift, ...]:
+    """The reference shifts with their times and paid minutes from their TimeOffice target-time segments."""
+    rows = select_rows(
+        connection,
+        """
+        SELECT d.Prim AS shift_id, d.KurzBez AS shift_code, sz.Kommt AS segment_start, sz.Geht AS segment_end,
+            sz.Minuten AS segment_minutes
+        FROM TDienste d
+        LEFT JOIN TDiensteSollzeiten sz ON sz.RefDienste = d.Prim
+        WHERE d.Prim IN :shift_ids
+        ORDER BY d.Prim, sz.Kommt
+        """,
+        shift_ids=sorted(facts.reference_shift_ids),
+    )
+    segments_by_shift: dict[int, list[RowMapping]] = {}
+    for row in rows:
+        segments_by_shift.setdefault(row["shift_id"], []).append(row)
+    shifts: list[Shift] = []
+    # Facts list the reference shifts in day order: early, intermediate, late, night.
+    for shift_id, shift_type in facts.reference_shift_type_by_id.items():
+        segments = segments_by_shift.get(shift_id, [])
+        code = _text(segments[0]["shift_code"]) if segments else None
+        if code is None:
+            raise ValueError(f"Missing TimeOffice reference shift or code for shift_id={shift_id}.")
+        if any(row["segment_start"] is None or row["segment_end"] is None for row in segments):
+            raise ValueError(f"Missing TimeOffice shift times for shift_id={shift_id}.")
+        # Minuten is the paid time of a segment; a segment without it counts its full length.
+        minutes = sum(
+            row["segment_minutes"] or round((row["segment_end"] - row["segment_start"]).total_seconds() / 60)
+            for row in segments
+        )
+        shifts.append(
+            Shift(
+                shift_id=shift_id,
+                code=code,
+                type=shift_type,
+                staffing_role=staffing_role(shift_type),
+                start_minute=_minute_of_day(segments[0]["segment_start"]),
+                end_minute=_minute_of_day(segments[-1]["segment_end"]),
+                net_work_minutes=minutes,
+            )
+        )
+    return tuple(shifts)
+
+
 def select_rows(connection: Connection, sql: str, **params: Any) -> Sequence[RowMapping]:
     """Run one SELECT; list parameters expand into IN clauses. An empty IN list reads nothing."""
     lists = [name for name, value in params.items() if isinstance(value, list)]
@@ -305,6 +352,10 @@ def _staff_level(profession_code: Any, facts: TimeOfficeFacts, context: str) -> 
     if code is None or code not in facts.staff_level_by_profession_code:
         raise ValueError(f"No qualification mapping for TimeOffice profession {code!r} ({context}).")
     return facts.staff_level_by_profession_code[code]
+
+
+def _minute_of_day(value: datetime) -> int:
+    return value.hour * 60 + value.minute
 
 
 def _minutes(hours: Any) -> int:

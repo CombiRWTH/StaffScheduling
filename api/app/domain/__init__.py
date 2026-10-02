@@ -2,7 +2,7 @@ from app.domain.assignment import Assignment, AssignmentType
 from app.domain.availability import Availability, AvailabilityEntry, AvailabilityType, EmployeeCalendar
 from app.domain.calendar import CalendarDay, DayType, month_calendar
 from app.domain.core import MinuteOfDay, NonEmptyStr, NonNegativeInt, PositiveId, SchedulingBaseModel
-from app.domain.dataset import SchedulingDataset
+from app.domain.dataset import SchedulingDataset, build_scheduling_dataset
 from app.domain.demand import (
     DemandCell,
     DemandConfiguration,
@@ -26,7 +26,7 @@ from app.domain.monthly_work_account import MonthlyWorkAccount, WorkCredit
 from app.domain.plan import Plan, PlanId
 from app.domain.planning_month import PlanningMonth
 from app.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitMembership, PlanningUnitType
-from app.domain.shift import Shift, ShiftId, ShiftOption, ShiftType, StaffingDemandRole
+from app.domain.shift import Shift, ShiftId, ShiftOption, ShiftType, StaffingDemandRole, staffing_role
 from app.domain.sunday_work_history import EmployeeSundayWorkHistory
 from app.domain.wish import Wish, WishEntry, WishType
 
@@ -37,6 +37,7 @@ __all__ = [
     "MinuteOfDay",
     "SchedulingBaseModel",
     "SchedulingDataset",
+    "build_scheduling_dataset",
     "PlanningMonth",
     "Plan",
     "PlanId",
@@ -58,6 +59,7 @@ __all__ = [
     "ShiftId",
     "ShiftType",
     "StaffingDemandRole",
+    "staffing_role",
     "DemandRequirement",
     "EmployeeSundayWorkHistory",
     "Wish",

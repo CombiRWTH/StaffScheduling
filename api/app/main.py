@@ -4,9 +4,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from app.api import availability, demand, planning
+from app.api import availability, demand, generation, planning
 from app.logging import configure_logging
 from app.settings import get_settings
+from app.solver.cp_sat.builder import create_cp_sat_model_builder
+from app.solver.generation import Generation
+from app.solver.service import SolverService
 from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable, create_db_engine
 
 settings = get_settings()
@@ -16,10 +19,14 @@ configure_logging(level=settings.log_level)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     engine = create_db_engine(settings=settings)
-    app.state.planning_source = TimeOfficeService(engine)
+    source = TimeOfficeService(engine)
+    solver = SolverService(settings, create_cp_sat_model_builder())
+    app.state.planning_source = source
+    app.state.generation = Generation(read_input=source.read_generation_input, solve=solver.solve)
     try:
         yield
     finally:
+        app.state.generation.shutdown()
         engine.dispose()
 
 
@@ -27,6 +34,7 @@ app = FastAPI(title="Staff Scheduling API", lifespan=lifespan)
 app.include_router(planning.router)
 app.include_router(availability.router)
 app.include_router(demand.router)
+app.include_router(generation.router)
 
 
 @app.exception_handler(TimeOfficeUnavailable)

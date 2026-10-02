@@ -19,6 +19,25 @@ from app.timeoffice.facts import TIMEOFFICE_FACTS
 
 SHIFT_CODES = {1113: "F", 1453: "Z", 1605: "S", 1690: "N"}
 
+# Target-time segments of the reference shifts as in TimeOffice: (start, end, paid minutes or None).
+DAY = datetime(2000, 1, 1)
+SHIFT_SEGMENTS = {
+    1113: [
+        (DAY.replace(hour=5, minute=55), DAY.replace(hour=10), 245),
+        (DAY.replace(hour=10, minute=30), DAY.replace(hour=13, minute=25), 175),
+    ],
+    1453: [(DAY.replace(hour=8, minute=30), DAY.replace(hour=14, minute=15), None)],
+    1605: [
+        (DAY.replace(hour=13, minute=15), DAY.replace(hour=16), 165),
+        (DAY.replace(hour=16, minute=30), DAY.replace(hour=21), 270),
+    ],
+    1690: [
+        (DAY.replace(hour=20, minute=10), DAY.replace(hour=21, minute=45), 95),
+        (DAY.replace(hour=22), DAY.replace(day=2), 120),
+        (DAY.replace(day=2, minute=30), DAY.replace(day=2, hour=6, minute=10), 340),
+    ],
+}
+
 # Key columns of each project table, used to apply the adapter's scoped DELETEs.
 PROJECT_TABLES = {
     "StaffSchedulingAvailability": ("employee_id", "availability_date"),
@@ -41,6 +60,7 @@ class InspectionSource:
         self.missing_employee = False
         self.duplicate_account = False
         self.duplicate_plan = False
+        self.missing_shift_times = False
         self.name = "Example MFA One"
         self.queries: list[str] = []
         self.tables: dict[str, list[dict[str, Any]]] = {name: [] for name in PROJECT_TABLES}
@@ -126,6 +146,19 @@ class InspectionSource:
             rows = self._project_rows("StaffSchedulingAvailability", params)
         elif "FROM dbo.StaffSchedulingWish" in sql:
             rows = self._project_rows("StaffSchedulingWish", params)
+        elif "JOIN TDiensteSollzeiten sz" in sql:
+            rows = [
+                {"shift_id": shift, "shift_code": SHIFT_CODES[shift], **segment}
+                for shift in params["shift_ids"]
+                for segment in (
+                    [{"segment_start": None, "segment_end": None, "segment_minutes": None}]
+                    if self.missing_shift_times and shift == 1690
+                    else [
+                        {"segment_start": start, "segment_end": end, "segment_minutes": minutes}
+                        for start, end, minutes in SHIFT_SEGMENTS[shift]
+                    ]
+                )
+            ]
         elif "FROM TDienste d" in sql:
             rows = [{"shift_id": shift, "shift_code": SHIFT_CODES[shift]} for shift in params["shift_ids"]]
         elif "FROM TPlanungseinheiten pe" in sql:
@@ -219,16 +252,21 @@ class InspectionSource:
                 if not (self.missing_evidence and employee == 1)
             ]
         elif "FROM TPlanPersonalKommtGeht" in sql:
-            if 1 in params["employee_ids"]:
-                rows = [
-                    {
-                        "employee_id": 1,
-                        "roster_date": datetime.combine(params["start"], datetime.min.time()),
-                        "global_absence_shift_id": 7,
-                        "resolved_absence_shift_id": 7,
-                        "resolved_absence_code": "U",
-                    }
-                ]
+            first = datetime.combine(params["start"], datetime.min.time())
+            roster = [
+                # An approved absence: the only kind of roster row planning may use.
+                {"employee_id": 1, "roster_date": first, "resolved_absence_code": "U"},
+                # Polluted worked shifts: an unmapped shift in another plan and earlier output in the target.
+                {"employee_id": 2, "roster_date": first, "plan_id": 9, "work_shift_id": 9999},
+                {"employee_id": 1, "roster_date": first.replace(day=2), "plan_id": 1101, "work_shift_id": 1113},
+            ]
+            # Apply the query's own row filter, so a query that reads worked shifts would see them.
+            absences_only = "pkg.RefgAbw IS NOT NULL OR pkg.RefDienstAbw IS NOT NULL" in sql
+            rows = [
+                row
+                for row in roster
+                if row["employee_id"] in params["employee_ids"] and ("work_shift_id" not in row or not absences_only)
+            ]
         else:
             raise AssertionError(f"Unexpected read: {sql}")
         result = MagicMock()

@@ -36,6 +36,13 @@ class StaffingDemandRole(StrEnum):
     NON_MINIMUM_WORK = "non_minimum_work"
 
 
+def staffing_role(shift_type: ShiftType) -> StaffingDemandRole:
+    """The intermediate shift adds coverage on top of the minimum; the other shifts fill it."""
+    if shift_type == ShiftType.INTERMEDIATE:
+        return StaffingDemandRole.OPTIONAL_COVERAGE
+    return StaffingDemandRole.REQUIRED_MINIMUM
+
+
 class Shift(SchedulingBaseModel):
     """Scheduling-relevant view of a TimeOffice shift.
 

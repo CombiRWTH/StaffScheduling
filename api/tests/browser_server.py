@@ -6,8 +6,15 @@ import uvicorn
 from fastapi import Request
 from inspection_fixture import InspectionSource
 
+from app.api.generation import get_generation
 from app.api.shared import get_planning_source
+from app.domain import DemandCell, MonthlyDemand, PlanningMonth, SchedulingDataset, StaffLevel
 from app.main import app
+from app.settings import get_settings
+from app.solver.cp_sat.builder import create_cp_sat_model_builder
+from app.solver.generation import Generation
+from app.solver.models import Solution, SolutionStatus
+from app.solver.service import SolverService
 from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable
 
 source = InspectionSource()
@@ -26,6 +33,37 @@ def browser_timeoffice(request: Request) -> TimeOfficeService:
 
 
 app.dependency_overrides[get_planning_source] = browser_timeoffice
+
+# Station North has saved staffing in June, July and August; September has none, so generation refuses it.
+for month in (6, 7, 8):
+    planning_month = PlanningMonth(year=2026, month=month)
+    cells = tuple(
+        DemandCell(
+            date=planning_month.start.replace(day=day),
+            shift_id=1113,
+            staff_level=StaffLevel.PROFESSIONAL,
+            required_count=1,
+        )
+        for day in (5, 6)
+    )
+    source.service.save_demand(MonthlyDemand(planning_unit_id=101, planning_month=planning_month, cells=cells))
+
+solver = SolverService(get_settings(), create_cp_sat_model_builder())
+
+
+def browser_solve(dataset: SchedulingDataset, timeout: float) -> Solution:
+    """June solves for real; July fails at runtime and August is infeasible, each after a visible run."""
+    month = dataset.planning_month.month
+    if month == 6:
+        return solver.solve(dataset, timeout=timeout)
+    sleep(2)
+    if month == 7:
+        raise RuntimeError("Fictional solver crash")
+    return Solution(status=SolutionStatus.INFEASIBLE)
+
+
+generation = Generation(read_input=source.service.read_generation_input, solve=browser_solve)
+app.dependency_overrides[get_generation] = lambda: generation
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=18080)

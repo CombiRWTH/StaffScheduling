@@ -17,9 +17,11 @@ from app.domain import (
     PlanningUnit,
     PlanningUnitMembership,
     PlanningUnitType,
+    SchedulingDataset,
     Wish,
     WishEntry,
     build_inspection,
+    build_scheduling_dataset,
     expand_pattern,
     inspection_employee_ids,
     month_calendar,
@@ -55,28 +57,23 @@ class TimeOfficeService:
         self, *, planning_unit_ids: tuple[int, ...], planning_month: PlanningMonth
     ) -> PlanningInspection:
         """The complete read-only employee scope of the selected stations and their pool, or an error."""
+        with self._engine.connect() as connection:
+            return self._inspect(connection, tuple(dict.fromkeys(planning_unit_ids)), planning_month)
+
+    def read_generation_input(
+        self, *, planning_unit_ids: tuple[int, ...], planning_month: PlanningMonth
+    ) -> SchedulingDataset:
+        """The full-month solver input of the selected stations, or an error.
+
+        Roster rows are read only as approved absences; worked shifts of any plan, including earlier
+        output in the target plan, never enter generation.
+        """
         selected = tuple(dict.fromkeys(planning_unit_ids))
         with self._engine.connect() as connection:
-            units, memberships, employee_ids = self._selection_scope(connection, selected, planning_month)
-            employees = queries.read_employees(connection, self._facts, employee_ids)
-            accounts = queries.read_accounts(connection, self._facts, employee_ids, planning_month)
-            absences = queries.read_absences(connection, self._facts, employee_ids, planning_month)
-            availability = project_tables.read_availability(connection, employee_ids, planning_month)
-            evidence = project_tables.read_evidence(connection, employee_ids, planning_month)
-
-        scope_memberships = tuple(row for row in memberships if row.employee_id in employee_ids)
-        relevant_unit_ids = set(selected) | {row.planning_unit_id for row in scope_memberships}
-        return build_inspection(
-            planning_month=planning_month,
-            selected_station_ids=selected,
-            units=tuple(unit for unit in units if unit.planning_unit_id in relevant_unit_ids),
-            employees=employees,
-            memberships=scope_memberships,
-            accounts=accounts,
-            evidence=evidence,
-            availability=(*absences, *availability),
-            allowed_shift_ids=set(self._facts.reference_shift_ids),
-        )
+            inspection = self._inspect(connection, selected, planning_month)
+            shifts = queries.read_shifts(connection, self._facts)
+            demands = tuple(project_tables.read_demand(connection, unit_id, planning_month) for unit_id in selected)
+        return build_scheduling_dataset(inspection=inspection, shifts=shifts, demands=demands)
 
     def list_employees(
         self, *, planning_unit_ids: tuple[int, ...], planning_month: PlanningMonth
@@ -147,6 +144,30 @@ class TimeOfficeService:
         with self._engine.connect() as connection:
             self._require_stations(connection, (pattern.planning_unit_id,), pattern.planning_month)
         return expand_pattern(pattern)
+
+    def _inspect(
+        self, connection: Connection, selected: tuple[int, ...], planning_month: PlanningMonth
+    ) -> PlanningInspection:
+        units, memberships, employee_ids = self._selection_scope(connection, selected, planning_month)
+        employees = queries.read_employees(connection, self._facts, employee_ids)
+        accounts = queries.read_accounts(connection, self._facts, employee_ids, planning_month)
+        absences = queries.read_absences(connection, self._facts, employee_ids, planning_month)
+        availability = project_tables.read_availability(connection, employee_ids, planning_month)
+        evidence = project_tables.read_evidence(connection, employee_ids, planning_month)
+
+        scope_memberships = tuple(row for row in memberships if row.employee_id in employee_ids)
+        relevant_unit_ids = set(selected) | {row.planning_unit_id for row in scope_memberships}
+        return build_inspection(
+            planning_month=planning_month,
+            selected_station_ids=selected,
+            units=tuple(unit for unit in units if unit.planning_unit_id in relevant_unit_ids),
+            employees=employees,
+            memberships=scope_memberships,
+            accounts=accounts,
+            evidence=evidence,
+            availability=(*absences, *availability),
+            allowed_shift_ids=set(self._facts.reference_shift_ids),
+        )
 
     def _selection_scope(
         self, connection: Connection, selected: tuple[int, ...], month: PlanningMonth

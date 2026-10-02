@@ -14,7 +14,6 @@ class SolutionStatus(StrEnum):
     INFEASIBLE = "infeasible"
     MODEL_INVALID = "model_invalid"
     UNKNOWN = "unknown"
-    ERROR = "error"
 
 
 class Solution(SchedulingBaseModel):
