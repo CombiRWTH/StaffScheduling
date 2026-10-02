@@ -311,3 +311,14 @@ export interface ScheduleReview {
 
 /** Why the backend refused an uploaded pair of files. */
 export type BundleProblem = "malformed" | "mismatch" | "no_schedule" | "policy" | "references" | "check";
+
+/** What a committed publication or clear changed in the named stations' month. */
+export interface PublicationResult {
+  planning_month: PlanningMonth;
+  planning_unit_ids: number[];
+  removed_duties: number;
+  published_duties: number;
+}
+
+/** Why the backend refused to publish the schedule under review. */
+export type PublicationProblem = "changed" | "not_accepted" | "conflict";

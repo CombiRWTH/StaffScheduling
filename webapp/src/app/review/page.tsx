@@ -5,11 +5,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getReview } from "@/lib/api";
 import { monthLabel } from "@/lib/labels";
-import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
+import { loadPlanningScope, type PlanningScope, type ScopeSearchParams } from "@/lib/scope";
 import { selectionMonth, selectionSearch } from "@/lib/selection";
 import type { ScheduleReview } from "@/lib/types";
 import { AccountTable } from "./account-table";
 import { ImportForm } from "./import-form";
+import { PublicationCard } from "./publication-card";
 import { ReviewSummary } from "./review-summary";
 import { ScheduleGrid } from "./schedule-grid";
 import type { Metadata } from "next";
@@ -23,6 +24,34 @@ function reviewScope(review: ScheduleReview) {
   return { month: selectionMonth(year, month), stations };
 }
 
+/** Whether the review's own scope is exactly the selected month and stations. */
+function isSelected(own: ReturnType<typeof reviewScope>, scope: PlanningScope) {
+  const selected = new Set(scope.stationIds);
+  return (
+    own.month === scope.month &&
+    own.stations.length === selected.size &&
+    own.stations.every((unit) => selected.has(unit.planning_unit_id))
+  );
+}
+
+/** The publication card's scope: the selected stations and month, and the review if it is theirs. */
+function publicationScope(scope: PlanningScope, review: ScheduleReview | null) {
+  const [year, month] = scope.month.split("-").map(Number);
+  const selected = new Set(scope.stationIds);
+  return {
+    month: scope.month,
+    monthName: monthLabel(year, month).name,
+    stations: scope.stations
+      .filter((unit) => selected.has(unit.planning_unit_id))
+      .map((unit) => ({ id: unit.planning_unit_id, name: unit.display_name })),
+    review: review && {
+      receivedAt: review.received_at,
+      duties: review.tables.duties.length,
+      accepted: review.solution.check.status === "accepted",
+    },
+  };
+}
+
 export default async function ReviewPage({ searchParams }: { searchParams: Promise<ScopeSearchParams> }) {
   const params = await searchParams;
   const [scope, current] = await Promise.all([
@@ -34,12 +63,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
   ]);
   const review = "review" in current ? current.review : null;
   const own = review && reviewScope(review);
-  const selected = new Set(scope.stationIds);
-  const matches =
-    own &&
-    own.month === scope.month &&
-    own.stations.length === scope.stationIds.length &&
-    own.stations.every((unit) => selected.has(unit.planning_unit_id));
+  const matches = own !== null && isSelected(own, scope);
 
   return (
     <div className="py-6">
@@ -92,6 +116,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
             <AccountTable review={review} />
           </>
         )}
+        {scope.stationIds.length > 0 && <PublicationCard {...publicationScope(scope, matches ? review : null)} />}
         <ImportForm />
       </div>
     </div>

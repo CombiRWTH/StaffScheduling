@@ -11,6 +11,8 @@ import type {
   PlanningInspection,
   PlanningOptions,
   BundleProblem,
+  PublicationProblem,
+  PublicationResult,
   ScheduleReview,
   WishEntry,
 } from "@/lib/types";
@@ -32,7 +34,8 @@ class ApiError extends Error {
 
 /**
  * One API call's response; failures become `ApiError`s, `invalid` and `incomplete` describing a 422 and 409 for
- * this call. A `FormData` body is sent as multipart; `problems` names a 422 by the `problem` code in its body.
+ * this call. A `FormData` body is sent as multipart; `problems` names a 422 or 409 by the `problem` code in its
+ * body. `unreachable` replaces the message for a call that got no answer within `timeoutSeconds`.
  */
 async function send(
   method: "GET" | "PUT" | "POST" | "DELETE",
@@ -43,12 +46,16 @@ async function send(
     invalid = INVALID_SELECTION,
     incomplete = INCOMPLETE,
     problems,
+    timeoutSeconds = 10,
+    unreachable = "Backend nicht erreichbar. Verbindung und Einrichtung prüfen.",
   }: {
     params?: URLSearchParams;
     body?: unknown;
     invalid?: string;
     incomplete?: string;
     problems?: Record<string, string>;
+    timeoutSeconds?: number;
+    unreachable?: string;
   } = {},
 ): Promise<Response> {
   const json = body !== undefined && !(body instanceof FormData);
@@ -59,16 +66,15 @@ async function send(
       headers: json ? { "Content-Type": "application/json" } : undefined,
       body: json ? JSON.stringify(body) : (body as FormData | undefined),
       cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(timeoutSeconds * 1000),
     });
   } catch {
-    throw new ApiError("Backend nicht erreichbar. Verbindung und Einrichtung prüfen.");
+    throw new ApiError(unreachable);
   }
-  if (response.status === 422) {
+  if (response.status === 422 || response.status === 409) {
     const problem = problems && (await response.json().catch(() => null))?.problem;
-    throw new ApiError(problems?.[problem] ?? invalid, 422);
+    throw new ApiError(problems?.[problem] ?? (response.status === 422 ? invalid : incomplete), response.status);
   }
-  if (response.status === 409) throw new ApiError(incomplete, 409);
   if (!response.ok) throw new ApiError(await unavailableMessage(response), response.status);
   return response;
 }
@@ -221,6 +227,45 @@ export function importReview(files: FormData) {
     body: files,
     invalid: IMPORT_PROBLEMS.malformed,
     problems: IMPORT_PROBLEMS,
+  });
+}
+
+const INVALID_PUBLICATION =
+  "Veröffentlichung ungültig. Stationen mit Planungsziel wählen; ein leerer Dienstplan wird nicht veröffentlicht.";
+const INCOMPLETE_PUBLICATION =
+  "Planungsziele oder Zuordnungen in TimeOffice sind unvollständig oder mehrdeutig. Nichts wurde geändert.";
+const PUBLICATION_PROBLEMS: Record<PublicationProblem, string> = {
+  changed: "Der Dienstplan zur Prüfung hat sich geändert. Seite neu laden und erneut prüfen.",
+  not_accepted: "Nur ein angenommener Dienstplan kann veröffentlicht werden.",
+  conflict:
+    "TimeOffice enthält an einem Diensttag bereits eine Abwesenheit oder einen anderen Dienst eines Mitarbeiters. " +
+    "Nichts wurde geändert; den Dienstplan neu generieren.",
+};
+/** A write without an answer may still have been committed, so its outcome is unknown, not failed. */
+const PUBLICATION_UNANSWERED =
+  "Keine Antwort vom Backend: Ob TimeOffice geändert wurde, ist unbekannt. Seite neu laden und TimeOffice prüfen.";
+
+/** Publish the accepted schedule under review, identified by its scope and arrival, to its stations' targets. */
+export function publishReview(month: string, stationIds: number[], receivedAt: string) {
+  const body = { planning_month: planningMonth(month), planning_unit_ids: stationIds, received_at: receivedAt };
+  return request<PublicationResult>("POST", "/publication", {
+    body,
+    invalid: INVALID_PUBLICATION,
+    incomplete: INCOMPLETE_PUBLICATION,
+    problems: PUBLICATION_PROBLEMS,
+    timeoutSeconds: 120,
+    unreachable: PUBLICATION_UNANSWERED,
+  });
+}
+
+/** Remove the published duties of exactly these stations' month. */
+export function clearPublication(month: string, stationIds: number[]) {
+  return request<PublicationResult>("DELETE", "/publication", {
+    params: selectionQuery(month, stationIds),
+    invalid: INVALID_PUBLICATION,
+    incomplete: INCOMPLETE_PUBLICATION,
+    timeoutSeconds: 120,
+    unreachable: PUBLICATION_UNANSWERED,
   });
 }
 
