@@ -4,9 +4,9 @@ import "./globals.css";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de">
-      <body>
+      <body className="md:flex">
         <NavigationWrapper />
-        <main className="min-h-screen p-4 md:ml-64">
+        <main className="min-h-screen min-w-0 flex-1 p-4">
           <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </body>

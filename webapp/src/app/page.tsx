@@ -3,6 +3,7 @@ import { CalendarCheck, CalendarHeart, CalendarPlus, UserCog, Users, type Lucide
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
+import { areaColors } from "@/lib/area-colors";
 import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
 import { selectionSearch } from "@/lib/selection";
 import { cn } from "@/lib/utils";
@@ -24,33 +25,33 @@ const areas: Area[] = [
     description: "Mitarbeiter, Zuordnungen, Monatskonten und Einschränkungen der Auswahl prüfen",
     icon: Users,
     href: "/employees",
-    color: "text-blue-500 bg-blue-50",
+    color: areaColors.employees.icon,
   },
   {
     title: "Verfügbarkeit",
     description: "Einschränkungen und Wünsche einzelner Mitarbeiter im Monat bearbeiten",
     icon: CalendarHeart,
     href: "/availability",
-    color: "text-rose-500 bg-rose-50",
+    color: areaColors.availability.icon,
   },
   {
     title: "Mindestbesetzung",
     description: "Mindestbesetzung je Tag, Schicht und Qualifikation festlegen",
     icon: UserCog,
     href: "/staffing",
-    color: "text-amber-500 bg-amber-50",
+    color: areaColors.staffing.icon,
   },
   {
     title: "Dienstplan erstellen",
     description: "Einen Dienstplan für den gewählten Monat und die Stationen generieren",
     icon: CalendarPlus,
-    color: "text-purple-500 bg-purple-50",
+    color: areaColors.createRoster.icon,
   },
   {
     title: "Dienstplan prüfen",
     description: "Generierte Dienstpläne prüfen, exportieren und veröffentlichen",
     icon: CalendarCheck,
-    color: "text-green-500 bg-green-50",
+    color: areaColors.reviewRoster.icon,
   },
 ];
 

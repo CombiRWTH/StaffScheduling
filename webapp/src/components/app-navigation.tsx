@@ -18,6 +18,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { type AreaColor, areaColors } from "@/lib/area-colors";
 import { selectionSearch } from "@/lib/selection";
 import { cn } from "@/lib/utils";
 
@@ -28,20 +29,23 @@ interface NavigationLink {
   href?: string;
   /** What the entry covers, shown as a tooltip. */
   hint?: string;
+  /** Highlight of the current entry, matching the area's home card. */
+  color?: AreaColor;
 }
 
 const navigationSections: Array<{ label: string; links: NavigationLink[] }> = [
   {
     label: "Planungsdaten",
     links: [
-      { href: "/employees", label: "Mitarbeiter", icon: Users },
+      { href: "/employees", label: "Mitarbeiter", icon: Users, color: areaColors.employees },
       {
         href: "/availability",
         label: "Verfügbarkeit",
         icon: CalendarHeart,
         hint: "Einschränkungen und Wünsche des Monats",
+        color: areaColors.availability,
       },
-      { href: "/staffing", label: "Mindestbesetzung", icon: UserCog },
+      { href: "/staffing", label: "Mindestbesetzung", icon: UserCog, color: areaColors.staffing },
     ],
   },
   {
@@ -70,7 +74,7 @@ interface SidebarContentProps {
 function SidebarContent({ search, isActive, onClose, showCloseButton = false }: SidebarContentProps) {
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      <div className="flex h-16 shrink-0 items-center justify-between border-b border-sidebar-border px-4">
+      <div className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-sidebar-border px-6">
         <Link
           href={`/${search}`}
           className="flex min-w-0 items-center gap-2 hover:opacity-80 transition-opacity"
@@ -95,11 +99,11 @@ function SidebarContent({ search, isActive, onClose, showCloseButton = false }: 
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <nav className="space-y-4 px-2 py-3">
+        <nav className="space-y-4 px-3 py-3">
           {navigationSections.map(({ label, links }) => (
-            <section key={label} className="space-y-0.5">
+            <section key={label} className="flex flex-col gap-0.5">
               <h2 className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</h2>
-              {links.map(({ href, label: linkLabel, icon: Icon, hint }) =>
+              {links.map(({ href, label: linkLabel, icon: Icon, hint, color }) =>
                 !href ? (
                   <div
                     key={linkLabel}
@@ -118,7 +122,9 @@ function SidebarContent({ search, isActive, onClose, showCloseButton = false }: 
                     asChild
                     className={cn(
                       "h-8 w-full justify-start gap-2.5 px-3 font-normal",
-                      isActive(href) && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+                      isActive(href)
+                        ? cn("font-medium", color?.navActive ?? "bg-sidebar-accent text-sidebar-accent-foreground")
+                        : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     )}
                   >
                     <Link href={`${href}${search}`} onClick={onClose} title={hint}>
@@ -158,7 +164,7 @@ export function AppNavigation() {
         </Button>
       </div>
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-sidebar-border md:block">
+      <aside className="sticky top-0 z-40 hidden h-screen w-max max-w-72 shrink-0 border-r border-sidebar-border md:block">
         <SidebarContent search={search} isActive={isActive} />
       </aside>
 
@@ -170,7 +176,7 @@ export function AppNavigation() {
             onClick={() => setIsMobileOpen(false)}
             aria-label="Navigation schließen"
           />
-          <aside className="relative h-full w-64 max-w-[85vw] border-r border-sidebar-border shadow-xl">
+          <aside className="relative h-full w-max max-w-[85vw] border-r border-sidebar-border shadow-xl">
             <SidebarContent
               search={search}
               isActive={isActive}
