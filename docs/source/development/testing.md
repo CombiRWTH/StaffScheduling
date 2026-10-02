@@ -1,60 +1,179 @@
 # Testing
 
-Run commands from the repository root after the [native tool installation](../getting-started/installation.md#optional-native-developer-setup). `just run` and the CI image job need Docker. [Current limitations](../validation/index.md) records failing gates.
+Run commands from the repository root after the [native tool installation](../getting-started/installation.md#optional-native-developer-setup). `just run` and the CI image job need Docker. [Current limitations](../validation/index.md) records failing gates and open evidence.
 
 ## Unit responsibilities
 
-`just test` runs the offline API suite, including tests marked `integration`; only explicitly external `timeoffice` tests and the minutes-long `reproduction` tests are excluded by default. `test_schedule_check.py` owns every hard rule and objective score through `check_schedule`, with the discriminating boundary examples of the rule policy: credited qualification versus employee qualification, MFA demand, a jumper pool employee at two stations, touched and following-date availability, narrowing allowed-shift restrictions, the ±460-minute band with and without duties, exactly 11 hours of rest, three versus four nights across the month start, exactly 48 hours of recovery, break and daily-work limits (checked against the solver's own implementation through its diagnostics), the monthly work average, distinct replacement rest days of the month, a Saturday night as Sunday work, daylight-saving times in rest and recovery, context counted once, malformed assignments, a shortfall accepted only as exactly its declared gap, every wish type at its granted/denied boundary (a night touching a free day, a preferred shift at a replacement station) with four not-grantable causes, the cubic wish cost per employee and group, station transfers counted for station members only, isolated workdays with known free neighbours at both month edges, back-to-back worked weekends with a Friday night and the preceding-context limit at the month start, and the scores. `test_solver.py` owns production solves through `SolverService` (integration), after checking that every objective tier is a score field and that the isolated-workday and weekend terms equal their checked scores on the same fixed schedules; every solve asserts that each stage value equals its checked score: an accepted month with every stage optimal, a first stage given half of the time and a later stage without time keeping the previous schedule as feasible, context ruling out a fourth night, unmet demand returned as exactly its gaps, a non-staffing conflict staying infeasible, unreachable accounts, a month refused without every account and solved with them, the October clock-change night that breaks the break rule, a jumper pool employee needed at two stations (one duty, one gap), wishes (fairness spreading two unavoidable denials 1 + 1 against the balance, a jumper pool wish granted at its replacement station, an ungrantable wish costing nothing), an intermediate gap that never offsets a surplus elsewhere, and the objective order at its one-step boundaries (gaps over health, health over a station transfer, a station transfer over a wish, health over a wish, one isolated workday and one back-to-back weekend fewer over a wish, wishes over balance, health over balance, balance over extra intermediate duties). `scheduling.py` builds their small canonical inputs with the reference shift catalog. A new hard rule or objective adds its examples to both files, as described in [changing the solver](../architecture/solver.md#adding-or-changing-a-hard-rule). Settings tests own secret loading. `test_inspection_rules.py` owns the domain rule that adds only jumper pools that station members call home. `test_monthly_configuration.py` owns the NRW calendar and weekly-pattern expansion rules. `test_generation.py` owns the generation job (immediate acceptance, busy rejection, lock release after solver and input failures, sanitized errors) through `Generation` with substitute input and solver functions. The foundation tests exercise API liveness without credentials, shared database error sanitization/TLS, driver/settings validation and diagnostic cleanup/read-only query behavior.
+`just test` runs the offline API suite, including tests marked `integration`. Two markers are excluded by default:
+
+| Marker         | Tests                                                  | Run with                    |
+| -------------- | ------------------------------------------------------ | --------------------------- |
+| `timeoffice`   | Need the authorized external test database             | `just test-timeoffice`      |
+| `reproduction` | Solve the committed example inputs again; take minutes | `just test -m reproduction` |
+
+`test_schedule_check.py` owns every hard rule and objective score through `check_schedule`. It tests each rule at its discriminating boundary:
+
+- Qualification: credited versus employee qualification, MFA demand, a jumper pool employee at two stations.
+- Availability: touched and following-date entries, narrowing allowed-shift restrictions.
+- Time: the ±460-minute band, exactly 11 hours of rest, three versus four nights across the month start, exactly 48 hours of recovery, daylight-saving times.
+- Work: break and daily-work limits (against the solver's own diagnostics), the monthly average, replacement rest days, a Saturday night as Sunday work.
+- Input: context counted once, malformed assignments, a shortfall accepted only as its declared gap.
+- Wishes: every type at its granted/denied boundary, four not-grantable causes, the cubic cost per employee and group.
+- Health: station transfers for station members only, isolated workdays at both month edges, back-to-back weekends with a Friday night and preceding context.
+
+`test_solver.py` owns production solves through `SolverService` (integration). Every solve asserts that each stage value equals its checked score. It also checks that every objective tier is a score field. The cases cover:
+
+- An accepted month with every stage optimal.
+- Time limits: each stage but the last gets half of the remaining time. A later stage without time keeps the previous schedule as feasible.
+- Context ruling out a fourth night, and the October clock-change night that breaks the break rule.
+- Unmet demand returned as exactly its gaps. An intermediate gap never offsets a surplus elsewhere.
+- A non-staffing conflict stays infeasible. A month is refused without every account and solved with them.
+- A jumper pool employee needed at two stations gets one duty and one gap.
+- Fairness spreads two unavoidable denials 1 + 1 against the balance. An ungrantable wish costs nothing.
+
+The objective order is tested at one-step boundaries:
+
+| Higher priority                                            | Outweighs                   |
+| ---------------------------------------------------------- | --------------------------- |
+| Gaps                                                       | Health                      |
+| Health                                                     | A station transfer, balance |
+| A station transfer                                         | A wish                      |
+| Health, one isolated workday or back-to-back weekend fewer | A wish                      |
+| Wishes                                                     | Balance                     |
+| Balance                                                    | Extra intermediate duties   |
+
+`scheduling.py` builds the small canonical inputs for both files. A new hard rule or objective adds its examples to both files; see [changing the solver](../architecture/solver.md#adding-or-changing-a-hard-rule).
+
+| File                            | Owns                                                                                                                                    |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `test_settings.py`              | Secret loading                                                                                                                          |
+| `test_inspection_rules.py`      | Adding only the jumper pools that station members call home                                                                             |
+| `test_monthly_configuration.py` | The NRW calendar and weekly-pattern expansion                                                                                           |
+| `test_generation.py`            | The generation job: immediate acceptance, busy rejection, lock release after failures, sanitized errors                                 |
+| `test_foundation.py`            | Liveness without credentials, database error sanitization and TLS, driver/settings validation, diagnostic cleanup and read-only queries |
 
 ## Service and adapter integration
 
-The Compose healthchecks gate `docker compose up --wait` on API liveness and on the Next `/api/health` handler, which makes a real server-side request to the API. The CI image job validates the Compose file, builds both images without credentials and checks the ODBC driver in the API image.
+Compose healthchecks gate `docker compose up --wait` on API liveness and on the Next `/api/health` handler. That handler makes a real request to the API. The CI image job validates the Compose file, builds both images without credentials and checks the API image's ODBC driver.
 
-FastAPI and Next source reload were checked separately with isolated source copies: editing each live bind mount changed its HTTP response without rebuilding. Host `.venv`, `node_modules`, `.next`, local environment files and secrets are excluded from image build contexts; container dependency/build volumes mask host directories.
+Editing a live bind mount reloads FastAPI and Next without a rebuild. Host `.venv`, `node_modules`, `.next`, local environment files and secrets stay out of image build contexts. Container dependency and build volumes mask the host directories.
+
+### Adapter fixture
+
+`api/tests/inspection_fixture.py` substitutes SQL query results. Production queries, inspection validation and HTTP routes stay in use; production never imports the fixture. It supplies:
+
+- Fictional employees, stations and complete monthly declarations.
+- Trusted context plans for the last 14 days of every month, with one trusted night on December 31.
+- Deliberate failure months and failing write IDs.
+- In-memory project tables and roster that apply the adapter's parameters and roll back failed transactions.
+
+The fixture recognizes the adapter's statements by their text. It tests the adapter's decisions, not the SQL. SQL Server behaviour is covered by the [live checks](../validation/index.md#publication-and-clear).
+
+### API service tests
+
+| File                            | Owns                                                                                                                                          |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `test_employee_inspection.py`   | Source completeness, identity, memberships, jumper pool eligibility, accounts, TimeOffice code translation, HTTP validation                   |
+| `test_monthly_configuration.py` | Scoped availability, wish and demand writes; native absences survive; validation before writing; pattern preview; HTTP `422`                  |
+| `test_generation.py`            | Generation input from `TimeOfficeService.read_generation_input`, and the generation HTTP contract                                             |
+| `test_review.py`                | Schedule tables, bundle files and round trip, every import rejection, `gaps.csv`, published schemas, the review/download/import HTTP contract |
+| `test_examples.py`              | The example validator and both committed sets in `plaene/`                                                                                    |
+| `test_publication.py`           | Publication and clear through `TimeOfficeService` and over HTTP                                                                               |
+
+Generation input ignores polluted roster rows and keeps approved absences. The fixture applies the roster query's own absence filter, so a query that read worked shifts would fail. Worked duties come only from trusted context plans; a context duty that differs from its shift fails. Only the selected station and its jumper pool are units, and only the month's project wishes are input. A station without saved staffing is refused. Shift segments, breaks and paid minutes come from the target-time segments. Over HTTP, one real solve reaches `completed` with an `accepted` check. The test also checks `404` before any job and after a restart, `422`/`409` without a job and `423` while busy.
+
+A stale published schema is rewritten and fails the review test once.
+
+The example validator accepts a consistent two-month sequence of both stations. It rejects changed files, context that differs from the neighbouring month, a rejected month, missing or extra stations and misplaced folders. The `reproduction` tests in `test_examples.py` solve every committed input again. The set generation is a `timeoffice` test that runs only with `PLAENE_GENERATION=write`; see [examples and reproduction](../validation/examples.md).
+
+Publication writes one row per segment into the destination station's target plan, with the membership profession and the `Info` marker. A jumper pool night goes into the other station's plan, dated on its start. Numbering continues after a kept native wish. Absences, wishes, duties entered in TimeOffice and other-plan duties are kept. A second write waits for the first. Invalid schedules are rejected before any deletion. A failed insert, collision or differing read-back (`read_back`) rolls the deletion back; a failed commit reports stage `commit`. Over HTTP it publishes only with the reviewed `received_at` and stations. It maps `conflict`, `concurrent`, `503`, `not_accepted` and `changed`; an empty schedule raises `InvalidSelection` (`422`). `test_foundation.py` checks that deadlocks and duplicate keys become a sanitized `TimeOfficeConflict`. A foreign-key violation stays a query failure.
 
 ## Staff-admin browser flows
 
-Selection/inspection, monthly configuration, generation, review with import/export and publication/clear are automated.
+Selection and inspection, monthly configuration, generation, review with import/export, and publication/clear are automated.
 
 ```sh
 just install
 just test-browser
 ```
 
-The locked `@playwright/test` runner uses Chromium; `just install` installs it alongside frozen dependencies. Linux browser hosts also need `pnpm --dir webapp exec playwright install --with-deps chromium`. Tests require native API/webapp tools and free loopback ports 18080/18081. The runner starts/stops its own API and Next development servers and refuses to reuse an existing process. No database credentials or Docker are needed for this flow. `just check` runs it as an independent offline gate; CI has a separate browser job so an API test failure does not suppress it.
+- The locked `@playwright/test` runner uses Chromium, installed by `just install`.
+- Linux hosts also need `pnpm --dir webapp exec playwright install --with-deps chromium`.
+- Tests need the native tools and free loopback ports 18080 and 18081.
+- The runner starts its own API and Next servers and refuses to reuse an existing process.
+- No other `next dev` may run for `webapp/`; Next.js allows one development server per project directory.
+- No database credentials or Docker are needed.
+- `just check` runs the flows as an independent gate. CI runs them in a separate job.
 
-`webapp/tests/browser/selection.spec.ts` selects both fictional stations/full month, verifies jumper pool context, one row per stable employee, MFA, dated origin/replacement memberships, target, actual and credited hours (_160:00 h_, _8:00 h_) with dated credits, availability, search and unit filter. It changes month/stations, retains available stations, removes unavailable ones and checks empty/unavailable/incomplete states and recovery without old-scope/partial tables. URL-backed checkbox transitions are checked after navigation, using bounded waits. Further tests check that a subpage's back arrow returns to the overview with the selection, that the overview shows its welcome and the sidebar links the overview plus exactly the five implemented areas, that the overview lists the five planning cards in order without step numbers, the first opens Mitarbeiter with the selection kept and no page shows a next-step link, that year entry keeps the month and rejects out-of-range years, that a missing or invalid month redirects to January of the current year and invalid stations ask for a selection, and that the mobile navigation opens, keeps the selection and closes. Another `next dev` for `webapp/` must not be running, because Next.js allows one development server per project directory.
+Failure traces are kept under the ignored `webapp/test-results/`. Inspect one with `pnpm --dir webapp exec playwright show-trace <path>`.
 
-`webapp/tests/browser/configuration.spec.ts` is the configure flow. On **Verfügbarkeit** it saves a _Nur bestimmte Schichten_ entry with shifts and reason, reloads, edits it to _Urlaub_, checks that the native absence stays, saves and removes a wish without touching the availability entry, then saves a wish and checks that editing and deleting the availability entry leaves it in place, and confirms the empty day (with the New Year holiday label) after reload. A save for "Example Jumper Three" fails deliberately: the error appears, no success message, and the entered type stays. On **Mindestbesetzung** it edits and resets a cell, saves Fachkraft and MFA demand on different dates, reloads both, opens the weekly pattern by keyboard and previews it (the New Year holiday takes the holiday row, six dates listed), applies it to the unsaved grid, checks that each qualification keeps its own pattern and resets it. Throughout, it checks the per-cell change marks through their accessible text: the "Geändert, gespeichert: _n_" description of a cell, the number of marked cells, the tab marker and the change count after a direct edit, six marked cells after the pattern (including a saved 2 replaced by 0), and no marks after reset or a successful save. A count of `-1` is marked invalid, rejected by the API on save and kept for correction. A save for "Example Station South" fails deliberately and keeps the unsaved edit with its mark.
+### Browser API
 
-`webapp/tests/browser/generation.spec.ts` is the generate flow. It shows the planned scope and _Kein Ergebnis verfügbar_ before any run, refuses a month without saved staffing and an invalid time limit, each with a message and no job, and disables the start without a station. It then starts a real solve of the fictional June month, checks the visible scope and **Läuft**, has a second page loaded earlier start too and get the busy message, navigates to **Mitarbeiter** and back through the sidebar, and waits for **Abgeschlossen** with a found solution, the headline _Dienstplan erstellt, Regeln eingehalten_ with the German hint that one June shift stays a gap, no automatic publication, and the annual free Sundays beyond the month inside **Technische Details** opened by keyboard. Finally an August solve whose accounts cannot be reached (nobody is a member that month) is reported as **Keine Lösung möglich** with nothing to check, no review link and **Hinweise** summing up in German that demand and accounts cannot be met, with the solver's English messages only inside **Technische Details**, while a July solver crash is **Fehlgeschlagen** without its internal message, also in the technical details.
+`api/tests/browser_server.py` overrides the adapter dependency in the test process with the [adapter fixture](#adapter-fixture). Found schedules go to the same in-memory review as in production. Staffing is seeded for Station North in June to August:
 
-`api/tests/browser_server.py` overrides the adapter dependency only in the test process. Generation hands found schedules to the same in-memory review as production. For generation it seeds staffing for Station North in June to August (August needs two professionals a shift, with one available), solves June and August with the real solver and substitutes a crash for July; July and August wait two seconds first. `inspection_fixture.py` substitutes SQL query results; the production queries, complete inspection validation and HTTP routes remain in use. The fixture supplies fictional IDs/names/complete monthly declarations, trusted context plans for the last 14 days of every month with one trusted night on December 31, deliberate failure months and failing write IDs. The project tables are an in-memory store that applies the adapter's scoped DELETE/INSERT parameters and restores its state when a transaction fails. This proves offline user interaction and canonical integration, not Microsoft SQL Server query execution, live account semantics or real employee data acceptance. Production never imports this fixture.
+| Month  | Generation result                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------------- |
+| June   | Real solve; one shift stays a gap                                                                 |
+| July   | Substituted solver crash, after two seconds                                                       |
+| August | Real solve with unreachable accounts (two professionals needed, one available), after two seconds |
 
-`api/tests/test_employee_inspection.py` owns source completeness, identity under renaming, MFA/multiple memberships, jumper pool origin versus destination eligibility, explicit zero accounts, missing/duplicate facts, TimeOffice code translation (trimmed codes, ignored and unmapped absence codes, unmapped professions, foreign or missing target plans, blank unit names), the reference shift codes in the response and HTTP validation. These checks do not invoke the solver.
+Deliberate failures are fixed in the fixture:
 
-`api/tests/test_monthly_configuration.py` owns the scoped configuration writes: availability and wish saves/deletes touch only their employee and date, native absences survive, reasons and shifts read back, wishes stay separate, invalid employees/shifts fail before writing and a failed write leaves saved entries unchanged. It also checks dated demand round-trips per station month (including MFA and an explicitly empty month), rejection of jumper pools, stations without a target plan and unknown shifts, count bounds, the validated pattern preview, the evidence-free employee list, the availability calendar and the HTTP `422` contract. Live SQL Server round-trips of these tables belong to prepared-data verification.
+- Saves for "Example Jumper Three" (availability) and "Example Station South" (demand) fail.
+- Every roster write at Station South fails.
+- June at Station South has no trusted context, so its schedule is incompletely checked and offers no publication.
 
-`api/tests/test_generation.py` also owns the generation input and HTTP contract. Through `TimeOfficeService.read_generation_input` over the fixture it checks that polluted worked roster rows (an unmapped shift in another plan, earlier output in the target plan) never become input while the approved absence stays, that worked duties come only from trusted context plans with their coverage, credited qualification and the availability of the date after the month, that a context duty differing from its shift's segments fails and missing context plans leave the context empty, that only the selected station and its associated jumper pool are units, that the month's project wishes of station and jumper pool employees are input and other months' are not, that a station without saved staffing is refused, and that shift segments, breaks and paid minutes come from the target-time segments (including an overnight night shift and a segment without paid minutes) or fail when missing. The fixture applies the roster query's own absence filter, so a query that read worked shifts would fail this test. Over HTTP it runs one real solve to `completed` with an `accepted` check, and checks `404` before any job and after a restart (a fresh job state), `422`/`409` without a job and `423` while busy.
+### Flows
 
-`webapp/tests/browser/review.spec.ts` is the review and import/export flow. It generates June, follows **Dienstplan prüfen** to the review with the job's scope, checks the summary's scope, generated source and accepted status, the **Lücken** box with June 5's missing professional, the collapsed **Wünsche** table with a denied and a not-grantable wish, the collapsed **Technische Details** opened by keyboard (the objective stages, annual free Sundays beyond the month), an employee row without duties, the station's staffing row with June 5's gap cell (`1/2` over `−1`), a legend with only the marks shown, the jumper-pool MFA's duties as transfers against the station employee's home duties with no unit name repeated in any duty when one station is selected, no **Kompakt** toggle, the search, and one account row per participant in the collapsed **Monatskonten**. It downloads all five files through the **Herunterladen** menu and checks the CSV header, the `gaps.csv` row, the employee rows and the paired JSON. It then imports the downloaded pair through the **Importieren** panel (which closes, shown as imported) and uploads a changed input with the old result, which shows its reason and keeps the imported review unchanged; the API tests own every other rejection. Duties are identified by their screen-reader text (origin, and _Einsatz außerhalb der Herkunft_ for a transfer). Two crafted imports pass the real validation, whose independent re-check must reproduce the stored check exactly: a home change from the station to the jumper pool on June 16 marks only the later duties as transfers, and a duty after the employee's last membership, rejected with its eligibility finding, is tagged with an unknown origin. A selection of another month shows the review's own scope with a link back instead of the schedule.
+All flows live in `webapp/tests/browser/`.
 
-`api/tests/test_review.py` owns the schedule tables (labels, overnight and clock-change times with offsets, public holidays, jumper pool origin, the origin of each date across a home change, every participant's balance, staffing including assigned-without-demand), the bundle files and their round trip (exact input keys without plan fields, every CSV column, JSON arrays in quoted cells), every import rejection (malformed, unknown field, other version, wrong calendar, digest and month mismatch, unknown or out-of-month assignments, a changed stored check, other rule settings, no schedule), `gaps.csv` and its round trip with a hidden gap rejected, the published schemas against the models (a stale schema is rewritten and fails once), and the HTTP review/download/import contract after a real solve with one rejected pair keeping the review. `api/tests/test_examples.py` owns the example validator and the committed examples: an accepted two-month sequence of both stations; a folder outside the range, a changed CSV, context duties and first-date availability that differ from the neighbouring month; a rejected diagnostic month, a station without duties, other stations, one station instead of two, a folder holding another month and a missing file. It also validates both committed sets in `plaene/` and, on request, reproduces them (`reproduction`, solving every input again). The generation of the sets (`timeoffice`, run only with `PLAENE_GENERATION=write`) reads the prepared TimeOffice inputs and writes each accepted month; see [examples and reproduction](../validation/examples.md).
+| Spec                    | Covers                                                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `selection.spec.ts`     | Station/month selection, employee table, hours and credits, filters, empty/incomplete states, URL selection, navigation and mobile navigation      |
+| `configuration.spec.ts` | **Verfügbarkeit** entries and wishes, **Mindestbesetzung** demand, weekly pattern, per-cell change marks, invalid counts, deliberate save failures |
+| `generation.spec.ts`    | Refused starts, a real June solve, the busy message, completed, infeasible and failed jobs with German messages                                    |
+| `review.spec.ts`        | Review summary, gaps, wishes, schedule and accounts, the five downloads, import, and two crafted imports through the real validation               |
+| `publication.spec.ts`   | Publication and clear confirmations, a replaced schedule, a failed write that changes nothing, a schedule without trusted context                  |
 
-`webapp/tests/browser/publication.spec.ts` is the publish and clear flow against the browser API's in-memory roster. It generates June for Station North, opens the publication confirmation (which names the station, month and duty count), cancels it without a result, then confirms and expects the committed written-and-read-back count. A cancelled clear leaves every duty, which the confirmed clear afterwards removes and counts. A schedule replaced by another generation after the page loaded is refused with its German message and no success. Both stations together are accepted, but the browser API fails every roster write at Station South: the publication reports the failure with _Nichts wurde geändert_, and a confirmed clear afterwards finds no duty of either station. June at Station South alone has no trusted context in the browser API, so its incompletely checked schedule offers no publication while clearing stays available. An accepted schedule without duties cannot be produced from the fictional data; the service's refusal (an empty schedule raises `InvalidSelection`, so `422`) is covered in `api/tests/test_publication.py`; the webapp's matching message is not exercised by a browser flow.
+Some details matter when changing the webapp:
 
-`api/tests/test_publication.py` owns publication through `TimeOfficeService` over the fixture's writable roster, which applies the adapter's output definition including the `Info` marker: one row per segment in the destination station's target plan with the membership profession and the marker, a jumper pool employee's night in the other station's plan dated on its start, numbering after a kept native wish, and kept absences, wishes, duties entered in TimeOffice and other-plan duties; rejection before any deletion of an empty schedule, a duty outside the stations or month, a non-reference shift, a second duty on a date, a qualification without a membership profession and conflicts with an absence, a duty entered in TimeOffice or another plan's duty; rollback of the deletion when an insert fails or collides or the written duties read back differently (`read_back`); a failed commit reported as stage `commit`; ambiguous and missing targets and jumper pools for publish and clear; clearing exactly the named stations; and a second write waiting for the first. Over HTTP it publishes a real solve only with the reviewed `received_at` and stations, maps a conflicting entered duty (`conflict`), a colliding writer (`concurrent`) and a failing database (`503`) without a change, replaces and clears the publication, rejects jumper pools and an incompletely checked schedule (`not_accepted`), and reports `changed` without a review. `test_foundation.py` checks that the engine turns a deadlock and a duplicate key into a sanitized `TimeOfficeConflict` and leaves a foreign-key violation a query failure. The fixture answers the adapter's statements by recognizing their text, so it proves the adapter's decisions, not the SQL itself: the statements' predicates, the native row numbering and serializable behaviour on SQL Server are evidence of the [live checks](../validation/index.md#publication-and-clear).
-
-Traces on failure are ignored under `webapp/test-results/`; inspect with `pnpm --dir webapp exec playwright show-trace <path>`.
+- Accessible text is the selector contract. Change marks use "Geändert, gespeichert: _n_"; transfers use _Einsatz außerhalb der Herkunft_.
+- A missing or invalid month redirects to January of the current year.
+- The sidebar links the overview plus exactly the five implemented areas.
+- The solver's English messages appear only in **Technische Details**.
+- The API tests own every import rejection except a changed input with the old result.
+- Crafted imports must pass the real validation, whose re-check reproduces the stored check exactly. A home change to the jumper pool on June 16 marks only later duties as transfers.
+- An accepted schedule without duties cannot be produced from the fictional data. No browser flow exercises the webapp's message for it.
 
 ## Live TimeOffice verification
 
-With services running, `just connectivity` performs only configuration/ODBC/DNS/login/`SELECT 1` checks. It needs the authorized connection settings, private password and VPN/network/TLS prerequisites documented in [installation](../getting-started/installation.md#database-configuration). It never runs application queries. It passes against the current test server with `DB_TRUST_SERVER_CERTIFICATE=true` (self-signed certificate). That proves basic connection/query access, not planning-table permissions or valid scheduling data.
+With services running, `just connectivity` checks configuration, ODBC, DNS, login and `SELECT 1` only. It never runs application queries. It needs the connection settings, password and network prerequisites in [installation](../getting-started/installation.md#database-configuration). The current test server needs `DB_TRUST_SERVER_CERTIFICATE=true` for its self-signed certificate.
 
-`just test-timeoffice` runs only the explicitly external tests, in the API image (its ODBC driver, `.env` and password secret) with the working tree's tests mounted read-only. `test_timeoffice_preparation.py` owns the [prepared units](../architecture/timeoffice.md#prepared-units): it runs each file of `api/tests/timeoffice_preparation/` in order in one transaction, fails unless every read-back `ok` is 1 and no write changes a row, and rolls back; `readiness.sql` must report every check `ok`; the test passes it the adapter's profession, absence and credit mappings and the NRW holidays as temporary tables, so it checks `facts.py` itself. `TIMEOFFICE_PREPARATION=apply` commits each file instead, stopping at the first failing one. Live checks that publish are run by hand, one writer at a time on the prepared targets: record the target plans' rows by kind and checksums of all other roster rows, publish and clear through the API or the webapp, compare after every step, and finish with the targets empty again; [current limitations](../validation/index.md#publication-and-clear) lists the executed run.
+`just test-timeoffice` runs only the `timeoffice` tests. They run in the API image with its ODBC driver, `.env` and password secret. The working tree's tests are mounted read-only.
+
+`test_timeoffice_preparation.py` owns the [prepared units](../architecture/timeoffice.md#prepared-units):
+
+- It runs each file of `api/tests/timeoffice_preparation/` in order in one transaction, then rolls back.
+- It fails unless every read-back `ok` is 1 and no write changes a row.
+- `readiness.sql` must report every check `ok`.
+- The adapter's mappings and the NRW holidays are passed as temporary tables, so the test checks `facts.py` itself.
+- `TIMEOFFICE_PREPARATION=apply` commits each file instead and stops at the first failing one.
+
+Live publication checks run by hand, one writer at a time, on the prepared targets:
+
+1. Record the target plans' rows by kind and checksums of all other roster rows.
+2. Publish and clear through the API or the webapp.
+3. Compare after every step.
+4. Finish with the targets empty again.
+
+[Current limitations](../validation/index.md#publication-and-clear) lists the executed run.
 
 ## Linux and clean-checkout checks
 
-The foundation was built and exercised in Docker Desktop Linux arm64 containers on macOS, including ODBC Driver 18 imports, HTTP connectivity and reload. A Linux amd64 API image also passed build/import/ODBC checks. These are container/platform checks, not an actual Linux-host run. Hosted CI and the prepared laptop's Linux startup, VPN/firewall and live database acceptance remain final verification gates.
+The foundation ran in Docker Desktop Linux arm64 containers on macOS, including ODBC Driver 18, HTTP connectivity and reload. A Linux amd64 API image passed build, import and ODBC checks.
 
-CI's image job builds both images without credentials. To repeat foundation verification on a Linux host, frozen-install native tools, run `just check`, retain every failing result, and run the read-only diagnostic separately with authorized configuration. The production webapp build and the final clean-checkout system/data checks remain separate acceptance evidence.
+To repeat the verification on a Linux host:
+
+1. Frozen-install the native tools.
+2. Run `just check` and keep every failing result.
+3. Run `just connectivity` separately with authorized configuration.
