@@ -64,17 +64,17 @@ The solver engine depends only on `domain/`; the generation slice will connect i
 
 ## Where to make a change
 
-| Change                              | Start here                                                                |
-| ----------------------------------- | ------------------------------------------------------------------------- |
-| API request/response                | `api/app/api/`, `main.py`                                                 |
-| Scheduling concept or domain rule   | `api/app/domain/`                                                         |
-| Constraint/objective or solving     | `api/app/solver/cp_sat/`, `solver/config.py`, `solver/service.py`         |
-| TimeOffice query or translation     | `api/app/timeoffice/queries.py`, `facts.py`, `service.py`                 |
-| Project table read or write         | `api/app/timeoffice/project_tables.py`, `api/sql/supplemental-tables.sql` |
-| Screen behavior                     | `webapp/src/app/<route>/` and shared `webapp/src/components/`             |
-| Webapp API calls and response types | `webapp/src/lib/api.ts`, `webapp/src/lib/types.ts`                        |
-| Runtime/dependency pins             | service manifests/locks, Dockerfiles and consuming workflow/tool settings |
-| Documentation                       | `docs/source/` and `docs/mkdocs.yml`                                      |
+| Change                              | Start here                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------ |
+| API request/response                | `api/app/api/<feature>.py` (routes and their protocol), `shared.py`, `main.py` |
+| Scheduling concept or domain rule   | `api/app/domain/`                                                              |
+| Constraint/objective or solving     | `api/app/solver/cp_sat/`, `solver/config.py`, `solver/service.py`              |
+| TimeOffice query or translation     | `api/app/timeoffice/queries.py`, `facts.py`, `service.py`                      |
+| Project table read or write         | `api/app/timeoffice/project_tables.py`, `api/sql/supplemental-tables.sql`      |
+| Screen behavior                     | `webapp/src/app/<route>/` and shared `webapp/src/components/`                  |
+| Webapp API calls and response types | `webapp/src/lib/api.ts`, `webapp/src/lib/types.ts`                             |
+| Runtime/dependency pins             | service manifests/locks, Dockerfiles and consuming workflow/tool settings      |
+| Documentation                       | `docs/source/` and `docs/mkdocs.yml`                                           |
 
 Trace the real callers before changing a boundary. Keep TimeOffice terminology inside the adapter and use the canonical backend models for new behavior. Read [domain](domain.md), [solver](solver.md), [TimeOffice](timeoffice.md) and [development checks](../development/checks.md) for details. Domain terms are defined in the repository's `GLOSSARY.md`; decisions that are hard to reverse are recorded in `docs/adr/` (for example, why the webapp was rebuilt rather than adapted, why TimeOffice sits behind one service, and why monthly configuration lives in project tables). The [limitations](../validation/index.md) page records remaining compatibility work.
 

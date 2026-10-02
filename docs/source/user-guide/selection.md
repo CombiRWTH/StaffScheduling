@@ -27,7 +27,7 @@ Details show monthly target minutes, available actual minutes, verified credit t
 
 Credits list full dates, minute amounts, approved-absence/trusted-work kind and provenance. **Abwesenheiten und Einschränkungen** lists native dated absences and project availability with reasons, sources and allowed-shift IDs where applicable; edit them under [Verfügbarkeit](configuration.md#availability-and-wishes). Explicitly empty credits produce **Explizit keine Gutschriften**, not an inferred default. This view does not prorate targets, calculate a candidate's balance, edit employees or run generation.
 
-Connected prerequisites include read access to the configured TimeOffice tables and explicitly prepared [employee/month evidence](../architecture/timeoffice.md#employee-inspection-evidence). Missing setup/data must be corrected by the authorized database preparer; refreshing cannot create it.
+Connected prerequisites include read access to the configured TimeOffice tables, the [project tables](../architecture/timeoffice.md#project-tables) and explicitly prepared [employee/month evidence](../architecture/timeoffice.md#employee-inspection-evidence). Missing setup/data must be corrected by the authorized database preparer; refreshing cannot create it.
 
 ## Empty inputs and unavailable data
 

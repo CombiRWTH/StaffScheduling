@@ -13,6 +13,7 @@ Consult OpenAPI for exact bodies and responses.
 | `/status`                            | GET         | Process liveness without a TimeOffice query                            |
 | `/planning/options`                  | GET         | Named stations with unique full-month targets                          |
 | `/employees`                         | GET         | Complete canonical combined month/station/pool inspection              |
+| `/planning/employees`                | GET         | The selection's employees by ID and name, without monthly evidence     |
 | `/availability`                      | GET         | One employee's month: native absences, availability, wishes and shifts |
 | `/availability/{employee_id}/{date}` | PUT, DELETE | Replace or delete that employee's availability on that date            |
 | `/wishes/{employee_id}/{date}`       | PUT, DELETE | Replace or delete that employee's wish on that date                    |
@@ -35,13 +36,13 @@ The webapp calls these routes from server components through `webapp/src/lib/api
 
 ## Monthly configuration
 
-`GET /availability?employee_id=1&year=2026&month=1` returns `absences` (approved TimeOffice absences, read-only), `availability`, `wishes` and the reference `shifts` (`shift_id`, `code`, `type`) for one employee month. The employee needs a membership in a configured unit during the month.
+`GET /availability?employee_id=1&year=2026&month=1` returns `absences` (approved TimeOffice absences, read-only), `availability`, `wishes`, the month's `calendar` and the reference `shifts` (`shift_id`, `code`, `type`) for one employee month. `GET /planning/employees` takes the same station selection as `/employees` and returns only `employee_id` and `display_name`, so choosing an employee does not depend on complete monthly evidence. The employee needs a membership in a configured unit during the month.
 
 `PUT /availability/{employee_id}/{date}` takes `availability_type` (`unavailable`, `vacation`, `training`, `free_day`, `available_only`), `shift_ids` (only and required for `available_only`) and an optional nonblank `reason`. `PUT /wishes/{employee_id}/{date}` takes `type` (`free_day`, `free_shift`, `preferred_day`, `preferred_shift`) and `shift_id` for the shift wishes. A PUT replaces the entry of exactly that employee and date and returns the saved entry; `DELETE` removes it and returns `204`, also when nothing was stored.
 
-`GET /demand?planning_unit_id=101&year=2026&month=1` returns `demand` (`null` until the station month is saved once), the month's `calendar` (`date`, ISO `weekday`, NRW `public_holiday` name) and `shifts`. `PUT /demand` takes `planning_unit_id`, `planning_month` (`year`, `month`) and the complete `requirements` (`planning_unit_id`, `date`, `shift_id`, `staff_level`, `required_count` ≥ 1). It replaces that station month; an empty list saves "nobody required". `POST /demand/pattern` takes the same station and month plus `cells` (`day_type` `monday`…`sunday` or `holiday`, `shift_id`, `staff_level`, `required_count` ≥ 0) and returns the resulting `MonthlyDemand` without saving it.
+`GET /demand?planning_unit_id=101&year=2026&month=1` returns `demand` (`null` until the station month is saved once), the month's `calendar` (`date`, ISO `weekday`, NRW `public_holiday` name) and `shifts`. `PUT /demand` takes `planning_unit_id`, `planning_month` (`year`, `month`) and the complete `cells` (`date`, `shift_id`, `staff_level`, `required_count` from 1 to 99); the station is given once. It replaces that station month; an empty list saves "nobody required". `POST /demand/pattern` takes the same station and month plus pattern `cells` (`day_type` `monday`…`sunday` or `holiday`, `shift_id`, `staff_level`, `required_count` from 0 to 99). It checks the station and shifts like a save and returns the resulting `MonthlyDemand` without saving it.
 
-Malformed bodies, an employee without membership, non-reference shifts, out-of-month or duplicate demand, pools and stations without a target plan return `422` before any write. Incomplete source facts return `409`; unavailable TimeOffice returns sanitized `503`. Writes report success only after commit.
+Malformed bodies, non-integer or out-of-range counts, an employee without membership, non-reference shifts, out-of-month or duplicate demand, pools and stations without a target plan return `422` before any write. Incomplete source facts return `409`; unavailable TimeOffice returns sanitized `503`. Writes report success only after commit.
 
 ## Side effects
 
