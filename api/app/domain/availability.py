@@ -6,11 +6,13 @@ from pydantic import model_validator
 
 from app.domain.core import SchedulingBaseModel
 from app.domain.employee import EmployeeId
-from app.domain.shift import ShiftId
+from app.domain.planning_month import PlanningMonth
+from app.domain.shift import ShiftId, ShiftOption
+from app.domain.wish import Wish
 
 
 class AvailabilityType(StrEnum):
-    """Employee availability constraint."""
+    """Employee availability on a date."""
 
     UNAVAILABLE = "unavailable"
     VACATION = "vacation"
@@ -20,10 +22,9 @@ class AvailabilityType(StrEnum):
 
 
 class Availability(SchedulingBaseModel):
-    """Employee availability constraint for a date.
+    """A date on which an employee must not be planned, or only for the listed shifts.
 
-    Wishes/preferences must not be represented here. They should become a
-    separate soft-preference model later.
+    Availability always binds planning; soft preferences are a `Wish`.
     """
 
     employee_id: EmployeeId
@@ -41,8 +42,22 @@ class Availability(SchedulingBaseModel):
         if self.availability_type == AvailabilityType.AVAILABLE_ONLY:
             if not self.shift_ids:
                 raise ValueError("AVAILABLE_ONLY availability must define shift_ids.")
+            if len(set(self.shift_ids)) != len(self.shift_ids):
+                raise ValueError("Duplicate shift_ids in availability.")
 
         elif self.shift_ids is not None:
             raise ValueError(f"{self.availability_type} availability must not define shift_ids.")
 
         return self
+
+
+class EmployeeCalendar(SchedulingBaseModel):
+    """An employee's month: read-only native absences plus editable project availability and wishes."""
+
+    employee_id: EmployeeId
+    planning_month: PlanningMonth
+    # Approved absences from the roster system; shown, never edited here.
+    absences: tuple[Availability, ...]
+    availability: tuple[Availability, ...]
+    wishes: tuple[Wish, ...]
+    shifts: tuple[ShiftOption, ...]

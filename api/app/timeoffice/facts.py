@@ -5,7 +5,7 @@ from types import MappingProxyType
 from app.domain.availability import AvailabilityType
 from app.domain.employee import Capability, StaffLevel
 from app.domain.planning_unit import PlanningUnitId, PlanningUnitType
-from app.domain.shift import ShiftId
+from app.domain.shift import ShiftId, ShiftType
 
 # TPlan.RefPlanungsIntervalle value for monthly planning.
 MONTHLY_PLANNING_INTERVAL_ID = 1
@@ -55,7 +55,7 @@ class TimeOfficeFacts:
 
     planning_unit_type_by_id: Mapping[PlanningUnitId, PlanningUnitType]
 
-    reference_shift_ids: frozenset[ShiftId]
+    reference_shift_type_by_id: Mapping[ShiftId, ShiftType]
 
     staff_level_by_profession_code: Mapping[str, StaffLevel]
 
@@ -67,6 +67,10 @@ class TimeOfficeFacts:
 
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
+
+    @property
+    def reference_shift_ids(self) -> frozenset[ShiftId]:
+        return frozenset(self.reference_shift_type_by_id)
 
 
 STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
@@ -124,7 +128,14 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
             SHARED_POOL_408_ID: PlanningUnitType.SHARED_POOL,
         }
     ),
-    reference_shift_ids=frozenset({EARLY_SHIFT_ID, LATE_SHIFT_ID, NIGHT_SHIFT_ID, INTERMEDIATE_SHIFT_ID}),
+    reference_shift_type_by_id=MappingProxyType(
+        {
+            EARLY_SHIFT_ID: ShiftType.EARLY,
+            INTERMEDIATE_SHIFT_ID: ShiftType.INTERMEDIATE,
+            LATE_SHIFT_ID: ShiftType.LATE,
+            NIGHT_SHIFT_ID: ShiftType.NIGHT,
+        }
+    ),
     staff_level_by_profession_code=STAFF_LEVEL_BY_PROFESSION_CODE,
     capabilities_by_employee_id=MappingProxyType(
         {

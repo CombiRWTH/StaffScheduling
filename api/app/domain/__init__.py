@@ -1,8 +1,16 @@
 from app.domain.assignment import Assignment, AssignmentType
-from app.domain.availability import Availability, AvailabilityType
+from app.domain.availability import Availability, AvailabilityType, EmployeeCalendar
+from app.domain.calendar import CalendarDay, DayType, month_calendar
 from app.domain.core import MinuteOfDay, NonEmptyStr, NonNegativeInt, PositiveId, SchedulingBaseModel
 from app.domain.dataset import SchedulingDataset
-from app.domain.demand import DemandRequirement
+from app.domain.demand import (
+    DemandConfiguration,
+    DemandPattern,
+    DemandRequirement,
+    MonthlyDemand,
+    PatternRequirement,
+    expand_pattern,
+)
 from app.domain.employee import Capability, Employee, EmployeeId, StaffLevel
 from app.domain.inspection import (
     EmployeeInspection,
@@ -14,11 +22,10 @@ from app.domain.inspection import (
     inspection_employee_ids,
 )
 from app.domain.monthly_work_account import MonthlyWorkAccount, WorkCredit
-from app.domain.objective_weights import SolverObjectiveWeights
 from app.domain.plan import Plan, PlanId
 from app.domain.planning_month import PlanningMonth
 from app.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitMembership, PlanningUnitType
-from app.domain.shift import Shift, ShiftId, ShiftType, StaffingDemandRole
+from app.domain.shift import Shift, ShiftId, ShiftOption, ShiftType, StaffingDemandRole
 from app.domain.sunday_work_history import EmployeeSundayWorkHistory
 from app.domain.wish import Wish, WishType
 
@@ -61,5 +68,14 @@ __all__ = [
     "PlanningOptions",
     "build_inspection",
     "inspection_employee_ids",
-    "SolverObjectiveWeights",
+    "EmployeeCalendar",
+    "CalendarDay",
+    "DayType",
+    "month_calendar",
+    "DemandConfiguration",
+    "DemandPattern",
+    "MonthlyDemand",
+    "PatternRequirement",
+    "expand_pattern",
+    "ShiftOption",
 ]

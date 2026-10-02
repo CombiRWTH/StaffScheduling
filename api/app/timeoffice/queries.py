@@ -1,26 +1,25 @@
-"""TimeOffice SELECTs, each returning canonical domain models.
+"""Native TimeOffice SELECTs, each returning canonical domain models.
 
 Every function owns one source query together with its TimeOffice-specific translation
 (codes, accounts, names) and the source-level checks that need that knowledge.
 Cross-entity completeness rules live in the domain.
 """
 
-import json
 from collections.abc import Sequence
 from datetime import datetime
 from math import isfinite
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import BindParameter, Connection, RowMapping, bindparam, text
 
 from app.domain import (
     Availability,
     Employee,
-    EmployeeMonthEvidence,
     MonthlyWorkAccount,
     PlanningMonth,
     PlanningUnit,
     PlanningUnitMembership,
+    ShiftOption,
     StaffLevel,
 )
 from app.timeoffice.facts import TimeOfficeFacts
@@ -28,7 +27,7 @@ from app.timeoffice.facts import TimeOfficeFacts
 
 def read_units(connection: Connection, facts: TimeOfficeFacts) -> tuple[PlanningUnit, ...]:
     """All configured planning units with their TimeOffice short names."""
-    rows = _select(
+    rows = select_rows(
         connection,
         """
         SELECT pe.Prim AS planning_unit_id, pe.KurzBez AS planning_unit_code
@@ -60,7 +59,7 @@ def read_units_with_target_plan(
     """Units that have exactly one editable full-month target plan; plan IDs stay inside the adapter."""
     if not unit_ids:
         return set()
-    rows = _select(
+    rows = select_rows(
         connection,
         """
         SELECT pe.Prim AS planning_unit_id, p.Prim AS plan_id, p.RefPlanungseinheiten AS plan_planning_unit_id
@@ -91,7 +90,7 @@ def read_memberships(
     connection: Connection, facts: TimeOfficeFacts, unit_ids: Sequence[int], month: PlanningMonth
 ) -> tuple[PlanningUnitMembership, ...]:
     """Dated unit memberships overlapping the month, excluding those marked as not planned."""
-    rows = _select(
+    rows = select_rows(
         connection,
         """
         SELECT
@@ -130,7 +129,7 @@ def read_memberships(
 
 def read_employees(connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int]) -> tuple[Employee, ...]:
     """Employee master data; every requested employee must exist and have a name."""
-    rows = _select(
+    rows = select_rows(
         connection,
         """
         SELECT
@@ -167,7 +166,7 @@ def read_accounts(
     connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
 ) -> tuple[MonthlyWorkAccount, ...]:
     """Monthly target hours (required) and actual hours (optional), converted to minutes."""
-    rows = _select(
+    rows = select_rows(
         connection,
         """
         SELECT target.RefPersonal AS employee_id, target.Wert2 AS target_hours, actual.Wert2 AS actual_hours
@@ -200,7 +199,7 @@ def read_absences(
     connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
 ) -> tuple[Availability, ...]:
     """Dated roster absences as constraints; ignored codes are dropped, unknown codes fail."""
-    rows = _select(
+    rows = select_rows(
         connection,
         """
         SELECT
@@ -241,33 +240,29 @@ def read_absences(
     return tuple(absences)
 
 
-def read_evidence(
-    connection: Connection, employee_ids: Sequence[int], month: PlanningMonth
-) -> tuple[EmployeeMonthEvidence, ...]:
-    """Explicitly prepared monthly credit/constraint declarations; reads never provision the table."""
-    rows = _select(
+def read_shift_options(connection: Connection, facts: TimeOfficeFacts) -> tuple[ShiftOption, ...]:
+    """The reduced reference shifts with their TimeOffice short codes, in day order; types are adapter facts."""
+    rows = select_rows(
         connection,
         """
-        SELECT employee_id, credit_details, constraints, source
-        FROM dbo.StaffSchedulingEmployeeMonthEvidence
-        WHERE employee_id IN :employee_ids AND planning_month = :planning_month
-        ORDER BY employee_id
+        SELECT d.Prim AS shift_id, d.KurzBez AS shift_code
+        FROM TDienste d
+        WHERE d.Prim IN :shift_ids
         """,
-        employee_ids=list(employee_ids),
-        planning_month=month.start,
+        shift_ids=sorted(facts.reference_shift_type_by_id),
     )
+    codes = {row["shift_id"]: _text(row["shift_code"]) for row in rows}
+    shift_types = facts.reference_shift_type_by_id
+    if missing := [shift_id for shift_id in shift_types if not codes.get(shift_id)]:
+        raise ValueError(f"Missing TimeOffice reference shifts or codes for shift_ids={missing}.")
+    # Facts list the reference shifts in day order: early, intermediate, late, night.
     return tuple(
-        EmployeeMonthEvidence(
-            employee_id=row["employee_id"],
-            credit_details=json.loads(row["credit_details"]),
-            constraints=json.loads(row["constraints"]),
-            source=row["source"],
-        )
-        for row in rows
+        ShiftOption(shift_id=shift_id, code=cast(str, codes[shift_id]), type=shift_type)
+        for shift_id, shift_type in shift_types.items()
     )
 
 
-def _select(connection: Connection, sql: str, **params: Any) -> Sequence[RowMapping]:
+def select_rows(connection: Connection, sql: str, **params: Any) -> Sequence[RowMapping]:
     """Run one SELECT; list parameters expand into IN clauses. An empty IN list reads nothing."""
     lists = [name for name, value in params.items() if isinstance(value, list)]
     if any(not params[name] for name in lists):

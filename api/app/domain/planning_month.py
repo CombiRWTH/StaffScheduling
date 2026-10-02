@@ -3,7 +3,7 @@ from datetime import date
 
 from pydantic import Field, computed_field
 
-from app.domain import SchedulingBaseModel
+from app.domain.core import SchedulingBaseModel
 
 
 class PlanningMonth(SchedulingBaseModel):

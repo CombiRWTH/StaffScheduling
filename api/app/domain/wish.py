@@ -6,7 +6,6 @@ from pydantic import model_validator
 
 from app.domain.core import SchedulingBaseModel
 from app.domain.employee import EmployeeId
-from app.domain.planning_unit import PlanningUnitId
 from app.domain.shift import ShiftId
 
 
@@ -18,9 +17,9 @@ class WishType(StrEnum):
 
 
 class Wish(SchedulingBaseModel):
-    employee_id: EmployeeId
-    planning_unit_id: PlanningUnitId
+    """An employee's soft preference for one date; at most one per employee and date."""
 
+    employee_id: EmployeeId
     date: Date
     type: WishType
     shift_id: ShiftId | None = None

@@ -1,10 +1,9 @@
-from app.domain import SchedulingBaseModel
 from app.domain.assignment import Assignment
 from app.domain.availability import Availability
+from app.domain.core import SchedulingBaseModel
 from app.domain.demand import DemandRequirement
 from app.domain.employee import Employee
 from app.domain.monthly_work_account import MonthlyWorkAccount
-from app.domain.objective_weights import SolverObjectiveWeights
 from app.domain.plan import Plan
 from app.domain.planning_month import PlanningMonth
 from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership
@@ -37,4 +36,3 @@ class SchedulingDataset(SchedulingBaseModel):
     availability: tuple[Availability, ...] = ()
 
     monthly_work_accounts: tuple[MonthlyWorkAccount, ...] = ()
-    objective_weights: tuple[SolverObjectiveWeights, ...] = ()

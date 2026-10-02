@@ -11,6 +11,8 @@ from app.main import app
 from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable
 
 source = InspectionSource()
+# Configuration writes for this employee and station fail, so the browser can check failed saves.
+source.failing_ids = {3, 102}
 
 
 def browser_timeoffice(request: Request) -> TimeOfficeService:

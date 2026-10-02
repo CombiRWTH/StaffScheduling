@@ -61,3 +61,11 @@ class Shift(SchedulingBaseModel):
             raise ValueError("Shift start_minute and end_minute must differ.")
 
         return self
+
+
+class ShiftOption(SchedulingBaseModel):
+    """A canonical shift as offered for selection in configuration; timing stays with `Shift`."""
+
+    shift_id: ShiftId
+    code: NonEmptyStr
+    type: ShiftType

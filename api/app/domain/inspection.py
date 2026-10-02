@@ -12,13 +12,15 @@ from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership, Plann
 
 
 class InvalidSelection(ValueError):
-    """The requested stations cannot be planned for the month (unknown, not a station, or without target)."""
+    """The request names something that cannot be planned in the month.
+
+    For example an unknown or unplanned station, an employee without a membership, or a non-reference shift.
+    """
 
 
 class EmployeeMonthEvidence(SchedulingBaseModel):
     employee_id: EmployeeId
     credit_details: tuple[WorkCredit, ...]
-    constraints: tuple[Availability, ...]
     source: NonEmptyStr
 
 
@@ -28,8 +30,8 @@ class EmployeeInspection(SchedulingBaseModel):
     staff_level: StaffLevel
     memberships: tuple[PlanningUnitMembership, ...]
     account: MonthlyWorkAccount
-    constraints: tuple[Availability, ...]
-    constraints_source: NonEmptyStr
+    # Native absences and project availability of the month.
+    availability: tuple[Availability, ...]
 
 
 class PlanningInspection(SchedulingBaseModel):
@@ -103,7 +105,7 @@ def build_inspection(
         if membership.planning_unit_id not in unit_ids:
             raise ValueError("Unknown membership unit.")
     if any(row.employee_id not in employee_ids for row in availability):
-        raise ValueError("Unknown employee in constraints.")
+        raise ValueError("Unknown employee in availability.")
     inspected: list[EmployeeInspection] = []
     for employee in employees:
         employee_memberships = tuple(row for row in memberships if row.employee_id == employee.employee_id)
@@ -127,22 +129,12 @@ def build_inspection(
         )
         if any(not planning_month.start <= credit.date <= planning_month.end for credit in declaration.credit_details):
             raise ValueError("Credit date is outside the selected month.")
-        constraints = tuple(
-            dict.fromkeys(
-                (
-                    *(row for row in availability if row.employee_id == employee.employee_id),
-                    *declaration.constraints,
-                )
-            )
-        )
-        for constraint in constraints:
-            if (
-                constraint.employee_id != employee.employee_id
-                or not planning_month.start <= constraint.date <= planning_month.end
-            ):
-                raise ValueError("Constraint identity/date does not match the selected employee month.")
-            if constraint.shift_ids and not set(constraint.shift_ids) <= allowed_shift_ids:
-                raise ValueError("Unknown allowed shift in constraint.")
+        employee_availability = tuple(row for row in availability if row.employee_id == employee.employee_id)
+        for row in employee_availability:
+            if not planning_month.start <= row.date <= planning_month.end:
+                raise ValueError("Availability date is outside the selected month.")
+            if row.shift_ids and not set(row.shift_ids) <= allowed_shift_ids:
+                raise ValueError("Unknown allowed shift in availability.")
         inspected.append(
             EmployeeInspection(
                 employee_id=employee.employee_id,
@@ -150,8 +142,7 @@ def build_inspection(
                 staff_level=employee.staff_level,
                 memberships=employee_memberships,
                 account=account,
-                constraints=constraints,
-                constraints_source=declaration.source,
+                availability=employee_availability,
             )
         )
     pool_ids = {unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.SHARED_POOL}

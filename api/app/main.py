@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from app.api.planning import router as planning_router
+from app.api import availability, demand, planning
 from app.logging import configure_logging
 from app.settings import get_settings
 from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable, create_db_engine
@@ -24,7 +24,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 
 app = FastAPI(title="Staff Scheduling API", lifespan=lifespan)
-app.include_router(planning_router)
+app.include_router(planning.router)
+app.include_router(availability.router)
+app.include_router(demand.router)
 
 
 @app.exception_handler(TimeOfficeUnavailable)

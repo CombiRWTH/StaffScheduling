@@ -97,13 +97,11 @@ def test_free_day_wish_counts_as_three_strikes_and_free_shift_as_one() -> None:
     wish_date = date(2024, 11, 4)
     free_day = Wish(
         employee_id=EMPLOYEE.employee_id,
-        planning_unit_id=PLANNING_UNIT.planning_unit_id,
         date=wish_date,
         type=WishType.FREE_DAY,
     )
     free_shift = Wish(
         employee_id=EMPLOYEE.employee_id,
-        planning_unit_id=PLANNING_UNIT.planning_unit_id,
         date=wish_date,
         type=WishType.FREE_SHIFT,
         shift_id=EARLY_SHIFT.shift_id,
@@ -120,14 +118,12 @@ def test_fulfilled_free_wishes_and_preferred_work_wishes_have_no_penalty() -> No
     wishes = (
         Wish(
             employee_id=EMPLOYEE.employee_id,
-            planning_unit_id=PLANNING_UNIT.planning_unit_id,
             date=wish_date,
             type=WishType.FREE_SHIFT,
             shift_id=EARLY_SHIFT.shift_id,
         ),
         Wish(
             employee_id=EMPLOYEE.employee_id,
-            planning_unit_id=PLANNING_UNIT.planning_unit_id,
             date=wish_date,
             type=WishType.PREFERRED_DAY,
         ),
@@ -141,13 +137,11 @@ def test_preferred_day_counts_as_three_strikes_and_preferred_shift_as_one() -> N
     wish_date = date(2024, 11, 4)
     preferred_day = Wish(
         employee_id=EMPLOYEE.employee_id,
-        planning_unit_id=PLANNING_UNIT.planning_unit_id,
         date=wish_date,
         type=WishType.PREFERRED_DAY,
     )
     preferred_shift = Wish(
         employee_id=EMPLOYEE.employee_id,
-        planning_unit_id=PLANNING_UNIT.planning_unit_id,
         date=wish_date,
         type=WishType.PREFERRED_SHIFT,
         shift_id=EARLY_SHIFT.shift_id,
@@ -163,14 +157,12 @@ def test_free_and_preferred_wishes_use_separate_strike_buckets() -> None:
     wishes = (
         Wish(
             employee_id=EMPLOYEE.employee_id,
-            planning_unit_id=PLANNING_UNIT.planning_unit_id,
             date=wish_date,
             type=WishType.FREE_SHIFT,
             shift_id=EARLY_SHIFT.shift_id,
         ),
         Wish(
             employee_id=EMPLOYEE.employee_id,
-            planning_unit_id=PLANNING_UNIT.planning_unit_id,
             date=wish_date,
             type=WishType.PREFERRED_SHIFT,
             shift_id=LATE_SHIFT.shift_id,

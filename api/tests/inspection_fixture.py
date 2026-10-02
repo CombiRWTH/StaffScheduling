@@ -1,6 +1,10 @@
 """Fictional SQL boundary substitute shared by API and browser checks."""
 
+import copy
 import json
+import re
+from collections.abc import Generator
+from contextlib import contextmanager
 from dataclasses import replace
 from datetime import date, datetime
 from types import MappingProxyType
@@ -10,12 +14,26 @@ from unittest.mock import MagicMock
 from sqlalchemy import Engine
 
 from app.domain import PlanningUnitType
-from app.timeoffice import TimeOfficeService
+from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable
 from app.timeoffice.facts import TIMEOFFICE_FACTS
+
+SHIFT_CODES = {1113: "F", 1453: "Z", 1605: "S", 1690: "N"}
+
+# Key columns of each project table, used to apply the adapter's scoped DELETEs.
+PROJECT_TABLES = {
+    "StaffSchedulingAvailability": ("employee_id", "availability_date"),
+    "StaffSchedulingWish": ("employee_id", "wish_date"),
+    "StaffSchedulingDemandMonth": ("planning_unit_id", "planning_month"),
+    "StaffSchedulingDemand": ("planning_unit_id", "demand_date"),
+}
 
 
 class InspectionSource:
-    """Run production readers/mappers over controlled query results, without SQL Server."""
+    """Run production readers/mappers over controlled query results, without SQL Server.
+
+    Native TimeOffice tables return fixed fictional rows. The project tables are a small in-memory
+    store with transactional `engine.begin()`, so adapter writes can be read back.
+    """
 
     def __init__(self) -> None:
         self.missing_evidence = False
@@ -25,6 +43,9 @@ class InspectionSource:
         self.duplicate_plan = False
         self.name = "Example MFA One"
         self.queries: list[str] = []
+        self.tables: dict[str, list[dict[str, Any]]] = {name: [] for name in PROJECT_TABLES}
+        # Writes naming one of these employee or station IDs fail like a lost connection.
+        self.failing_ids: set[int] = set()
         self.facts = replace(
             TIMEOFFICE_FACTS,
             planning_unit_type_by_id=MappingProxyType(
@@ -38,17 +59,76 @@ class InspectionSource:
         engine = MagicMock(spec=Engine)
         connection = engine.connect.return_value.__enter__.return_value
         connection.execute.side_effect = self.execute
+        engine.begin.side_effect = self._transaction
         self.connection = connection
         self.service = TimeOfficeService(
             facts=self.facts,
             engine=engine,
         )
 
+    @contextmanager
+    def _transaction(self) -> Generator[MagicMock]:
+        before = copy.deepcopy(self.tables)
+        try:
+            yield self.connection
+        except BaseException:
+            self.tables = before
+            raise
+
+    def _write(self, sql: str, params: dict[str, Any] | list[dict[str, Any]]) -> None:
+        first = params[0] if isinstance(params, list) else params
+        if {first.get("employee_id"), first.get("planning_unit_id")} & self.failing_ids:
+            raise TimeOfficeUnavailable("query", "TimeOffice query failed.")
+        table = next(name for name in PROJECT_TABLES if re.search(rf"dbo\.{name}\b", sql))
+        if sql.lstrip().startswith("INSERT"):
+            columns = sql.split("(", 1)[1].split(")", 1)[0].replace("\n", " ").split(",")
+            values = sql.split("VALUES", 1)[1].strip().strip("()").split(",")
+            for row in params if isinstance(params, list) else [params]:
+                self.tables[table].append(
+                    {
+                        column.strip(): row[value.strip().lstrip(":")]
+                        for column, value in zip(columns, values, strict=True)
+                    }
+                )
+            return
+        assert isinstance(params, dict)
+        key, day = PROJECT_TABLES[table]
+
+        def hit(row: dict[str, Any]) -> bool:
+            if "BETWEEN" in sql:
+                return row[key] == params[key] and params["start"] <= row[day] <= params["end"]
+            return row[key] == params[key] and row[day] == params.get("day", params.get(day))
+
+        self.tables[table] = [row for row in self.tables[table] if not hit(row)]
+
+    def _project_rows(self, table: str, params: dict[str, Any]) -> list[dict[str, Any]]:
+        key, day = PROJECT_TABLES[table]
+        keys = params.get(f"{key}s", [params.get(key)])
+        return [
+            dict(row)
+            for row in self.tables[table]
+            if row[key] in keys
+            and (params["start"] <= row[day] <= params["end"] if "start" in params else row[day] == params[day])
+        ]
+
     def execute(self, query: Any, params: dict[str, Any]) -> MagicMock:
         sql = str(query)
         self.queries.append(sql)
         rows: list[dict[str, Any]] = []
-        if "FROM TPlanungseinheiten pe" in sql:
+        if sql.lstrip().startswith(("INSERT", "DELETE")):
+            self._write(sql, params)
+            return MagicMock()
+        if "FROM dbo.StaffSchedulingDemandMonth" in sql:
+            rows = self._project_rows("StaffSchedulingDemandMonth", params)
+        elif "FROM dbo.StaffSchedulingDemand" in sql:
+            rows = self._project_rows("StaffSchedulingDemand", params)
+        elif "FROM dbo.StaffSchedulingAvailability" in sql:
+            rows = self._project_rows("StaffSchedulingAvailability", params)
+        elif "FROM dbo.StaffSchedulingWish" in sql:
+            rows = self._project_rows("StaffSchedulingWish", params)
+        elif "FROM TDienste d" in sql:
+            rows = [{"shift_id": shift, "shift_code": SHIFT_CODES[shift]} for shift in params["shift_ids"]]
+        elif "FROM TPlanungseinheiten pe" in sql:
             if "JOIN TPlan p" in sql:
                 available = {101, 102} if params["start"].month != 2 else {102}
                 rows = [
@@ -130,7 +210,6 @@ class InspectionSource:
                         if employee == 1
                         else []
                     ),
-                    "constraints": "[]",
                 }
                 for employee in params["employee_ids"]
                 if not (self.missing_evidence and employee == 1)
