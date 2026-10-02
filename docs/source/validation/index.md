@@ -12,7 +12,18 @@ Image-built development Compose startup, actual Next-server/API HTTP connectivit
 
 ## Webapp integration
 
-The webapp is a plain Next.js App Router project. The home page, canonical month/station selection with complete read-only employee inspection, and monthly configuration (availability, wishes and dated staffing demand with a weekly pattern) are implemented, with controlled browser evidence. Generation of the full month with transient job states is implemented. Review/export/publication, recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. Wishes are stored but do not influence generation. On the test database the project tables and the [prepared example inputs](examples.md#input-data-and-boundary-context) exist. Through the running API, live checks passed for: planning options, complete inspection of both example stations with their jumper pool, demand saved and read back for all twelve station months, an availability and a wish saved and removed again (for an unconfigured employee the save is rejected), and complete generation input for all six months with no roster work read. Unrelated units, employees, plans and roster rows were counted before and after preparation and are unchanged.
+The webapp is a plain Next.js App Router project. The home page, canonical month/station selection with complete read-only employee inspection, and monthly configuration (availability, wishes and dated staffing demand with a weekly pattern) are implemented, with controlled browser evidence. Generation of the full month with transient job states is implemented. Review/export/publication, recurring settings and templates appear greyed out in the sidebar as not yet supported and have no pages; optimization is omitted. Wishes are stored but do not influence generation. On the test database the project tables and the [prepared example inputs](examples.md#input-data-and-boundary-context) exist. Live checks on 2026-10-02 at revision `8089e0e`, through the running Compose API against the test database:
+
+| Check (command)                                                    | Expected                                            | Actual                                     |
+| ------------------------------------------------------------------ | --------------------------------------------------- | ------------------------------------------ |
+| `GET /planning/options?year=2026&month=1`                          | The two example stations                            | `BSP-A`, `BSP-B`                           |
+| `GET /employees` for both stations, each month January–June        | Complete inspection, jumper pool associated         | 57 employees, jumper pool 429, every month |
+| `TimeOfficeService.read_generation_input`, January–June            | Complete input; no roster work                      | Built every month; 0 assignments, 0 wishes |
+| `POST /demand/pattern` then `PUT /demand`, then `GET /demand`      | Twelve station months saved and read back unchanged | Identical for all twelve                   |
+| `PUT` then `DELETE /availability/…` and `/wishes/…`                | Saved, read back, removed; tables empty afterwards  | `200`, read back, `204`; both tables empty |
+| `PUT /availability/…` for an employee outside the configured units | Rejected                                            | `422`                                      |
+
+Unrelated units, employees, plans and roster rows and the legacy project tables were counted before and after preparation and are unchanged.
 
 ## Solver and publication
 

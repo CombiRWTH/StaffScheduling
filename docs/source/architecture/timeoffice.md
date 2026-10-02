@@ -6,19 +6,19 @@ This reference describes the adapter and the prepared test database. Schedule ac
 
 ## Modules
 
-| Path under `api/app/timeoffice/` | Responsibility                                                                                   |
-| -------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `database.py`                    | SQLAlchemy engine using `mssql+pyodbc`                                                           |
-| `facts.py`                       | Configured units, reference shifts, account IDs, code mappings and planning status               |
-| `queries.py`                     | One function per TimeOffice SELECT, returning canonical models with its code/account translation |
-| `project_tables.py`              | Reads and key-scoped writes of the project tables next to the TimeOffice schema                  |
-| `service.py`                     | `TimeOfficeService`, the package's only public entry point; one connection per call              |
+| Path under `api/app/timeoffice/` | Responsibility                                                                                                                                                                          |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `database.py`                    | SQLAlchemy engine using `mssql+pyodbc`                                                                                                                                                  |
+| `facts.py`                       | Configured units, reference shifts, account IDs, code mappings and planning status                                                                                                      |
+| `queries.py`                     | One function per TimeOffice SELECT, returning canonical models with its code/account translation; `read_accounts` adds its private daily-credit SELECT so callers get complete accounts |
+| `project_tables.py`              | Reads and key-scoped writes of the project tables next to the TimeOffice schema                                                                                                         |
+| `service.py`                     | `TimeOfficeService`, the package's only public entry point; one connection per call                                                                                                     |
 
 ## Connection and schema
 
 Follow [database configuration](../getting-started/installation.md#database-configuration) for `.env` and the password file. Docker includes ODBC Driver 18. `database.py` constructs the SQLAlchemy URL with `Encrypt=yes` and verifies the server certificate (`TrustServerCertificate=no`) unless `DB_TRUST_SERVER_CERTIFICATE=true`. Its shared connection boundary checks missing configuration/driver, applies bounded login/query waits, and translates driver failures into safe integration errors for all adapter callers. FastAPI returns these as `503` with `integration`, `stage` and actionable `detail`; liveness remains independent. No connection strings, SQL or raw driver errors are returned.
 
-`just connectivity` runs the explicit diagnostic in the API container. It checks configuration/ODBC/DNS, encrypted login and `SELECT 1`, then disposes the engine. It bypasses all application queries. Offline boundary checks cover missing configuration, missing driver, sanitized login/query failures and a simulated successful diagnostic. The configured test server presents a self-signed certificate; with `DB_TRUST_SERVER_CERTIFICATE=true` all diagnostic stages pass and live read-only queries succeed. On the test database the project tables and the [prepared example units](#prepared-example-units) exist; live inspection, configuration saves and generation input were verified against them. See [testing](../development/testing.md).
+`just connectivity` runs the explicit diagnostic in the API container. It checks configuration/ODBC/DNS, encrypted login and `SELECT 1`, then disposes the engine. It bypasses all application queries. Offline boundary checks cover missing configuration, missing driver, sanitized login/query failures and a simulated successful diagnostic. The configured test server presents a self-signed certificate; with `DB_TRUST_SERVER_CERTIFICATE=true` all diagnostic stages pass and live read-only queries succeed. On the test database the project tables and the [prepared example units](#prepared-example-units) exist; the live checks run against them are listed under [current limitations](../validation/index.md#webapp-integration). See [testing](../development/testing.md).
 
 The adapter reads TimeOffice tables including `TPlanungseinheiten`, `TPlanungseinheitenPersonal`, `TPersonal`, `TPlan`, `TDienste`, `TPlanPersonalKommtGeht` and monthly/daily account tables. Actual SQL and join/filter rules are in `queries.py`; this reference does not substitute a copied schema diagram for the database's current schema.
 
@@ -26,7 +26,7 @@ The adapter reads TimeOffice tables including `TPlanungseinheiten`, `TPlanungsei
 
 `TimeOfficeService` is the adapter's whole interface: `get_planning_options`, `inspect_employees`, `list_employees`, `get_employee_calendar`, `set_availability`, `set_wish` (an entry replaces, `None` removes), `get_demand`, `save_demand`, `preview_demand` and `read_generation_input` take canonical arguments and return canonical domain models. SQL, source rows and TimeOffice terminology stay private to the package (`app.timeoffice` exports only the service, the unavailable error and the engine factory). Each query function translates its own source codes and checks source-level facts such as missing master rows, duplicate target plans or unmapped codes; cross-entity completeness belongs to `domain/inspection.py`. Each router declares the small protocol it needs (`PlanningSource`, `AvailabilitySource`, `DemandSource`), so another planning database can replace TimeOffice without touching routes or domain, and a new feature adds its own protocol instead of growing a shared one. TimeOffice reductions and fixed reference mappings in `facts.py` remain adapter behavior and must be checked against the chosen data.
 
-The adapter writes only the project tables. `read_generation_input` builds the solver's `SchedulingDataset` from the employee inspection, the reference shifts and the saved demand. Shift times and paid minutes come from each reference shift's own `TDiensteSollzeiten` segments (an overnight segment ends on the next day). Roster rows are read only as approved absences: worked shifts of any plan, including earlier output in the target plan, never become generation input. Publication is added later as a canonical operation behind the same service.
+The adapter writes only the project tables. `read_generation_input` builds the solver's `SchedulingDataset` from the employee inspection, the reference shifts and the saved demand. Shift times and paid minutes come from each reference shift's own `TDiensteSollzeiten` segments (an overnight segment ends on the next day). A segment's `Minuten` equals its length, so paid time is worked time; the gaps between segments are unpaid breaks: F 05:55–13:25 has 30 minutes (420 paid), Z 08:30–14:15 none (345), S 13:15–21:00 30 minutes (435) and N 20:10–06:10 45 minutes (555). Roster rows are read only as approved absences: worked shifts of any plan, including earlier output in the target plan, never become generation input. Publication is added later as a canonical operation behind the same service.
 
 ## Monthly accounts and credits
 
@@ -40,7 +40,7 @@ Selection and employee inspection are strictly read-only. They never create tabl
 | Actual minutes | `TPersonalKontenJeMonat`, account 55 (`TOTAL`), `Wert2` hours       | Optional; never treated as a credit          |
 | Dated credits  | `TPersonalKontenJeTag` absence-hour accounts, `Wert` hours per date | Each row must fall on an absence of its code |
 
-The credit accounts are 85 `U_STD` (vacation, code `U`), 93 `FI_STD` (internal training, `FI`), 95 `FE_STD` (external training, `FE`) and 97 `ST_STD` (school, `SC`). TimeOffice books these per date, and its monthly account of the same number is their sum. A credit row on a date without a roster absence of that code rejects the inspection. An absence without a credit row credits nothing: TimeOffice books no hours on weekend days inside a vacation, so absence of a row cannot be told apart from a missing booking. Each credit becomes an `approved_absence` `WorkCredit` with source `TimeOffice <code> absence`. Native absences are loaded separately and keep their reason; project availability comes from its own table. Duplicate credits, unknown shifts, credits outside the month and ambiguous home origin reject the complete inspection.
+The credit accounts are 85 `U_STD` (vacation, code `U`), 93 `FI_STD` (internal training, `FI`), 95 `FE_STD` (external training, `FE`) and 97 `ST_STD` (school, `SC`). TimeOffice books these per date, and its monthly account of the same number is their sum. It books a credited absence on every Monday-to-Friday date that is not an NRW public holiday and none on weekends or holidays. A credit row on a date without a roster absence of its code rejects the inspection, and so does a credited absence on such a weekday without its booking. On a weekend or holiday an absence credits nothing. The check uses the absences `read_absences` returns, so both reads share one definition of a roster absence. A unit whose employees work fewer than five days a week would need a different booking rule; it fails this check rather than being credited wrongly. Each credit becomes an `approved_absence` `WorkCredit` with source `TimeOffice <code> absence`. Native absences are loaded separately and keep their reason; project availability comes from its own table. Unknown shifts and ambiguous home origin reject the complete inspection as well.
 
 ## Project tables
 
@@ -59,7 +59,7 @@ Intentional mappings: project availability and wishes are invisible in TimeOffic
 
 ## Prepared example units
 
-The test database holds a fictional example scope for January–June 2026, created by additive SQL. Existing units, employees and rosters are unchanged, and no backup was required or available for that. Every prepared row is identified by its `BSP` business key (Beispiel), so it can be removed again in reverse dependency order.
+The test database holds a fictional example scope for January–June 2026, created by additive SQL. Existing units, employees and rosters are unchanged. Every prepared row is identified by its `BSP` business key (Beispiel), so it can be removed again in reverse dependency order.
 
 | Unit (`KurzBez`) | `Prim` | Role                                            |
 | ---------------- | ------ | ----------------------------------------------- |
@@ -80,11 +80,11 @@ The test database holds a fictional example scope for January–June 2026, creat
 To plan an existing TimeOffice unit, check each item with read-only queries first, then add the unit to `planning_unit_type_by_id` in `facts.py`:
 
 1. **Unit.** Monthly interval (`RefPlanungsIntervalle` 1); decide whether it is a station or a jumper pool.
-2. **Target plans.** Exactly one plan per planned month with status 20, interval 1 and exact month bounds. Worked rows already in it are ignored by generation, but publication will replace them.
+2. **Target plans.** Exactly one plan per planned month with status 20, interval 1 and exact month bounds. Generation ignores worked rows already in it; publication into it does not exist yet.
 3. **Memberships.** Every `TPlanungseinheitenPersonal` row of the unit that overlaps a planned month (`KeinEPlan` 0) needs a profession mapped in `STAFF_LEVEL_BY_PROFESSION_CODE`. Each employee needs exactly one home unit (`IstHeimat`) on every active date. Jumper pool staff need replacement memberships at the stations they may cover.
 4. **Employees.** A name and a mapped profession in `TPersonal`.
 5. **Accounts.** A target (account 1) for every employee and planned month.
-6. **Absences and credits.** Every absence code in the months must be mapped or ignored in `facts.py`. Credited absences need their daily credit rows; a credit row without a matching absence fails the inspection.
+6. **Absences and credits.** Every absence code in the months must be mapped or ignored in `facts.py`. Credited absences on non-holiday weekdays need their daily credit rows, and a credit row without a matching absence fails the inspection.
 7. **Demand.** Save each station month on the Mindestbesetzung page.
 8. **Verify.** Open Mitarbeiter for the unit and month: a complete inspection, or the first source error to resolve.
 

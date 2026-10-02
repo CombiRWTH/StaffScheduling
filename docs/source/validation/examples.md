@@ -1,6 +1,6 @@
 # Examples and reproduction
 
-For readers trying to inspect or reproduce the example schedules. The prepared TimeOffice inputs below exist and have been read back through the application. No accepted example bundle is supplied yet, and the run-without-TimeOffice and validation sections are still outlines; see [current limitations](index.md) and the [documentation guide](../development/documentation.md).
+For readers trying to inspect or reproduce the example schedules. The prepared TimeOffice inputs below exist; how they were checked is recorded under [current limitations](index.md#webapp-integration). No accepted example bundle is supplied yet, and the run-without-TimeOffice and validation sections are still outlines; see [current limitations](index.md) and the [documentation guide](../development/documentation.md).
 
 Return to the [documentation overview](../index.md).
 
@@ -23,7 +23,7 @@ All people, contracts and absences are invented for the example, all of them adu
 - **Absences.** Everyone has three five-workday vacation blocks (`U`) spread over the half year. Each trainee also has one school week (`SC`) per month outside their vacation. Each absence workday is credited with the weekly hours ÷ 5 in TimeOffice's daily accounts.
 - **Demand.** Saved per station month from the profile's weekday and weekend/holiday rows (NRW holidays take the weekend row). Professional, assistant, trainee and MFA demand stay separate.
 - **Capacity.** Per qualification and month, target minus credits exceeds demand hours by 4–60 % (May is tightest: assistants 1.04, professionals 1.07). This is an hours check only; it does not show that a schedule satisfying every rule exists.
-- **Boundary context.** Fictional worked duties for 2025-12-18 to 2025-12-31 and 2026-07-01 to 2026-07-07 respect one duty per day, no early shift after a late shift, no day shift directly after a night, at most three nights in a row followed by two free days, and at most five consecutive working days; the shortest rest between duties is 14 hours. They meet the stations' demand on every context day. Generation does not use this context yet.
+- **Boundary context.** Fictional worked duties for 2025-12-18 to 2025-12-31 and 2026-07-01 to 2026-07-07 respect one duty per day, no early shift after a late shift, no day shift directly after a night, at most three nights in a row followed by two free days, and at most five consecutive working days; the shortest rest between duties is 14 hours. They meet the stations' demand on every context day. These properties were checked on the duties read back from the database, separately from the code that produced them. Generation does not use this context yet.
 - **Not included.** Wishes, special capabilities and history before 2025-12-18. Checks that need a longer history, such as 24-week averaging, cannot be assessed from this data.
 
 ## Run without TimeOffice
