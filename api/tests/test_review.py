@@ -17,7 +17,15 @@ from test_generation import BODY, CONFIGURATION, INFEASIBLE, finished, save_dema
 
 from app.api.generation import get_generation
 from app.api.review import get_review
-from app.domain import Assignment, PlanningMonth, SchedulingDataset, StaffLevel, check_schedule, schedule_tables
+from app.domain import (
+    Assignment,
+    PlanningMonth,
+    PlanningUnitMembership,
+    SchedulingDataset,
+    StaffLevel,
+    check_schedule,
+    schedule_tables,
+)
 from app.main import app
 from app.settings import Settings
 from app.solver.bundle import (
@@ -110,6 +118,33 @@ def test_tables_label_duties_with_real_times_origin_and_every_employee() -> None
         (30, EARLY.shift_id, 1, 1),
         (31, NIGHT.shift_id, 0, 1),
     ]
+
+
+def test_duty_origin_is_the_home_unit_of_its_date() -> None:
+    # Employee 1 moves home from North to the jumper pool on January 16 and keeps working at North.
+    before, after = (
+        PlanningUnitMembership(
+            planning_unit_id=unit,
+            employee_id=1,
+            valid_from=start,
+            valid_until=end,
+            staff_level=StaffLevel.PROFESSIONAL,
+            is_home=True,
+            is_replacement=False,
+        )
+        for unit, start, end in ((NORTH, date(2025, 12, 1), jan(15)), (JUMPER_POOL, jan(16), date(2026, 12, 31)))
+    )
+    replacement = member(1, home=JUMPER_POOL, replacements=(NORTH,))[1]
+    data = dataset(memberships=(before, after, replacement), accounts=(account(1, 0),))
+
+    home, transfer = schedule_tables(data, (duty(1, jan(15), EARLY), duty(1, jan(16), EARLY))).duties
+
+    assert (home.planning_unit_id, home.origin_unit_id) == (NORTH, NORTH)
+    assert (transfer.planning_unit_id, transfer.origin_unit_id, transfer.origin_unit_type) == (
+        NORTH,
+        JUMPER_POOL,
+        "jumper_pool",
+    )
 
 
 def test_tables_follow_the_clock_change_and_mark_public_holidays() -> None:

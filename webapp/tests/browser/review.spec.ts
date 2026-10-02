@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 
@@ -57,7 +58,21 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   await expect(grid.getByText("Besetzung Example Station North")).toBeVisible();
   // June 5 and 6 each need one professional in the early shift; the solver may assign more.
   await expect(grid.getByText(/^[1-9]\/1$/)).toHaveCount(2);
+  // The jumper-pool MFA's duties at the station are transfers; the station employee works at home.
+  const mfa = grid.getByRole("row", { name: /Example MFA One/ });
+  const team = grid.getByRole("row", { name: /Example Team Two/ });
+  await expect(mfa.locator("[data-placement=transfer]").first()).toBeVisible();
+  await expect(mfa.getByText("Springer", { exact: true }).first()).toBeVisible();
+  await expect(mfa.getByText(/Herkunft Example Jumper Pool, Einsatz außerhalb der Herkunft/).first()).toBeAttached();
+  await expect(team.locator("[data-placement=home]").first()).toBeVisible();
+  await expect(team.locator("[data-placement=transfer]")).toHaveCount(0);
+  // With one station selected, duties name no station; the origin line still names the jumper pool.
+  await expect(mfa.locator("[data-placement] div", { hasText: "Example Station North" })).toHaveCount(0);
+  await expect(grid.getByLabel("Legende")).toContainText("Einsatz außerhalb der Herkunft");
   await grid.getByRole("button", { name: "Kompakt" }).click();
+  // Compact cells keep the dashed border and tag; the origin stays in the accessible text.
+  await expect(mfa.locator("[data-placement=transfer]").first()).toBeVisible();
+  await expect(mfa.getByText("Springer", { exact: true })).toHaveCount(0);
   await expect(grid.getByRole("button", { name: "Kompakt" })).toHaveAttribute("aria-pressed", "true");
   await grid.getByLabel("Mitarbeiter im Dienstplan suchen").fill("Three");
   await expect(grid.getByRole("rowheader", { name: /Example Team Two/ })).toBeHidden();
@@ -98,6 +113,78 @@ test("a downloaded pair is imported; a rejected pair names its reason and keeps 
   const alert = page.getByRole("alert").filter({ hasText: "Der bisherige Dienstplan bleibt zur Prüfung." });
   await expect(alert).toContainText("gehört zu einer anderen input.json");
   await expect(summary(page)).toHaveText(imported!);
+});
+
+test("a home change within the month marks only the duties after it as transfers", async ({ page }) => {
+  await page.goto(JUNE);
+  const input = JSON.parse(await download(page, "input.json"));
+  const result = JSON.parse(await download(page, "result.json"));
+  // Team Two's home moves from Station North to the jumper pool on June 16; a replacement membership keeps
+  // the station duties eligible, so the schedule and its check stay the same.
+  const memberships = input.dataset.planning_unit_memberships;
+  const home = memberships.find((row: { employee_id: number }) => row.employee_id === 2);
+  memberships.push(
+    { ...home, valid_from: "2026-06-16", planning_unit_id: 201 },
+    { ...home, valid_from: "2026-06-16", is_home: false, is_replacement: true },
+  );
+  home.valid_until = "2026-06-15";
+  const changed = JSON.stringify(input);
+  result.input.sha256 = createHash("sha256").update(changed).digest("hex");
+  await upload(page, changed, JSON.stringify(result));
+  await expect(summary(page)).toContainText("Importiert");
+
+  const team = page.getByLabel("Dienstplan", { exact: true }).getByRole("row", { name: /Example Team Two/ });
+  await expect(team.getByRole("rowheader")).toContainText("Example Station North, Example Jumper Pool");
+  const placements = await team
+    .locator("td")
+    .evaluateAll((cells) =>
+      cells.map((cell) => cell.querySelector("[data-placement]")?.getAttribute("data-placement")),
+    );
+  const byDay = placements.map((kind, index) => [index + 1, kind] as const).filter(([, kind]) => kind);
+  expect(byDay.filter(([day]) => day <= 15).every(([, kind]) => kind === "home")).toBe(true);
+  expect(byDay.filter(([day]) => day >= 16).every(([, kind]) => kind === "transfer")).toBe(true);
+  expect(byDay.some(([day]) => day <= 15) && byDay.some(([day]) => day >= 16)).toBe(true);
+});
+
+test("a duty without a dated membership has an unknown origin and an eligibility finding", async ({ page }) => {
+  await page.goto(JUNE);
+  const input = JSON.parse(await download(page, "input.json"));
+  const result = JSON.parse(await download(page, "result.json"));
+  // Every membership of Team Two, also those of the earlier home change, ends the day before their last duty,
+  // which then has no origin. Such a schedule is rejected; its result carries the finding the re-check names.
+  type Duty = { employee_id: number; date: string; planning_unit_id: number; shift_id: number };
+  const last = (result.solution.assignments as Duty[])
+    .filter((row) => row.employee_id === 2)
+    .reduce((latest, row) => (row.date > latest.date ? row : latest));
+  const before = new Date(`${last.date}T00:00:00Z`);
+  before.setUTCDate(before.getUTCDate() - 1);
+  const cutoff = before.toISOString().slice(0, 10);
+  type Membership = { employee_id: number; valid_from: string; valid_until: string };
+  input.dataset.planning_unit_memberships = (input.dataset.planning_unit_memberships as Membership[])
+    .filter((row) => row.employee_id !== 2 || row.valid_from <= cutoff)
+    .map((row) => (row.employee_id === 2 && row.valid_until > cutoff ? { ...row, valid_until: cutoff } : row));
+  const changed = JSON.stringify(input);
+  result.input.sha256 = createHash("sha256").update(changed).digest("hex");
+  result.solution.check.status = "rejected";
+  result.solution.check.findings = [
+    {
+      rule: "eligibility",
+      message: "No active professional membership at the station.",
+      employee_id: 2,
+      date: last.date,
+      planning_unit_id: last.planning_unit_id,
+      shift_id: last.shift_id,
+    },
+  ];
+  await upload(page, changed, JSON.stringify(result));
+  await expect(summary(page)).toContainText("Regelverstöße");
+
+  const grid = page.getByLabel("Dienstplan", { exact: true });
+  const team = grid.getByRole("row", { name: /Example Team Two/ });
+  await expect(team.locator("[data-placement=unknown]")).toHaveCount(1);
+  await expect(team.locator("[data-placement=unknown]")).toContainText("Herkunft unbekannt");
+  await expect(team.locator("[data-placement=unknown]")).toContainText("Herkunft ?");
+  await expect(grid.getByLabel("Legende")).toContainText("Herkunft unbekannt");
 });
 
 test("a schedule of another scope is not shown as the selected one", async ({ page }) => {

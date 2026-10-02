@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { Maximize, Minimize, Search } from "lucide-react";
+import { ArrowRightLeft, Maximize, Minimize, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,17 @@ const key = (employeeId: number, date: string) => `${employeeId}|${date}`;
 /** `HH:MM` of an offset timestamp: its Europe/Berlin wall-clock time. */
 const clock = (timestamp: string) => timestamp.slice(11, 16);
 
+// Where a duty is worked relative to the employee's dated origin.
+type Placement = "home" | "transfer" | "unknown";
+// The dashed border of a transfer, in the cell's text color; shared by cells and legend.
+const TRANSFER_BORDER = "outline-2 -outline-offset-2 outline-dashed outline-current";
+
+/** The backend leaves the origin empty only for a duty on a date without any membership. */
+function placement(duty: DutyRow): Placement {
+  if (duty.origin_unit_id === null) return "unknown";
+  return duty.origin_unit_id === duty.planning_unit_id ? "home" : "transfer";
+}
+
 function dutyTitle(duty: DutyRow) {
   return [
     duty.planning_unit_name,
@@ -37,6 +48,18 @@ function dutyTitle(duty: DutyRow) {
     STAFF_LEVEL_LABELS[duty.staff_level],
     duty.origin_unit_name ? `Herkunft ${duty.origin_unit_name}` : "Herkunft unbekannt",
   ].join(" · ");
+}
+
+/** The corner tag of a duty outside its origin: a transfer, or an origin the backend could not date. */
+function PlacementTag({ kind }: { kind: Exclude<Placement, "home"> }) {
+  return (
+    <span
+      aria-hidden
+      className="absolute -right-1.5 -top-1.5 flex size-3 items-center justify-center rounded-full border border-foreground bg-background text-[8px] font-bold leading-none text-foreground"
+    >
+      {kind === "transfer" ? <ArrowRightLeft className="size-2" strokeWidth={3} /> : "?"}
+    </span>
+  );
 }
 
 /** Employees by date with their duties, absences and findings, and each station's staffing per shift. */
@@ -75,10 +98,16 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
   const employees = tables.employees
     .filter((row) => `${row.employee_id} ${row.employee_name}`.toLocaleLowerCase("de-DE").includes(needle))
     .sort((a, b) => a.employee_name.localeCompare(b.employee_name, "de-DE"));
-  const home = (employee: (typeof employees)[number]) => {
-    const membership = employee.memberships.find((row) => row.is_home);
-    return membership ? units.get(membership.planning_unit_id)?.display_name : undefined;
-  };
+  // Every home unit of the month (the backend only lists memberships of the schedule's units); a duty's own
+  // dated origin decides whether it is a transfer.
+  const homes = (employee: (typeof employees)[number]) =>
+    [
+      ...new Set(
+        employee.memberships
+          .filter((row) => row.is_home)
+          .flatMap((row) => units.get(row.planning_unit_id)?.display_name ?? []),
+      ),
+    ].join(", ");
   // Staffing per station and shift: required and assigned counts per date over all qualifications.
   const staffing = new Map<string, { required: number; assigned: number; levels: string[] }>();
   for (const row of tables.staffing) {
@@ -108,7 +137,9 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
     <Card aria-label="Dienstplan">
       <CardHeader>
         <CardTitle>Dienstplan</CardTitle>
-        <CardDescription>Dienste je Mitarbeiter und Tag; Details beim Zeigen auf einen Dienst.</CardDescription>
+        <CardDescription>
+          Dienste je Mitarbeiter und Tag; Zeiten und Herkunft beim Zeigen auf einen Dienst und für Screenreader.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div ref={container} className={cn("space-y-4", fullscreen && "overflow-auto bg-background p-4")}>
@@ -160,7 +191,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                   <tr key={employee.employee_id}>
                     <th scope="row" className="sticky left-0 z-10 border-b bg-background p-2 text-left font-normal">
                       <span className="text-muted-foreground">{employee.employee_id}</span> {employee.employee_name}
-                      {!compact && <div className="text-muted-foreground">{home(employee)}</div>}
+                      <div className="text-muted-foreground">{homes(employee)}</div>
                     </th>
                     {calendar.map((day) => {
                       const duty = duties.get(key(employee.employee_id, day.date));
@@ -176,15 +207,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                           )}
                         >
                           {duty ? (
-                            <div
-                              title={dutyTitle(duty)}
-                              className={cn("rounded px-1 py-0.5", SHIFT_COLORS[duty.shift_type])}
-                            >
-                              {duty.shift_code}
-                              {!compact && stations.length > 1 && (
-                                <div className="truncate text-[10px] opacity-80">{duty.planning_unit_name}</div>
-                              )}
-                            </div>
+                            <DutyCell duty={duty} compact={compact} showStation={stations.length > 1} />
                           ) : absent.length ? (
                             <span
                               title={absent
@@ -252,6 +275,19 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                   {SHIFT_TYPE_LABELS[type]}
                 </span>
               ))}
+            <span className="flex items-center gap-1.5">
+              <span className={cn("relative mr-1 inline-block size-3 rounded", SHIFT_COLORS.other, TRANSFER_BORDER)}>
+                <PlacementTag kind="transfer" />
+              </span>
+              Einsatz außerhalb der Herkunft des Tages: „Springer“ aus dem Springerpool, „aus …“ von einer anderen
+              Station
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className={cn("relative mr-1 inline-block size-3 rounded", SHIFT_COLORS.other)}>
+                <PlacementTag kind="unknown" />
+              </span>
+              Herkunft unbekannt
+            </span>
             <span>Grund oder Kürzel (U, FB, Fr, nur …): Abwesenheit oder Einschränkung</span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block size-3 rounded ring-2 ring-inset ring-destructive" />
@@ -266,5 +302,48 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+/** One duty: its shift code and color, and where it is worked; a transfer gets a dashed border and a tag. */
+function DutyCell({ duty, compact, showStation }: { duty: DutyRow; compact: boolean; showStation: boolean }) {
+  const kind = placement(duty);
+  const origin =
+    kind === "home"
+      ? null
+      : kind === "unknown"
+        ? "Herkunft ?"
+        : duty.origin_unit_type === "jumper_pool"
+          ? "Springer"
+          : `aus ${duty.origin_unit_name}`;
+  return (
+    <div
+      title={dutyTitle(duty)}
+      data-placement={kind}
+      // A tagged duty keeps its tag in the right padding, so it never covers the shift code.
+      className={cn(
+        "relative rounded px-1 py-0.5",
+        SHIFT_COLORS[duty.shift_type],
+        origin && "pr-3",
+        kind === "transfer" && TRANSFER_BORDER,
+      )}
+    >
+      <span aria-hidden>{duty.shift_code}</span>
+      <span className="sr-only">
+        {dutyTitle(duty)}
+        {kind === "transfer" && ", Einsatz außerhalb der Herkunft"}
+      </span>
+      {kind !== "home" && <PlacementTag kind={kind} />}
+      {!compact && showStation && (
+        <div aria-hidden className="truncate text-[10px] opacity-80">
+          {duty.planning_unit_name}
+        </div>
+      )}
+      {!compact && origin && (
+        <div aria-hidden className="max-w-16 truncate text-[10px] opacity-80">
+          {origin}
+        </div>
+      )}
+    </div>
   );
 }

@@ -138,6 +138,10 @@ _Avoid_: case, export folder, legacy JSON
 The employee's home station or jumper pool on a duty's date, as opposed to the station where the duty is worked.
 _Avoid_: source unit, pool (alone)
 
+**Transfer** (Einsatz außerhalb der Herkunft):
+A duty worked at a station other than its origin on that date; the review shows a jumper pool origin as _Springer_. A home change within the month changes the origin from its first date on.
+_Avoid_: loan, external duty
+
 **Published schedule**:
 An accepted schedule written to the roster system for its stations and month.
 _Avoid_: exported schedule, inserted plan
