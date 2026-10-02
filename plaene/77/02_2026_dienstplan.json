@@ -7,9 +7,7 @@
       "firstname": "Annika",
       "is_springer": true,
       "lastname": "Behrens",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
       "type": "Stationshilfe (81301-018)"

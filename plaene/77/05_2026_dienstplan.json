@@ -2,31 +2,27 @@
   "employees": {
     "0": {
       "actual_working_minutes": 0.0,
-      "category": "Hilfskraft",
+      "category": "Azubi",
       "constraints": {},
       "firstname": "Annika",
       "is_springer": true,
       "lastname": "Behrens",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
-      "type": "Stationshilfe (81301-018)"
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     "1": {
       "actual_working_minutes": 0.0,
-      "category": "Hilfskraft",
+      "category": "Azubi",
       "constraints": {},
       "firstname": "Lars",
       "is_springer": true,
       "lastname": "Schumann",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
-      "type": "Stationshilfe (81301-018)"
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     "1230": {
       "actual_working_minutes": 0.0,
@@ -42,7 +38,7 @@
     },
     "2": {
       "actual_working_minutes": 0.0,
-      "category": "Hilfskraft",
+      "category": "Fachkraft",
       "constraints": {},
       "firstname": "Miriam",
       "is_springer": true,
@@ -52,7 +48,7 @@
       ],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
-      "type": "Stationshilfe (81301-018)"
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     "2932": {
       "actual_working_minutes": 0.0,
@@ -82,7 +78,7 @@
     },
     "3": {
       "actual_working_minutes": 0.0,
-      "category": "Hilfskraft",
+      "category": "Fachkraft",
       "constraints": {},
       "firstname": "Tobias",
       "is_springer": true,
@@ -92,7 +88,7 @@
       ],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
-      "type": "Stationshilfe (81301-018)"
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     "3566": {
       "actual_working_minutes": 0.0,
@@ -127,9 +123,7 @@
       "firstname": "Sabine",
       "is_springer": true,
       "lastname": "Frenzel",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
       "type": "Stationshilfe (81301-018)"
@@ -141,9 +135,7 @@
       "firstname": "Jens",
       "is_springer": true,
       "lastname": "Waldmann",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
       "type": "Stationshilfe (81301-018)"
@@ -167,9 +159,7 @@
       "firstname": "Christine",
       "is_springer": true,
       "lastname": "Siebert",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
       "type": "Stationshilfe (81301-018)"

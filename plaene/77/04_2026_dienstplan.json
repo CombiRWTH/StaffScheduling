@@ -2,21 +2,19 @@
   "employees": {
     "0": {
       "actual_working_minutes": 0.0,
-      "category": "Hilfskraft",
+      "category": "Azubi",
       "constraints": {},
       "firstname": "Annika",
       "is_springer": true,
       "lastname": "Behrens",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
-      "type": "Stationshilfe (81301-018)"
+      "type": "A-Pflegefachkraft (Krankenpflege) (A-81302-018)"
     },
     "1": {
       "actual_working_minutes": 0.0,
-      "category": "Hilfskraft",
+      "category": "Fachkraft",
       "constraints": {},
       "firstname": "Lars",
       "is_springer": true,
@@ -26,7 +24,7 @@
       ],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
-      "type": "Stationshilfe (81301-018)"
+      "type": "Gesundheits- und Krankenpfleger/in (81302-005)"
     },
     "1230": {
       "actual_working_minutes": 0.0,
@@ -47,9 +45,7 @@
       "firstname": "Miriam",
       "is_springer": true,
       "lastname": "K\u00f6hler",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
       "type": "Stationshilfe (81301-018)"
@@ -87,9 +83,7 @@
       "firstname": "Tobias",
       "is_springer": true,
       "lastname": "Haupt",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
       "type": "Stationshilfe (81301-018)"
@@ -127,9 +121,7 @@
       "firstname": "Sabine",
       "is_springer": true,
       "lastname": "Frenzel",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
       "type": "Stationshilfe (81301-018)"
@@ -141,9 +133,7 @@
       "firstname": "Jens",
       "is_springer": true,
       "lastname": "Waldmann",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
       "type": "Stationshilfe (81301-018)"
@@ -167,9 +157,7 @@
       "firstname": "Christine",
       "is_springer": true,
       "lastname": "Siebert",
-      "qualifications": [
-        "rounds"
-      ],
+      "qualifications": [],
       "springer_pool": "Springerpool",
       "target_working_minutes": 0.0,
       "type": "Stationshilfe (81301-018)"
