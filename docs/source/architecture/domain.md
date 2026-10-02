@@ -51,7 +51,7 @@ Computed fields such as month start/end and account credited total are derived. 
 
 ## Monthly configuration
 
-`availability.py` holds `AvailabilityEntry` (type, allowed shifts, reason and their rules), `Availability` (an entry plus employee, date and source) and `EmployeeCalendar`, an employee month of read-only native `absences`, editable `availability` and `wishes` plus the month's calendar and the reference `ShiftOption`s. `EmployeeSummary` (ID and name) is what choosing an employee needs. An `available_only` entry needs distinct `shift_ids`; other types must not have any. A `WishEntry` carries the wish type and its shift rule; a `Wish` adds employee and date. Writes take an entry and the employee/date key, so request bodies are validated before the service is called.
+`availability.py` holds `AvailabilityEntry` (type, allowed shifts, reason and their rules), `Availability` (an entry plus employee, date and `native_absence`, set for a read-only TimeOffice absence whose reason is its code) and `EmployeeCalendar`, an employee month of read-only native `absences`, editable `availability` and `wishes` plus the month's calendar and the reference `ShiftOption`s. `EmployeeSummary` (ID and name) is what choosing an employee needs. An `available_only` entry needs distinct `shift_ids`; other types must not have any. A `WishEntry` carries the wish type and its shift rule; a `Wish` adds employee and date. Writes take an entry and the employee/date key, so request bodies are validated before the service is called.
 
 `calendar.py` derives the planning calendar: every date of a month with its ISO weekday and North Rhine-Westphalia public holiday from the `holidays` package. A holiday keeps its weekday; its `DayType` is `holiday`.
 

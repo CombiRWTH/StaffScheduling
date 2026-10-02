@@ -52,7 +52,7 @@ Jobs are lost on API restart. Monthly runs are independent; the coordinated six-
 | --------------------------------------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------- |
 | `POST /generation`, January 2026, both example stations, 120 s              | A found schedule, reviewed automatically    | `feasible`, check `accepted`, 1059 duties, 0 findings                      |
 | `GET /review?month=2026-01&stations=427,428` of the webapp                  | Review page with summary, grid and accounts | `200`; 57 employees, staffing of both stations                             |
-| Webapp `/review/files/{name}`, the four files of that revision              | Attachments of the reviewed bundle          | `200`; 233 kB input, 183 kB result, 160 kB schedule, 69 kB employee tables |
+| Webapp `/review/files/{name}`, all four files (before `gaps.csv`)           | Attachments of the reviewed bundle          | `200`; 233 kB input, 183 kB result, 160 kB schedule, 69 kB employee tables |
 | Example validator (`check_examples`) on the downloaded folder, January only | Accepted single month of both stations      | No problem; open: following month's start, annual free Sundays             |
 
 The pair passed the same validation as an import. A single month cannot show the sequence checks; they are covered by the offline tests until the six accepted months exist. Messages of findings and the API's import details are English; the webapp names import problems in German. The review is lost on API restart and is not a saved library.
