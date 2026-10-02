@@ -160,7 +160,7 @@ def test_invalid_or_conflicting_schedules_fail_before_anything_is_deleted(source
 
 
 @pytest.mark.integration
-def test_failed_or_colliding_insert_rolls_back_the_deletion(source: InspectionSource) -> None:
+def test_failed_colliding_or_misread_writes_roll_back_the_deletion(source: InspectionSource) -> None:
     before = copy.deepcopy(source.roster)
     source.failing_ids = {1}
     with pytest.raises(TimeOfficeUnavailable):
@@ -168,7 +168,19 @@ def test_failed_or_colliding_insert_rolls_back_the_deletion(source: InspectionSo
     source.failing_ids, source.conflicting_ids = set(), {1}
     with pytest.raises(TimeOfficeConflict):
         publish(source)
+    source.conflicting_ids, source.losing_published_duty = set(), True
+    with pytest.raises(PublicationRejected) as rejected:
+        publish(source)
+    assert rejected.value.problem == PublicationProblem.READ_BACK
     assert source.roster == before
+
+
+@pytest.mark.integration
+def test_a_failed_commit_reports_an_unknown_outcome(source: InspectionSource) -> None:
+    source.failing_commit = True
+    with pytest.raises(TimeOfficeUnavailable) as failed:
+        publish(source)
+    assert failed.value.stage == "commit"
 
 
 @pytest.mark.integration

@@ -15,7 +15,7 @@ from collections.abc import Sequence
 from datetime import date, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import Connection, text
+from sqlalchemy import Connection, RowMapping, text
 
 from app.domain import (
     Assignment,
@@ -45,29 +45,26 @@ def duty_rows(
     including a duty entered in TimeOffice in the target plan itself.
     """
     catalog = {shift.shift_id: shift for shift in shifts}
-    if any(row.planning_unit_id not in plans or row.date not in month for row in assignments):
+    if any(duty.planning_unit_id not in plans or duty.date not in month for duty in assignments):
         raise InvalidSelection("Every duty must belong to the named stations and the planning month.")
-    if any(row.shift_id not in catalog for row in assignments):
+    if any(duty.shift_id not in catalog for duty in assignments):
         raise InvalidSelection("Every duty must use a reference shift.")
-    if len({(row.employee_id, row.date) for row in assignments}) != len(assignments):
+    if len({(duty.employee_id, duty.date) for duty in assignments}) != len(assignments):
         raise InvalidSelection("An employee can have only one duty per date.")
 
-    employee_ids = sorted({row.employee_id for row in assignments})
+    employee_ids = sorted({duty.employee_id for duty in assignments})
     professions = _membership_professions(connection, employee_ids, sorted(plans), month)
     kept = _kept_rows(connection, facts, employee_ids, list(plans.values()), month)
     rows: list[dict[str, Any]] = []
     for duty in assignments:
         where = f"employee_id={duty.employee_id} on {duty.date}"
-        if any(not row["is_wish"] for row in kept.get((duty.employee_id, duty.date), ())):
+        kept_that_day = kept.get((duty.employee_id, duty.date), ())
+        if any(not entry["is_wish"] for entry in kept_that_day):
             raise PublicationRejected(
                 PublicationProblem.CONFLICT,
                 f"TimeOffice already has an absence or another duty of {where}; generate the schedule again.",
             )
-        numbered = [
-            row["number"]
-            for row in kept.get((duty.employee_id, duty.date), ())
-            if row["status_id"] == facts.target_planning_status_id
-        ]
+        numbered = [entry["number"] for entry in kept_that_day if entry["status_id"] == facts.target_planning_status_id]
         profession_id = _profession_id(professions, duty, facts, where)
         shift = catalog[duty.shift_id]
         midnight = datetime.combine(duty.date, datetime.min.time())
@@ -220,7 +217,7 @@ def _kept_rows(
 
 def _membership_professions(
     connection: Connection, employee_ids: list[int], unit_ids: list[int], month: PlanningMonth
-) -> Sequence[Any]:
+) -> Sequence[RowMapping]:
     """The employees' planned memberships at the stations overlapping the month, with their profession."""
     return select_rows(
         connection,
@@ -247,7 +244,7 @@ def _membership_professions(
     )
 
 
-def _profession_id(memberships: Sequence[Any], duty: Assignment, facts: TimeOfficeFacts, where: str) -> int:
+def _profession_id(memberships: Sequence[RowMapping], duty: Assignment, facts: TimeOfficeFacts, where: str) -> int:
     """The one profession of the employee's active station membership that books the duty's qualification."""
     found = {
         row["profession_id"]

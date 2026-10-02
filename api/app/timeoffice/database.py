@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import sys
 from typing import Any
@@ -19,11 +20,21 @@ class TimeOfficeUnavailable(RuntimeError):
 
 
 class TimeOfficeConflict(RuntimeError):
-    """A write that collided with concurrent or existing TimeOffice data and was rolled back; safe to retry."""
+    """A write that collided with concurrent TimeOffice data and was rolled back; safe to retry."""
+
+    problem = "concurrent"
 
 
-# SQLSTATEs of a rolled-back write: deadlock/serialization victim and integrity violations such as a duplicate key.
-CONFLICT_SQLSTATES = frozenset({"40001", "23000"})
+# SQL Server errors of a colliding writer: deadlock victim (1205, SQLSTATE 40001) and duplicate key (2627
+# constraint, 2601 index). pyodbc carries the native number only in the message text, e.g. "… (2627) …".
+# Other integrity violations (foreign key, NOT NULL) are defects, not collisions, and stay query failures.
+COLLISION_ERROR = re.compile(r"\((1205|2601|2627)\)")
+
+
+def is_collision(error: BaseException) -> bool:
+    if not isinstance(error, pyodbc.Error) or not error.args:
+        return False
+    return error.args[0] == "40001" or COLLISION_ERROR.search(str(error.args[-1])) is not None
 
 
 def check_database_configuration(settings: Settings) -> None:
@@ -83,11 +94,8 @@ def create_db_engine(settings: Settings) -> Engine:
 
     @event.listens_for(engine, "handle_error")
     def handle_error(context: ExceptionContext) -> None:
-        error = context.original_exception
-        if isinstance(error, pyodbc.Error) and error.args and error.args[0] in CONFLICT_SQLSTATES:
-            raise TimeOfficeConflict(
-                "TimeOffice changed concurrently or already holds conflicting rows; nothing was changed. Try again."
-            ) from None
+        if is_collision(context.original_exception):
+            raise TimeOfficeConflict("TimeOffice changed concurrently; nothing was changed. Try again.") from None
         raise TimeOfficeUnavailable(
             "query", "TimeOffice query failed: check connectivity, schema and database permissions."
         ) from None

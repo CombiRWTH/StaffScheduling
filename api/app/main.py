@@ -59,7 +59,7 @@ async def invalid_bundle(_request: Request, error: InvalidBundle) -> JSONRespons
 
 @app.exception_handler(TimeOfficeConflict)
 async def timeoffice_conflict(_request: Request, error: TimeOfficeConflict) -> JSONResponse:
-    return JSONResponse(status_code=409, content={"detail": str(error), "problem": "concurrent"})
+    return JSONResponse(status_code=409, content={"detail": str(error), "problem": error.problem})
 
 
 @app.exception_handler(PublicationRejected)

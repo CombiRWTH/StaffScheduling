@@ -84,6 +84,9 @@ class InspectionSource:
         self.roster: list[dict[str, Any]] = []
         # Roster inserts naming one of these employee or station IDs collide like a concurrent writer.
         self.conflicting_ids: set[int] = set()
+        # A commit fails like a connection lost while committing; publication's reads lose the last duty.
+        self.failing_commit = False
+        self.losing_published_duty = False
         # Called before roster rows are inserted, so a test can hold a publication mid-transaction.
         self.before_roster_insert: Callable[[], None] = lambda: None
         self.facts = replace(
@@ -101,6 +104,7 @@ class InspectionSource:
         connection.execute.side_effect = self.execute
         engine.begin.side_effect = self._transaction
         engine.execution_options.return_value = engine
+        connection.begin.side_effect = self._begin
         self.connection = connection
         self.service = TimeOfficeService(
             facts=self.facts,
@@ -115,6 +119,22 @@ class InspectionSource:
         except BaseException:
             self.tables, self.roster = before
             raise
+
+    def _begin(self) -> MagicMock:
+        """An explicit transaction like `Connection.begin()`: rollback restores, commit may fail."""
+        before = copy.deepcopy((self.tables, self.roster))
+        transaction = MagicMock()
+
+        def rollback() -> None:
+            self.tables, self.roster = copy.deepcopy(before)
+
+        def commit() -> None:
+            if self.failing_commit:
+                raise TimeOfficeUnavailable("query", "TimeOffice query failed.")
+
+        transaction.rollback.side_effect = rollback
+        transaction.commit.side_effect = commit
+        return transaction
 
     @staticmethod
     def is_output(row: dict[str, Any], plan_ids: list[int]) -> bool:
@@ -174,6 +194,9 @@ class InspectionSource:
             (r for r in self.roster if self.is_output(r, plan_ids)),
             key=lambda r: (r["employee_id"], r["roster_date"], r["number"]),
         )
+        if self.losing_published_duty and output:
+            last = (output[-1]["employee_id"], output[-1]["roster_date"])
+            output = [r for r in output if (r["employee_id"], r["roster_date"]) != last]
         return [
             {
                 "employee_id": r["employee_id"],

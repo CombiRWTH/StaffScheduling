@@ -37,6 +37,7 @@ from app.domain import (
     month_calendar,
 )
 from app.timeoffice import project_tables, queries, roster
+from app.timeoffice.database import TimeOfficeConflict, TimeOfficeUnavailable
 from app.timeoffice.facts import TIMEOFFICE_FACTS, TimeOfficeFacts
 
 
@@ -177,11 +178,12 @@ class TimeOfficeService:
         if not assignments:
             raise InvalidSelection("An empty schedule is not published; clear the stations instead.")
         with self._replacing(planning_unit_ids, planning_month) as (connection, plans, removed):
+            plan_ids = list(plans.values())
             shifts = queries.read_shifts(connection, self._facts)
             rows = roster.duty_rows(connection, self._facts, plans, shifts, planning_month, assignments)
-            roster.delete_output(connection, self._facts, list(plans.values()))
+            roster.delete_output(connection, self._facts, plan_ids)
             roster.insert_rows(connection, rows)
-            written = roster.read_output(connection, self._facts, list(plans.values()), shifts)
+            written = roster.read_output(connection, self._facts, plan_ids, shifts)
             if len(written) != len(assignments) or set(written) != set(assignments):
                 raise PublicationRejected(
                     PublicationProblem.READ_BACK, "The published duties read back differently; nothing was changed."
@@ -208,11 +210,23 @@ class TimeOfficeService:
         """One publication transaction: the stations' target plans by station and their published duty count.
 
         Publication and clear run one at a time in this process, each serializable, so a concurrent writer
-        elsewhere makes one of them fail and roll back instead of interleaving.
+        elsewhere makes one of them fail and roll back instead of interleaving. Any failure before the commit
+        rolls back; a failure of the commit itself leaves the outcome unknown (`TimeOfficeUnavailable`, commit).
         """
-        with self._publication_lock, self._serializable.begin() as connection:
-            plans = self._require_stations(connection, tuple(dict.fromkeys(planning_unit_ids)), month)
-            yield connection, plans, roster.count_output(connection, self._facts, list(plans.values()))
+        with self._publication_lock, self._serializable.connect() as connection:
+            transaction = connection.begin()
+            try:
+                plans = self._require_stations(connection, tuple(dict.fromkeys(planning_unit_ids)), month)
+                yield connection, plans, roster.count_output(connection, self._facts, list(plans.values()))
+            except BaseException:
+                transaction.rollback()
+                raise
+            try:
+                transaction.commit()
+            except TimeOfficeUnavailable, TimeOfficeConflict:
+                raise TimeOfficeUnavailable(
+                    "commit", "TimeOffice failed while committing; whether the change was saved is unknown."
+                ) from None
 
     def _inspect(
         self, connection: Connection, selected: tuple[int, ...], planning_month: PlanningMonth
