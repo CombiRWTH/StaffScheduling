@@ -23,7 +23,7 @@ The connection boundary checks configuration and driver, bounds login and query 
 
 `just connectivity` checks configuration, ODBC, DNS, encrypted login and `SELECT 1` in the API container, bypassing application queries. Offline tests cover missing configuration and driver, sanitized login and query failures and a simulated success. The test server's certificate is self-signed, so it needs `DB_TRUST_SERVER_CERTIFICATE=true`. See [testing](../development/testing.md) and [current limitations](../validation/index.md#webapp-integration).
 
-The adapter reads `TPlanungseinheiten`, `TPlanungseinheitenPersonal`, `TPersonal`, `TPlan`, `TDienste`, `TDiensteSollzeiten`, `TPlanPersonalKommtGeht` and the monthly and daily account tables. `queries.py` holds the SQL.
+The adapter reads `TPlanungseinheiten`, `TPlanungseinheitenPersonal`, `TPersonal`, `TBerufe` (professions), `TPlan`, `TDienste`, `TDiensteSollzeiten`, `TPlanPersonalKommtGeht` and the monthly and daily account tables. `queries.py` holds the SQL.
 
 ## Read and write boundaries
 

@@ -27,7 +27,7 @@ Running the services needs only Docker with Compose and just; the other tools ar
 
     Install [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) with Linux containers, and [just](https://just.systems/man/en/packages.html). The root just recipes need a POSIX shell, and `just precheck` uses Bash; they do not support the Command Prompt or PowerShell. Run them from [Git Bash](https://git-scm.com/downloads/win) or [WSL](https://learn.microsoft.com/en-us/windows/wsl/install); with WSL, enable Docker Desktop's WSL integration. Windows use is untested.
 
-The Docker daemon must be running. The first build needs internet access to fetch images, OS packages and locked dependencies. Docker images contain Python, Node, uv, pnpm and Microsoft's ODBC Driver 18; these do not need host installations for Compose startup. Dedicated Linux-host and connected database acceptance are still pending; see [limitations](../validation/index.md).
+The Docker daemon must be running. The first build needs internet access to fetch images, OS packages and locked dependencies. Docker images contain Python, Node, uv, pnpm and Microsoft's ODBC Driver 18; these do not need host installations for Compose startup. Startup on a dedicated Linux host is not yet verified; see [limitations](../validation/index.md).
 
 ## Verify the installation
 
