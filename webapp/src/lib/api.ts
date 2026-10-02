@@ -15,19 +15,23 @@ import type {
   PublicationResult,
   ScheduleReview,
   WishEntry,
+  WriteProblem,
 } from "@/lib/types";
 
 const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
 
 const INVALID_SELECTION = "Ungültige Auswahl. Nur Stationen mit Planungsziel für diesen Monat wählen.";
 const INCOMPLETE = "Daten unvollständig. Stationen, Zuordnungen, Monatskonten und Abwesenheiten prüfen.";
+/** Any write the backend rolled back because another writer changed the same TimeOffice rows. */
+const CONCURRENT_PROBLEM: WriteProblem = "concurrent";
 const CONCURRENT = "TimeOffice wurde gleichzeitig geändert. Nichts wurde gespeichert; bitte erneut versuchen.";
 
-/** A failed API call: a German message for the user and the HTTP status for callers that handle one. */
+/** A failed API call: a German message for the user, the HTTP status and a failed TimeOffice stage, if any. */
 class ApiError extends Error {
   constructor(
     message: string,
     readonly status?: number,
+    readonly stage?: string,
   ) {
     super(message);
   }
@@ -72,10 +76,13 @@ async function send(
   }
   if (response.status === 422 || response.status === 409) {
     const problem = (await response.json().catch(() => null))?.problem;
-    const message = problem === "concurrent" ? CONCURRENT : problems?.[problem];
+    const message = problem === CONCURRENT_PROBLEM ? CONCURRENT : problems?.[problem];
     throw new ApiError(message ?? (response.status === 422 ? invalid : incomplete), response.status);
   }
-  if (!response.ok) throw new ApiError(await unavailableMessage(response), response.status);
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new ApiError(unavailableMessage(body), response.status, body?.stage);
+  }
   return response;
 }
 
@@ -90,8 +97,7 @@ async function request<T>(
 }
 
 /** A failed TimeOffice query (schema, permissions) is told apart from an unreachable backend or database. */
-async function unavailableMessage(response: Response) {
-  const body = await response.json().catch(() => null);
+function unavailableMessage(body: { integration?: string; stage?: string } | null) {
   if (body?.integration === "timeoffice" && body.stage === "query") {
     return "TimeOffice-Abfrage fehlgeschlagen. Datenbankschema und Berechtigungen prüfen.";
   }
@@ -169,7 +175,7 @@ export function previewPattern(month: string, stationId: number, cells: PatternR
   return request<MonthlyDemand>("POST", "/demand/pattern", { body, invalid: INVALID_DEMAND });
 }
 
-const INVALID_GENERATION = "Generierung ungültig. Stationen mit Planungsziel und eine Laufzeit von 1–3600 s wählen.";
+const INVALID_GENERATION = "Generierung ungültig. Stationen mit Planungsziel und eine Laufzeit von 30–3600 s wählen.";
 const INCOMPLETE_GENERATION =
   "Eingaben unvollständig. Mindestbesetzung jeder Station speichern und Mitarbeiterdaten prüfen.";
 
@@ -244,21 +250,23 @@ const PUBLICATION_PROBLEMS: Record<PublicationProblem, string> = {
   read_back: "TimeOffice hat die Dienste anders gespeichert als geschrieben. Nichts wurde geändert.",
 };
 
+const UNKNOWN_OUTCOME = "Ob TimeOffice geändert wurde, ist unbekannt. Seite neu laden und TimeOffice prüfen.";
+
 /**
  * One publication write. Its failures say that nothing changed, because the backend rolls the transaction back;
- * only a request without an answer may still have been committed, so its outcome is unknown, not failed.
+ * a request without an answer or a connection lost while committing may still have been saved, so their outcome
+ * is unknown, not failed.
  */
 async function publicationWrite(write: () => Promise<PublicationResult>) {
   try {
     return await write();
   } catch (error) {
     if (!(error instanceof ApiError) || error.status === 409 || error.status === 422) throw error;
-    if (error.status === undefined) {
-      throw new ApiError(
-        "Keine Antwort vom Backend: Ob TimeOffice geändert wurde, ist unbekannt. Seite neu laden und TimeOffice prüfen.",
-      );
+    if (error.status === undefined) throw new ApiError(`Keine Antwort vom Backend: ${UNKNOWN_OUTCOME}`);
+    if (error.stage === "commit") {
+      throw new ApiError(`Verbindung beim Abschluss abgebrochen: ${UNKNOWN_OUTCOME}`, error.status, error.stage);
     }
-    throw new ApiError(`${error.message} Nichts wurde geändert.`, error.status);
+    throw new ApiError(`${error.message} Nichts wurde geändert.`, error.status, error.stage);
   }
 }
 

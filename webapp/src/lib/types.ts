@@ -322,3 +322,6 @@ export interface PublicationResult {
 
 /** Why the backend refused to publish the schedule under review. */
 export type PublicationProblem = "changed" | "not_accepted" | "conflict" | "read_back";
+
+/** Why the backend rolled back any write: another writer changed the same TimeOffice rows. */
+export type WriteProblem = "concurrent";
