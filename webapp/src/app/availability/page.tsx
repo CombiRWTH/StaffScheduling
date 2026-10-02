@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { PageHeader } from "@/components/page-header";
 import { LoadError } from "@/components/load-error";
-import { NextStep } from "@/components/next-step";
 import { getEmployeeCalendar, getPlanningEmployees } from "@/lib/api";
 import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
 import { selectionSearch } from "@/lib/selection";
@@ -32,7 +31,6 @@ export default async function AvailabilityPage({
           <EmployeeAvailability month={scope.month} stationIds={scope.stationIds} employee={params.employee} />
         </Suspense>
       )}
-      <NextStep after="/availability" scope={scope} />
     </div>
   );
 }

@@ -22,8 +22,8 @@ Check the employee page for completeness first: generation reads the same facts 
 ## Start a full-month run
 
 1. Choose the month and one or more stations in the header.
-2. Open **Dienstplan erstellen**. The start card is headed with the month and stations it will plan (always the whole month) and, in one line, which inputs are and are not used.
-3. Next to **Starten**, enter the **Maximale Laufzeit** in seconds (the field shows the unit _s_) (30–3600, default 30). This is the solver's total search limit, shared by its stages (gaps, health, wishes, monthly accounts, intermediate duties); reading the data and preparing the model come on top. A real month of both example stations needs about 300 seconds for good health scores.
+2. Open **Dienstplan erstellen**. The start card is headed with the month and stations it will plan (always the whole month) and two lists of the inputs it uses (**Berücksichtigt**) and does not use (**Nicht berücksichtigt**).
+3. Next to **Starten**, enter the **Maximale Laufzeit** in seconds (the field shows the unit _s_) (30–3600, default 30). This is the solver's total search limit, shared by its stages (gaps, health, station transfers, wishes, monthly accounts, intermediate duties); reading the data and preparing the model come on top. A real month of both example stations needs about 300 seconds for good health scores.
 4. Select **Starten**.
 
 The backend first reads and checks all inputs. If something is missing, a message appears under the start row and no job starts: an incomplete or unsaved input asks to save every station's staffing and to check the employee data; an invalid selection or time limit names what to choose; an unreachable TimeOffice or a failed TimeOffice query (schema, permissions) says so. Otherwise the job appears under _Letzte Generierung_ as running.

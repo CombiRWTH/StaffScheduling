@@ -12,10 +12,10 @@ The backend models a calendar month, planning units, dated staffing demand, empl
 
 ## Planning steps
 
-The overview (**Übersicht**) welcomes you with a short introduction and lists the planning steps in their usual order: **Schritt 1 Mitarbeiter**, **Schritt 2 Verfügbarkeit**, **Schritt 3 Mindestbesetzung**, **Schritt 4 Dienstplan erstellen** and **Schritt 5 Dienstplan prüfen**. Each card opens its page with the selected month and stations.
+The overview (**Übersicht**) welcomes you with a short introduction and lists the planning pages as cards in their usual order: **Mitarbeiter**, **Verfügbarkeit**, **Mindestbesetzung**, **Dienstplan erstellen** and **Dienstplan prüfen**. Each card opens its page with the selected month and stations.
 
 1. Choose month and stations in the planning selection beside the title of any page.
-2. Open **Schritt 1** on the overview. The pages of steps 1 to 3 end with a link such as **Weiter mit Schritt 2: Verfügbarkeit**, which keeps the selection. Unsaved availability or demand edits are not kept when you leave a page; save them first.
+2. Open **Mitarbeiter**, **Verfügbarkeit** and **Mindestbesetzung** in turn from the overview or the sidebar; both keep the selection. Unsaved availability or demand edits are not kept when you leave a page; save them first.
 3. On **Dienstplan erstellen**, start the run. When a schedule was found, **Dienstplan prüfen** opens the review.
 4. On **Dienstplan prüfen**, review the schedule, then download it or publish it to TimeOffice. Publication and clear each need their own confirmation; nothing is published automatically.
 

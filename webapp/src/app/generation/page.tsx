@@ -1,3 +1,4 @@
+import { BulletList } from "@/components/bullet-list";
 import { LoadError } from "@/components/load-error";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -64,10 +65,16 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
                 </div>
               }
             />
-            <p className="border-t pt-3 text-muted-foreground">
-              <span className="font-medium text-foreground">Berücksichtigt:</span> {USED.join(", ")}.{" "}
-              <span className="font-medium text-foreground">Nicht berücksichtigt:</span> {NOT_USED.join(", ")}.
-            </p>
+            <div className="grid gap-4 border-t pt-3 text-muted-foreground sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <p className="font-medium text-foreground">Berücksichtigt</p>
+                <BulletList items={USED} />
+              </div>
+              <div className="space-y-1.5">
+                <p className="font-medium text-foreground">Nicht berücksichtigt</p>
+                <BulletList items={NOT_USED} />
+              </div>
+            </div>
           </CardContent>
         </Card>
 

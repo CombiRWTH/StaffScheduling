@@ -128,27 +128,21 @@ test("the overview welcomes the user; the sidebar links it and only the implemen
   ]);
 });
 
-test("the overview lists the steps in order and each step page links the next one", async ({ page }) => {
+test("the overview lists the planning pages in order and keeps the selection", async ({ page }) => {
   await page.goto("/?month=2026-01&stations=101");
   const steps = page.getByRole("list", { name: "Schritte" }).getByRole("link");
   await expect(steps).toHaveText([
-    /Schritt 1Mitarbeiter/,
-    /Schritt 2Verfügbarkeit/,
-    /Schritt 3Mindestbesetzung/,
-    /Schritt 4Dienstplan erstellen/,
-    /Schritt 5Dienstplan prüfen/,
+    /^Mitarbeiter/,
+    /^Verfügbarkeit/,
+    /^Mindestbesetzung/,
+    /^Dienstplan erstellen/,
+    /^Dienstplan prüfen/,
   ]);
   await steps.first().click();
-  for (const [next, heading] of [
-    ["Weiter mit Schritt 2: Verfügbarkeit", "Verfügbarkeit"],
-    ["Weiter mit Schritt 3: Mindestbesetzung", "Mindestbesetzung"],
-    ["Weiter mit Schritt 4: Dienstplan erstellen", "Dienstplan erstellen"],
-  ]) {
-    await page.getByRole("link", { name: next }).click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
-    await expect(page).toHaveURL(/\?month=2026-01&stations=101$/);
-  }
-  await expect(page.getByRole("link", { name: /^Weiter mit Schritt/ })).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mitarbeiter");
+  await expect(page).toHaveURL(/\?month=2026-01&stations=101$/);
+  // Pages are reached through the sidebar and the overview; there is no next-step link at the bottom.
+  await expect(page.getByRole("link", { name: /^Weiter mit/ })).toHaveCount(0);
 });
 
 test("year entry keeps the month, a missing or invalid month defaults to January", async ({ page }) => {

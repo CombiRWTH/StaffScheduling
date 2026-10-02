@@ -32,14 +32,14 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           <p className="max-w-3xl text-muted-foreground">
             Hier planen Sie den Dienstplan Ihrer Stationen für einen ganzen Monat: Mitarbeiter ansehen, Verfügbarkeit
             und Mindestbesetzung pflegen, einen Dienstplan erstellen lassen, ihn prüfen und in TimeOffice
-            veröffentlichen. Wählen Sie oben Monat und Stationen; jede Seite arbeitet mit dieser Auswahl. Die Schritte
-            unten führen der Reihe nach durch einen Monat, jede Seite ist aber auch direkt erreichbar.
+            veröffentlichen. Wählen Sie oben Monat und Stationen; jede Seite arbeitet mit dieser Auswahl. Die Karten
+            unten folgen der Reihenfolge eines Monats, jede Seite ist aber auch direkt erreichbar.
           </p>
         </div>
       </section>
 
       <ol aria-label="Schritte" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {steps.map(({ title, description, icon: Icon, href, color }, index) => (
+        {steps.map(({ title, description, icon: Icon, href, color }) => (
           <li key={href}>
             <Link href={`${href}${search}`} className="block h-full rounded-xl">
               <Card className="h-full cursor-pointer gap-0 transition-shadow hover:shadow-lg focus-within:shadow-lg">
@@ -47,8 +47,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                   <div className={cn("w-fit rounded-lg p-3", color)}>
                     <Icon className="h-6 w-6" />
                   </div>
-                  <p className="mt-4 text-sm text-muted-foreground">Schritt {index + 1}</p>
-                  <CardTitle>{title}</CardTitle>
+                  <CardTitle className="mt-4">{title}</CardTitle>
                   <CardDescription>{description}</CardDescription>
                 </CardHeader>
               </Card>

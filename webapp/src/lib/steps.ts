@@ -10,7 +10,7 @@ export interface Step {
   color: string;
 }
 
-/** The planning steps in their usual order; the overview lists them and each page links the next one. */
+/** The planning pages in their usual order, as the overview's cards. */
 export const steps = [
   {
     title: "Mitarbeiter",
