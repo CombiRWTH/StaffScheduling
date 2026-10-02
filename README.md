@@ -4,7 +4,7 @@ Hospital staff scheduling with a Next.js webapp, a FastAPI API and Google OR-Too
 
 ## Quickstart
 
-Install [Docker with Compose](https://docs.docker.com/compose/install/) and start Docker. Download/clone this repository, then create `.secrets/db_password` in its root containing only the supplied test database password. The tracked `.env` contains the non-secret connection settings. Keep the password file private.
+Install [Docker with Compose](https://docs.docker.com/compose/install/) and start Docker. Download/clone this repository, then create the file `db_password` in its `.secrets` directory, containing only the supplied test database password. The tracked `.env` contains the non-secret connection settings. Keep the password file private.
 
 From the repository root:
 

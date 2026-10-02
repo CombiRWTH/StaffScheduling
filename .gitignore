@@ -48,7 +48,8 @@ site/
 .env
 .env.*
 !/.env
-/.secrets/
+/.secrets/*
+!/.secrets/.gitkeep
 
 # Logs
 *.log

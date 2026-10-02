@@ -12,7 +12,7 @@ For developers and technical reviewers tracing responsibilities and data flow. T
 .
 ├── compose.yaml              # API/webapp development startup and mounts
 ├── .env                      # non-secret database connection settings
-├── .secrets/                 # ignored local password file
+├── .secrets/                 # local password file (ignored; only .gitkeep is tracked)
 ├── Justfile                  # shared install/check/docs/Compose recipes
 ├── api/
 │   ├── app/

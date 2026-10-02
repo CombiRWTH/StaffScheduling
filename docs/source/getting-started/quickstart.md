@@ -15,7 +15,7 @@ Use the supplied checkout if you already have one. Run the following commands fr
 
 ## 2. Place the password
 
-Create a `.secrets` directory in the repository root, then create a plain-text file named `db_password` inside it using your editor or file manager. Put only the supplied password in this plain-text file, without quotes. Keep it private and restrict file access to your user. Existing password files can be reused.
+The repository root contains an empty `.secrets` directory. Create a plain-text file named `db_password` inside it using your editor or file manager. Put only the supplied password in this plain-text file, without quotes. Keep it private and restrict file access to your user. Existing password files can be reused.
 
 ```text
 StaffScheduling/
