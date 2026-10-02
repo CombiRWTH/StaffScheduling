@@ -1,10 +1,10 @@
 # Evidence and current limitations
 
-This checkout provides a reproducible development foundation. Connected planning, independently accepted schedules and the final example dataset remain unfinished. These limits describe current code and executed checks; they are not promises inferred from visible controls.
+This checkout provides a reproducible development foundation with checked monthly generation. Review, publication and the final example dataset remain unfinished. These limits describe current code and executed checks; they are not promises inferred from visible controls.
 
 ## What this section proves
 
-For evaluators and anyone deciding whether to rely on a result. The checks below cover the current foundation; offline canonical selection/inspection is verified, while no independently accepted example schedule or live TimeOffice end-to-end flow is claimed. [Reasoning and requirements](reasoning.md) will explain policy choices and evaluation; [examples and reproduction](examples.md) will document actual accepted deliverables. These two pages are outlines.
+For evaluators and anyone deciding whether to rely on a result. The checks below cover the current foundation and generation; a live January schedule was accepted by the independent check, but no exported example bundle or live end-to-end publication is claimed. [Reasoning and requirements](reasoning.md) explains policy choices and evaluation; [examples and reproduction](examples.md) will document the accepted deliverables.
 
 ## Startup and connectivity
 
@@ -25,19 +25,26 @@ The webapp is a plain Next.js App Router project. The home page, canonical month
 
 Unrelated units, employees, plans and roster rows, and the two older project tables the API no longer reads (`StaffSchedulingMinimalStaffing`, `StaffSchedulingObjectiveWeights`), were counted before and after preparation and are unchanged.
 
-## Solver and publication
+## Solver and schedule check
 
-`POST /generation` runs the solver for one full month in a background job; `GET /generation` reports the latest job. A completed job reports the CP-SAT status, but no independent schedule check exists: every result is reported as `not_assessed`, never as accepted. Offline, the fictional dataset solves as `feasible` with audit findings, which shows that a solver success is not schedule acceptance. Inputs exclude wishes, existing roster work and month-boundary context. A live January run of both example stations returned `feasible` after the 60-second limit, with audit findings from the `rounds` early-shift rule, a special capability that the example data deliberately does not provide. Jobs are lost on API restart. Nine solver unit tests fail. Independent schedule acceptance, complete required policy correction, scoped publication/clear verification and coordinated six-month example files are pending.
+`POST /generation` runs the solver for one full month in a background job; `GET /generation` reports the latest job, and every found schedule carries the independent [schedule check](../architecture/solver.md#result). The solver implements every agreed hard rule, including trusted context around the month; inputs exclude wishes and in-month roster work. Live runs through the running Compose API against the prepared test database, both example stations, 120-second limit, one run each:
 
-The only database writes are key-scoped saves to the project tables (availability, wishes, demand). No publication path exists; scoped, checked publication and clear are a later slice.
+| Month (date)              | Solver status | Duties | Check        | Findings | Open items                                                                                    | Scores (health events, balance minutes, surplus intermediate) |
+| ------------------------- | ------------- | ------ | ------------ | -------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| January 2026 (2026-10-02) | `feasible`    | 1055   | `accepted`   | 0        | After-month boundary (next run), annual free Sundays                                          | 53, 1344, 176                                                 |
+| June 2026 (2026-10-02)    | `feasible`    | 1105   | `incomplete` | 0        | Blocking: no trusted context for May 29–31; replacement rest of June 7 beyond the known dates | 45, 1110, 254                                                 |
+
+In both runs the reported objective equals the weighted total of the recomputed scores; the relative gap is large (0.98–1.00) because the proven bound is weak. January's preceding context is the prepared December context. June's following context (July 1–7) was checked; June stays incomplete until an accepted May schedule is supplied as its context, which the six-month example sequence does. The first June run was infeasible: the prepared July context left no professional able to work the June 30 night (a fourth night in a row, or a duty inside the 48-hour recovery). The solver's diagnostic named this shortage, and the context was corrected by removing three trusted July 3 night duties; no rule was relaxed.
+
+Jobs are lost on API restart. Monthly runs are independent; scoped publication/clear and the coordinated six-month example files are pending. The only database writes of the application are key-scoped saves to the project tables (availability, wishes, demand); no publication path exists yet.
 
 ## Quality gates
 
-The latest executed offline suite reports **135 passed and nine failed**: seven preferred-block-length objective tests and two forward-rotation tests. Solver correction owns those failures. No failing test is excluded to manufacture success.
+The latest executed offline suite reports **91 passed**, including the solver integration tests; no test is excluded to manufacture success. The removed solver plugin tests are replaced by the schedule-check boundary examples (`test_schedule_check.py`) and production solves (`test_solver.py`).
 
-Webapp strict TypeScript and the native production build pass. The fourteen controlled browser scenarios (selection/inspection, unavailable/incomplete reads, back navigation, unsupported areas, year entry and the January default, mobile navigation, availability edit/reload/delete with wishes, failed availability save, demand save/reload/reset/pattern, invalid count, failed demand save, generation without result or with incomplete input, a running generation across navigation with busy rejection, infeasible versus failed runs) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
+Webapp strict TypeScript and the native production build pass. The fourteen controlled browser scenarios (selection/inspection, unavailable/incomplete reads, back navigation, unsupported areas, year entry and the January default, mobile navigation, availability edit/reload/delete with wishes, failed availability save, demand save/reload/reset/pattern, invalid count, failed demand save, generation without result or with incomplete input, a running generation across navigation with busy rejection and its accepted schedule check, infeasible versus failed runs) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
 
-Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint reports no findings. React Doctor passes with visible warnings: pnpm install hardening and the standard shadcn `ui/` variant exports. `just check` runs all independent offline gates, including browser flows, production build and docs, and retains a failing exit status. It remains red for the nine solver failures.
+Formatting, API Ruff/Pyright, all configured Git hooks and strict documentation builds pass. Webapp ESLint reports no findings. React Doctor passes with visible warnings: pnpm install hardening and the standard shadcn `ui/` variant exports. `just check` runs all independent offline gates, including browser flows, production build and docs, and retains a failing exit status.
 
 ## Retired material
 

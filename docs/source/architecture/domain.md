@@ -6,34 +6,31 @@ This reference describes inspected source definitions. Connected database behavi
 
 ## SchedulingDataset
 
-One `SchedulingDataset` aggregates a `PlanningMonth` and tuples of planning units, plans, shifts, dated staffing requirements, employees, memberships, Sunday work history, wishes, assignments, availability and monthly accounts. The solver consumes it. `build_scheduling_dataset` (`dataset.py`) builds one from a validated employee inspection, the timed reference shifts and the saved demand of each selected station: it refuses a station without saved demand, keeps only the selected stations and their associated jumper pools, and leaves wishes, existing assignments and plans empty. `staffing_role` (`shift.py`) makes the intermediate shift optional coverage and every other shift part of the minimum.
+One `SchedulingDataset` is the complete input of one full-month run: a `PlanningMonth`, the planning units (selected stations and their associated jumper pools), shifts, dated demand requirements, employees, memberships, availability, one monthly account per employee and the trusted `ScheduleContext`. It validates all references once: unique identities, exactly one account per employee, demand only for its stations and shifts inside the month, and context inside its coverage and outside the month. Every shift on every date of the month must have unambiguous Europe/Berlin times. `build_scheduling_dataset` (`dataset.py`) builds it from a validated employee inspection, the timed reference shifts, the saved demand of each selected station and the context; it refuses a station without saved demand. Wishes are not an input.
 
-| Concept                     | Meaning and important fields                                                                           |
-| --------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `PlanningMonth`             | Full calendar month identified by year and month                                                       |
-| `PlanningUnit`              | Positive ID, display name and type: station or jumper pool                                             |
-| `PlanningUnitMembership`    | Employee/unit link with date validity, staffing level and home/replacement flags                       |
-| `Employee`                  | Stable ID, display name, professional/assistant/trainee/MFA staffing level; legacy solver capabilities |
-| `Shift`                     | ID/code/type, staffing role, start/end minutes of day and net work minutes                             |
-| `DemandRequirement`         | Positive required count for a specific unit, date, shift and staffing level                            |
-| `Plan`                      | Planning record associated with a unit and month                                                       |
-| `Assignment`                | Employee, date, shift, assignment type and applicable unit                                             |
-| `Availability`              | Binding date entry: unavailable/vacation/training/free day, or only listed shifts                      |
-| `Wish`                      | Soft free/preferred day or shift of one employee and date; distinct from availability                  |
-| `MonthlyWorkAccount`        | Target/actual minutes and the month's dated credits                                                    |
-| `EmployeeSundayWorkHistory` | Imported Sunday work context                                                                           |
+| Concept                  | Meaning and important fields                                                                                            |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `PlanningMonth`          | Full calendar month identified by year and month                                                                        |
+| `PlanningUnit`           | Positive ID, display name and type: station or jumper pool                                                              |
+| `PlanningUnitMembership` | Employee/unit link with date validity, qualification and home/replacement flags                                         |
+| `Employee`               | Stable ID, display name and employee-level qualification (professional, assistant, trainee, MFA)                        |
+| `Shift`                  | ID, code, type, work `segments` and paid `net_work_minutes`; start and end derive from the segments                     |
+| `DemandRequirement`      | Positive required count for a specific station, date, shift and qualification                                           |
+| `Assignment`             | Employee, start date, station, shift and the qualification (`staff_level`) the duty is credited as                      |
+| `ScheduleContext`        | Trusted duties outside the month, their coverage `covered_from`–`covered_until`, availability of the date after         |
+| `Availability`           | Binding date entry: unavailable/vacation/training/free day, or only listed shifts                                       |
+| `Wish`                   | Soft free/preferred day or shift of one employee and date; stored, not used by generation                               |
+| `MonthlyWorkAccount`     | Target, informational actual minutes and the month's dated credits; `balance(generated)` = generated + credits − target |
 
-Work durations and accounts use minutes; dates use calendar dates. Shift clock minutes are in `[0, 1440)`, and overnight end times can be earlier than start times. Net work time is stored separately from elapsed clock time.
+Durations and accounts use whole minutes; dates are calendar dates. A `WorkSegment` gives local minutes after midnight of the duty's start date, so an overnight segment ends after 1440; the gaps between segments are unpaid breaks. A shift starts on its start date and lasts less than 24 hours. `duty.py` turns a date and shift into UTC instants: elapsed work changes on a daylight-saving night, paid minutes do not. `RulePolicy` in `rules.py` holds the hard-rule parameters; see the [solver](solver.md).
 
-A `PLANNED` assignment belongs to a selected unit and requires its unit ID. `EXTERNAL` work blocks the person without satisfying selected-unit demand and omits its source unit ID. `GENERATED` assignments represent solver output. Membership intervals determine eligibility; a jumper-pool type does not create membership automatically.
+An assignment's qualification comes from the employee's membership at that station on that date, which can differ from the employee-level qualification. Membership intervals determine eligibility; a jumper-pool membership alone never does.
 
 ## Validation and output
 
-Model validators check individual fields and relationships. Solver-specific indexes and decision variables are derived later in `solver/cp_sat/`.
+Model validators check individual fields and relationships. `acceptance.py` holds the independent schedule check `check_schedule(dataset, assignments)`, returning a `ScheduleCheck` with status (`accepted`, `rejected`, `incomplete`), findings per `Rule`, not-assessed obligations and `ScheduleScores`. `Solution` in `api/app/solver/models.py` carries the solver status, configuration, assignments, objective report, diagnostics and that check. Canonical portable bundles and CSV exports are a later slice.
 
-`Solution` in `api/app/solver/models.py` carries status, generated assignments, diagnostics and audit. The existing audit is implemented by solver components, not an independent acceptance checker. Canonical portable bundles and accepted CSV exports remain pending; the retired JSON file formats are not this domain contract.
-
-For exact fields and validators, read the model modules rather than copying frontend legacy formats. [API schemas](api.md) describe HTTP DTOs; [TimeOffice](timeoffice.md) describes source translation.
+For exact fields and validators, read the model modules. [API schemas](api.md) describe HTTP DTOs; [TimeOffice](timeoffice.md) describes source translation.
 
 ## Complete employee inspection
 
@@ -41,7 +38,7 @@ For exact fields and validators, read the model modules rather than copying fron
 
 Every employee requires exactly one account. `WorkCredit` carries a full date, nonnegative integer minutes, `approved_absence`/`trusted_work` kind and source; an account's `credit_details` are complete for the month, and an empty tuple means nothing is credited. The adapter fills them from its source, so a missing credit is a source problem, not an optional field. Actual hours never become credits. Native absences preserve their reason and source; project availability retains dates, allowed-shift IDs and reason. Unknown shifts and out-of-month credit or availability dates fail the read.
 
-Dated home origin and dated destination membership are separate. Associated jumper pool employees are visible even without selected-station eligibility. Active memberships need exactly one evidenced home unit on each active day. Qualifications, including MFA, are preserved at identity and membership level; they are not interchangeable. The current solver migration/independent acceptance remains separately unfinished.
+Dated home origin and dated destination membership are separate. Associated jumper pool employees are visible even without selected-station eligibility. Active memberships need exactly one evidenced home unit on each active day. Qualifications, including MFA, are preserved at identity and membership level; they are not interchangeable.
 
 Computed fields such as month start/end and account credited total are derived. Use Pydantic `model_dump(round_trip=True)` when serializing input for reparsing; do not supply derived fields as independent input.
 

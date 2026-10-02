@@ -63,7 +63,7 @@ React Doctor runs the installed binary with full scope, no cache, no supply-chai
 
 ## Known failing checks
 
-See [current limitations](../validation/index.md#quality-gates) for the exact solver failures and remaining acceptance. `just check` runs format, lint, quality, types, offline API/browser tests, production webapp build and strict docs even when a gate fails; it returns nonzero if any gate fails. The solver failures remain visible.
+See [current limitations](../validation/index.md#quality-gates) for the latest results and remaining acceptance. `just check` runs format, lint, quality, types, offline API/browser tests, production webapp build and strict docs even when a gate fails; it returns nonzero if any gate fails.
 
 ## Configuration ownership
 

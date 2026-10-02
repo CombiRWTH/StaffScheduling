@@ -1,6 +1,6 @@
 # Generation and job states
 
-**Dienstplan → Erstellen** generates a schedule for the whole planning month and the selected stations. The result is an unchecked draft: it is neither checked against the planning rules independently nor written to TimeOffice. The procedure below has been checked with controlled browser flows and fictional data, not yet against the live database, because the project tables do not exist there yet. See [current limitations](../validation/index.md).
+**Dienstplan → Erstellen** generates a schedule for the whole planning month and the selected stations, and checks every schedule found independently against the planning rules. Nothing is written to TimeOffice. The procedure below has been checked with controlled browser flows and fictional data and with live runs on the prepared test database; see [current limitations](../validation/index.md#solver-and-schedule-check).
 
 Return to the [documentation overview](index.md).
 
@@ -12,9 +12,10 @@ A run uses, for the selection:
 - monthly accounts with their dated absence credits;
 - native TimeOffice absences and project availability entries ([Verfügbarkeit](configuration.md));
 - the saved **Mindestbesetzung** of every selected station for that month;
-- the four reference shifts with their TimeOffice target times and paid minutes.
+- the four reference shifts with their TimeOffice target times, breaks and paid minutes;
+- trusted duties of the days before and after the month, from TimeOffice's context plans.
 
-It does not use wishes, existing worked shifts in any TimeOffice roster (including earlier output in the target plan), or preceding/following months. Jumper pool employees can only be planned at a station where they have a membership. A station whose staffing was never saved is refused instead of being planned with zero demand.
+It does not use wishes or existing worked shifts in any other TimeOffice roster (including earlier output in the target plan). Jumper pool employees can only be planned at a station where they have a membership. A station whose staffing was never saved is refused instead of being planned with zero demand.
 
 Check the employee page for completeness first: generation reads the same facts and refuses incomplete ones.
 
@@ -33,15 +34,15 @@ The page refreshes itself every two seconds while the job runs. You can leave it
 
 The card _Letzte Generierung_ shows the job's month and stations and three separate outcomes:
 
-| Outcome       | Values                                                                                                                                                                                                                                                  |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ablauf        | **Läuft**, **Abgeschlossen** (the solver finished, whatever it found) or **Fehlgeschlagen** (an unexpected error; details are in the API log)                                                                                                           |
-| Solver-Status | **Optimale Lösung**, **Lösung gefunden** (optimum not proven), **Keine Lösung möglich** (proven infeasible), **Keine Lösung innerhalb der Laufzeit**, or **Modell ungültig**; below them the counts of generated shifts, diagnostics and audit findings |
-| Prüfung       | Always **Noch nicht verfügbar**: an independent check of the schedule against the planning rules does not exist yet                                                                                                                                     |
+| Outcome       | Values                                                                                                                                                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ablauf        | **Läuft**, **Abgeschlossen** (the solver finished, whatever it found) or **Fehlgeschlagen** (an unexpected error; details are in the API log)                                                                                         |
+| Solver-Status | **Optimale Lösung**, **Lösung gefunden** (optimum not proven), **Keine Lösung möglich** (proven infeasible), **Keine Lösung innerhalb der Laufzeit**, or **Modell ungültig**                                                          |
+| Prüfung       | **Regeln eingehalten** (every checked rule kept), **Regelverstöße** (the schedule breaks a rule and is not usable), **Unvollständig geprüft** (a rule lacked input, for example the days before the month) or **Kein Plan zu prüfen** |
 
-A found solution is therefore a draft, not an accepted schedule. Diagnostics and audit findings indicate where the implemented rules or inputs need attention. Nothing is published automatically.
+Below them are the counts of generated shifts, diagnostics, rule violations and items not assessed, and the affected rules by name. _Nicht bewertet … (über den Monat hinaus)_ lists obligations that a month cannot decide, such as annual free Sundays; they do not prevent acceptance. _(fehlende Eingaben)_ means a check promised for the month had no input and the schedule is not accepted. Nothing is published automatically.
 
-If the job runs well beyond its time limit, the page stops refreshing and asks you to reload; if it stays on **Läuft**, check the API log. For **Keine Lösung möglich**, check staffing demand, availability and memberships of the month. For **Fehlgeschlagen**, check the API log; the page deliberately shows no internal error text.
+If the job runs well beyond its time limit, the page stops refreshing and asks you to reload; if it stays on **Läuft**, check the API log. For **Keine Lösung möglich**, read the diagnostics in the job (`GET /generation`): a message such as "needs 2 professional … but only 0 can work it" names the station, date and shift whose demand no employee can cover after availability and the context duties are taken into account. Then check that day's staffing demand, availability, memberships and context duties. For **Fehlgeschlagen**, check the API log; the page deliberately shows no internal error text.
 
 ## Restart and concurrency behavior
 

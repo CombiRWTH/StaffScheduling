@@ -99,8 +99,16 @@ A named working period of a day, such as early, late, night or intermediate.
 _Avoid_: slot, duty block
 
 **Assignment**:
-An employee working a specific shift on a specific date.
+An employee working a specific shift on a specific date at a station, credited as one qualification.
 _Avoid_: membership, Zuordnung
+
+**Credited qualification**:
+The qualification an assignment counts as towards staffing demand; it comes from the employee's membership at that station on that date.
+_Avoid_: role, employee level (when the membership differs)
+
+**Trusted context** (Kontext):
+Duties around a planning month from approved context plans, with the dates they cover completely; they constrain the month's boundary rules but never count towards its demand or accounts.
+_Avoid_: history, previous plan, fixed assignments
 
 **Generation** (Generierung):
 One solver run over the full month of a planning selection; it yields at most a generated candidate and is kept only until the API restarts.
@@ -110,8 +118,12 @@ _Avoid_: solve job, case, optimization
 A schedule produced by the solver that has not yet passed independent acceptance.
 _Avoid_: solution, result (when meaning an accepted schedule)
 
+**Schedule check** (Prüfung):
+The independent evaluation of a schedule's assignments against every hard rule, separate from the solver status; it accepts, rejects or reports the schedule as incomplete and lists what it could not assess.
+_Avoid_: audit, validation (when meaning input validation)
+
 **Accepted schedule**:
-A generated candidate that passed the independent acceptance check.
+A generated candidate that passed the schedule check with no violation and no missing promised input.
 _Avoid_: optimal schedule, final plan
 
 **Published schedule**:
