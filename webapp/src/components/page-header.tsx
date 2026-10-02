@@ -6,26 +6,18 @@ import { selectionSearch } from "@/lib/selection";
 
 /**
  * Title and planning selection of a page; what each page is for is described on the overview.
- * Every page below the overview passes `parent`, which renders a back link before the title
+ * Every page below the overview passes `back`, which renders a link back to the overview before the title
  * that keeps the current selection.
  */
-export function PageHeader({
-  title,
-  scope,
-  parent,
-}: {
-  title: string;
-  scope: PlanningScope;
-  parent?: { href: string; label: string };
-}) {
+export function PageHeader({ title, scope, back }: { title: string; scope: PlanningScope; back?: boolean }) {
   return (
     <header className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b pb-4">
       <div className="flex items-center gap-1">
-        {parent && (
+        {back && (
           <Link
-            href={`${parent.href}${selectionSearch(scope.month, scope.stationIds)}`}
-            aria-label={`Zurück zu ${parent.label}`}
-            title={`Zurück zu ${parent.label}`}
+            href={`/${selectionSearch(scope.month, scope.stationIds)}`}
+            aria-label="Zurück zur Übersicht"
+            title="Zurück zur Übersicht"
             className="-ml-1 rounded-md text-foreground transition-opacity hover:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ChevronLeft className="size-6" strokeWidth={2.25} />

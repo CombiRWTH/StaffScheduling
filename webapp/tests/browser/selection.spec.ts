@@ -101,7 +101,7 @@ test("unavailable and incomplete reads are useful errors with no partial employe
 test("a subpage links back to the overview with the selection kept", async ({ page }) => {
   await page.goto("/employees?month=2026-01&stations=101");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mitarbeiter");
-  await page.getByRole("link", { name: "Zurück zu Übersicht" }).click();
+  await page.getByRole("link", { name: "Zurück zur Übersicht" }).click();
   await expect(page).toHaveURL("/?month=2026-01&stations=101");
   await expect(page.getByRole("link", { name: /^Zurück zu/ })).toHaveCount(0);
 });

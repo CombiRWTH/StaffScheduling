@@ -149,6 +149,8 @@ export interface PlanningInspection {
   /** Jumper pools that station members call home; replacement memberships do not associate one. */
   associated_jumper_pool_ids: number[];
   planning_units: PlanningUnit[];
+  /** The reference shifts, for naming the allowed shifts of an availability entry. */
+  shifts: ShiftOption[];
   employees: Employee[];
 }
 

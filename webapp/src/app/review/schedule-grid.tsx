@@ -27,14 +27,15 @@ const AVAILABILITY_SHORT: Record<Availability["availability_type"], string> = {
 };
 
 const key = (employeeId: number, date: string) => `${employeeId}|${date}`;
+const staffingKey = (stationId: number, shiftId: number, date: string) => `${stationId}|${shiftId}|${date}`;
 /** `HH:MM` of an offset timestamp: its Europe/Berlin wall-clock time. */
 const clock = (timestamp: string) => timestamp.slice(11, 16);
 
 // Where a duty is worked relative to the employee's dated origin.
 type Placement = "home" | "transfer" | "unknown";
-// The dashed border of a transfer, in the cell's text color; shared by cells and legend.
 // The employee column's text: one line each, as wide as needed up to a cap that is smaller on narrow screens.
 const NAME_CELL = "max-w-36 truncate whitespace-nowrap md:max-w-56";
+// The dashed border of a transfer, in the cell's text color; shared by cells and legend.
 const TRANSFER_BORDER = "outline-2 -outline-offset-2 outline-dashed outline-current";
 
 /**
@@ -103,15 +104,12 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
         .filter((unit) => codes.get(unit.planning_unit_id) !== unit.display_name)
         .map((unit) => `${codes.get(unit.planning_unit_id)} = ${unit.display_name}`)
     : [];
-  const shifts = new Map(review.shifts.map((shift) => [shift.shift_id, shift]));
   const duties = new Map(tables.duties.map((row) => [key(row.employee_id, row.date), row]));
   const availability = new Map<string, Availability[]>();
   for (const employee of tables.employees) {
     for (const row of employee.hard_availability) {
-      availability.set(key(row.employee_id, row.date), [
-        ...(availability.get(key(row.employee_id, row.date)) ?? []),
-        row,
-      ]);
+      const at = key(row.employee_id, row.date);
+      availability.set(at, [...(availability.get(at) ?? []), row]);
     }
   }
   const findings = new Set(
@@ -125,18 +123,23 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
     .sort((a, b) => a.employee_name.localeCompare(b.employee_name, "de-DE"));
   // Every home unit of the month (the backend only lists memberships of the schedule's units); a duty's own
   // dated origin decides whether it is a transfer.
-  const homes = (employee: (typeof employees)[number]) =>
-    [
-      ...new Set(
-        employee.memberships
-          .filter((row) => row.is_home)
-          .flatMap((row) => units.get(row.planning_unit_id)?.display_name ?? []),
-      ),
-    ].join(", ");
+  const homeOf = new Map(
+    employees.map((employee) => [
+      employee.employee_id,
+      [
+        ...new Set(
+          employee.memberships
+            .filter((row) => row.is_home)
+            .flatMap((row) => units.get(row.planning_unit_id)?.display_name ?? []),
+        ),
+      ].join(", "),
+    ]),
+  );
   // Staffing per station and shift: required and assigned counts per date over all qualifications.
   const staffing = new Map<string, { required: number; assigned: number; levels: string[] }>();
   for (const row of tables.staffing) {
-    const cell = staffing.get(`${row.planning_unit_id}|${row.shift_id}|${row.date}`) ?? {
+    const at = staffingKey(row.planning_unit_id, row.shift_id, row.date);
+    const cell = staffing.get(at) ?? {
       required: 0,
       assigned: 0,
       levels: [],
@@ -144,7 +147,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
     cell.required += row.required_count;
     cell.assigned += row.assigned_count;
     cell.levels.push(`${STAFF_LEVEL_LABELS[row.staff_level]} ${row.assigned_count}/${row.required_count}`);
-    staffing.set(`${row.planning_unit_id}|${row.shift_id}|${row.date}`, cell);
+    staffing.set(at, cell);
   }
   const staffedShifts = (stationId: number) =>
     review.shifts.filter((shift) =>
@@ -214,12 +217,12 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                     >
                       {/* The column fits its longest name up to a cap; longer names are cut, the full text on hover. */}
                       <div
-                        title={`${employee.employee_id} ${employee.employee_name} · ${homes(employee)}`}
+                        title={`${employee.employee_id} ${employee.employee_name} · ${homeOf.get(employee.employee_id)}`}
                         className={NAME_CELL}
                       >
                         <span className="text-muted-foreground">{employee.employee_id}</span> {employee.employee_name}
                       </div>
-                      <div className={cn(NAME_CELL, "text-muted-foreground")}>{homes(employee)}</div>
+                      <div className={cn(NAME_CELL, "text-muted-foreground")}>{homeOf.get(employee.employee_id)}</div>
                     </th>
                     {calendar.map((day) => {
                       const duty = duties.get(key(employee.employee_id, day.date));
@@ -270,7 +273,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
                           {SHIFT_TYPE_LABELS[shift.type]} {shift.code}
                         </th>
                         {calendar.map((day) => {
-                          const cell = staffing.get(`${station.planning_unit_id}|${shift.shift_id}|${day.date}`);
+                          const cell = staffing.get(staffingKey(station.planning_unit_id, shift.shift_id, day.date));
                           return (
                             <td
                               key={day.date}
@@ -296,7 +299,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
 
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground" aria-label="Legende">
             {(Object.keys(SHIFT_TYPE_LABELS) as ShiftType[])
-              .filter((type) => [...shifts.values()].some((shift) => shift.type === type))
+              .filter((type) => review.shifts.some((shift) => shift.type === type))
               .map((type) => (
                 <span key={type} className="flex items-center gap-1.5">
                   <span className={cn("inline-block size-3 rounded", SHIFT_COLORS[type])} />
@@ -314,7 +317,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
               Herkunft unbekannt
             </span>
             {codeLegend.length > 0 && <span>{codeLegend.join(", ")}</span>}
-            <span>U, FB, Fr, nur … oder Grund: Abwesenheit oder Einschränkung</span>
+            <span>{Object.values(AVAILABILITY_SHORT).join(", ")} oder Grund: Abwesenheit oder Einschränkung</span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block size-3 rounded ring-2 ring-inset ring-destructive" />
               Regelverstoß
@@ -340,7 +343,6 @@ function DutyCell({ duty, station }: { duty: DutyRow; station?: string }) {
   return (
     <div
       title={dutyTitle(duty)}
-      data-placement={kind}
       // An unknown origin keeps its tag in the right padding, so it never covers the shift code.
       className={cn(
         "relative rounded px-1 py-0.5",

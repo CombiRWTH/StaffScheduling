@@ -59,7 +59,7 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   // Keyboard users open the collapsed section like any other control.
   await details.press("Enter");
   await expect(summary(page).getByText("Optimalitätslücke")).toBeVisible();
-  await expect(summary(page).getByText("Gewichte")).toBeVisible();
+  await expect(summary(page).getByText("Gewicht Gesundheit")).toBeVisible();
   await expect(summary(page)).toContainText("Freie Sonntage im Jahr");
 
   const grid = page.getByLabel("Dienstplan", { exact: true });
@@ -70,13 +70,13 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   // The jumper-pool MFA's duties at the station are transfers; the station employee works at home.
   const mfa = grid.getByRole("row", { name: /Example MFA One/ });
   const team = grid.getByRole("row", { name: /Example Team Two/ });
-  await expect(mfa.locator("[data-placement=transfer]").first()).toBeVisible();
+  // Each duty names its origin to screen readers; a transfer also says that it lies outside it.
   await expect(mfa.getByText(/Herkunft Example Jumper Pool, Einsatz außerhalb der Herkunft/).first()).toBeAttached();
-  await expect(team.locator("[data-placement=home]").first()).toBeVisible();
-  await expect(team.locator("[data-placement=transfer]")).toHaveCount(0);
+  await expect(team.getByText(/Herkunft Example Station North/).first()).toBeAttached();
+  await expect(team.getByText(/Einsatz außerhalb der Herkunft/)).toHaveCount(0);
   // The employee column names the origin; with one station selected, no duty repeats a unit name.
   await expect(mfa.getByRole("rowheader")).toContainText("Example Jumper Pool");
-  await expect(grid.locator("[data-placement] div")).toHaveCount(0);
+  await expect(mfa.getByRole("cell").getByText("Example Station North", { exact: true })).toHaveCount(0);
   await expect(grid.getByRole("button", { name: "Kompakt" })).toHaveCount(0);
   await expect(grid.getByLabel("Legende")).toContainText("Einsatz außerhalb der Herkunft");
   await grid.getByLabel("Mitarbeiter im Dienstplan suchen").fill("Three");
@@ -142,15 +142,13 @@ test("a home change within the month marks only the duties after it as transfers
 
   const team = page.getByLabel("Dienstplan", { exact: true }).getByRole("row", { name: /Example Team Two/ });
   await expect(team.getByRole("rowheader")).toContainText("Example Station North, Example Jumper Pool");
-  const placements = await team
-    .locator("td")
-    .evaluateAll((cells) =>
-      cells.map((cell) => cell.querySelector("[data-placement]")?.getAttribute("data-placement")),
-    );
-  const byDay = placements.map((kind, index) => [index + 1, kind] as const).filter(([, kind]) => kind);
-  expect(byDay.filter(([day]) => day <= 15).every(([, kind]) => kind === "home")).toBe(true);
-  expect(byDay.filter(([day]) => day >= 16).every(([, kind]) => kind === "transfer")).toBe(true);
-  expect(byDay.some(([day]) => day <= 15) && byDay.some(([day]) => day >= 16)).toBe(true);
+  // One cell per day; a duty's text names its origin, a transfer's also that it lies outside it.
+  const days = (await team.getByRole("cell").allTextContents()).map((text, index) => ({ day: index + 1, text }));
+  const duties = days.filter(({ text }) => text.includes("Herkunft"));
+  const transfer = ({ text }: { text: string }) => text.includes("Einsatz außerhalb der Herkunft");
+  expect(duties.filter(({ day }) => day <= 15).some(transfer)).toBe(false);
+  expect(duties.filter(({ day }) => day >= 16).every(transfer)).toBe(true);
+  expect(duties.some(({ day }) => day <= 15) && duties.some(({ day }) => day >= 16)).toBe(true);
 });
 
 test("a duty without a dated membership has an unknown origin and an eligibility finding", async ({ page }) => {
@@ -188,8 +186,7 @@ test("a duty without a dated membership has an unknown origin and an eligibility
 
   const grid = page.getByLabel("Dienstplan", { exact: true });
   const team = grid.getByRole("row", { name: /Example Team Two/ });
-  await expect(team.locator("[data-placement=unknown]")).toHaveCount(1);
-  await expect(team.locator("[data-placement=unknown]")).toContainText("Herkunft unbekannt");
+  await expect(team.getByText(/Herkunft unbekannt/)).toHaveCount(1);
   await expect(grid.getByLabel("Legende")).toContainText("Herkunft unbekannt");
 });
 

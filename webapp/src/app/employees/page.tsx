@@ -13,7 +13,7 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
   const scope = await loadPlanningScope("/employees", await searchParams);
   return (
     <div className="py-6">
-      <PageHeader title="Mitarbeiter" parent={{ href: "/", label: "Übersicht" }} scope={scope} />
+      <PageHeader title="Mitarbeiter" back scope={scope} />
       {!scope.stationIds.length ? (
         <p className="py-12 text-center text-muted-foreground">Bitte mindestens eine Station auswählen.</p>
       ) : scope.error ? (

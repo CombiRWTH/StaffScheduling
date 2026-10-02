@@ -248,7 +248,7 @@ class TimeOfficeService:
             memberships=scope_memberships,
             accounts=accounts,
             availability=(*absences, *availability),
-            allowed_shift_ids=set(self._facts.reference_shift_ids),
+            shifts=queries.read_shift_options(connection, self._facts),
         )
 
     def _read_context(

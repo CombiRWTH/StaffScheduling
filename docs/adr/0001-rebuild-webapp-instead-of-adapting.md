@@ -7,7 +7,7 @@ The imported frontend layered dependency injection, use cases, controllers, repo
 - **Adapt the imported views one by one.** Rejected: every view depended on the legacy layers and shapes, so adapting kept both the old and the canonical model alive.
 - **Rebuild from scratch, feature by feature.** Chosen: areas that are not rebuilt yet stay visible as greyed sidebar entries without pages.
 
-Update 2026-10-02: the last greyed entries (recurring availability and templates) were removed together with the disabled-entry support; they will not be implemented. The sidebar now lists only implemented areas.
+Update 2026-10-02: the last greyed entries (recurring availability, templates) were removed for good.
 
 ## Consequences
 

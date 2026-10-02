@@ -1,6 +1,16 @@
 // German labels for canonical values, and locale-independent date text shared by server and client.
 import { MONTHS, selectionMonth } from "@/lib/selection";
-import type { AvailabilityType, CheckStatus, Rule, ShiftType, SolutionStatus, StaffLevel, WishType } from "@/lib/types";
+import type {
+  AvailabilityType,
+  CheckStatus,
+  Rule,
+  ScheduleCheck,
+  ShiftType,
+  Solution,
+  SolutionStatus,
+  StaffLevel,
+  WishType,
+} from "@/lib/types";
 
 export const STAFF_LEVEL_LABELS: Record<StaffLevel, string> = {
   professional: "Fachkraft",
@@ -39,6 +49,60 @@ export const CHECK_STATUS: Record<CheckStatus, [string, string]> = {
   rejected: ["Regelverstöße", "Der Plan ist nicht verwendbar"],
   incomplete: ["Unvollständig geprüft", "Für eine Regel fehlen Eingaben"],
 };
+
+const NUMBER = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
+
+/** The solver status with its explanation, e.g. "Lösung gefunden (Optimum nicht nachgewiesen)". */
+export function solverStatusText(status: SolutionStatus) {
+  const [value, detail] = SOLVER_STATUS[status];
+  return `${value} (${detail})`;
+}
+
+/** The optimality gap in percent; it measures the bound, never missing staff. */
+export function formatGap(objective: Solution["objective"]) {
+  return objective ? `${NUMBER.format(objective.relative_gap * 100)} %` : "–";
+}
+
+/** Solver search time used against its limit, e.g. "3,1 von 30 s". */
+export function formatSearchTime(seconds: number, limit: number) {
+  return `${NUMBER.format(seconds)} von ${limit} s`;
+}
+
+/**
+ * The check's rules that the input cannot decide, as "rule date–date": `missing` lacks input and blocks
+ * acceptance, `later` lies beyond the month and does not.
+ */
+export function checkGaps(check: ScheduleCheck | null | undefined) {
+  const text = (row: ScheduleCheck["not_assessed"][number]) =>
+    `${RULES[row.rule]} ${formatDate(row.start)}–${formatDate(row.end)}`;
+  const rows = check?.not_assessed ?? [];
+  return {
+    missing: rows.filter((row) => row.blocking).map(text),
+    later: rows.filter((row) => !row.blocking).map(text),
+  };
+}
+
+// What a solver diagnostic means for the staff admin; the backend's English detail stays for developers.
+const DIAGNOSTIC_HINTS: Record<string, (count: number) => string> = {
+  "staffing.too_few_candidates": (count) =>
+    `Mindestbesetzung nicht erreichbar: Für ${count} ${count === 1 ? "Schicht" : "Schichten"} gibt es zu wenige einsetzbare Mitarbeiter. Mindestbesetzung, Verfügbarkeit und Zuordnungen prüfen.`,
+  "balance.unreachable": (count) =>
+    `Monatskonto nicht erreichbar: ${count} ${count === 1 ? "Mitarbeiter kann" : "Mitarbeiter können"} keinen Dienst übernehmen, ${count === 1 ? "hat" : "haben"} aber Soll-Stunden. Verfügbarkeit und Zuordnungen prüfen.`,
+  "shift.breaks_rules": (count) =>
+    `${count} ${count === 1 ? "Schicht verletzt" : "Schichten verletzen"} an einem Tag die Arbeitszeitregeln und ${count === 1 ? "wird" : "werden"} nie vergeben.`,
+  "cp_sat.model_invalid": () => "Das Solver-Modell ist ungültig; Details stehen im Backend-Protokoll.",
+};
+
+/** The solver's warnings and errors in German, one line per kind with its count. */
+export function diagnosticHints(diagnostics: Solution["diagnostics"]) {
+  const counts = new Map<string, number>();
+  for (const row of diagnostics) if (row.severity !== "info") counts.set(row.code, (counts.get(row.code) ?? 0) + 1);
+  return [...counts].map(([code, count]) =>
+    code in DIAGNOSTIC_HINTS
+      ? DIAGNOSTIC_HINTS[code](count)
+      : `${count} weitere Solver-Hinweise; Details unter Technische Details.`,
+  );
+}
 
 /** German names of the checked rules, as the backend reports them. */
 export const RULES: Record<Rule, string> = {
@@ -79,6 +143,12 @@ export function formatHours(minutes: number, { signed = false } = {}) {
 export function formatDate(value: string) {
   const [year, month, day] = value.split("-");
   return `${day}.${month}.${year}`;
+}
+
+/** `monthLabel` of a selection month in its URL form, `YYYY-MM`. */
+export function selectionMonthLabel(month: string) {
+  const [year, number] = month.split("-").map(Number);
+  return monthLabel(year, number);
 }
 
 /** A planning month's name and its first to last date, e.g. "Juni 2026" and "01.06.2026–30.06.2026". */

@@ -9,6 +9,15 @@ const card = (page: Page) => page.getByRole("group", { name: "Veröffentlichung"
 /** The confirmation popover an action opens; it names the exact effect before anything is written. */
 const confirmation = (page: Page, name: string) => page.getByRole("dialog", { name });
 
+/** The number of duties the review summary names, e.g. "· 50 Dienste". */
+async function dutyCount(page: Page) {
+  const text = await page
+    .getByLabel("Dienstplan zur Prüfung")
+    .getByText(/\d+ Dienste/)
+    .textContent();
+  return Number(/(\d+) Dienste/.exec(text ?? "")?.[1]);
+}
+
 /** Generate June for one station and open its review; the station name tells the new job from the previous one. */
 async function generate(page: Page, station: { id: string; name: string }) {
   await page.goto(`/generation?month=2026-06&stations=${station.id}`);
@@ -23,12 +32,7 @@ async function generate(page: Page, station: { id: string; name: string }) {
 test("an accepted schedule is published and cleared only after confirming the named scope", async ({ page }) => {
   await generate(page, { id: "101", name: "Example Station North" });
   const publication = card(page);
-  const count = Number(
-    (await page
-      .getByLabel("Dienstplan zur Prüfung")
-      .getByText(/\d+ Dienste/)
-      .textContent())!.match(/(\d+) Dienste/)![1],
-  );
+  const count = await dutyCount(page);
   expect(count).toBeGreaterThan(0);
 
   await publication.getByRole("button", { name: "In TimeOffice veröffentlichen" }).click();

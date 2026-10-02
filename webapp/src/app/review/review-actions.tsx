@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { ChevronDown, Download, Upload } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,28 +104,39 @@ function DownloadMenu({ files, accepted }: { files: readonly string[]; accepted:
   );
 }
 
-/** Upload an input.json/result.json pair; a rejected pair leaves the reviewed schedule unchanged. */
-function ImportMenu() {
-  const form = useRef<HTMLFormElement>(null);
+/**
+ * Upload an input.json/result.json pair; a rejected pair leaves the reviewed schedule unchanged and keeps the
+ * chosen files for another try. Closing the popover discards the form.
+ */
+function ImportMenu({ onOpen }: { onOpen: () => void }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  function submit(files: FormData) {
+  // A submit handler instead of a form action: React resets a form after its action, also a failed one.
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const files = new FormData(event.currentTarget);
     setError(null);
     startTransition(async () => {
       const result = await importFiles(files);
-      if (result.ok) {
-        form.current?.reset();
-        setOpen(false);
-      } else {
-        setError(`${result.error} Der bisherige Dienstplan bleibt zur Prüfung.`);
-      }
+      if (result.ok) setOpen(false);
+      else setError(`${result.error} Der bisherige Dienstplan bleibt zur Prüfung.`);
     });
   }
 
   return (
-    <Popover open={open} onOpenChange={(next) => !pending && setOpen(next)}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        if (pending) return;
+        if (next) {
+          setError(null);
+          onOpen();
+        }
+        setOpen(next);
+      }}
+    >
       <PopoverTrigger asChild>
         <Button variant="outline">
           <Upload />
@@ -133,7 +144,7 @@ function ImportMenu() {
         </Button>
       </PopoverTrigger>
       <PopoverContent role="dialog" aria-label="Importieren" align="start" className="w-96 text-sm">
-        <form ref={form} action={submit} className="space-y-3">
+        <form onSubmit={submit} className="space-y-3">
           <p className="text-muted-foreground">
             Ein Paar aus input.json und result.json prüfen. Der Import ersetzt den Dienstplan zur Prüfung und
             veröffentlicht nichts.
@@ -201,7 +212,7 @@ export function ReviewActions({
           />
         )}
         {review && <DownloadMenu files={files} accepted={review.accepted} />}
-        <ImportMenu />
+        <ImportMenu onOpen={() => setOutcome(null)} />
         {ids.length > 0 && (
           <ConfirmedAction
             label="Veröffentlichte Dienste entfernen"

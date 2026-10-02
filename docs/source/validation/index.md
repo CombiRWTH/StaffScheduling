@@ -51,7 +51,7 @@ Jobs are lost on API restart. Monthly runs are independent; the coordinated six-
 
 The pair passed the same validation as an import. A single month cannot show the sequence checks; they are covered by the offline tests until the six accepted months exist. Messages of findings and the API's import details are English; the webapp names import problems in German. The review is lost on API restart and is not a saved library.
 
-The redesigned pages were checked read-only against the same prepared database through the running Compose webapp at revision `22d1c6c` (page loads only; no write was triggered):
+The pages at revision `22d1c6c` were checked read-only against the same prepared database through the running Compose webapp (page loads only; no write was triggered):
 
 | Check                                           | Expected                                          | Actual                                                                                                             |
 | ----------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -60,7 +60,7 @@ The redesigned pages were checked read-only against the same prepared database t
 | **Erstellen** with the latest January job       | Headline, fact row and review link                | _Dienstplan erstellt, Regeln eingehalten_, 1072 duties, **Dienstplan prüfen**                                      |
 | **Prüfen** summary and grid                     | Status line, actions; transfers marked with codes | _Regeln eingehalten · Kann veröffentlicht werden_; 143 transfers, codes BSP-A/BSP-B on one line; no truncated name |
 
-Live publication and clear through the redesigned confirmation panels were not repeated; their backend behaviour is unchanged and the panels are covered by the offline browser flows.
+Live publication and clear through the confirmation panels of that revision were not repeated; their backend behaviour is unchanged and the panels are covered by the offline browser flows.
 
 ## Publication and clear
 
@@ -92,7 +92,7 @@ After removing the prepared rows every count and checksum equalled the starting 
 
 ## Quality gates
 
-The latest executed offline suite reports **123 passed** and one skipped (the committed examples, which do not exist yet), including the solver integration tests; no test is excluded to manufacture success. The removed solver plugin tests are replaced by the schedule-check boundary examples (`test_schedule_check.py`) and production solves (`test_solver.py`).
+The latest executed offline suite reports **124 passed** and one skipped (the committed examples, which do not exist yet), including the solver integration tests; no test is excluded to manufacture success. The removed solver plugin tests are replaced by the schedule-check boundary examples (`test_schedule_check.py`) and production solves (`test_solver.py`).
 
 Webapp strict TypeScript and the native production build pass. The twenty-three controlled browser scenarios (selection/inspection, unavailable/incomplete reads, back navigation, the sidebar of implemented areas, year entry and the January default, mobile navigation, availability edit/reload/delete with wishes, failed availability save, demand save/reload/reset/pattern with per-cell change marks, invalid count, failed demand save, generation without result or with incomplete input, a running generation across navigation with busy rejection and its accepted schedule check, infeasible versus failed runs, review of a generated schedule with its status, collapsed technical details, jumper-pool transfer markers and downloads, import of a matching pair and rejection of a mismatched pair without losing the review, imported home changes and unknown origins in the grid, a schedule of another scope, publication and clear each cancelled and then confirmed, a publication refused after the schedule under review changed, a failed publication that changes nothing, and no publication of an incompletely checked schedule) pass through the real pages/API with fictional SQL results; these do not establish live TimeOffice or Microsoft SQL Server execution evidence.
 

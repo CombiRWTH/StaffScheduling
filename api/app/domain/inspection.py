@@ -8,6 +8,7 @@ from app.domain.employee import Employee, EmployeeId, StaffLevel
 from app.domain.monthly_work_account import MonthlyWorkAccount
 from app.domain.planning_month import PlanningMonth
 from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership, PlanningUnitType, home_unit_id
+from app.domain.shift import ShiftOption
 
 
 class InvalidSelection(ValueError):
@@ -33,6 +34,8 @@ class PlanningInspection(SchedulingBaseModel):
     # Jumper pools that station members call home; other jumper pool memberships are not an association.
     associated_jumper_pool_ids: tuple[int, ...]
     planning_units: tuple[PlanningUnit, ...]
+    shifts: tuple[ShiftOption, ...]
+    """The reference shifts that availability entries may allow, for naming them."""
     employees: tuple[EmployeeInspection, ...]
 
 
@@ -98,7 +101,7 @@ def build_inspection(
     memberships: tuple[PlanningUnitMembership, ...],
     accounts: tuple[MonthlyWorkAccount, ...],
     availability: tuple[Availability, ...],
-    allowed_shift_ids: set[int],
+    shifts: tuple[ShiftOption, ...],
 ) -> PlanningInspection:
     """Validate completeness once before exposing any part of an inspection."""
     employee_ids = {employee.employee_id for employee in employees}
@@ -122,7 +125,7 @@ def build_inspection(
         for row in employee_availability:
             if row.date not in planning_month:
                 raise ValueError("Availability date is outside the selected month.")
-            if row.shift_ids and not set(row.shift_ids) <= allowed_shift_ids:
+            if row.shift_ids and not set(row.shift_ids) <= {shift.shift_id for shift in shifts}:
                 raise ValueError("Unknown allowed shift in availability.")
         inspected.append(
             EmployeeInspection(
@@ -141,5 +144,6 @@ def build_inspection(
         selected_station_ids=selected_station_ids,
         associated_jumper_pool_ids=tuple(sorted(associated)),
         planning_units=units,
+        shifts=shifts,
         employees=tuple(inspected),
     )

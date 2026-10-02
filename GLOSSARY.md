@@ -139,7 +139,7 @@ The employee's home station or jumper pool on a duty's date, as opposed to the s
 _Avoid_: source unit, pool (alone)
 
 **Transfer** (Einsatz außerhalb der Herkunft):
-A duty worked at a station other than its origin on that date; the review highlights only these duties, since the employee column names the origin. A home change within the month changes the origin from its first date on.
+A duty worked at a station other than its origin on that date. A home change within the month changes the origin from its first date on.
 _Avoid_: loan, external duty
 
 **Published schedule**:

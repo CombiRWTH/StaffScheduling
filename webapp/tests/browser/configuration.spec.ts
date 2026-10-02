@@ -77,7 +77,8 @@ test("save and reload dated demand, reset edits and apply a previewed pattern", 
   await expect(page.getByText("Für diesen Monat ist noch keine Mindestbesetzung gespeichert.")).toBeVisible();
   await expect(page.getByRole("row", { name: /01\.01\.2026/ }).first()).toContainText("Neujahr");
   const cell = (shift: string, date: string) => page.getByLabel(`${shift} am ${date}`, { exact: true });
-  const changed = page.locator("input[data-changed]");
+  // Every changed cell carries its screen-reader mark with the saved count.
+  const changed = page.getByText(/^Geändert, gespeichert: \d+$/);
 
   await cell("F", "03.01.2026").fill("2");
   await expect(page.getByText("1 ungespeicherte Änderung")).toBeVisible();
@@ -120,7 +121,7 @@ test("save and reload dated demand, reset edits and apply a previewed pattern", 
   // Applied cells are marked like direct edits, also a saved count replaced by zero.
   await expect(changed).toHaveCount(6);
   await expect(cell("F", "03.01.2026")).toHaveAccessibleDescription("Geändert, gespeichert: 2");
-  await expect(cell("F", "06.01.2026")).not.toHaveAttribute("data-changed");
+  await expect(cell("F", "06.01.2026")).toHaveAccessibleDescription("");
   // Each qualification has its own pattern.
   await page.getByRole("tab", { name: "MFA" }).click();
   await expect(page.getByLabel("Muster F Mo", { exact: true })).toHaveValue("0");
@@ -155,6 +156,6 @@ test("a failed demand save keeps the unsaved edits", async ({ page }) => {
   await expect(page.getByRole("alert").filter({ hasText: "nicht gespeichert" })).toBeVisible();
   await expect(page.getByRole("status")).toHaveCount(0);
   await expect(input).toHaveValue("4");
-  await expect(input).toHaveAttribute("data-changed", "true");
+  await expect(input).toHaveAccessibleDescription("Geändert, gespeichert: 0");
   await expect(page.getByText("1 ungespeicherte Änderung")).toBeVisible();
 });

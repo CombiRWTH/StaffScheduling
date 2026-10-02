@@ -61,7 +61,8 @@ test("a running job survives navigation, rejects a second run and ends with its 
   await expect(latest(page).getByText("Hinweise", { exact: true })).toHaveCount(0);
   // What lies beyond the month is technical detail, opened by keyboard.
   await latest(page).getByText("Technische Details").press("Enter");
-  await expect(latest(page).getByText("Freie Sonntage im Jahr: 1 (über den Monat hinaus)")).toBeVisible();
+  await expect(latest(page).getByText("Über den Monat hinaus, hier nicht bewertet")).toBeVisible();
+  await expect(latest(page).getByText(/^Freie Sonntage im Jahr 01\.01\.2026–31\.12\.2026$/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Starten" })).toBeEnabled();
 });
 
@@ -72,12 +73,26 @@ test("infeasible and failed runs are reported differently", async ({ page }) => 
   await expect(latest(page)).toContainText("Kein Plan zu prüfen");
   // The hints name the demand no employee can cover, for staff admins and developers alike.
   await expect(latest(page).getByText("Hinweise", { exact: true })).toBeVisible();
-  await expect(latest(page)).toContainText("can work it");
+  await expect(latest(page)).toContainText("Mindestbesetzung nicht erreichbar: Für 2 Schichten");
+  // The solver's own English messages stay in the technical details for developers.
+  await expect(
+    latest(page)
+      .getByText(/can work it/)
+      .first(),
+  ).toBeHidden();
+  await latest(page).getByText("Technische Details").click();
+  await expect(
+    latest(page)
+      .getByText(/can work it/)
+      .first(),
+  ).toBeVisible();
   await expect(latest(page).getByRole("link", { name: "Dienstplan prüfen" })).toHaveCount(0);
 
   await start(page, "/generation?month=2026-07&stations=101");
   await expect(latest(page)).toContainText("Fehlgeschlagen", { timeout: 15_000 });
   await expect(latest(page)).toContainText("Unerwarteter Fehler bei der Generierung");
   await expect(latest(page)).toContainText("Kein Ergebnis");
+  // The backend keeps internal error text in its log; not even the technical details show it.
+  await latest(page).getByText("Technische Details").click();
   await expect(latest(page)).not.toContainText("Fictional solver crash");
 });

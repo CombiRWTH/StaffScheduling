@@ -20,7 +20,7 @@ export default async function StaffingPage({
   const selected = scope.stations.filter((unit) => selectedIds.has(unit.planning_unit_id));
   return (
     <div className="py-6">
-      <PageHeader title="Mindestbesetzung" parent={{ href: "/", label: "Übersicht" }} scope={scope} />
+      <PageHeader title="Mindestbesetzung" back scope={scope} />
       {!stationId ? (
         <p className="py-12 text-center text-muted-foreground">Bitte mindestens eine Station auswählen.</p>
       ) : scope.error ? (

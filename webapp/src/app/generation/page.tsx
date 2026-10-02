@@ -2,7 +2,7 @@ import { LoadError } from "@/components/load-error";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { getLatestGeneration } from "@/lib/api";
-import { monthLabel } from "@/lib/labels";
+import { selectionMonthLabel } from "@/lib/labels";
 import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
 import { GenerationForm } from "./generation-form";
 import { JobPanel } from "./job-panel";
@@ -33,12 +33,11 @@ export default async function GenerationPage({ searchParams }: { searchParams: P
   const running = "job" in latest && latest.job?.state === "running";
   const selectedIds = new Set(scope.stationIds);
   const selected = scope.stations.filter((unit) => selectedIds.has(unit.planning_unit_id));
-  const [year, month] = scope.month.split("-").map(Number);
-  const period = monthLabel(year, month);
+  const period = selectionMonthLabel(scope.month);
 
   return (
     <div className="py-6">
-      <PageHeader title="Dienstplan erstellen" parent={{ href: "/", label: "Übersicht" }} scope={scope} />
+      <PageHeader title="Dienstplan erstellen" back scope={scope} />
       {scope.error && (
         <div className="mb-6">
           <LoadError title="Stationen nicht geladen" message={scope.error} />

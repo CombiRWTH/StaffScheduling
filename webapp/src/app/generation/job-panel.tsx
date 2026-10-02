@@ -1,13 +1,24 @@
 import Link from "next/link";
-import { CircleAlert, CircleCheck, CircleX, LoaderCircle } from "lucide-react";
 import { BulletList } from "@/components/bullet-list";
 import { Disclosure } from "@/components/disclosure";
+import { Facts } from "@/components/facts";
+import { ProblemBox } from "@/components/problem-box";
+import { StatusLine, type Tone } from "@/components/status-line";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CHECK_STATUS, RULES, SOLVER_STATUS, monthLabel } from "@/lib/labels";
+import {
+  CHECK_STATUS,
+  RULES,
+  SOLVER_STATUS,
+  checkGaps,
+  diagnosticHints,
+  formatGap,
+  formatSearchTime,
+  monthLabel,
+  solverStatusText,
+} from "@/lib/labels";
 import { selectionMonth, selectionSearch } from "@/lib/selection";
 import type { GenerationJob, PlanningUnit, Rule } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import { RefreshWhileRunning } from "./refresh-while-running";
 
 const STATES: Record<GenerationJob["state"], string> = {
@@ -16,15 +27,6 @@ const STATES: Record<GenerationJob["state"], string> = {
   failed: "Fehlgeschlagen",
 };
 const TIME = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", timeStyle: "medium" });
-const NUMBER = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
-
-type Tone = "busy" | "success" | "warning" | "error";
-const TONES: Record<Tone, { icon: typeof CircleCheck; className: string }> = {
-  busy: { icon: LoaderCircle, className: "text-foreground" },
-  success: { icon: CircleCheck, className: "text-green-700" },
-  warning: { icon: CircleAlert, className: "text-amber-700" },
-  error: { icon: CircleX, className: "text-destructive" },
-};
 
 /** Count per rule, e.g. "Ruhezeit: 2". */
 function perRule(rows: { rule: Rule }[]) {
@@ -52,22 +54,22 @@ function headline(job: GenerationJob): { tone: Tone; title: string; hint: string
     return {
       tone: "error",
       title: "Kein Dienstplan möglich",
-      hint: "Die Eingaben widersprechen sich. Die Hinweise nennen, wo die Mindestbesetzung nicht erreichbar ist.",
+      hint: "Die Eingaben widersprechen sich; die Hinweise nennen, was nicht erreichbar ist.",
     };
-  if (solution.status === "unknown")
+  if (solution.status === "unknown" || solution.status === "model_invalid")
     return {
-      tone: "warning",
-      title: "Keine Lösung innerhalb der Laufzeit",
-      hint: "Mit einer längeren maximalen Laufzeit erneut starten.",
+      tone: solution.status === "unknown" ? "warning" : "error",
+      title: SOLVER_STATUS[solution.status][0],
+      hint: `${SOLVER_STATUS[solution.status][1]}.`,
     };
-  if (solution.status === "model_invalid")
-    return { tone: "error", title: "Modell ungültig", hint: "Backend-Protokoll prüfen." };
   const status = solution.check?.status;
   if (status === "accepted")
     return {
       tone: "success",
       title: "Dienstplan erstellt, Regeln eingehalten",
-      hint: "Jetzt prüfen und veröffentlichen; er wird nicht automatisch veröffentlicht.",
+      hint: solution.assignments.length
+        ? "Jetzt prüfen und veröffentlichen; er wird nicht automatisch veröffentlicht."
+        : "Er enthält keine Dienste und kann nicht veröffentlicht werden.",
     };
   if (status === "incomplete")
     return {
@@ -97,27 +99,15 @@ function jobFacts(job: GenerationJob): [string, string][] {
   ];
 }
 
-/** Why a run is not usable: solver warnings and errors, violated rules and missing inputs. */
-function jobHints(job: GenerationJob) {
-  const check = job.solution?.check;
-  return [
-    ...(job.solution?.diagnostics ?? []).filter((row) => row.severity !== "info").map((row) => row.message),
-    ...perRule(check?.findings ?? []).map((item) => `Verstoß – ${item}`),
-    ...perRule(check?.not_assessed.filter((row) => row.blocking) ?? []).map((item) => `${item} (fehlende Eingaben)`),
-  ];
-}
-
-/** Solver internals for diagnosing a run. */
+/** Solver internals for diagnosing a run; developers read the backend's own codes and messages here. */
 function technicalFacts(job: GenerationJob): [string, string][] {
   const { solution } = job;
   const limit = job.request.timeout_seconds;
-  const diagnostics = solution?.diagnostics ?? [];
   return [
     ["Job-ID", job.job_id],
-    ["Solver-Status", solution ? SOLVER_STATUS[solution.status].join(" – ") : "Kein Ergebnis"],
-    ["Suchzeit", solution ? `${NUMBER.format(solution.wall_time_seconds)} von ${limit} s` : `bis ${limit} s`],
-    ["Optimalitätslücke", solution?.objective ? `${NUMBER.format(solution.objective.relative_gap * 100)} %` : "–"],
-    ["Diagnosen", diagnostics.length ? diagnostics.map((row) => `${row.severity} ${row.code}`).join(", ") : "keine"],
+    ["Solver-Status", solution ? solverStatusText(solution.status) : "Kein Ergebnis"],
+    ["Suchzeit", solution ? formatSearchTime(solution.wall_time_seconds, limit) : `bis ${limit} s`],
+    ["Optimalitätslücke", formatGap(solution?.objective ?? null)],
   ];
 }
 
@@ -131,12 +121,8 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
   const { solution } = job;
   const check = solution?.check;
   const period = monthLabel(month.year, month.month);
-  const { tone, title, hint } = headline(job);
-  const { icon: Icon, className } = TONES[tone];
-  const facts = jobFacts(job);
-  const technical = technicalFacts(job);
-  const hints = jobHints(job);
-  const later = check?.not_assessed.filter((row) => !row.blocking) ?? [];
+  const gaps = checkGaps(check);
+  const diagnostics = solution?.diagnostics ?? [];
 
   return (
     <Card aria-label="Letzte Generierung">
@@ -147,14 +133,7 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
             <p className="text-muted-foreground">
               {period.name} ({period.range}) · {stationIds.map(name).join(", ")}
             </p>
-            <p className="pt-1">
-              <Icon
-                className={cn("mr-1.5 inline size-4 align-[-3px]", className, tone === "busy" && "animate-spin")}
-                aria-hidden
-              />
-              <span className={cn("font-medium", className)}>{title}</span>
-              <span className="text-muted-foreground"> · {hint}</span>
-            </p>
+            <StatusLine {...headline(job)} />
           </div>
           {check && (
             <Link
@@ -166,8 +145,8 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
           )}
         </div>
 
-        <dl className="grid gap-x-6 gap-y-2 rounded-lg border bg-muted/30 px-4 py-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-          {facts.map(([label, value]) => (
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-2 rounded-lg border bg-muted/30 px-4 py-3 sm:grid-cols-3 lg:grid-cols-5">
+          {jobFacts(job).map(([label, value]) => (
             <div key={label} className="min-w-0">
               <dt className="text-xs text-muted-foreground">{label}</dt>
               <dd className="font-medium">{value}</dd>
@@ -175,27 +154,27 @@ export function JobPanel({ job, units }: { job: GenerationJob; units: PlanningUn
           ))}
         </dl>
 
-        {hints.length > 0 && (
-          <div className="space-y-1.5 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-            <p className="font-medium">Hinweise</p>
-            <BulletList items={hints} />
-          </div>
-        )}
+        <ProblemBox
+          sections={[
+            ["Hinweise", diagnosticHints(diagnostics)],
+            ["Verstöße", perRule(check?.findings ?? [])],
+            ["Fehlende Eingaben", gaps.missing],
+          ]}
+        />
 
-        {(solution || job.state !== "running") && (
+        {job.state !== "running" && (
           <Disclosure title="Technische Details">
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
-              {technical.map(([label, value]) => (
-                <div key={label} className="contents">
-                  <dt className="text-muted-foreground">{label}</dt>
-                  <dd className="break-all tabular-nums">{value}</dd>
-                </div>
-              ))}
-            </dl>
-            {later.length > 0 && (
+            <Facts facts={technicalFacts(job)} />
+            {diagnostics.length > 0 && (
+              <Facts
+                title="Solver-Diagnosen"
+                facts={diagnostics.map((row, index) => [`${index + 1}. ${row.severity} ${row.code}`, row.message])}
+              />
+            )}
+            {gaps.later.length > 0 && (
               <div className="space-y-1.5">
-                <p className="text-muted-foreground">Nicht bewertet</p>
-                <BulletList items={perRule(later).map((item) => `${item} (über den Monat hinaus)`)} />
+                <p className="text-muted-foreground">Über den Monat hinaus, hier nicht bewertet</p>
+                <BulletList items={gaps.later} />
               </div>
             )}
           </Disclosure>

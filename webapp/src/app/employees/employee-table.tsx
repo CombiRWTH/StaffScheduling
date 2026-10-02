@@ -29,6 +29,7 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
   const [expanded, setExpanded] = useState<number | null>(null);
   const units = new Map(inspection.planning_units.map((unit) => [unit.planning_unit_id, unit]));
   const unitName = (id: number) => units.get(id)?.display_name ?? `Einheit ${id}`;
+  const shiftCode = (id: number) => inspection.shifts.find((shift) => shift.shift_id === id)?.code ?? String(id);
   const stations = inspection.selected_station_ids.map(unitName).join(", ");
   const needle = search.toLocaleLowerCase("de-DE");
   const filtered = inspection.employees.filter(
@@ -125,7 +126,12 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
                         {open && (
                           <TableRow className="bg-muted/30 hover:bg-muted/30">
                             <TableCell colSpan={5} className="whitespace-normal">
-                              <EmployeeDetails employee={employee} unitName={unitName} units={units} />
+                              <EmployeeDetails
+                                employee={employee}
+                                unitName={unitName}
+                                units={units}
+                                shiftCode={shiftCode}
+                              />
                             </TableCell>
                           </TableRow>
                         )}
@@ -146,10 +152,12 @@ function EmployeeDetails({
   employee,
   unitName,
   units,
+  shiftCode,
 }: {
   employee: Employee;
   unitName: (id: number) => string;
   units: Map<number, PlanningUnit>;
+  shiftCode: (id: number) => string;
 }) {
   const { account } = employee;
   return (
@@ -203,6 +211,7 @@ function EmployeeDetails({
             {employee.availability.map((row) => (
               <li key={`${row.date}:${row.availability_type}:${row.reason}:${row.source}:${row.shift_ids}`}>
                 {formatDate(row.date)} · {AVAILABILITY_LABELS[row.availability_type]}
+                {row.shift_ids && ` · ${row.shift_ids.map(shiftCode).join(", ")}`}
                 {row.reason && ` · ${row.reason}`}
               </li>
             ))}

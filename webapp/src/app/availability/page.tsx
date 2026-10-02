@@ -20,7 +20,7 @@ export default async function AvailabilityPage({
   const scope = await loadPlanningScope("/availability", params);
   return (
     <div className="py-6">
-      <PageHeader title="Verfügbarkeit" parent={{ href: "/", label: "Übersicht" }} scope={scope} />
+      <PageHeader title="Verfügbarkeit" back scope={scope} />
       {!scope.stationIds.length ? (
         <p className="py-12 text-center text-muted-foreground">Bitte mindestens eine Station auswählen.</p>
       ) : scope.error ? (

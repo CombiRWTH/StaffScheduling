@@ -104,7 +104,10 @@ def test_options_full_month_and_http_failure_contract() -> None:
         assert response.status_code == 200
         assert [row["planning_unit_id"] for row in response.json()["planning_units"]] == [102]
         assert response.json()["planning_month"]["end"] == "2026-02-28"
-        assert client.get("/employees?year=2026&month=1&planning_unit_ids=101&planning_unit_ids=102").status_code == 200
+        inspection = client.get("/employees?year=2026&month=1&planning_unit_ids=101&planning_unit_ids=102")
+        assert inspection.status_code == 200
+        # The reference shifts come along, so allowed shifts of an availability entry can be named.
+        assert [row["code"] for row in inspection.json()["shifts"]] == ["F", "Z", "S", "N"]
         assert client.get("/employees?year=2026&month=1&planning_unit_ids=201").status_code == 422
         assert client.get("/employees?year=2026&month=2&planning_unit_ids=101").status_code == 422
         assert client.get("/employees?year=2026&month=1&planning_unit_ids=-1").status_code == 422

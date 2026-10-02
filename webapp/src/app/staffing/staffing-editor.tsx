@@ -68,9 +68,9 @@ export function StaffingEditor({ month, configuration }: { month: string; config
   }
 
   return (
-    <Card aria-label="Tägliche Mindestbesetzung">
+    <Card aria-labelledby={`${markId}-title`}>
       <CardHeader>
-        <CardTitle>Tägliche Mindestbesetzung</CardTitle>
+        <CardTitle id={`${markId}-title`}>Tägliche Mindestbesetzung</CardTitle>
         <CardDescription>
           Benötigte Personen je Schicht, 0 bis {MAX_REQUIRED_COUNT}; leer heißt 0. Geänderte Felder bleiben markiert,
           bis sie gespeichert oder zurückgesetzt sind.
@@ -180,7 +180,6 @@ export function StaffingEditor({ month, configuration }: { month: string; config
                         aria-invalid={!isValidCount(count)}
                         aria-describedby={before === undefined ? undefined : mark}
                         title={before === undefined ? undefined : `Gespeichert: ${before}`}
-                        data-changed={before !== undefined || undefined}
                         value={count}
                         onChange={(event) => setCount(day.date, shift.shift_id, event.target.value)}
                         className={cn(COUNT_INPUT, before !== undefined && CHANGED_INPUT)}
@@ -215,7 +214,15 @@ function PatternPanel({
 }) {
   const [pattern, setPattern] = useState<Record<string, number>>({});
   const patternKey = (type: DayType, shiftId: number) => `${level}|${type}|${shiftId}`;
-  const [preview, setPreview] = useState<{ grid: DemandGrid; changedDates: string[] } | null>(null);
+  // A preview belongs to the grid and qualification it was computed from; after any later edit or tab change
+  // it is no longer shown, so applying it can never undo newer edits.
+  const [computed, setPreview] = useState<{
+    base: DemandGrid;
+    level: StaffLevel;
+    grid: DemandGrid;
+    changedDates: string[];
+  } | null>(null);
+  const preview = computed?.base === grid && computed.level === level ? computed : null;
   const [error, setError] = useState<string | null>(null);
   const [previewing, startPreview] = useTransition();
 
@@ -235,7 +242,7 @@ function PatternPanel({
         setError(result.error);
         return;
       }
-      setPreview(withLevelFrom(grid, gridOf(result.cells), level));
+      setPreview({ base: grid, level, ...withLevelFrom(grid, gridOf(result.cells), level) });
     });
   }
 
@@ -260,26 +267,27 @@ function PatternPanel({
           {DAY_TYPES.map(({ type, label }) => (
             <TableRow key={type}>
               <TableCell>{label}</TableCell>
-              {shifts.map((shift) => (
-                <TableCell key={shift.shift_id} className="text-center">
-                  <Input
-                    type="number"
-                    min={0}
-                    max={MAX_REQUIRED_COUNT}
-                    aria-label={`Muster ${shift.code} ${label}`}
-                    aria-invalid={!isValidCount(pattern[patternKey(type, shift.shift_id)] ?? 0)}
-                    value={pattern[patternKey(type, shift.shift_id)] ?? 0}
-                    onChange={(event) => {
-                      setPattern((current) => ({
-                        ...current,
-                        [patternKey(type, shift.shift_id)]: parseCount(event.target.value),
-                      }));
-                      setPreview(null);
-                    }}
-                    className={COUNT_INPUT}
-                  />
-                </TableCell>
-              ))}
+              {shifts.map((shift) => {
+                const at = patternKey(type, shift.shift_id);
+                const count = pattern[at] ?? 0;
+                return (
+                  <TableCell key={shift.shift_id} className="text-center">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={MAX_REQUIRED_COUNT}
+                      aria-label={`Muster ${shift.code} ${label}`}
+                      aria-invalid={!isValidCount(count)}
+                      value={count}
+                      onChange={(event) => {
+                        setPattern((current) => ({ ...current, [at]: parseCount(event.target.value) }));
+                        setPreview(null);
+                      }}
+                      className={COUNT_INPUT}
+                    />
+                  </TableCell>
+                );
+              })}
             </TableRow>
           ))}
         </TableBody>
