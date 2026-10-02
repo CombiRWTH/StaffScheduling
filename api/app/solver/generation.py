@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from enum import StrEnum
 from threading import Lock
-from typing import Literal, Protocol
+from typing import Protocol
 from uuid import UUID, uuid4
 
 from pydantic import Field
@@ -45,12 +45,10 @@ class GenerationJob(SchedulingBaseModel):
     state: JobState
     started_at: datetime
     finished_at: datetime | None = None
-    # Set when completed, also if the solver found no schedule.
+    # Set when completed, also if the solver found no schedule; its `check` judges a found schedule.
     solution: Solution | None = None
     # Set when failed.
     error: str | None = None
-    # No independent schedule check exists yet, so a feasible solution is only a candidate.
-    acceptance: Literal["not_assessed"] = "not_assessed"
 
 
 class GenerationBusy(RuntimeError):

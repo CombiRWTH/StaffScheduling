@@ -5,7 +5,7 @@ import re
 from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import replace
-from datetime import datetime
+from datetime import datetime, timedelta
 from types import MappingProxyType
 from typing import Any
 from unittest.mock import MagicMock
@@ -61,6 +61,9 @@ class InspectionSource:
         self.duplicate_account = False
         self.duplicate_plan = False
         self.missing_shift_times = False
+        # Context plans span the 14 days before every month; employee 2 works their last night.
+        self.context_plans = True
+        self.drifted_context_duty = False
         self.name = "Example MFA One"
         self.queries: list[str] = []
         self.tables: dict[str, list[dict[str, Any]]] = {name: [] for name in PROJECT_TABLES}
@@ -222,8 +225,14 @@ class InspectionSource:
                         }
                     )
         elif "FROM TPersonalKontenJeMonat target" in sql:
+            # Jumper Three has no station membership, so only a zero target is reachable.
             rows = [
-                {"employee_id": employee, "month": params["month"], "target_hours": 160.0, "actual_hours": 0.0}
+                {
+                    "employee_id": employee,
+                    "month": params["month"],
+                    "target_hours": 0.0 if employee == 3 else 160.0,
+                    "actual_hours": 0.0,
+                }
                 for employee in params["employee_ids"]
                 if not (self.missing_account and employee == 1)
             ]
@@ -245,6 +254,31 @@ class InspectionSource:
                     }
                 )
             rows = [row for row in rows if row["employee_id"] in params["employee_ids"]]
+        elif "FROM TPlan p" in sql and "p.RefStati = :context_status_id" in sql:
+            start = datetime.combine(params["start"], datetime.min.time())
+            rows = [
+                {"planning_unit_id": unit, "plan_start": start, "plan_end": start + timedelta(days=13)}
+                for unit in params["station_ids"]
+                if self.context_plans
+            ]
+        elif "FROM TPlanPersonalKommtGeht" in sql and "p.RefStati = :context_status_id" in sql:
+            # The night of the last covered date, one row per catalog segment; a drifted one ends late.
+            night = datetime.combine(params["start"], datetime.min.time()) + timedelta(days=13)
+            late = timedelta(minutes=10 if self.drifted_context_duty else 0)
+            segments = SHIFT_SEGMENTS[1690]
+            rows = [
+                {
+                    "employee_id": 2,
+                    "duty_date": night,
+                    "planning_unit_id": 101,
+                    "shift_id": 1690,
+                    "profession_code": "81302-028",
+                    "segment_start": night + (segment_start - DAY),
+                    "segment_end": night + (segment_end - DAY) + (late if index == len(segments) - 1 else timedelta()),
+                }
+                for index, (segment_start, segment_end, _) in enumerate(segments)
+                if self.context_plans and 2 in params["employee_ids"]
+            ]
         elif "FROM TPlanPersonalKommtGeht" in sql:
             first = datetime.combine(params["start"], datetime.min.time())
             roster = [

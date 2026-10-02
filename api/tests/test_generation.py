@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from datetime import date
 from threading import Event
 from time import monotonic, sleep
 from typing import cast
@@ -10,26 +11,33 @@ from inspection_fixture import InspectionSource
 
 from app.api.generation import get_generation
 from app.domain import (
+    POLICY,
     DemandCell,
     InvalidSelection,
     MonthlyDemand,
     PlanningMonth,
+    ScheduleContext,
     SchedulingDataset,
     ShiftType,
-    StaffingDemandRole,
     StaffLevel,
 )
 from app.main import app
 from app.settings import Settings
-from app.solver.cp_sat.builder import create_cp_sat_model_builder
 from app.solver.generation import Generation, GenerationBusy, GenerationJob, GenerationRequest, JobState
-from app.solver.models import Solution, SolutionStatus
+from app.solver.models import ObjectiveWeights, RunConfiguration, Solution, SolutionStatus
 from app.solver.service import SolverService
 
 JANUARY = PlanningMonth(year=2026, month=1)
 REQUEST = GenerationRequest(planning_unit_ids=(101,), planning_month=JANUARY, timeout_seconds=30)
 EARLY = 1113
-INFEASIBLE = Solution(status=SolutionStatus.INFEASIBLE)
+CONFIGURATION = RunConfiguration(
+    policy=POLICY,
+    weights=ObjectiveWeights(health_events=1, balance_deviation_minutes=1, surplus_intermediate_duties=1),
+    timeout_seconds=30,
+    search_workers=None,
+    random_seed=None,
+)
+INFEASIBLE = Solution(status=SolutionStatus.INFEASIBLE, configuration=CONFIGURATION, wall_time_seconds=0)
 
 
 def save_demand(source: InspectionSource, station_id: int = 101) -> None:
@@ -67,7 +75,17 @@ class HeldSolve:
 
 
 def read_nothing(**_: object) -> SchedulingDataset:
-    return SchedulingDataset(planning_month=JANUARY, planning_units=(), plans=())
+    return SchedulingDataset(
+        planning_month=JANUARY,
+        planning_units=(),
+        shifts=(),
+        demand_requirements=(),
+        employees=(),
+        planning_unit_memberships=(),
+        availability=(),
+        monthly_work_accounts=(),
+        context=ScheduleContext(covered_from=JANUARY.start, covered_until=JANUARY.end),
+    )
 
 
 def test_generation_accepts_at_once_rejects_overlap_and_releases_after_finishing() -> None:
@@ -83,7 +101,7 @@ def test_generation_accepts_at_once_rejects_overlap_and_releases_after_finishing
 
     solve.release.set()
     done = finished(generation)
-    assert (done.job_id, done.state, done.acceptance) == (job.job_id, JobState.COMPLETED, "not_assessed")
+    assert (done.job_id, done.state) == (job.job_id, JobState.COMPLETED)
     # A completed job reports the solver status as found; infeasible is not a failure of the job.
     assert done.solution == INFEASIBLE
     assert done.finished_at
@@ -118,7 +136,7 @@ def test_failed_solve_and_failed_input_release_the_lock() -> None:
     finished(rejecting)
 
 
-def test_generation_input_reads_only_absences_from_the_roster() -> None:
+def test_generation_input_reads_absences_and_only_trusted_context_duties() -> None:
     source = InspectionSource()
     with pytest.raises(ValueError, match="No saved staffing demand"):
         source.service.read_generation_input(planning_unit_ids=(101,), planning_month=JANUARY)
@@ -127,11 +145,24 @@ def test_generation_input_reads_only_absences_from_the_roster() -> None:
 
     dataset = source.service.read_generation_input(planning_unit_ids=(101, 101), planning_month=JANUARY)
 
-    # Polluted worked shifts (another plan, earlier output in the target plan) never become input.
-    assert dataset.assignments == ()
+    # Polluted worked shifts (another plan, earlier output in the target plan) never become input:
+    # the absence read selects no worked shift, and worked duties come only from trusted context plans.
     roster_queries = [sql for sql in source.queries if "TPlanPersonalKommtGeht" in sql]
-    assert roster_queries
-    assert not any("pkg.RefDienste " in sql or "pkg.RefDienste\n" in sql for sql in roster_queries)
+    assert all("pkg.RefgAbw IS NOT NULL OR pkg.RefDienstAbw IS NOT NULL" in sql for sql in roster_queries[:-2])
+    worked = [sql for sql in roster_queries if "pkg.RefDienste AS shift_id" in sql]
+    assert len(worked) == 1
+    assert "p.RefStati = :context_status_id" in worked[0]
+    # The context plans span the 14 days before January; employee 2 worked the night of December 31.
+    assert (dataset.context.covered_from, dataset.context.covered_until) == (date(2025, 12, 18), JANUARY.end)
+    [night] = dataset.context.duties
+    assert (night.employee_id, night.date, night.shift_id, night.staff_level) == (
+        2,
+        date(2025, 12, 31),
+        1690,
+        StaffLevel.PROFESSIONAL,
+    )
+    # February 1 lies after the month: its approved absence reaches the last night of January.
+    assert [(row.employee_id, row.date) for row in dataset.context.availability] == [(1, date(2026, 2, 1))]
     # The approved absence still binds planning.
     assert [(row.employee_id, row.date.day, row.reason) for row in dataset.availability] == [(1, 1, "U")]
     # Station 101 is assignable, jumper pool 201 is origin context; station 102 stays out of this run.
@@ -140,9 +171,20 @@ def test_generation_input_reads_only_absences_from_the_roster() -> None:
     assert {row.planning_unit_id for row in dataset.demand_requirements} == {101}
     assert len(dataset.demand_requirements) == 2
     assert len(dataset.monthly_work_accounts) == 3
-    assert dataset.wishes == ()
-    assert dataset.plans == ()
-    assert all(employee.capabilities == () for employee in dataset.employees)
+
+
+def test_generation_input_rejects_drifted_context_and_reports_missing_coverage() -> None:
+    source = InspectionSource()
+    save_demand(source)
+    source.drifted_context_duty = True
+    with pytest.raises(ValueError, match="does not match a reference shift"):
+        source.service.read_generation_input(planning_unit_ids=(101,), planning_month=JANUARY)
+
+    source.drifted_context_duty = False
+    source.context_plans = False
+    context = source.service.read_generation_input(planning_unit_ids=(101,), planning_month=JANUARY).context
+    # Without trusted plans nothing around the month is known; the schedule check reports that gap.
+    assert (context.covered_from, context.covered_until, context.duties) == (JANUARY.start, JANUARY.end, ())
 
 
 def test_generation_input_times_the_reference_shifts() -> None:
@@ -155,9 +197,12 @@ def test_generation_input_times_the_reference_shifts() -> None:
         # A segment without paid minutes counts its full length.
         ("Z", ShiftType.INTERMEDIATE, 510, 855, 345),
         ("S", ShiftType.LATE, 795, 1260, 435),
-        ("N", ShiftType.NIGHT, 1210, 370, 555),
+        # The night ends at 06:10 on the next date.
+        ("N", ShiftType.NIGHT, 1210, 1810, 555),
     ]
-    assert [s.staffing_role for s in shifts].count(StaffingDemandRole.OPTIONAL_COVERAGE) == 1
+    # The gaps between segments are the unpaid breaks.
+    night = shifts[-1]
+    assert [(s.start_minute, s.end_minute) for s in night.segments] == [(1210, 1305), (1320, 1440), (1470, 1810)]
 
     source.missing_shift_times = True
     with pytest.raises(ValueError, match="Missing TimeOffice shift times"):
@@ -171,7 +216,7 @@ def source() -> InspectionSource:
 
 @pytest.fixture
 def generation(source: InspectionSource) -> Iterator[Generation]:
-    solver = SolverService(Settings(solver_num_search_workers=1), create_cp_sat_model_builder())
+    solver = SolverService(Settings(solver_num_search_workers=1))
     # Requests carry the minimum time limit; the HTTP contract needs a result, not a full-length search.
     generation = Generation(
         read_input=source.service.read_generation_input,
@@ -208,11 +253,15 @@ def test_http_generation_solves_the_saved_month(
     assert job["job_id"] == started.json()["job_id"]
     assert job["state"] == "completed"
     assert job["request"]["planning_unit_ids"] == [101]
-    assert job["acceptance"] == "not_assessed"
-    assert job["solution"]["status"] in {status.value for status in SolutionStatus}
-    for assignment in job["solution"]["assignments"]:
+    solution = job["solution"]
+    assert solution["status"] in {"optimal", "feasible"}
+    # A found schedule always carries the independent check, apart from the solver status.
+    assert solution["check"]["status"] == "accepted"
+    assert solution["objective"]["value"] >= solution["objective"]["best_bound"]
+    assert solution["configuration"]["policy"]["balance_tolerance_minutes"] == 460
+    for assignment in solution["assignments"]:
         assert assignment["planning_unit_id"] == 101
-        assert assignment["assignment_type"] == "generated"
+        assert assignment["staff_level"] in {"professional", "mfa"}
 
 
 @pytest.mark.parametrize(

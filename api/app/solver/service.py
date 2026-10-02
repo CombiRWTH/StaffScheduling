@@ -2,272 +2,83 @@ import logging
 
 from ortools.sat.python import cp_model
 
-from app.domain import Assignment, AssignmentType, SchedulingDataset
+from app.domain import POLICY, SchedulingDataset, check_schedule
 from app.settings import Settings
-from app.solver.audit import AuditFinding, AuditReport
-from app.solver.cp_sat.builder import CpSatBuildResult, CpSatModelBuilder
-from app.solver.cp_sat.context import AuditContext, SolverContext
-from app.solver.cp_sat.inspection import CpSatInspection, inspect_cp_sat_model
 from app.solver.diagnostics import DiagnosticSeverity, SolverDiagnostic
-from app.solver.models import Solution, SolutionStatus
+from app.solver.model import build_model
+from app.solver.models import ObjectiveReport, RunConfiguration, Solution, SolutionStatus
 
 logger = logging.getLogger(__name__)
 
+STATUS = {
+    cp_model.OPTIMAL: SolutionStatus.OPTIMAL,
+    cp_model.FEASIBLE: SolutionStatus.FEASIBLE,
+    cp_model.INFEASIBLE: SolutionStatus.INFEASIBLE,
+    cp_model.MODEL_INVALID: SolutionStatus.MODEL_INVALID,
+}
+
 
 class SolverService:
-    """Build, solve, map, audit, and report CP-SAT scheduling solutions."""
+    """Solve one month and check the schedule found.
 
-    def __init__(self, settings: Settings, model_builder: CpSatModelBuilder) -> None:
+    The solution keeps CP-SAT's status apart from the independent schedule check, which runs on
+    every candidate schedule. Build errors raise; the generation job reports them as failed.
+    """
+
+    def __init__(self, settings: Settings) -> None:
         self._settings = settings
-        self._model_builder = model_builder
 
     def solve(self, dataset: SchedulingDataset, timeout: float | None = None) -> Solution:
-        build_result = self._build_model(dataset)
-        ctx = build_result.ctx
-
-        inspection = self._inspect_model(ctx)
-
-        if not inspection.is_valid:
+        built = build_model(dataset)
+        configuration = RunConfiguration(
+            policy=POLICY,
+            weights=built.weights,
+            timeout_seconds=timeout if timeout is not None else self._settings.solver_max_time_seconds,
+            search_workers=self._settings.solver_num_search_workers,
+            random_seed=self._settings.solver_random_seed,
+        )
+        logger.info(
+            "Solving month=%s-%02d employees=%s candidates=%s configuration=%s",
+            dataset.planning_month.year,
+            dataset.planning_month.month,
+            len(dataset.employees),
+            len(built.candidates),
+            configuration.model_dump(mode="json", exclude={"policy"}),
+        )
+        if error := built.model.validate():
+            invalid = SolverDiagnostic(code="cp_sat.model_invalid", severity=DiagnosticSeverity.ERROR, message=error)
             return Solution(
                 status=SolutionStatus.MODEL_INVALID,
-                assignments=(),
-                diagnostics=tuple(ctx.diagnostics),
-                audit=AuditReport(),
+                configuration=configuration,
+                wall_time_seconds=0,
+                diagnostics=(*built.diagnostics, invalid),
             )
-
-        max_time_seconds = timeout if timeout is not None else self._settings.solver_max_time_seconds
-        solver = self._create_solver(max_time_seconds)
-
-        logger.info(
-            "Solving CP-SAT model: max_time_seconds=%s search_workers=%s random_seed=%s",
-            max_time_seconds,
-            self._settings.solver_num_search_workers,
-            self._settings.solver_random_seed,
-        )
-
-        cp_status = solver.solve(ctx.model)
-        status = self._map_cp_sat_status(cp_status)
-
-        assignments = (
-            self._extract_assignments(ctx=ctx, solver=solver)
-            if status in {SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE}
-            else ()
-        )
-
-        audit = (
-            self._audit_solution(
-                build_result=build_result,
-                dataset=dataset,
-                assignments=assignments,
-            )
-            if status in {SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE}
-            else AuditReport()
-        )
-
-        self._log_solve_result(
-            status=status,
-            assignment_count=len(assignments),
-            diagnostic_count=len(ctx.diagnostics),
-            audit_finding_count=len(audit.findings),
-            solver=solver,
-        )
-
-        if ctx.diagnostics:
-            logger.debug(
-                "Solver diagnostics: diagnostics=%s",
-                tuple(diagnostic.message for diagnostic in ctx.diagnostics),
-            )
-
-        return Solution(
-            status=status,
-            assignments=assignments,
-            diagnostics=tuple(ctx.diagnostics),
-            audit=audit,
-        )
-
-    def _build_model(self, dataset: SchedulingDataset) -> CpSatBuildResult:
-        logger.info(
-            "Building CP-SAT model: employees=%s planning_units=%s shifts=%s "
-            "existing_assignments=%s demand_requirements=%s",
-            len(dataset.employees),
-            len(dataset.planning_units),
-            len(dataset.shifts),
-            len(dataset.assignments),
-            len(dataset.demand_requirements),
-        )
-
-        build_result = self._model_builder.build(dataset)
-
-        logger.debug(
-            "Applied solver components: constraints=%s objectives=%s weighted_penalties=%s has_objective=%s",
-            build_result.applied_constraint_ids,
-            build_result.applied_objective_ids,
-            build_result.weighted_penalty_count,
-            build_result.has_objective,
-        )
-
-        return build_result
-
-    def _inspect_model(self, ctx: SolverContext) -> CpSatInspection:
-        inspection = inspect_cp_sat_model(model=ctx.model)
-
-        logger.info(
-            "Built CP-SAT model: assignment_variables=%s proto_variables=%s "
-            "proto_constraints=%s constraint_types=%s diagnostics=%s",
-            len(ctx.assignment_variables),
-            inspection.proto_variable_count,
-            inspection.proto_constraint_count,
-            inspection.constraint_type_counts,
-            len(ctx.diagnostics),
-        )
-
-        if inspection.unnamed_constraint_count:
-            logger.warning(
-                "CP-SAT model contains unnamed constraints: unnamed_constraints=%s",
-                inspection.unnamed_constraint_count,
-            )
-
-        if not inspection.is_valid:
-            logger.error("CP-SAT model validation failed: %s", inspection.validation_error)
-            ctx.diagnostics.append(
-                SolverDiagnostic(
-                    code="cp_sat.model_invalid",
-                    severity=DiagnosticSeverity.ERROR,
-                    message=f"CP-SAT model validation failed: {inspection.validation_error}",
-                )
-            )
-
-        logger.debug("CP-SAT constraint names: names=%s", inspection.constraint_names)
-
-        return inspection
-
-    def _create_solver(self, max_time_seconds: float) -> cp_model.CpSolver:
         solver = cp_model.CpSolver()
-
-        solver.parameters.max_time_in_seconds = max_time_seconds
+        solver.parameters.max_time_in_seconds = configuration.timeout_seconds
         solver.parameters.log_search_progress = self._settings.solver_log_search_progress
-
-        if self._settings.solver_num_search_workers is not None:
-            solver.parameters.num_search_workers = self._settings.solver_num_search_workers
-
-        if self._settings.solver_random_seed is not None:
-            solver.parameters.random_seed = self._settings.solver_random_seed
-
-        return solver
-
-    def _map_cp_sat_status(self, status: cp_model.CpSolverStatus) -> SolutionStatus:
-        if status == cp_model.OPTIMAL:
-            return SolutionStatus.OPTIMAL
-
-        if status == cp_model.FEASIBLE:
-            return SolutionStatus.FEASIBLE
-
-        if status == cp_model.INFEASIBLE:
-            return SolutionStatus.INFEASIBLE
-
-        if status == cp_model.MODEL_INVALID:
-            return SolutionStatus.MODEL_INVALID
-
-        return SolutionStatus.UNKNOWN
-
-    def _extract_assignments(
-        self,
-        *,
-        ctx: SolverContext,
-        solver: cp_model.CpSolver,
-    ) -> tuple[Assignment, ...]:
-        assignments: list[Assignment] = []
-
-        for key, variable in ctx.assignment_variables.items():
-            if solver.value(variable) != 1:
-                continue
-
-            employee_id, planning_unit_id, assignment_date, shift_id, _ = key
-
-            assignments.append(
-                Assignment(
-                    employee_id=employee_id,
-                    planning_unit_id=planning_unit_id,
-                    date=assignment_date,
-                    shift_id=shift_id,
-                    assignment_type=AssignmentType.GENERATED,
-                )
-            )
-
-        return tuple(
-            sorted(
-                assignments,
-                key=lambda assignment: (
-                    assignment.planning_unit_id,
-                    assignment.date,
-                    assignment.shift_id,
-                    assignment.employee_id,
-                ),
-            )
+        if configuration.search_workers is not None:
+            solver.parameters.num_workers = configuration.search_workers
+        if configuration.random_seed is not None:
+            solver.parameters.random_seed = configuration.random_seed
+        status = STATUS.get(solver.solve(built.model), SolutionStatus.UNKNOWN)
+        found = status in {SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE}
+        assignments = built.schedule(solver) if found else ()
+        solution = Solution(
+            status=status,
+            configuration=configuration,
+            wall_time_seconds=solver.wall_time,
+            assignments=assignments,
+            objective=ObjectiveReport(value=round(solver.objective_value), best_bound=solver.best_objective_bound)
+            if found
+            else None,
+            check=check_schedule(dataset, assignments) if found else None,
+            diagnostics=built.diagnostics,
         )
-
-    def _audit_solution(
-        self,
-        *,
-        build_result: CpSatBuildResult,
-        dataset: SchedulingDataset,
-        assignments: tuple[Assignment, ...],
-    ) -> AuditReport:
-        # add the already existing assignments to the ones generated by the solver
-        all_assignments = assignments + tuple(dataset.assignments)
-
-        audit_ctx = AuditContext(dataset=dataset, index=build_result.ctx.index, assignments=all_assignments)
-
-        findings: list[AuditFinding] = []
-
-        for resolved in build_result.constraints:
-            if not resolved.enabled:
-                continue
-
-            findings.extend(
-                resolved.constraint.audit(
-                    audit_ctx,
-                    params=resolved.params,
-                )
-            )
-
-        for resolved in build_result.objectives:
-            if not resolved.enabled:
-                continue
-
-            findings.extend(
-                resolved.objective.audit(
-                    audit_ctx,
-                    params=resolved.params,
-                )
-            )
-
-        return AuditReport(findings=tuple(findings))
-
-    def _log_solve_result(
-        self,
-        *,
-        status: SolutionStatus,
-        assignment_count: int,
-        diagnostic_count: int,
-        audit_finding_count: int,
-        solver: cp_model.CpSolver,
-    ) -> None:
-        message = (
-            "Solved CP-SAT model: status=%s generated_assignments=%s diagnostics=%s "
-            "audit_findings=%s wall_time_seconds=%.3f"
-        )
-        args = (
+        logger.info(
+            "Solved status=%s assignments=%s check=%s wall_time_seconds=%.3f",
             status.value,
-            assignment_count,
-            diagnostic_count,
-            audit_finding_count,
+            len(solution.assignments),
+            solution.check.status.value if solution.check else None,
             solver.wall_time,
         )
-
-        if status in {SolutionStatus.OPTIMAL, SolutionStatus.FEASIBLE}:
-            logger.info(message, *args)
-        elif status == SolutionStatus.MODEL_INVALID:
-            logger.error(message, *args)
-        else:
-            logger.warning(message, *args)
+        return solution

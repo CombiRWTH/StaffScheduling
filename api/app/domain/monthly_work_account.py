@@ -15,6 +15,12 @@ class WorkCredit(SchedulingBaseModel):
 
 
 class MonthlyWorkAccount(SchedulingBaseModel):
+    """An employee's monthly target and verified credits, in minutes.
+
+    `actual_minutes` is TimeOffice's informational actual-hours total; planning never uses it,
+    because it can include polluted roster work. The balance uses verified credits only.
+    """
+
     employee_id: EmployeeId
     target_minutes: NonNegativeInt
     actual_minutes: NonNegativeInt | None = None
@@ -25,6 +31,10 @@ class MonthlyWorkAccount(SchedulingBaseModel):
     @property
     def credited_minutes(self) -> int:
         return sum(credit.minutes for credit in self.credit_details)
+
+    def balance(self, generated_minutes: int) -> int:
+        """Generated paid minutes plus credits minus target: positive is over, negative under target."""
+        return generated_minutes + self.credited_minutes - self.target_minutes
 
     @model_validator(mode="after")
     def validate_credits(self) -> Self:

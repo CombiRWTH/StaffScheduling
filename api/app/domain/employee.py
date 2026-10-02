@@ -18,18 +18,6 @@ class StaffLevel(StrEnum):
     MFA = "mfa"  # Medizinische Fachangestellte
 
 
-class Capability(StrEnum):
-    """Special employee capability used by solver rules.
-
-    Capabilities should come from validated TimeOffice data where possible.
-    If a project requirement is not represented in TimeOffice, it should be
-    added later through an explicit scenario input, not hidden in TimeOffice facts.
-    """
-
-    NIGHT_WATCH = "night_watch"
-    ROUNDS = "rounds"
-
-
 class Employee(SchedulingBaseModel):
     """Employee known to the scheduling dataset.
 
@@ -42,7 +30,6 @@ class Employee(SchedulingBaseModel):
     display_name: NonEmptyStr
 
     staff_level: StaffLevel
-    capabilities: tuple[Capability, ...] = ()
 
 
 class EmployeeSummary(SchedulingBaseModel):

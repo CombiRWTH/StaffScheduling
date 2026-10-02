@@ -6,13 +6,14 @@ Cross-entity completeness rules live in the domain.
 """
 
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from math import isfinite
 from typing import Any, cast
 
 from sqlalchemy import BindParameter, Connection, RowMapping, bindparam, text
 
 from app.domain import (
+    Assignment,
     Availability,
     Employee,
     MonthlyWorkAccount,
@@ -23,8 +24,9 @@ from app.domain import (
     ShiftOption,
     StaffLevel,
     WorkCredit,
+    WorkSegment,
+    dates_between,
     month_calendar,
-    staffing_role,
 )
 from app.timeoffice.facts import TimeOfficeFacts
 
@@ -183,7 +185,6 @@ def read_employees(connection: Connection, facts: TimeOfficeFacts, employee_ids:
                 employee_id=row["employee_id"],
                 display_name=name,
                 staff_level=_staff_level(row["employee_profession_code"], facts, f"employee {row['employee_id']}"),
-                capabilities=tuple(facts.capabilities_by_employee_id.get(row["employee_id"], ())),
             )
         )
     return tuple(employees)
@@ -288,9 +289,9 @@ def _read_absence_credits(
 
 
 def read_absences(
-    connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
+    connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], start: date, end: date
 ) -> tuple[Availability, ...]:
-    """Dated roster absences as availability; ignored codes are dropped, unknown codes fail."""
+    """Dated roster absences from `start` to `end` as availability; ignored codes are dropped, unknown codes fail."""
     rows = select_rows(
         connection,
         """
@@ -308,8 +309,8 @@ def read_absences(
         ORDER BY pkg.RefPersonal, pkg.Datum
         """,
         employee_ids=list(employee_ids),
-        start=month.start,
-        end=month.end,
+        start=start,
+        end=end,
     )
     absences: dict[Availability, None] = {}
     for row in rows:
@@ -355,7 +356,11 @@ def read_shift_options(connection: Connection, facts: TimeOfficeFacts) -> tuple[
 
 
 def read_shifts(connection: Connection, facts: TimeOfficeFacts) -> tuple[Shift, ...]:
-    """The reference shifts with their times and paid minutes from their TimeOffice target-time segments."""
+    """The reference shifts with their work segments and paid minutes from their TimeOffice target times.
+
+    Each `TDiensteSollzeiten` row is one work segment; the gaps between them are unpaid breaks. Times
+    sit on a base date and an overnight segment ends on the following one.
+    """
     rows = select_rows(
         connection,
         """
@@ -380,23 +385,129 @@ def read_shifts(connection: Connection, facts: TimeOfficeFacts) -> tuple[Shift, 
             raise ValueError(f"Missing TimeOffice reference shift or code for shift_id={shift_id}.")
         if any(row["segment_start"] is None or row["segment_end"] is None for row in segments):
             raise ValueError(f"Missing TimeOffice shift times for shift_id={shift_id}.")
+        base = datetime.combine(segments[0]["segment_start"].date(), datetime.min.time())
         # Minuten is the paid time of a segment; a segment without it counts its full length.
         minutes = sum(
-            row["segment_minutes"] or round((row["segment_end"] - row["segment_start"]).total_seconds() / 60)
-            for row in segments
+            row["segment_minutes"] or _minutes_between(row["segment_start"], row["segment_end"]) for row in segments
         )
         shifts.append(
             Shift(
                 shift_id=shift_id,
                 code=code,
                 type=shift_type,
-                staffing_role=staffing_role(shift_type),
-                start_minute=_minute_of_day(segments[0]["segment_start"]),
-                end_minute=_minute_of_day(segments[-1]["segment_end"]),
+                segments=tuple(
+                    WorkSegment(
+                        start_minute=_minutes_between(base, row["segment_start"]),
+                        end_minute=_minutes_between(base, row["segment_end"]),
+                    )
+                    for row in segments
+                ),
                 net_work_minutes=minutes,
             )
         )
     return tuple(shifts)
+
+
+def read_context_coverage(connection: Connection, facts: TimeOfficeFacts, start: date, end: date) -> set[date]:
+    """Dates from `start` to `end` that a trusted context plan of every configured station spans.
+
+    Such a plan's worked rows are complete: inside it, a date without a duty is free.
+    """
+    stations = facts.station_ids
+    rows = select_rows(
+        connection,
+        """
+        SELECT p.RefPlanungseinheiten AS planning_unit_id, p.VonDat AS plan_start, p.BisDat AS plan_end
+        FROM TPlan p
+        WHERE p.RefPlanungseinheiten IN :station_ids
+            AND p.RefStati = :context_status_id
+            AND CONVERT(date, p.VonDat) <= :end
+            AND CONVERT(date, p.BisDat) >= :start
+        """,
+        station_ids=stations,
+        context_status_id=facts.trusted_context_status_id,
+        start=start,
+        end=end,
+    )
+    spanned: dict[int, set[date]] = {station: set() for station in stations}
+    for row in rows:
+        spanned[row["planning_unit_id"]].update(dates_between(row["plan_start"].date(), row["plan_end"].date()))
+    return {day for day in dates_between(start, end) if all(day in days for days in spanned.values())}
+
+
+def read_context_duties(
+    connection: Connection,
+    facts: TimeOfficeFacts,
+    employee_ids: Sequence[int],
+    start: date,
+    end: date,
+    shifts: Sequence[Shift],
+) -> tuple[Assignment, ...]:
+    """Worked duties from `start` to `end` in the trusted context plans of the configured stations.
+
+    TimeOffice stores one roster row per work segment; together they must reproduce the shift's
+    catalog segments on that date, so a drifted or hand-edited duty fails instead of being guessed.
+    """
+    rows = select_rows(
+        connection,
+        """
+        SELECT
+            pkg.RefPersonal AS employee_id,
+            pkg.Datum AS duty_date,
+            pkg.RefPlanungseinheiten AS planning_unit_id,
+            pkg.RefDienste AS shift_id,
+            b.KurzBez AS profession_code,
+            pkg.VonZeit AS segment_start,
+            pkg.BisZeit AS segment_end
+        FROM TPlanPersonalKommtGeht pkg
+        JOIN TPlan p ON p.Prim = pkg.RefPlan
+        LEFT JOIN TBerufe b ON b.Prim = pkg.RefBerufe
+        WHERE pkg.RefPersonal IN :employee_ids
+            AND p.RefPlanungseinheiten IN :station_ids
+            AND p.RefStati = :context_status_id
+            AND CONVERT(date, pkg.Datum) BETWEEN :start AND :end
+            AND ISNULL(pkg.Wunschdienst, 0) = 0
+            AND pkg.RefgAbw IS NULL
+            AND pkg.RefDienstAbw IS NULL
+        ORDER BY pkg.RefPersonal, pkg.Datum, pkg.lfdNr
+        """,
+        employee_ids=list(employee_ids),
+        station_ids=facts.station_ids,
+        context_status_id=facts.trusted_context_status_id,
+        start=start,
+        end=end,
+    )
+    by_duty: dict[tuple[int, date], list[RowMapping]] = {}
+    for row in rows:
+        by_duty.setdefault((row["employee_id"], row["duty_date"].date()), []).append(row)
+    catalog = {shift.shift_id: shift for shift in shifts}
+    duties: list[Assignment] = []
+    for (employee_id, day), segments in by_duty.items():
+        where = f"context duty of employee_id={employee_id} on {day}"
+        first = segments[0]
+        if len({(row["shift_id"], row["planning_unit_id"]) for row in segments}) > 1:
+            raise ValueError(f"The {where} mixes shifts or stations.")
+        shift = catalog.get(first["shift_id"])
+        midnight = datetime.combine(day, datetime.min.time())
+        times = [
+            WorkSegment(
+                start_minute=_minutes_between(midnight, row["segment_start"]),
+                end_minute=_minutes_between(midnight, row["segment_end"]),
+            )
+            for row in segments
+        ]
+        if shift is None or tuple(times) != shift.segments:
+            raise ValueError(f"The {where} does not match a reference shift's segments.")
+        duties.append(
+            Assignment(
+                employee_id=employee_id,
+                date=day,
+                planning_unit_id=first["planning_unit_id"],
+                shift_id=shift.shift_id,
+                staff_level=_staff_level(first["profession_code"], facts, where),
+            )
+        )
+    return tuple(duties)
 
 
 def select_rows(connection: Connection, sql: str, **params: Any) -> Sequence[RowMapping]:
@@ -421,8 +532,8 @@ def _staff_level(profession_code: Any, facts: TimeOfficeFacts, context: str) -> 
     return facts.staff_level_by_profession_code[code]
 
 
-def _minute_of_day(value: datetime) -> int:
-    return value.hour * 60 + value.minute
+def _minutes_between(start: datetime, end: datetime) -> int:
+    return round((end - start) / timedelta(minutes=1))
 
 
 def _minutes(hours: Any) -> int:

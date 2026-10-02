@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 from app.domain.availability import AvailabilityType
-from app.domain.employee import Capability, StaffLevel
+from app.domain.employee import StaffLevel
 from app.domain.planning_unit import PlanningUnitId, PlanningUnitType
 from app.domain.shift import ShiftId, ShiftType
 
@@ -12,6 +12,9 @@ MONTHLY_PLANNING_INTERVAL_ID = 1
 
 # TPlan.RefStati value for the editable target roster used as planning input.
 TARGET_PLANNING_STATUS_ID = 20
+
+# TPlan.RefStati value of plans whose worked roster rows are trusted context around a month.
+TRUSTED_CONTEXT_STATUS_ID = 30
 
 # TPersonalKontenJeMonat.RefKonten for planned monthly target hours.
 MONTHLY_TARGET_WORK_ACCOUNT_ID = 1
@@ -53,15 +56,13 @@ class TimeOfficeFacts:
 
     monthly_planning_interval_id: int
     target_planning_status_id: int
+    trusted_context_status_id: int
 
     planning_unit_type_by_id: Mapping[PlanningUnitId, PlanningUnitType]
 
     reference_shift_type_by_id: Mapping[ShiftId, ShiftType]
 
     staff_level_by_profession_code: Mapping[str, StaffLevel]
-
-    # Temporary project/problem assumptions. Not DB-backed yet.
-    capabilities_by_employee_id: Mapping[int, tuple[Capability, ...]]
 
     availability_type_by_absence_code: Mapping[str, AvailabilityType]
     ignored_availability_absence_codes: frozenset[str]
@@ -75,6 +76,10 @@ class TimeOfficeFacts:
     @property
     def reference_shift_ids(self) -> frozenset[ShiftId]:
         return frozenset(self.reference_shift_type_by_id)
+
+    @property
+    def station_ids(self) -> list[PlanningUnitId]:
+        return sorted(unit for unit, kind in self.planning_unit_type_by_id.items() if kind == PlanningUnitType.STATION)
 
 
 STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
@@ -121,6 +126,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
 TIMEOFFICE_FACTS = TimeOfficeFacts(
     monthly_planning_interval_id=MONTHLY_PLANNING_INTERVAL_ID,
     target_planning_status_id=TARGET_PLANNING_STATUS_ID,
+    trusted_context_status_id=TRUSTED_CONTEXT_STATUS_ID,
     planning_unit_type_by_id=MappingProxyType(
         {
             EXAMPLE_STATION_A_ID: PlanningUnitType.STATION,
@@ -137,19 +143,6 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
         }
     ),
     staff_level_by_profession_code=STAFF_LEVEL_BY_PROFESSION_CODE,
-    capabilities_by_employee_id=MappingProxyType(
-        {
-            # Not DB-backed yet.
-            # Problem/legacy assumption: FWB employees for weekday early rounds.
-            791: (Capability.ROUNDS,),  # Branz, Janett
-            2963: (Capability.ROUNDS,),  # Hoots, Renilde
-            3868: (Capability.ROUNDS,),  # Vanfleet, Eike
-            # Problem assumption: night-watch employees.
-            925: (Capability.NIGHT_WATCH,),  # Farniok, Lina
-            6681: (Capability.NIGHT_WATCH,),  # Labelle, Saskia
-            928: (Capability.NIGHT_WATCH,),  # Wunderlich, Daniele
-        }
-    ),
     availability_type_by_absence_code=MappingProxyType(
         {
             "U": AvailabilityType.VACATION,  # Urlaub

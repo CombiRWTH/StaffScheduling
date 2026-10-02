@@ -24,8 +24,9 @@ PROJECT_AVAILABILITY_SOURCE = "Project availability"
 
 
 def read_availability(
-    connection: Connection, employee_ids: Sequence[int], month: PlanningMonth
+    connection: Connection, employee_ids: Sequence[int], start: date, end: date
 ) -> tuple[Availability, ...]:
+    """Project availability of the employees from `start` to `end`."""
     rows = select_rows(
         connection,
         """
@@ -35,8 +36,8 @@ def read_availability(
         ORDER BY employee_id, availability_date
         """,
         employee_ids=list(employee_ids),
-        start=month.start,
-        end=month.end,
+        start=start,
+        end=end,
     )
     return tuple(
         Availability(

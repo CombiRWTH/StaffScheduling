@@ -7,7 +7,6 @@ from fastapi.responses import JSONResponse
 from app.api import availability, demand, generation, planning
 from app.logging import configure_logging
 from app.settings import get_settings
-from app.solver.cp_sat.builder import create_cp_sat_model_builder
 from app.solver.generation import Generation
 from app.solver.service import SolverService
 from app.timeoffice import TimeOfficeService, TimeOfficeUnavailable, create_db_engine
@@ -20,7 +19,7 @@ configure_logging(level=settings.log_level)
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     engine = create_db_engine(settings=settings)
     source = TimeOfficeService(engine)
-    solver = SolverService(settings, create_cp_sat_model_builder())
+    solver = SolverService(settings)
     app.state.planning_source = source
     app.state.generation = Generation(read_input=source.read_generation_input, solve=solver.solve)
     try:

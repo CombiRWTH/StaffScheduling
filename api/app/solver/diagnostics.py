@@ -10,11 +10,9 @@ class DiagnosticSeverity(StrEnum):
 
 
 class SolverDiagnostic(SchedulingBaseModel):
-    """Build/solve-time diagnostic.
+    """Something the model build or solve noticed, such as a demand no candidate can cover.
 
-    Diagnostics are not the same as post-solve audit findings. They describe
-    model construction, infeasibility hints, configuration issues, or CP-SAT
-    validation problems.
+    Diagnostics explain a solver result; whether a schedule holds the rules is the schedule check.
     """
 
     code: str

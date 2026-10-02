@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from sqlalchemy import Connection, Engine
 
@@ -17,7 +17,9 @@ from app.domain import (
     PlanningUnit,
     PlanningUnitMembership,
     PlanningUnitType,
+    ScheduleContext,
     SchedulingDataset,
+    Shift,
     Wish,
     WishEntry,
     build_inspection,
@@ -28,6 +30,11 @@ from app.domain import (
 )
 from app.timeoffice import project_tables, queries
 from app.timeoffice.facts import TIMEOFFICE_FACTS, TimeOfficeFacts
+
+# How far around a month generation reads trusted context duties; the prepared context plans
+# hold the 14 days before January and the 7 days after June.
+CONTEXT_DAYS_BEFORE = 14
+CONTEXT_DAYS_AFTER = 7
 
 
 class TimeOfficeService:
@@ -65,15 +72,17 @@ class TimeOfficeService:
     ) -> SchedulingDataset:
         """The full-month solver input of the selected stations, or an error.
 
-        Roster rows are read only as approved absences; worked shifts of any plan, including earlier
-        output in the target plan, never enter generation.
+        Worked roster rows enter generation only from trusted context plans around the month; other
+        plans, including earlier output in the target plan, contribute approved absences only.
         """
         selected = tuple(dict.fromkeys(planning_unit_ids))
         with self._engine.connect() as connection:
             inspection = self._inspect(connection, selected, planning_month)
             shifts = queries.read_shifts(connection, self._facts)
             demands = tuple(project_tables.read_demand(connection, unit_id, planning_month) for unit_id in selected)
-        return build_scheduling_dataset(inspection=inspection, shifts=shifts, demands=demands)
+            employee_ids = [row.employee_id for row in inspection.employees]
+            context = self._read_context(connection, planning_month, employee_ids, shifts)
+        return build_scheduling_dataset(inspection=inspection, shifts=shifts, demands=demands, context=context)
 
     def list_employees(
         self, *, planning_unit_ids: tuple[int, ...], planning_month: PlanningMonth
@@ -92,8 +101,12 @@ class TimeOfficeService:
             return EmployeeCalendar(
                 employee_id=employee_id,
                 planning_month=planning_month,
-                absences=queries.read_absences(connection, self._facts, [employee_id], planning_month),
-                availability=project_tables.read_availability(connection, [employee_id], planning_month),
+                absences=queries.read_absences(
+                    connection, self._facts, [employee_id], planning_month.start, planning_month.end
+                ),
+                availability=project_tables.read_availability(
+                    connection, [employee_id], planning_month.start, planning_month.end
+                ),
                 wishes=project_tables.read_wishes(connection, [employee_id], planning_month),
                 calendar=month_calendar(planning_month),
                 shifts=queries.read_shift_options(connection, self._facts),
@@ -150,9 +163,10 @@ class TimeOfficeService:
     ) -> PlanningInspection:
         units, memberships, employee_ids = self._selection_scope(connection, selected, planning_month)
         employees = queries.read_employees(connection, self._facts, employee_ids)
-        absences = queries.read_absences(connection, self._facts, employee_ids, planning_month)
+        start, end = planning_month.start, planning_month.end
+        absences = queries.read_absences(connection, self._facts, employee_ids, start, end)
         accounts = queries.read_accounts(connection, self._facts, employee_ids, planning_month, absences)
-        availability = project_tables.read_availability(connection, employee_ids, planning_month)
+        availability = project_tables.read_availability(connection, employee_ids, start, end)
 
         scope_memberships = tuple(row for row in memberships if row.employee_id in employee_ids)
         relevant_unit_ids = set(selected) | {row.planning_unit_id for row in scope_memberships}
@@ -165,6 +179,39 @@ class TimeOfficeService:
             accounts=accounts,
             availability=(*absences, *availability),
             allowed_shift_ids=set(self._facts.reference_shift_ids),
+        )
+
+    def _read_context(
+        self, connection: Connection, month: PlanningMonth, employee_ids: list[int], shifts: tuple[Shift, ...]
+    ) -> ScheduleContext:
+        """Trusted duties of the dates around the month that context plans span without a gap.
+
+        A context duty inside the month would be fixed input, which generation does not support, so it fails.
+        """
+        day = timedelta(days=1)
+        spanned = queries.read_context_coverage(
+            connection,
+            self._facts,
+            month.start - CONTEXT_DAYS_BEFORE * day,
+            month.end + CONTEXT_DAYS_AFTER * day,
+        )
+        covered_from, covered_until = month.start, month.end
+        while covered_from - day in spanned:
+            covered_from -= day
+        while covered_until + day in spanned:
+            covered_until += day
+        duties = queries.read_context_duties(connection, self._facts, employee_ids, covered_from, covered_until, shifts)
+        if any(month.start <= row.date <= month.end for row in duties):
+            raise ValueError("Trusted context plans contain duties inside the planning month.")
+        after = month.end + day
+        return ScheduleContext(
+            covered_from=covered_from,
+            covered_until=covered_until,
+            duties=duties,
+            availability=(
+                *queries.read_absences(connection, self._facts, employee_ids, after, after),
+                *project_tables.read_availability(connection, employee_ids, after, after),
+            ),
         )
 
     def _selection_scope(
