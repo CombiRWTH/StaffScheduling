@@ -16,7 +16,7 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
       <PageHeader
         title="Mitarbeiter"
         parent={{ href: "/", label: "Übersicht" }}
-        description="Mitarbeiter der gewählten Stationen und des zugehörigen Pools, nur lesend."
+        description="Mitarbeiter der gewählten Stationen und des zugehörigen Springerpools, nur lesend."
         scope={scope}
       />
       {!scope.stationIds.length ? (

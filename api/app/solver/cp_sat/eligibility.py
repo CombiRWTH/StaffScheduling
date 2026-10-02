@@ -27,7 +27,7 @@ def eligible_staff_levels_for_assignment_slot(
     - AVAILABLE_ONLY constraints must include the target shift
 
     Future hard rules belong here too:
-    - shared/jump-pool eligibility
+    - jumper pool eligibility
     - qualifications
     - legal hard constraints that can safely pre-filter slots
     """

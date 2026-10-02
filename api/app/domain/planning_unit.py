@@ -11,28 +11,25 @@ PlanningUnitId = PositiveId
 
 
 class PlanningUnitType(StrEnum):
-    """Type of planning unit used by the scheduling pipeline.
+    """Type of planning unit. Every unit is a pool of employees; the type decides whether it is planned.
 
     STATION:
-        Planning unit with staffing demand. The solver may assign employees
-        into this unit.
+        Has staffing demand and receives assignments.
 
-    SHARED_POOL:
-        Planning unit used as a possible cross-unit employee source. Marking a
-        unit as SHARED_POOL never creates eligibility by itself. Eligibility
-        still requires real membership rows.
+    JUMPER_POOL:
+        Home of employees who stand in at stations. By definition it has no
+        demand and receives no assignments. Its home membership never creates
+        eligibility; a replacement membership at the station does.
     """
 
     STATION = "station"
-    SHARED_POOL = "shared_pool"
+    JUMPER_POOL = "jumper_pool"
 
 
 class PlanningUnit(SchedulingBaseModel):
     """Stable organizational scheduling unit.
 
-    This mirrors the TimeOffice concept "Planungseinheit". A planning unit can
-    represent a station/ward or, if explicitly configured and backed by data, a
-    shared/jump pool.
+    This mirrors the TimeOffice concept "Planungseinheit": a station or a jumper pool.
     """
 
     planning_unit_id: PlanningUnitId

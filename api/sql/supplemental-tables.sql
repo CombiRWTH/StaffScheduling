@@ -1,20 +1,7 @@
 -- Project tables next to the TimeOffice schema. An authorized preparer runs this
 -- file once against the prepared test database; the API never creates tables.
--- It is for a database without these tables; see the TimeOffice adapter docs for
--- migrating an evidence table from the earlier script with a constraints column.
--- The runtime login needs SELECT on all five tables and INSERT/DELETE on the
--- availability, wish and both demand tables.
-
--- An evidence row declares an employee's complete verified monthly credits.
--- An empty JSON array is explicit verified absence of credits, never a default.
-CREATE TABLE dbo.StaffSchedulingEmployeeMonthEvidence (
-    employee_id int NOT NULL CHECK (employee_id > 0),
-    planning_month date NOT NULL,
-    credit_details nvarchar(max) NOT NULL CHECK (ISJSON(credit_details) = 1),
-    source nvarchar(500) NOT NULL CHECK (LEN(source) > 0),
-    PRIMARY KEY (employee_id, planning_month),
-    CHECK (DAY(planning_month) = 1)
-);
+-- It is for a database without these tables.
+-- The runtime login needs SELECT, INSERT and DELETE on all four tables.
 
 -- Project availability, edited in the webapp. Native TimeOffice absences stay
 -- in the roster tables and are read separately.

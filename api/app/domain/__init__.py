@@ -15,7 +15,6 @@ from app.domain.demand import (
 from app.domain.employee import Capability, Employee, EmployeeId, EmployeeSummary, StaffLevel
 from app.domain.inspection import (
     EmployeeInspection,
-    EmployeeMonthEvidence,
     InvalidSelection,
     PlanningInspection,
     PlanningOptions,
@@ -67,7 +66,6 @@ __all__ = [
     "WishType",
     "MonthlyWorkAccount",
     "WorkCredit",
-    "EmployeeMonthEvidence",
     "InvalidSelection",
     "EmployeeInspection",
     "PlanningInspection",

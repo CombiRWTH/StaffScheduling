@@ -14,7 +14,6 @@ from sqlalchemy import Connection, text
 from app.domain import (
     Availability,
     DemandCell,
-    EmployeeMonthEvidence,
     MonthlyDemand,
     PlanningMonth,
     Wish,
@@ -22,29 +21,6 @@ from app.domain import (
 from app.timeoffice.queries import select_rows
 
 PROJECT_AVAILABILITY_SOURCE = "Project availability"
-
-
-def read_evidence(
-    connection: Connection, employee_ids: Sequence[int], month: PlanningMonth
-) -> tuple[EmployeeMonthEvidence, ...]:
-    """Explicitly prepared monthly credit declarations."""
-    rows = select_rows(
-        connection,
-        """
-        SELECT employee_id, credit_details, source
-        FROM dbo.StaffSchedulingEmployeeMonthEvidence
-        WHERE employee_id IN :employee_ids AND planning_month = :planning_month
-        ORDER BY employee_id
-        """,
-        employee_ids=list(employee_ids),
-        planning_month=month.start,
-    )
-    return tuple(
-        EmployeeMonthEvidence(
-            employee_id=row["employee_id"], credit_details=json.loads(row["credit_details"]), source=row["source"]
-        )
-        for row in rows
-    )
 
 
 def read_availability(

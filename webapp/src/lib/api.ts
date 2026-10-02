@@ -96,7 +96,7 @@ export function getEmployees(month: string, stationIds: number[]) {
   return request<PlanningInspection>("GET", "/employees", { params: selectionQuery(month, stationIds) });
 }
 
-/** The selection's employees by name; unlike `getEmployees` it needs no complete monthly evidence. */
+/** The selection's employees by name; unlike `getEmployees` it needs no complete monthly accounts. */
 export function getPlanningEmployees(month: string, stationIds: number[]) {
   return request<EmployeeSummary[]>("GET", "/planning/employees", { params: selectionQuery(month, stationIds) });
 }

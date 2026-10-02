@@ -22,6 +22,7 @@ from app.domain import (
     Shift,
     ShiftOption,
     StaffLevel,
+    WorkCredit,
     staffing_role,
 )
 from app.timeoffice.facts import TimeOfficeFacts
@@ -190,7 +191,7 @@ def read_employees(connection: Connection, facts: TimeOfficeFacts, employee_ids:
 def read_accounts(
     connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
 ) -> tuple[MonthlyWorkAccount, ...]:
-    """Monthly target hours (required) and actual hours (optional), converted to minutes."""
+    """Monthly target hours (required), actual hours (optional) and dated absence credits, in minutes."""
     rows = select_rows(
         connection,
         """
@@ -210,14 +211,74 @@ def read_accounts(
         target_account_id=facts.monthly_target_work_account_id,
         actual_account_id=facts.monthly_actual_work_account_id,
     )
+    credits = _read_absence_credits(connection, facts, employee_ids, month)
     return tuple(
         MonthlyWorkAccount(
             employee_id=row["employee_id"],
             target_minutes=_minutes(row["target_hours"]),
             actual_minutes=None if row["actual_hours"] is None else _minutes(row["actual_hours"]),
+            credit_details=tuple(credits.get(row["employee_id"], ())),
         )
         for row in rows
     )
+
+
+def _read_absence_credits(
+    connection: Connection, facts: TimeOfficeFacts, employee_ids: Sequence[int], month: PlanningMonth
+) -> dict[int, list[WorkCredit]]:
+    """Dated credits from the TimeOffice daily absence-hour accounts, by employee.
+
+    Each credit row must fall on a roster absence with its account's code. An absence without a
+    credit row credits nothing, as TimeOffice books none on weekend days within a vacation.
+    """
+    rows = select_rows(
+        connection,
+        """
+        SELECT
+            credit.RefPersonal AS employee_id,
+            credit.Datum AS credit_date,
+            credit.RefKonten AS account_id,
+            credit.Wert AS credit_hours,
+            absence.absence_code
+        FROM TPersonalKontenJeTag credit
+        OUTER APPLY (
+            SELECT TOP 1 COALESCE(global_absence_d.KurzBez, absence_d.KurzBez) AS absence_code
+            FROM TPlanPersonalKommtGeht pkg
+            LEFT JOIN TDienste global_absence_d ON global_absence_d.Prim = pkg.RefgAbw
+            LEFT JOIN TDienste absence_d ON absence_d.Prim = pkg.RefDienstAbw
+            WHERE pkg.RefPersonal = credit.RefPersonal
+                AND CONVERT(date, pkg.Datum) = CONVERT(date, credit.Datum)
+                AND ISNULL(pkg.Wunschdienst, 0) = 0
+                AND (pkg.RefgAbw IS NOT NULL OR pkg.RefDienstAbw IS NOT NULL)
+        ) absence
+        WHERE credit.RefPersonal IN :employee_ids
+            AND credit.RefKonten IN :credit_account_ids
+            AND CONVERT(date, credit.Datum) BETWEEN :start AND :end
+        ORDER BY credit.RefPersonal, credit.Datum, credit.RefKonten
+        """,
+        employee_ids=list(employee_ids),
+        credit_account_ids=sorted(facts.credited_absence_code_by_account_id),
+        start=month.start,
+        end=month.end,
+    )
+    credits: dict[int, list[WorkCredit]] = {}
+    for row in rows:
+        code = facts.credited_absence_code_by_account_id[row["account_id"]]
+        day: datetime = row["credit_date"]
+        if _text(row["absence_code"]) != code:
+            raise ValueError(
+                f"TimeOffice credit account {row['account_id']} for employee_id={row['employee_id']} "
+                f"on {day.date()} has no {code!r} absence."
+            )
+        credits.setdefault(row["employee_id"], []).append(
+            WorkCredit(
+                date=day.date(),
+                minutes=_minutes(row["credit_hours"]),
+                kind="approved_absence",
+                source=f"TimeOffice {code} absence",
+            )
+        )
+    return credits
 
 
 def read_absences(
@@ -360,5 +421,5 @@ def _minute_of_day(value: datetime) -> int:
 
 def _minutes(hours: Any) -> int:
     if hours is None or not isfinite(hours) or hours < 0:
-        raise ValueError("Missing or invalid monthly work-account hours.")
+        raise ValueError("Missing or invalid TimeOffice account hours.")
     return round(hours * 60)

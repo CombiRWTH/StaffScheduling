@@ -40,7 +40,7 @@ test("select both stations, inspect stable employees and pool facts, then change
     .click();
   await expect(page).toHaveURL(/stations=101%2C102/);
   await expect(page.getByText("Januar 2026 · Example Station North, Example Station South")).toBeVisible();
-  await expect(page.getByText("Example Shared Pool", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Example Jumper Pool", { exact: true }).first()).toBeVisible();
   await expect(rows(page)).toHaveCount(4);
 
   await page.getByRole("button", { name: "Details für Example MFA One" }).click();

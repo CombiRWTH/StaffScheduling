@@ -26,11 +26,11 @@ def test_scope_adds_only_pools_that_station_members_call_home() -> None:
     ]
 
     assert inspection_employee_ids(
-        selected_station_ids=(101,), memberships=memberships, shared_pool_ids={201, 202}
+        selected_station_ids=(101,), memberships=memberships, jumper_pool_ids={201, 202}
     ) == {1, 2, 3}
 
 
 def test_scope_without_station_members_is_empty() -> None:
     memberships = [membership(3, 201, home=True)]
 
-    assert inspection_employee_ids(selected_station_ids=(101,), memberships=memberships, shared_pool_ids={201}) == set()
+    assert inspection_employee_ids(selected_station_ids=(101,), memberships=memberships, jumper_pool_ids={201}) == set()

@@ -42,7 +42,7 @@ def build_scheduling_dataset(
 ) -> SchedulingDataset:
     """The full-month generation input of a validated inspection; every selected station needs saved demand.
 
-    The selected stations are the only assignable units; associated pools stay origin context.
+    The selected stations are the only assignable units; associated jumper pools stay origin context.
     Wishes, existing assignments and plans are deliberately left out: generation does not consider wishes yet,
     no trusted fixed or boundary assignments exist, and plans are write-back context.
     """
@@ -50,7 +50,7 @@ def build_scheduling_dataset(
     saved = {demand.planning_unit_id: demand for demand in demands if demand is not None}
     if missing := [station_id for station_id in selected if station_id not in saved]:
         raise ValueError(f"No saved staffing demand for planning_unit_ids={missing}.")
-    unit_ids = {*selected, *inspection.associated_pool_ids}
+    unit_ids = {*selected, *inspection.associated_jumper_pool_ids}
     return SchedulingDataset(
         planning_month=inspection.planning_month,
         planning_units=tuple(unit for unit in inspection.planning_units if unit.planning_unit_id in unit_ids),

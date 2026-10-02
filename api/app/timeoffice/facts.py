@@ -19,16 +19,11 @@ MONTHLY_TARGET_WORK_ACCOUNT_ID = 1
 # TPersonalKontenJeMonat.RefKonten for current monthly actual hours.
 MONTHLY_ACTUAL_WORK_ACCOUNT_ID = 55
 
-# TPlanungseinheiten.Prim values currently known to the project.
-STATION_77_ID = 77
-STATION_78_ID = 78
-STATION_79_ID = 79
-STATION_85_ID = 85
-STATION_239_ID = 239
-STATION_337_ID = 337
-
-# Known TimeOffice planning unit for the shared/jump pool.
-SHARED_POOL_408_ID = 408
+# TPlanungseinheiten.Prim of the prepared example units (KurzBez BSP-A, BSP-B, BSP-JUMP).
+# Supporting another unit means adding it here; see the TimeOffice adapter docs for the checklist.
+EXAMPLE_STATION_A_ID = 427  # demand profile 85
+EXAMPLE_STATION_B_ID = 428  # demand profile 79
+EXAMPLE_JUMPER_POOL_ID = 429
 
 # TDienste.Prim values of the reduced reference shifts; the only shift IDs the planning model uses.
 # There are 2 Prim for the Early Shift: 1113 and 3000
@@ -67,6 +62,9 @@ class TimeOfficeFacts:
 
     monthly_target_work_account_id: int
     monthly_actual_work_account_id: int
+
+    # TPersonalKontenJeTag absence-hour accounts that credit work, with the absence code they book.
+    credited_absence_code_by_account_id: Mapping[int, str]
 
     @property
     def reference_shift_ids(self) -> frozenset[ShiftId]:
@@ -119,13 +117,9 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     target_planning_status_id=TARGET_PLANNING_STATUS_ID,
     planning_unit_type_by_id=MappingProxyType(
         {
-            STATION_77_ID: PlanningUnitType.STATION,
-            STATION_78_ID: PlanningUnitType.STATION,
-            STATION_79_ID: PlanningUnitType.STATION,
-            STATION_85_ID: PlanningUnitType.STATION,
-            STATION_239_ID: PlanningUnitType.STATION,
-            STATION_337_ID: PlanningUnitType.STATION,
-            SHARED_POOL_408_ID: PlanningUnitType.SHARED_POOL,
+            EXAMPLE_STATION_A_ID: PlanningUnitType.STATION,
+            EXAMPLE_STATION_B_ID: PlanningUnitType.STATION,
+            EXAMPLE_JUMPER_POOL_ID: PlanningUnitType.JUMPER_POOL,
         }
     ),
     reference_shift_type_by_id=MappingProxyType(
@@ -175,4 +169,12 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     ),
     monthly_target_work_account_id=MONTHLY_TARGET_WORK_ACCOUNT_ID,
     monthly_actual_work_account_id=MONTHLY_ACTUAL_WORK_ACCOUNT_ID,
+    credited_absence_code_by_account_id=MappingProxyType(
+        {
+            85: "U",  # U_STD, ABW: Urlaub Std.
+            93: "FI",  # FI_STD, ABW: Fortbildung intern Std.
+            95: "FE",  # FE_STD, ABW: Fortbildung extern Std.
+            97: "SC",  # ST_STD, ABW: Schule Stunden
+        }
+    ),
 )

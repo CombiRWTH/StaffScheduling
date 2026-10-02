@@ -6,7 +6,7 @@ from datetime import timedelta
 from app.domain.availability import Availability
 from app.domain.core import NonEmptyStr, SchedulingBaseModel
 from app.domain.employee import Employee, EmployeeId, StaffLevel
-from app.domain.monthly_work_account import MonthlyWorkAccount, WorkCredit
+from app.domain.monthly_work_account import MonthlyWorkAccount
 from app.domain.planning_month import PlanningMonth
 from app.domain.planning_unit import PlanningUnit, PlanningUnitMembership, PlanningUnitType
 
@@ -16,12 +16,6 @@ class InvalidSelection(ValueError):
 
     For example an unknown or unplanned station, an employee without a membership, or a non-reference shift.
     """
-
-
-class EmployeeMonthEvidence(SchedulingBaseModel):
-    employee_id: EmployeeId
-    credit_details: tuple[WorkCredit, ...]
-    source: NonEmptyStr
 
 
 class EmployeeInspection(SchedulingBaseModel):
@@ -37,8 +31,8 @@ class EmployeeInspection(SchedulingBaseModel):
 class PlanningInspection(SchedulingBaseModel):
     planning_month: PlanningMonth
     selected_station_ids: tuple[int, ...]
-    # Pools that station members call home; other pool memberships are not an association.
-    associated_pool_ids: tuple[int, ...]
+    # Jumper pools that station members call home; other jumper pool memberships are not an association.
+    associated_jumper_pool_ids: tuple[int, ...]
     planning_units: tuple[PlanningUnit, ...]
     employees: tuple[EmployeeInspection, ...]
 
@@ -52,27 +46,27 @@ def inspection_employee_ids(
     *,
     selected_station_ids: tuple[int, ...],
     memberships: Iterable[PlanningUnitMembership],
-    shared_pool_ids: set[int],
+    jumper_pool_ids: set[int],
 ) -> set[int]:
-    """Select station members plus every member of a shared pool that one of them calls home.
+    """Select station members plus every member of a jumper pool that one of them calls home.
 
-    A pool is origin context: its members are inspected without implying station eligibility.
+    A jumper pool is origin context: its members are inspected without implying station eligibility.
     """
     memberships = tuple(memberships)
-    pool_ids = _associated_pool_ids(selected_station_ids, memberships, shared_pool_ids)
-    return {row.employee_id for row in memberships if row.planning_unit_id in {*selected_station_ids, *pool_ids}}
+    associated = _associated_jumper_pool_ids(selected_station_ids, memberships, jumper_pool_ids)
+    return {row.employee_id for row in memberships if row.planning_unit_id in {*selected_station_ids, *associated}}
 
 
-def _associated_pool_ids(
+def _associated_jumper_pool_ids(
     selected_station_ids: tuple[int, ...],
     memberships: tuple[PlanningUnitMembership, ...],
-    shared_pool_ids: set[int],
+    jumper_pool_ids: set[int],
 ) -> set[int]:
     station_members = {row.employee_id for row in memberships if row.planning_unit_id in selected_station_ids}
     return {
         row.planning_unit_id
         for row in memberships
-        if row.employee_id in station_members and row.is_home and row.planning_unit_id in shared_pool_ids
+        if row.employee_id in station_members and row.is_home and row.planning_unit_id in jumper_pool_ids
     }
 
 
@@ -84,7 +78,6 @@ def build_inspection(
     employees: tuple[Employee, ...],
     memberships: tuple[PlanningUnitMembership, ...],
     accounts: tuple[MonthlyWorkAccount, ...],
-    evidence: tuple[EmployeeMonthEvidence, ...],
     availability: tuple[Availability, ...],
     allowed_shift_ids: set[int],
 ) -> PlanningInspection:
@@ -95,12 +88,10 @@ def build_inspection(
         raise ValueError("Duplicate employee identities in inspection.")
     if {row.employee_id for row in memberships} != employee_ids:
         raise ValueError("Employee and membership catalogs are incomplete.")
-    for rows in (accounts, evidence):
-        row_ids = [row.employee_id for row in rows]
-        if len(set(row_ids)) != len(row_ids) or set(row_ids) != employee_ids:
-            raise ValueError("Every employee requires exactly one monthly account and evidence declaration.")
+    account_ids = [row.employee_id for row in accounts]
+    if len(set(account_ids)) != len(account_ids) or set(account_ids) != employee_ids:
+        raise ValueError("Every employee requires exactly one monthly account.")
     accounts_by_id = {row.employee_id: row for row in accounts}
-    evidence_by_id = {row.employee_id: row for row in evidence}
     for membership in memberships:
         if membership.planning_unit_id not in unit_ids:
             raise ValueError("Unknown membership unit.")
@@ -119,15 +110,8 @@ def build_inspection(
             homes = {row.planning_unit_id for row in active if row.is_home}
             if active and len(homes) != 1:
                 raise ValueError(f"Employee {employee.employee_id} requires one evidenced home origin on {day}.")
-        declaration = evidence_by_id[employee.employee_id]
-        account = MonthlyWorkAccount(
-            **accounts_by_id[employee.employee_id].model_dump(
-                exclude={"credited_minutes", "credit_details", "evidence_source"}
-            ),
-            credit_details=declaration.credit_details,
-            evidence_source=declaration.source,
-        )
-        if any(not planning_month.start <= credit.date <= planning_month.end for credit in declaration.credit_details):
+        account = accounts_by_id[employee.employee_id]
+        if any(not planning_month.start <= credit.date <= planning_month.end for credit in account.credit_details):
             raise ValueError("Credit date is outside the selected month.")
         employee_availability = tuple(row for row in availability if row.employee_id == employee.employee_id)
         for row in employee_availability:
@@ -145,11 +129,12 @@ def build_inspection(
                 availability=employee_availability,
             )
         )
-    pool_ids = {unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.SHARED_POOL}
+    jumper_pool_ids = {unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.JUMPER_POOL}
+    associated = _associated_jumper_pool_ids(selected_station_ids, memberships, jumper_pool_ids)
     return PlanningInspection(
         planning_month=planning_month,
         selected_station_ids=selected_station_ids,
-        associated_pool_ids=tuple(sorted(_associated_pool_ids(selected_station_ids, memberships, pool_ids))),
+        associated_jumper_pool_ids=tuple(sorted(associated)),
         planning_units=units,
         employees=tuple(inspected),
     )

@@ -56,7 +56,7 @@ class TimeOfficeService:
     def inspect_employees(
         self, *, planning_unit_ids: tuple[int, ...], planning_month: PlanningMonth
     ) -> PlanningInspection:
-        """The complete read-only employee scope of the selected stations and their pool, or an error."""
+        """The complete read-only employee scope of the selected stations and their jumper pools, or an error."""
         with self._engine.connect() as connection:
             return self._inspect(connection, tuple(dict.fromkeys(planning_unit_ids)), planning_month)
 
@@ -78,7 +78,7 @@ class TimeOfficeService:
     def list_employees(
         self, *, planning_unit_ids: tuple[int, ...], planning_month: PlanningMonth
     ) -> tuple[EmployeeSummary, ...]:
-        """The selection's employees by name, without requiring their monthly accounts or evidence."""
+        """The selection's employees by name, without requiring their monthly accounts."""
         selected = tuple(dict.fromkeys(planning_unit_ids))
         with self._engine.connect() as connection:
             _, _, employee_ids = self._selection_scope(connection, selected, planning_month)
@@ -153,7 +153,6 @@ class TimeOfficeService:
         accounts = queries.read_accounts(connection, self._facts, employee_ids, planning_month)
         absences = queries.read_absences(connection, self._facts, employee_ids, planning_month)
         availability = project_tables.read_availability(connection, employee_ids, planning_month)
-        evidence = project_tables.read_evidence(connection, employee_ids, planning_month)
 
         scope_memberships = tuple(row for row in memberships if row.employee_id in employee_ids)
         relevant_unit_ids = set(selected) | {row.planning_unit_id for row in scope_memberships}
@@ -164,7 +163,6 @@ class TimeOfficeService:
             employees=employees,
             memberships=scope_memberships,
             accounts=accounts,
-            evidence=evidence,
             availability=(*absences, *availability),
             allowed_shift_ids=set(self._facts.reference_shift_ids),
         )
@@ -172,7 +170,7 @@ class TimeOfficeService:
     def _selection_scope(
         self, connection: Connection, selected: tuple[int, ...], month: PlanningMonth
     ) -> tuple[tuple[PlanningUnit, ...], tuple[PlanningUnitMembership, ...], list[int]]:
-        """Configured units, their month memberships and the selection's employee IDs (stations plus home pools)."""
+        """Configured units, month memberships and the selection's employee IDs (stations plus home jumper pools)."""
         self._require_stations(connection, selected, month)
         units = queries.read_units(connection, self._facts)
         memberships = queries.read_memberships(
@@ -181,7 +179,7 @@ class TimeOfficeService:
         employee_ids = inspection_employee_ids(
             selected_station_ids=selected,
             memberships=memberships,
-            shared_pool_ids={unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.SHARED_POOL},
+            jumper_pool_ids={unit.planning_unit_id for unit in units if unit.type == PlanningUnitType.JUMPER_POOL},
         )
         return units, memberships, sorted(employee_ids)
 
@@ -190,7 +188,7 @@ class TimeOfficeService:
         if not selected:
             raise InvalidSelection("At least one station must be selected.")
         if any(unit_types.get(unit_id) != PlanningUnitType.STATION for unit_id in selected):
-            raise InvalidSelection("Select configured stations; a shared pool is origin context only.")
+            raise InvalidSelection("Select configured stations; a jumper pool is origin context only.")
         if missing := set(selected) - queries.read_units_with_target_plan(connection, self._facts, selected, month):
             raise InvalidSelection(f"No TimeOffice target plan for planning_unit_ids={sorted(missing)}.")
 

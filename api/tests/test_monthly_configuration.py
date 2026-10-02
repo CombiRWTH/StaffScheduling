@@ -158,7 +158,7 @@ def test_dated_demand_round_trips_per_station_month(source: InspectionSource) ->
 
 def test_demand_rejects_pools_unplanned_months_and_unknown_shifts(source: InspectionSource) -> None:
     service = source.service
-    with pytest.raises(InvalidSelection, match="shared pool"):
+    with pytest.raises(InvalidSelection, match="jumper pool"):
         service.get_demand(planning_unit_id=201, planning_month=JANUARY)
     with pytest.raises(InvalidSelection, match="No TimeOffice target plan"):
         service.save_demand(
@@ -251,11 +251,11 @@ def test_http_contract_validates_before_saving(source: InspectionSource, client:
     assert sorted(names.json(), key=lambda row: row["employee_id"]) == [
         {"employee_id": 1, "display_name": "Example MFA One"},
         {"employee_id": 2, "display_name": "Example Team Two"},
-        {"employee_id": 3, "display_name": "Example Pool Three"},
+        {"employee_id": 3, "display_name": "Example Jumper Three"},
     ]
-    source.missing_evidence = True
+    source.missing_account = True
     assert client.get("/employees?year=2026&month=1&planning_unit_ids=101").status_code == 409
-    # Choosing whose availability to edit does not need the inspection's monthly evidence.
+    # Choosing whose availability to edit does not need the inspection's monthly accounts.
     assert client.get("/planning/employees?year=2026&month=1&planning_unit_ids=101").status_code == 200
     calendar = client.get("/availability?employee_id=1&year=2026&month=1").json()["calendar"]
     assert (len(calendar), calendar[0]["public_holiday"], calendar[0]["weekday"]) == (31, "Neujahr", 4)

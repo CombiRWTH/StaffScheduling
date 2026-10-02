@@ -18,22 +18,17 @@ class MonthlyWorkAccount(SchedulingBaseModel):
     employee_id: EmployeeId
     target_minutes: NonNegativeInt
     actual_minutes: NonNegativeInt | None = None
-    credit_details: tuple[WorkCredit, ...] | None = None
-    evidence_source: NonEmptyStr | None = None
+    # Dated credits of the month; empty means nothing is credited.
+    credit_details: tuple[WorkCredit, ...] = ()
 
     @computed_field
     @property
-    def credited_minutes(self) -> int | None:
-        if self.credit_details is None:
-            return None
+    def credited_minutes(self) -> int:
         return sum(credit.minutes for credit in self.credit_details)
 
     @model_validator(mode="after")
     def validate_credits(self) -> Self:
-        if self.credit_details is not None:
-            if not self.evidence_source:
-                raise ValueError("Verified credits require evidence_source, including explicit zero credits.")
-            keys = {(credit.date, credit.kind, credit.source) for credit in self.credit_details}
-            if len(keys) != len(self.credit_details):
-                raise ValueError("Duplicate work credits.")
+        keys = {(credit.date, credit.kind, credit.source) for credit in self.credit_details}
+        if len(keys) != len(self.credit_details):
+            raise ValueError("Duplicate work credits.")
         return self

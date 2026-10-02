@@ -1,12 +1,11 @@
 """Fictional SQL boundary substitute shared by API and browser checks."""
 
 import copy
-import json
 import re
 from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import replace
-from datetime import date, datetime
+from datetime import datetime
 from types import MappingProxyType
 from typing import Any
 from unittest.mock import MagicMock
@@ -55,7 +54,7 @@ class InspectionSource:
     """
 
     def __init__(self) -> None:
-        self.missing_evidence = False
+        self.orphan_credit = False
         self.missing_account = False
         self.missing_employee = False
         self.duplicate_account = False
@@ -72,7 +71,7 @@ class InspectionSource:
                 {
                     101: PlanningUnitType.STATION,
                     102: PlanningUnitType.STATION,
-                    201: PlanningUnitType.SHARED_POOL,
+                    201: PlanningUnitType.JUMPER_POOL,
                 }
             ),
         )
@@ -177,7 +176,7 @@ class InspectionSource:
                     for unit, name in [
                         (101, "Example Station North"),
                         (102, "Example Station South"),
-                        (201, "Example Shared Pool"),
+                        (201, "Example Jumper Pool"),
                     ]
                 ]
         elif "FROM TPlanungseinheitenPersonal" in sql:
@@ -209,7 +208,7 @@ class InspectionSource:
             for employee, name, code in [
                 (1, self.name, "81102-004"),
                 (2, "Example Team Two", "81302-028"),
-                (3, "Example Pool Three", "81301-010"),
+                (3, "Example Jumper Three", "81301-010"),
             ]:
                 if employee in params["employee_ids"] and not (self.missing_employee and employee == 1):
                     rows.append(
@@ -229,28 +228,23 @@ class InspectionSource:
             ]
             if self.duplicate_account:
                 rows.append(rows[0])
-        elif "FROM dbo.StaffSchedulingEmployeeMonthEvidence" in sql:
-            day: date = params["planning_month"]
+        elif "FROM TPersonalKontenJeTag credit" in sql:
+            # Employee 1's vacation on the 1st is credited eight hours on TimeOffice's U_STD account.
+            first = datetime.combine(params["start"], datetime.min.time())
             rows = [
-                {
-                    "employee_id": employee,
-                    "source": "Fictional complete monthly declaration",
-                    "credit_details": json.dumps(
-                        [
-                            {
-                                "date": day.isoformat(),
-                                "minutes": 480,
-                                "kind": "approved_absence",
-                                "source": "Fictional approved leave",
-                            }
-                        ]
-                        if employee == 1
-                        else []
-                    ),
-                }
-                for employee in params["employee_ids"]
-                if not (self.missing_evidence and employee == 1)
+                {"employee_id": 1, "credit_date": first, "account_id": 85, "credit_hours": 8.0, "absence_code": "U"}
             ]
+            if self.orphan_credit:
+                rows.append(
+                    {
+                        "employee_id": 2,
+                        "credit_date": first,
+                        "account_id": 97,
+                        "credit_hours": 7.8,
+                        "absence_code": None,
+                    }
+                )
+            rows = [row for row in rows if row["employee_id"] in params["employee_ids"]]
         elif "FROM TPlanPersonalKommtGeht" in sql:
             first = datetime.combine(params["start"], datetime.min.time())
             roster = [

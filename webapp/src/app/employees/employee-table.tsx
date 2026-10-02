@@ -12,7 +12,7 @@ import type { Employee, PlanningInspection, PlanningUnit, WorkCredit } from "@/l
 import { AVAILABILITY_LABELS, STAFF_LEVEL_LABELS, formatDate } from "@/lib/labels";
 import { MONTHS } from "@/lib/selection";
 
-const UNIT_TYPE_LABELS: Record<PlanningUnit["type"], string> = { station: "Station", shared_pool: "Pool" };
+const UNIT_TYPE_LABELS: Record<PlanningUnit["type"], string> = { station: "Station", jumper_pool: "Springerpool" };
 const CREDIT_LABELS: Record<WorkCredit["kind"], string> = {
   approved_absence: "Genehmigte Abwesenheit",
   trusted_work: "Anerkannte Arbeit",
@@ -31,7 +31,9 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
   const units = new Map(inspection.planning_units.map((unit) => [unit.planning_unit_id, unit]));
   const unitName = (id: number) => units.get(id)?.display_name ?? `Einheit ${id}`;
   const stations = inspection.selected_station_ids.map(unitName).join(", ");
-  const pools = inspection.associated_pool_ids.map((id) => units.get(id)).filter((unit) => unit !== undefined);
+  const jumperPools = inspection.associated_jumper_pool_ids
+    .map((id) => units.get(id))
+    .filter((unit) => unit !== undefined);
   const needle = search.toLocaleLowerCase("de-DE");
   const filtered = inspection.employees.filter(
     (employee) =>
@@ -56,9 +58,9 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
             {formatMonth(inspection.planning_month.start)} · {stations}
           </CardDescription>
           <div className="flex flex-wrap gap-2 pt-2 text-sm">
-            <span className="text-muted-foreground">Zugehöriger Pool:</span>
-            {pools.length ? (
-              pools.map((pool) => (
+            <span className="text-muted-foreground">Zugehöriger Springerpool:</span>
+            {jumperPools.length ? (
+              jumperPools.map((pool) => (
                 <Badge key={pool.planning_unit_id} variant="secondary">
                   {pool.display_name}
                 </Badge>
@@ -153,7 +155,7 @@ export function EmployeeTable({ inspection }: { inspection: PlanningInspection }
             </div>
           )}
           <p className="text-xs text-muted-foreground">
-            Nur Lesen. Pool-Herkunft und Einsatzberechtigung auf einer Station sind getrennte Angaben.
+            Nur Lesen. Springerpool-Herkunft und Einsatzberechtigung auf einer Station sind getrennte Angaben.
           </p>
         </CardContent>
       </Card>
@@ -207,14 +209,13 @@ function EmployeeDetails({
           <ul className="space-y-1 text-sm">
             {account.credit_details.map((credit) => (
               <li key={`${credit.date}:${credit.kind}:${credit.source}`}>
-                {formatDate(credit.date)} · {credit.minutes} min · {CREDIT_LABELS[credit.kind]}
+                {formatDate(credit.date)} · {credit.minutes} min · {CREDIT_LABELS[credit.kind]} · {credit.source}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">Explizit keine Gutschriften.</p>
+          <p className="text-sm text-muted-foreground">Keine Gutschriften.</p>
         )}
-        <p className="text-xs text-muted-foreground">Nachweis: {account.evidence_source}</p>
       </section>
       <section className="space-y-2">
         <h3 className="text-sm font-semibold">Verfügbarkeit</h3>

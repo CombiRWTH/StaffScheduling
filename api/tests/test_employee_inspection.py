@@ -1,6 +1,5 @@
-import json
 from collections.abc import Callable
-from datetime import date
+from datetime import date, datetime
 from typing import Any, cast
 from unittest.mock import MagicMock
 
@@ -42,7 +41,7 @@ def test_combined_scope_retains_identity_memberships_mfa_origin_and_account_evid
     month = PlanningMonth(year=2026, month=1)
     result = source.service.inspect_employees(planning_unit_ids=(101, 102, 101), planning_month=month)
     assert result.selected_station_ids == (101, 102)
-    assert result.associated_pool_ids == (201,)
+    assert result.associated_jumper_pool_ids == (201,)
     assert [employee.employee_id for employee in result.employees] == [1, 2, 3]
     employee = result.employees[0]
     assert employee.staff_level == StaffLevel.MFA
@@ -52,6 +51,8 @@ def test_combined_scope_retains_identity_memberships_mfa_origin_and_account_evid
     assert employee.account.target_minutes == 9600
     assert employee.account.actual_minutes == 0
     assert employee.account.credited_minutes == 480
+    assert employee.account.credit_details[0].source == "TimeOffice U absence"
+    assert result.employees[1].account.credit_details == ()
     assert employee.availability[0].date == date(2026, 1, 1)
     assert employee.availability[0].reason == "U"
     # A pool origin alone does not imply eligibility at either destination.
@@ -63,14 +64,14 @@ def test_combined_scope_retains_identity_memberships_mfa_origin_and_account_evid
     assert not any(word in sql.upper() for sql in source.queries for word in ("CREATE TABLE", "INSERT ", "DELETE "))
     assert not any("FROM TPlanPersonal " in sql for sql in source.queries)
 
-    with_rows(source, "TPlanPersonalKommtGeht", lambda rows: rows.append({**rows[0], "resolved_absence_code": "ZU"}))
+    with_rows(source, "AS roster_date", lambda rows: rows.append({**rows[0], "resolved_absence_code": "ZU"}))
     distinct = source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=month)
     assert {row.reason for row in distinct.employees[0].availability} == {"U", "ZU"}
 
 
 @pytest.mark.parametrize(
     "flag",
-    ["missing_evidence", "missing_account", "missing_employee", "duplicate_account", "duplicate_plan", "missing_name"],
+    ["orphan_credit", "missing_account", "missing_employee", "duplicate_account", "duplicate_plan", "missing_name"],
 )
 def test_missing_or_ambiguous_source_facts_fail_the_whole_inspection(flag: str) -> None:
     source = InspectionSource()
@@ -78,7 +79,7 @@ def test_missing_or_ambiguous_source_facts_fail_the_whole_inspection(flag: str) 
         source.name = ""
     else:
         setattr(source, flag, True)
-    with pytest.raises(ValueError, match="requires|require|Missing|Multiple"):
+    with pytest.raises(ValueError, match="requires|require|Missing|Multiple|has no 'SC' absence"):
         source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=PlanningMonth(year=2026, month=1))
 
 
@@ -124,16 +125,14 @@ def test_explicit_zero_target_and_actual_are_preserved_missing_target_is_error()
 
 
 @pytest.mark.parametrize("defect", ["credit_date", "duplicate_credit", "unknown_shift", "ambiguous_home"])
-def test_declared_evidence_is_validated_before_any_employee_is_returned(defect: str) -> None:
+def test_month_facts_are_validated_before_any_employee_is_returned(defect: str) -> None:
     source = InspectionSource()
 
-    def malformed_evidence(rows: list[dict[str, Any]]) -> None:
-        credits = json.loads(rows[0]["credit_details"])
+    def malformed_credits(rows: list[dict[str, Any]]) -> None:
         if defect == "credit_date":
-            credits[0]["date"] = "2025-12-31"
+            rows[0]["credit_date"] = datetime(2025, 12, 31)
         elif defect == "duplicate_credit":
-            credits.append(credits[0])
-        rows[0]["credit_details"] = json.dumps(credits)
+            rows.append(dict(rows[0]))
 
     if defect == "ambiguous_home":
         with_rows(source, "TPlanungseinheitenPersonal", _set("is_home", True, index=1))
@@ -148,7 +147,7 @@ def test_declared_evidence_is_validated_before_any_employee_is_returned(defect: 
             }
         )
     else:
-        with_rows(source, "StaffSchedulingEmployeeMonthEvidence", malformed_evidence)
+        with_rows(source, "TPersonalKontenJeTag", malformed_credits)
     with pytest.raises(ValueError, match="outside|Duplicate|Unknown allowed shift|origin"):
         source.service.inspect_employees(planning_unit_ids=(101, 102), planning_month=PlanningMonth(year=2026, month=1))
 
@@ -161,7 +160,7 @@ def test_source_codes_are_trimmed_and_ignored_absences_are_dropped() -> None:
             row["membership_profession_code"] = f" {row['membership_profession_code']} "
 
     with_rows(source, "TPlanungseinheitenPersonal", pad)
-    with_rows(source, "TPlanPersonalKommtGeht", _set("resolved_absence_code", "FR"))
+    with_rows(source, "AS roster_date", _set("resolved_absence_code", "FR"))
     result = source.service.inspect_employees(
         planning_unit_ids=(101, 102), planning_month=PlanningMonth(year=2026, month=1)
     )
@@ -173,7 +172,7 @@ def test_source_codes_are_trimmed_and_ignored_absences_are_dropped() -> None:
 @pytest.mark.parametrize(
     ("table", "change", "message"),
     [
-        ("TPlanPersonalKommtGeht", _set("resolved_absence_code", "XX"), "Unmapped TimeOffice absence code"),
+        ("AS roster_date", _set("resolved_absence_code", "XX"), "Unmapped TimeOffice absence code"),
         ("TPlanungseinheitenPersonal", _set("membership_profession_code", "00000-000"), "No qualification mapping"),
         ("TPersonal per", _set("employee_profession_code", None), "No qualification mapping"),
         ("JOIN TPlan p", _set("plan_planning_unit_id", 999), "different planning unit"),
@@ -218,6 +217,6 @@ def test_replacement_only_pool_membership_is_not_an_association() -> None:
         planning_unit_ids=(101,), planning_month=PlanningMonth(year=2026, month=1)
     )
 
-    assert result.associated_pool_ids == ()
+    assert result.associated_jumper_pool_ids == ()
     assert [employee.employee_id for employee in result.employees] == [1, 2]
     assert 201 in {unit.planning_unit_id for unit in result.planning_units}

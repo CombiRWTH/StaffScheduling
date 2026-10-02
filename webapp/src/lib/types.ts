@@ -12,7 +12,7 @@ export interface PlanningMonth {
 export interface PlanningUnit {
   planning_unit_id: number;
   display_name: string;
-  type: "station" | "shared_pool";
+  type: "station" | "jumper_pool";
 }
 
 export interface PlanningOptions {
@@ -138,7 +138,6 @@ export interface Employee {
     actual_minutes: number | null;
     credited_minutes: number;
     credit_details: WorkCredit[];
-    evidence_source: string;
   };
   /** Native absences and project availability of the month. */
   availability: Availability[];
@@ -147,8 +146,8 @@ export interface Employee {
 export interface PlanningInspection {
   planning_month: PlanningMonth;
   selected_station_ids: number[];
-  /** Pools that station members call home; replacement memberships do not associate a pool. */
-  associated_pool_ids: number[];
+  /** Jumper pools that station members call home; replacement memberships do not associate one. */
+  associated_jumper_pool_ids: number[];
   planning_units: PlanningUnit[];
   employees: Employee[];
 }

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // The offline API keeps saved configuration in memory and fails every write for
-// "Example Pool Three" and "Example Station South" (see api/tests/browser_server.py).
+// "Example Jumper Three" and "Example Station South" (see api/tests/browser_server.py).
 
 async function choose(page: Page, label: string, option: string) {
   await page.getByRole("combobox", { name: label }).click();
@@ -60,7 +60,7 @@ test("edit, reload and delete availability, and keep wishes separate", async ({ 
 
 test("a failed availability save keeps the entry and shows no success", async ({ page }) => {
   await page.goto("/availability?month=2026-01&stations=101,102");
-  await choose(page, "Mitarbeiter", "Example Pool Three · 3");
+  await choose(page, "Mitarbeiter", "Example Jumper Three · 3");
   await expect(page).toHaveURL(/employee=3/);
   await day(page, "06.01.2026").click();
   await choose(page, "Art der Einschränkung", "Fortbildung");
