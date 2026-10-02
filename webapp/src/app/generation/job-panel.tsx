@@ -4,7 +4,7 @@ import { Disclosure } from "@/components/disclosure";
 import { Facts } from "@/components/facts";
 import { ProblemBox } from "@/components/problem-box";
 import { StatusLine, type Tone } from "@/components/status-line";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   CHECK_STATUS,

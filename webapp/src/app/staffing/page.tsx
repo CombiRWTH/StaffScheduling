@@ -1,5 +1,6 @@
 import { PageHeader } from "@/components/page-header";
 import { LoadError } from "@/components/load-error";
+import { NextStep } from "@/components/next-step";
 import { getDemand } from "@/lib/api";
 import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
 import { StaffingEditor } from "./staffing-editor";
@@ -31,6 +32,7 @@ export default async function StaffingPage({
           <StationDemand month={scope.month} stationId={stationId} />
         </div>
       )}
+      <NextStep after="/staffing" scope={scope} />
     </div>
   );
 }

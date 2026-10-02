@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LoadError } from "@/components/load-error";
 import { PageHeader } from "@/components/page-header";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent } from "@/components/ui/card";
 import { REVIEW_FILES, getReview } from "@/lib/api";
 import { monthLabel, selectionMonthLabel } from "@/lib/labels";

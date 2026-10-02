@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { PageHeader } from "@/components/page-header";
 import { LoadError } from "@/components/load-error";
+import { NextStep } from "@/components/next-step";
 import { getEmployees } from "@/lib/api";
 import { loadPlanningScope, type ScopeSearchParams } from "@/lib/scope";
 import { EmployeeTable } from "./employee-table";
@@ -24,6 +25,7 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
           <Employees month={scope.month} stationIds={scope.stationIds} />
         </Suspense>
       )}
+      <NextStep after="/employees" scope={scope} />
     </div>
   );
 }
