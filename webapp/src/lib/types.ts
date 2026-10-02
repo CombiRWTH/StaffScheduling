@@ -2,7 +2,7 @@
 
 export type StaffLevel = "professional" | "assistant" | "trainee" | "mfa";
 
-export interface PlanningMonth {
+interface PlanningMonth {
   year: number;
   month: number;
   start: string;
@@ -60,7 +60,7 @@ export interface WishEntry {
   shift_id: number | null;
 }
 
-export interface Wish extends WishEntry {
+interface Wish extends WishEntry {
   employee_id: number;
   date: string;
 }
@@ -89,7 +89,7 @@ export interface EmployeeCalendar {
   shifts: ShiftOption[];
 }
 
-export interface CalendarDay {
+interface CalendarDay {
   date: string;
   /** ISO weekday, Monday=1 to Sunday=7. */
   weekday: number;
@@ -156,9 +156,9 @@ export interface PlanningInspection {
 
 export type SolutionStatus = "optimal" | "feasible" | "infeasible" | "model_invalid" | "unknown";
 
-export type Severity = "info" | "warning" | "error";
+type Severity = "info" | "warning" | "error";
 
-export interface GeneratedAssignment {
+interface GeneratedAssignment {
   employee_id: number;
   planning_unit_id: number;
   date: string;
@@ -262,7 +262,7 @@ export interface DutyRow {
 }
 
 /** One participant's month as the review and `employees.csv` show it; computed by the backend. */
-export interface EmployeeRow {
+interface EmployeeRow {
   employee_id: number;
   employee_name: string;
   staff_level: StaffLevel;
@@ -276,7 +276,7 @@ export interface EmployeeRow {
   credit_details: WorkCredit[];
 }
 
-export interface StaffingRow {
+interface StaffingRow {
   planning_unit_id: number;
   date: string;
   shift_id: number;
@@ -286,7 +286,7 @@ export interface StaffingRow {
 }
 
 /** The effective settings of one solve; `policy` holds the rule parameters in minutes and days. */
-export interface RunConfiguration {
+interface RunConfiguration {
   policy: { balance_tolerance_minutes: number } & Record<string, number>;
   weights: { health_events: number; balance_deviation_minutes: number; surplus_intermediate_duties: number };
   timeout_seconds: number;

@@ -122,7 +122,7 @@ function SidebarContent({ search, isActive, onClose, showCloseButton = false }: 
   );
 }
 
-export function AppNavigation() {
+function AppNavigation() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isMobileOpen, setIsMobileOpen] = useState(false);

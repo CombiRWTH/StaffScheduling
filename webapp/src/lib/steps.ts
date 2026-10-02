@@ -1,7 +1,7 @@
 import { CalendarCheck, CalendarHeart, CalendarPlus, UserCog, Users, type LucideIcon } from "lucide-react";
 import { areaColors } from "@/lib/area-colors";
 
-export interface Step {
+interface Step {
   title: string;
   description: string;
   icon: LucideIcon;
