@@ -2,6 +2,8 @@
 -- adapter's checklist for supporting another unit: target plans, memberships with mapped professions and one home
 -- per date, names, valid targets, mapped absences with their credits, saved demand and context plans. Every row
 -- carries `ok` = 1 when met. The last two statements report daily headcount and hours against demand.
+-- The adapter's mappings and the NRW holidays come from temporary tables that the test fills from facts.py and the
+-- calendar: #profession_level(code, lvl), #absence_code(code), #credited_absence(account, code), #holiday(d).
 
 -- 1 + 2 Units and exactly one status-20 monthly full-month target plan per station and month
 WITH months AS (
@@ -18,7 +20,7 @@ GO
 -- 3 + 4 + 5 Per month: members, unmapped professions (membership or employee), missing names, missing/invalid targets
 WITH months AS (
     SELECT CAST('20260101' AS date) AS m UNION ALL SELECT DATEADD(month, 1, m) FROM months WHERE m < '20260601'),
-mapped(code, lvl) AS (SELECT code, lvl FROM (VALUES ('-', 'trainee'), ('63302-045', 'professional'), ('81102-001', 'assistant'), ('81102-004', 'mfa'), ('81301-002', 'assistant'), ('81301-006', 'assistant'), ('81301-010', 'assistant'), ('81301-014', 'assistant'), ('81301-018', 'assistant'), ('81302-003', 'professional'), ('81302-005', 'professional'), ('81302-007', 'professional'), ('81302-008', 'professional'), ('81302-009', 'professional'), ('81302-014', 'assistant'), ('81302-016', 'professional'), ('81302-018', 'professional'), ('81302-028', 'professional'), ('81313-059', 'professional'), ('81393-011', 'professional'), ('82102-002', 'professional'), ('A-31342-005', 'trainee'), ('A-81302-007', 'trainee'), ('A-81302-008', 'trainee'), ('A-81302-014', 'trainee'), ('A-81302-016', 'trainee'), ('A-81302-018', 'trainee'), ('A-81302-019', 'trainee'), ('BFD', 'assistant'), ('EX-81302-028', 'professional'), ('Pra', 'assistant')) v(code, lvl)),
+mapped(code, lvl) AS (SELECT code, lvl FROM #profession_level),
 scope AS (
     SELECT mo.m, pep.RefPersonal, pep.RefBerufe FROM months mo JOIN TPlanungseinheitenPersonal pep
         ON pep.RefPlanungseinheiten IN (77, 79, 408) AND ISNULL(pep.KeinEPlan, 0) = 0
@@ -74,9 +76,9 @@ GO
 WITH emps AS (
     SELECT DISTINCT RefPersonal FROM TPlanungseinheitenPersonal pep WHERE pep.RefPlanungseinheiten IN (77, 79, 408)
         AND ISNULL(pep.KeinEPlan, 0) = 0 AND CONVERT(date, pep.VonDat) <= '20260630' AND (pep.BisDat IS NULL OR CONVERT(date, pep.BisDat) >= '20260101')),
-known(code) AS (SELECT code FROM (VALUES ('AZV'), ('EZ'), ('FI'), ('FR'), ('K'), ('KK'), ('RE'), ('SC'), ('SO'), ('TB'), ('U'), ('ZU')) v(code)),
-credit_code(account, code) AS (SELECT account, code FROM (VALUES (85, 'U'), (93, 'FI'), (95, 'FE'), (97, 'SC')) v(account, code)),
-holidays(d) AS (SELECT CAST(d AS date) FROM (VALUES ('20260101'), ('20260403'), ('20260406'), ('20260501'), ('20260514'), ('20260525'), ('20260604')) v(d)),
+known(code) AS (SELECT code FROM #absence_code),
+credit_code(account, code) AS (SELECT account, code FROM #credited_absence),
+holidays(d) AS (SELECT d FROM #holiday),
 absences AS (
     SELECT k.RefPersonal, CONVERT(date, k.Datum) AS d, LTRIM(RTRIM(COALESCE(ga.KurzBez, da.KurzBez))) AS code
     FROM TPlanPersonalKommtGeht k LEFT JOIN TDienste ga ON ga.Prim = k.RefgAbw LEFT JOIN TDienste da ON da.Prim = k.RefDienstAbw
@@ -111,7 +113,7 @@ SELECT u.unit, mo.m AS month,
 FROM (VALUES (77), (79)) u(unit) CROSS JOIN months mo ORDER BY u.unit, mo.m
 GO
 -- Context: the dates the adapter reads around the months (5 before, 3 after: 2025-12-27..31, 2026-07-01..03) lie in a
--- status-30 plan of every station (06 creates 2025-12-18..31 and 2026-07-01..07), with no duty inside Jan-Jun
+-- status-30 plan of every station (05-context-plans.sql creates 2025-12-18..31 and 2026-07-01..07), with no duty inside Jan-Jun
 WITH days AS (
     SELECT CAST('20251227' AS date) AS d UNION ALL SELECT DATEADD(day, 1, d) FROM days WHERE d < '20260703'),
 covered AS (
@@ -133,7 +135,7 @@ GO
 -- unavoidable gap of at least the shortfall. Stations are combined because the jumper pool serves both in one run.
 WITH days AS (
     SELECT CAST('20260101' AS date) AS d UNION ALL SELECT DATEADD(day, 1, d) FROM days WHERE d < '20260630'),
-mapped(code, lvl) AS (SELECT code, lvl FROM (VALUES ('-', 'trainee'), ('63302-045', 'professional'), ('81102-001', 'assistant'), ('81102-004', 'mfa'), ('81301-002', 'assistant'), ('81301-006', 'assistant'), ('81301-010', 'assistant'), ('81301-014', 'assistant'), ('81301-018', 'assistant'), ('81302-003', 'professional'), ('81302-005', 'professional'), ('81302-007', 'professional'), ('81302-008', 'professional'), ('81302-009', 'professional'), ('81302-014', 'assistant'), ('81302-016', 'professional'), ('81302-018', 'professional'), ('81302-028', 'professional'), ('81313-059', 'professional'), ('81393-011', 'professional'), ('82102-002', 'professional'), ('A-31342-005', 'trainee'), ('A-81302-007', 'trainee'), ('A-81302-008', 'trainee'), ('A-81302-014', 'trainee'), ('A-81302-016', 'trainee'), ('A-81302-018', 'trainee'), ('A-81302-019', 'trainee'), ('BFD', 'assistant'), ('EX-81302-028', 'professional'), ('Pra', 'assistant')) v(code, lvl)),
+mapped(code, lvl) AS (SELECT code, lvl FROM #profession_level),
 need AS (
     SELECT d.demand_date AS d, d.staff_level AS lvl, SUM(d.required_count) AS slots FROM dbo.StaffSchedulingDemand d
     WHERE d.planning_unit_id IN (77, 79) AND d.demand_date BETWEEN '20260101' AND '20260630' GROUP BY d.demand_date, d.staff_level),
@@ -161,7 +163,7 @@ GO
 -- with the jumper pool listed as its own unit. Paid hours per shift come from TDiensteSollzeiten, as the adapter reads.
 WITH months AS (
     SELECT CAST('20260101' AS date) AS m UNION ALL SELECT DATEADD(month, 1, m) FROM months WHERE m < '20260601'),
-mapped(code, lvl) AS (SELECT code, lvl FROM (VALUES ('-', 'trainee'), ('63302-045', 'professional'), ('81102-001', 'assistant'), ('81102-004', 'mfa'), ('81301-002', 'assistant'), ('81301-006', 'assistant'), ('81301-010', 'assistant'), ('81301-014', 'assistant'), ('81301-018', 'assistant'), ('81302-003', 'professional'), ('81302-005', 'professional'), ('81302-007', 'professional'), ('81302-008', 'professional'), ('81302-009', 'professional'), ('81302-014', 'assistant'), ('81302-016', 'professional'), ('81302-018', 'professional'), ('81302-028', 'professional'), ('81313-059', 'professional'), ('81393-011', 'professional'), ('82102-002', 'professional'), ('A-31342-005', 'trainee'), ('A-81302-007', 'trainee'), ('A-81302-008', 'trainee'), ('A-81302-014', 'trainee'), ('A-81302-016', 'trainee'), ('A-81302-018', 'trainee'), ('A-81302-019', 'trainee'), ('BFD', 'assistant'), ('EX-81302-028', 'professional'), ('Pra', 'assistant')) v(code, lvl)),
+mapped(code, lvl) AS (SELECT code, lvl FROM #profession_level),
 paid AS (
     SELECT sz.RefDienste AS shift_id, SUM(ISNULL(sz.Minuten, DATEDIFF(minute, sz.Kommt, sz.Geht))) / 60.0 AS hours
     FROM TDiensteSollzeiten sz WHERE sz.RefDienste IN (1113, 1453, 1605, 1690) GROUP BY sz.RefDienste),

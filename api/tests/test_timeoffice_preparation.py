@@ -2,20 +2,23 @@
 
 The units keep their existing employees; every other input comes from the SQL files in `timeoffice_preparation/`,
 applied in name order. `just test-timeoffice` runs each file in one transaction, fails unless every read-back `ok`
-is 1 and no write changes a row, and rolls back, so a pass shows that the database holds exactly the prepared
-inputs. `TIMEOFFICE_PREPARATION=apply just test-timeoffice` commits each file instead, which prepares a copy that
-lacks them; the next run without it must then pass.
+is 1 and no write changes a row, and rolls back, so a pass shows that every prepared row is present and that a
+rerun would change nothing. `TIMEOFFICE_PREPARATION=apply just test-timeoffice` commits each file instead, which
+prepares a copy that lacks them; the next run without it must then pass.
 """
 
 import os
 from collections.abc import Iterator
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
 from sqlalchemy import Connection, Engine, text
 
+from app.domain.calendar import public_holiday
 from app.settings import get_settings
 from app.timeoffice.database import create_db_engine
+from app.timeoffice.facts import TIMEOFFICE_FACTS
 
 pytestmark = pytest.mark.timeoffice
 
@@ -64,5 +67,31 @@ def test_preparation_is_applied(engine: Engine) -> None:
 
 
 def test_prepared_units_are_ready(engine: Engine) -> None:
+    facts = TIMEOFFICE_FACTS
+    days = (date(2026, 1, 1) + timedelta(days=offset) for offset in range(181))
+    absence_codes = (*facts.availability_type_by_absence_code, *facts.ignored_availability_absence_codes)
     with engine.connect() as connection:
+        connection.execute(
+            text(
+                "CREATE TABLE #profession_level"
+                " (code nvarchar(32) COLLATE DATABASE_DEFAULT, lvl nvarchar(16) COLLATE DATABASE_DEFAULT)"
+            )
+        )
+        connection.execute(
+            text("INSERT INTO #profession_level VALUES (:code, :lvl)"),
+            [{"code": code, "lvl": level.value} for code, level in facts.staff_level_by_profession_code.items()],
+        )
+        connection.execute(text("CREATE TABLE #absence_code (code nvarchar(16) COLLATE DATABASE_DEFAULT)"))
+        connection.execute(text("INSERT INTO #absence_code VALUES (:code)"), [{"code": code} for code in absence_codes])
+        connection.execute(
+            text("CREATE TABLE #credited_absence (account int, code nvarchar(16) COLLATE DATABASE_DEFAULT)")
+        )
+        connection.execute(
+            text("INSERT INTO #credited_absence VALUES (:account, :code)"),
+            [{"account": a, "code": c} for a, c in facts.credited_absence_code_by_account_id.items()],
+        )
+        connection.execute(text("CREATE TABLE #holiday (d date)"))
+        connection.execute(
+            text("INSERT INTO #holiday VALUES (:d)"), [{"d": day} for day in days if public_holiday(day)]
+        )
         run(connection, PREPARATION / "readiness.sql")

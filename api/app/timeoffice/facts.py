@@ -31,12 +31,6 @@ INTERNAL_TRAINING_CREDIT_ACCOUNT_ID = 93  # FI_STD, ABW: Fortbildung intern Std.
 EXTERNAL_TRAINING_CREDIT_ACCOUNT_ID = 95  # FE_STD, ABW: Fortbildung extern Std.
 SCHOOL_CREDIT_ACCOUNT_ID = 97  # ST_STD, ABW: Schule Stunden
 
-# TPlanungseinheiten.Prim of the planned units (KurzBez PE 77, PE 79, PE 408).
-# Supporting another unit means adding it here; see the TimeOffice adapter docs for the checklist.
-STATION_77_ID = 77
-STATION_79_ID = 79
-JUMPER_POOL_408_ID = 408
-
 # TDienste.Prim values of the reduced reference shifts; the only shift IDs the planning model uses.
 # Other rows share the codes (F 3000; S 2449, 3001; N 2011, 3002) and the day shift T (1410) is not one;
 # roster rows with them are not reference duties, so a trusted context duty using one stops generation.
@@ -99,7 +93,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "81393-011": StaffLevel.PROFESSIONAL,  # Stationsleiter/in - Pflegedienst
         "82102-002": StaffLevel.PROFESSIONAL,  # Altenpfleger/in
         "EX-81302-028": StaffLevel.PROFESSIONAL,  # EX-Pflegefachmann/-frau
-        # Unverified assumption carried over from the earlier classification.
+        # Unverified assumption.
         "63302-045": StaffLevel.PROFESSIONAL,  # Servicekraft
         # Hilfskraft / support
         "81102-001": StaffLevel.ASSISTANT,  # Arzthelfer/in
@@ -111,7 +105,7 @@ STAFF_LEVEL_BY_PROFESSION_CODE: Mapping[str, StaffLevel] = MappingProxyType(
         "81301-018": StaffLevel.ASSISTANT,  # Stationshilfe
         "81302-014": StaffLevel.ASSISTANT,  # Pflegeassistent/in
         "BFD": StaffLevel.ASSISTANT,  # Bundesfreiwilligendienst
-        # Unverified assumption carried over from the earlier classification.
+        # Unverified assumption.
         "Pra": StaffLevel.ASSISTANT,  # Praktikant/-in
         # Ausbildung / Praktikum
         "A-31342-005": StaffLevel.TRAINEE,  # A-Notfallsanitäter
@@ -131,11 +125,13 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     target_planning_status_id=TARGET_PLANNING_STATUS_ID,
     trusted_context_status_id=TRUSTED_CONTEXT_STATUS_ID,
     generated_duty_info=GENERATED_DUTY_INFO,
+    # TPlanungseinheiten.Prim of the planned units. Supporting another unit means adding it here;
+    # see the TimeOffice adapter docs for the checklist.
     planning_unit_type_by_id=MappingProxyType(
         {
-            STATION_77_ID: PlanningUnitType.STATION,
-            STATION_79_ID: PlanningUnitType.STATION,
-            JUMPER_POOL_408_ID: PlanningUnitType.JUMPER_POOL,
+            77: PlanningUnitType.STATION,  # PE 77
+            79: PlanningUnitType.STATION,  # PE 79
+            408: PlanningUnitType.JUMPER_POOL,  # PE 408
         }
     ),
     reference_shift_type_by_id=MappingProxyType(

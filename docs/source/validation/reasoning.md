@@ -4,7 +4,7 @@ For reviewers assessing why the scheduling model and its evaluation fit the task
 
 ## Problem and agreed planning scope
 
-The assignment asks for monthly hospital rosters that meet minimum staffing by qualification and shift, keep approved absences and free days, stay within ±7.67 hours of each employee's monthly target, and respect working-time law and occupational-science findings. This project plans two stations of the TimeOffice test database and their shared jumper pool for January to June 2026: one run per full month with both stations selected. The population is adult; the examples carry a small demonstration set of employee wishes, including jumper pool employees, and no special capabilities (such as rounds or night-watch roles). Qualifications are Fachkraft, Hilfskraft, Azubi and MFA; they never substitute for each other.
+The assignment asks for monthly hospital rosters that meet minimum staffing by qualification and shift, keep approved absences and free days, stay within ±7.67 hours of each employee's monthly target, and respect working-time law and occupational-science findings. This project plans two stations of the TimeOffice test database and their jumper pool for January to June 2026: one run per full month with both stations selected. The population is adult; the examples carry a small demonstration set of employee wishes, including jumper pool employees, and no special capabilities (such as rounds or night-watch roles). Qualifications are Fachkraft, Hilfskraft, Azubi and MFA; they never substitute for each other.
 
 ## Requirements, sources and assumptions
 
