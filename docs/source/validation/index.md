@@ -1,6 +1,6 @@
 # Evidence and current limitations
 
-This checkout provides a reproducible development foundation with checked monthly generation, review, validated import, portable downloads and scoped publication to TimeOffice. The example schedules in `plaene/` cover January to April 2026 without wishes; May, June and the set with wishes are missing. These limits describe current code and executed checks; they are not promises inferred from visible controls.
+This checkout provides a reproducible development foundation with checked monthly generation, review, validated import, portable downloads and scoped publication to TimeOffice. The example schedules in `plaene/` cover January to May 2026 without wishes; June and the set with wishes are missing. These limits describe current code and executed checks; they are not promises inferred from visible controls.
 
 ## What this section proves
 
@@ -55,7 +55,7 @@ Every stage value equals the score the check recomputes, and each 300-second bun
 
 On the earlier example units, a weighted June run (120 s, 1096 duties, 0 findings) stayed `incomplete` for lack of May context, which the six-month sequence supplies. The first June run was infeasible: the prepared July context left no professional able to work the June 30 night (a fourth night in a row, or a duty inside the 48-hour recovery). The solver's diagnostic named this shortage, and the context was corrected by removing three trusted July 3 night duties; no rule was relaxed.
 
-Jobs are lost on API restart. Monthly runs are independent; the example sequence in `plaene/` takes each accepted month as the next month's context and is committed for January to April. The application writes key-scoped saves to the project tables (availability, wishes, demand) and, only through explicit publication and clear, the worked rows of the stations' target plans.
+Jobs are lost on API restart. Monthly runs are independent; the example sequence in `plaene/` takes each accepted month as the next month's context and is committed for January to May. The application writes key-scoped saves to the project tables (availability, wishes, demand) and, only through explicit publication and clear, the worked rows of the stations' target plans.
 
 ## Review, import and export
 
@@ -68,7 +68,7 @@ Jobs are lost on API restart. Monthly runs are independent; the example sequence
 | Webapp `/review/files/{name}`, all four files (before `gaps.csv`)           | Attachments of the reviewed bundle          | `200`; 233 kB input, 183 kB result, 160 kB schedule, 69 kB employee tables |
 | Example validator (`check_examples`) on the downloaded folder, January only | Accepted single month of both stations      | No problem; open: following month's start, annual free Sundays             |
 
-The pair passed the same validation as an import. A single month cannot show the sequence checks; the committed January to April pass them ([examples](examples.md#validate-monthly-and-sequence-results)). Messages of findings and the API's import details are English; the webapp names import problems in German. The review is lost on API restart and is not a saved library.
+The pair passed the same validation as an import. A single month cannot show the sequence checks; the committed January to May pass them ([examples](examples.md#validate-monthly-and-sequence-results)). Messages of findings and the API's import details are English; the webapp names import problems in German. The review is lost on API restart and is not a saved library.
 
 The pages at revision `22d1c6c` were checked read-only against the same example units through the running Compose webapp (page loads only; no write was triggered):
 

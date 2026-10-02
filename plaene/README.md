@@ -4,7 +4,7 @@ Accepted example schedules of stations `PE 77` and `PE 79` with their jumper poo
 
 | Folder                          | Content                                                                  |
 | ------------------------------- | ------------------------------------------------------------------------ |
-| `2026-01/` … `2026-04/`         | The example schedules without preferences: no employee wishes; May, June not generated yet |
+| `2026-01/` … `2026-05/`         | The example schedules without preferences: no employee wishes; June not generated yet |
 | `mit-wuenschen/`                | Planned: the same months with 32 demonstration wishes; not generated yet  |
 | `backup/`                       | An older dataset of an earlier project state; not part of these sets     |
 
