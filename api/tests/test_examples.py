@@ -1,4 +1,4 @@
-"""The hand-in examples: accepted monthly bundles of stations 77 and 79, January to June 2026.
+"""The hand-in examples: accepted monthly bundles of all seven stations, January to June 2026.
 
 `plaene/` holds the chair's schedules without preferences: the prepared inputs hold no wishes, so the
 plans have none. `check_examples` validates monthly bundle folders; the committed months must pass it.
@@ -11,6 +11,7 @@ import os
 from collections.abc import Iterable, Sequence
 from datetime import date, timedelta
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 from pydantic import BaseModel
@@ -47,9 +48,9 @@ from app.timeoffice import TimeOfficeService, create_db_engine
 PLAENE = Path(__file__).parents[2] / "plaene"
 """The month folders; `plaene/backup/` is an older dataset and no part of them."""
 HAND_IN_MONTHS = tuple(PlanningMonth(year=2026, month=month) for month in range(1, 7))
-HAND_IN_UNITS = (77, 79)
-HAND_IN_STATIONS = 2
-GENERATION_SECONDS = 300
+HAND_IN_UNITS = (77, 78, 79, 83, 85, 88, 337)
+HAND_IN_STATIONS = len(HAND_IN_UNITS)
+GENERATION_SECONDS = 1800
 
 
 def check_examples(directory: Path, months: Sequence[PlanningMonth], stations: int) -> list[str]:
@@ -183,6 +184,9 @@ def test_generate_hand_in_examples() -> None:
         folder = PLAENE / month.label
         if folder.is_dir():
             previous = ScheduleBundle.read((folder / INPUT_FILE).read_bytes(), (folder / RESULT_FILE).read_bytes())
+            assert previous.input.dataset.station_ids == set(HAND_IN_UNITS), (
+                f"{month.label}: existing bundle plans other stations; remove it and later months to regenerate"
+            )
             continue
         data = source.read_generation_input(planning_unit_ids=HAND_IN_UNITS, planning_month=month)
         schedule_input = ScheduleInput.of(hand_in_dataset(data, previous))
@@ -196,6 +200,16 @@ def test_generate_hand_in_examples() -> None:
         write_folder(PLAENE, bundle)
         previous = bundle
     assert check_examples(PLAENE, HAND_IN_MONTHS, HAND_IN_STATIONS) == []
+
+
+def test_generation_rejects_existing_bundles_of_other_stations(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    write_folder(tmp_path, january())
+    monkeypatch.setattr(f"{__name__}.PLAENE", tmp_path)
+    monkeypatch.setattr(f"{__name__}.create_db_engine", Mock(return_value=None))
+    monkeypatch.setattr(f"{__name__}.TimeOfficeService", Mock(return_value=None))
+
+    with pytest.raises(AssertionError, match="existing bundle plans other stations"):
+        test_generate_hand_in_examples()
 
 
 def hand_in_dataset(data: SchedulingDataset, previous: ScheduleBundle | None) -> SchedulingDataset:
