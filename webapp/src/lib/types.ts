@@ -1,8 +1,9 @@
 // Request and response types of the canonical FastAPI planning endpoints.
+import type { STAFF_LEVEL_LABELS } from "@/lib/labels";
 
 export type StaffLevel = "professional" | "assistant" | "trainee" | "mfa";
 /** The German name of a staff level, as the backend states it on duty and coverage rows. */
-type Qualifikation = "Fachkraft" | "Hilfskraft" | "Azubi" | "MFA";
+type Qualifikation = (typeof STAFF_LEVEL_LABELS)[StaffLevel];
 
 interface PlanningMonth {
   year: number;
@@ -319,7 +320,7 @@ interface EmployeeRow {
 
 /**
  * Required against assigned staff of one station, date, shift and qualification, as the review, `besetzung.csv` and,
- * for rows with missing slots, `gaps.csv` show them. `required_count` is zero where nobody is required.
+ * for rows with missing slots (gaps), `gaps.csv` show them. `required_count` is zero where nobody is required.
  */
 interface CoverageRow {
   planning_unit_id: number;
@@ -352,7 +353,7 @@ export interface ScheduleReview {
   calendar: CalendarDay[];
   /** Always a found schedule: it has its stages and check. */
   solution: Solution & { check: ScheduleCheck; configuration: RunConfiguration };
-  tables: { duties: DutyRow[]; employees: EmployeeRow[]; coverage: CoverageRow[]; gaps: CoverageRow[] };
+  tables: { duties: DutyRow[]; employees: EmployeeRow[]; coverage: CoverageRow[] };
 }
 
 /** Why the backend refused an uploaded pair of files. */

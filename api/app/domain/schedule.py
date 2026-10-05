@@ -104,8 +104,11 @@ class ScheduleTables(SchedulingBaseModel):
     employees: tuple[EmployeeRow, ...]
     coverage: tuple[CoverageRow, ...]
     """Every station, date, shift and qualification that is required or assigned."""
-    gaps: tuple[CoverageRow, ...]
-    """The coverage rows with missing slots."""
+
+    @property
+    def gaps(self) -> tuple[CoverageRow, ...]:
+        """The coverage rows with missing slots."""
+        return tuple(row for row in self.coverage if row.missing_count)
 
 
 def schedule_tables(dataset: SchedulingDataset, assignments: Iterable[Assignment]) -> ScheduleTables:
@@ -205,5 +208,4 @@ def schedule_tables(dataset: SchedulingDataset, assignments: Iterable[Assignment
         duties=tuple(duties),
         employees=tuple(rows),
         coverage=tuple(coverage),
-        gaps=tuple(row for row in coverage if row.missing_count),
     )

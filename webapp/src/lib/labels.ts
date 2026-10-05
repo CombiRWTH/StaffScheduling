@@ -15,12 +15,13 @@ import type {
   WishType,
 } from "@/lib/types";
 
-export const STAFF_LEVEL_LABELS: Record<StaffLevel, string> = {
+/** The names the backend also states as `qualifikation`. */
+export const STAFF_LEVEL_LABELS = {
   professional: "Fachkraft",
   assistant: "Hilfskraft",
   trainee: "Azubi",
   mfa: "MFA",
-};
+} as const satisfies Record<StaffLevel, string>;
 
 export const AVAILABILITY_LABELS: Record<AvailabilityType, string> = {
   unavailable: "Nicht verfügbar",

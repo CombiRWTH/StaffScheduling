@@ -48,7 +48,8 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
   const employeeName = new Map(tables.employees.map((row) => [row.employee_id, row.employee_name]));
   const [checkValue, checkDetail] = CHECK_STATUS[check.status];
   const publishable = check.status === "accepted" && tables.duties.length > 0;
-  const missing = tables.gaps.reduce((total, row) => total + row.missing_count, 0);
+  const gaps = tables.coverage.filter((row) => row.missing_count > 0);
+  const missing = gaps.reduce((total, row) => total + row.missing_count, 0);
   const hint = publishable
     ? missing > 0
       ? "Kann veröffentlicht werden; Lücken werden nicht veröffentlicht"
@@ -102,7 +103,7 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
               unter „Besetzung“ rot markiert.
             </p>
             <BulletList
-              items={tables.gaps.map(
+              items={gaps.map(
                 (row) =>
                   `${formatDate(row.date)} · ${row.planning_unit_name} · ${row.shift_code} · ${row.qualifikation}: ${row.missing_count} ${row.missing_count === 1 ? "fehlt" : "fehlen"} (benötigt ${row.required_count})`,
               )}

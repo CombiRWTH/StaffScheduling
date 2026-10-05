@@ -111,7 +111,7 @@ Duties around a planning month from approved context plans, with the dates they 
 _Avoid_: history, previous plan, fixed assignments
 
 **Coverage** (Besetzung):
-How far the duties of a station, date and shift meet its staffing demand per qualification: required, assigned and missing counts; a duty counts as its credited qualification.
+Required against assigned staff of a station, date, shift and qualification, with the missing count; also where nobody is required but someone is assigned. A duty counts as its credited qualification.
 _Avoid_: staffing level, fill rate
 
 **Gap** (Lücke):

@@ -42,6 +42,7 @@ RESULT_FILE: Final = "result.json"
 SCHEDULE_FILE: Final = "schedule.csv"
 EMPLOYEES_FILE: Final = "employees.csv"
 COVERAGE_FILE: Final = "besetzung.csv"
+"""German, like its `qualifikation` column: the chair's minimum staffing (Besetzung) names them so."""
 GAPS_FILE: Final = "gaps.csv"
 type FileName = Literal["input.json", "result.json", "schedule.csv", "employees.csv", "besetzung.csv", "gaps.csv"]
 FILE_NAMES: Final[tuple[FileName, ...]] = get_args(FileName.__value__)

@@ -73,7 +73,7 @@ def check_examples(directory: Path, months: Sequence[PlanningMonth], stations: i
         label = data.planning_month.label
         if data.wishes:
             problems.append(
-                f"{label}: the input holds {len(data.wishes)} wishes; the examples are without preferences."
+                f"{label}: the input holds wishes ({len(data.wishes)}); the examples are without preferences."
             )
         if data.planning_units != first.planning_units:
             problems.append(f"{label}: plans other stations or jumper pools than {first.planning_month.label}.")
@@ -176,12 +176,11 @@ def test_generate_hand_in_examples() -> None:
     and serves as that context, so a run resumes after its last written month; delete a folder to
     generate it again.
     """
-    directory = PLAENE
     settings = get_settings()
     source, solver = TimeOfficeService(create_db_engine(settings)), SolverService(settings)
     previous: ScheduleBundle | None = None
     for month in HAND_IN_MONTHS:
-        folder = directory / month.label
+        folder = PLAENE / month.label
         if folder.is_dir():
             previous = ScheduleBundle.read((folder / INPUT_FILE).read_bytes(), (folder / RESULT_FILE).read_bytes())
             continue
@@ -194,9 +193,9 @@ def test_generate_hand_in_examples() -> None:
             f"{month.label}: {check.status.value}, {len(check.findings)} findings, "
             f"blocking {sorted({row.rule.value for row in check.not_assessed if row.blocking})}"
         )
-        write_folder(directory, bundle)
+        write_folder(PLAENE, bundle)
         previous = bundle
-    assert check_examples(directory, HAND_IN_MONTHS, HAND_IN_STATIONS) == []
+    assert check_examples(PLAENE, HAND_IN_MONTHS, HAND_IN_STATIONS) == []
 
 
 def hand_in_dataset(data: SchedulingDataset, previous: ScheduleBundle | None) -> SchedulingDataset:
@@ -291,7 +290,7 @@ def test_examples_reject_drift_and_inconsistent_context(tmp_path: Path) -> None:
     assert check_examples(tmp_path, (JANUARY, FEBRUARY), stations=2) == [
         "Folder outside 2026-01 to 2026-02: 2026-03.",
         "2026-02: schedule.csv differs from the rendering of the pair.",
-        "2026-02: the input holds 1 wishes; the examples are without preferences.",
+        "2026-02: the input holds wishes (1); the examples are without preferences.",
         "2026-01 to 2026-02: the context duties on 2026-01 dates differ from its schedule.",
         "2026-01 to 2026-02: the availability of 2026-02-01 differs between the two inputs.",
     ]
