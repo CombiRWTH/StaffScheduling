@@ -1,0 +1,795 @@
+{
+  "$defs": {
+    "Assignment": {
+      "additionalProperties": false,
+      "description": "One employee's duty: a shift starting on `date` at a station.\n\n`staff_level` is the qualification the duty is credited as towards demand; it comes from the\nemployee's membership at that station, which can differ from their employee-level qualification.\nIts key is (employee_id, date, planning_unit_id, shift_id).",
+      "properties": {
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "planning_unit_id": {
+          "exclusiveMinimum": 0,
+          "title": "Planning Unit Id",
+          "type": "integer"
+        },
+        "shift_id": {
+          "exclusiveMinimum": 0,
+          "title": "Shift Id",
+          "type": "integer"
+        },
+        "staff_level": {
+          "$ref": "#/$defs/StaffLevel"
+        }
+      },
+      "required": [
+        "employee_id",
+        "date",
+        "planning_unit_id",
+        "shift_id",
+        "staff_level"
+      ],
+      "title": "Assignment",
+      "type": "object"
+    },
+    "CheckStatus": {
+      "description": "ACCEPTED: every promised rule was checked and holds. REJECTED: a hard rule is violated.\nINCOMPLETE: no violation was found, but a promised check lacked its input.",
+      "enum": [
+        "accepted",
+        "rejected",
+        "incomplete"
+      ],
+      "title": "CheckStatus",
+      "type": "string"
+    },
+    "DiagnosticSeverity": {
+      "enum": [
+        "info",
+        "warning",
+        "error"
+      ],
+      "title": "DiagnosticSeverity",
+      "type": "string"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "description": "One hard-rule violation of the schedule.",
+      "properties": {
+        "rule": {
+          "$ref": "#/$defs/Rule"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "employee_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Employee Id"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        },
+        "planning_unit_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Planning Unit Id"
+        },
+        "shift_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shift Id"
+        }
+      },
+      "required": [
+        "rule",
+        "message"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "Gap": {
+      "additionalProperties": false,
+      "description": "Required slots of one demand row that no assignment fills (Lücke).\n\nGaps are reported next to the assignments, never as assignments, so guest staff can be requested\nfor them; publication writes only duties.",
+      "properties": {
+        "planning_unit_id": {
+          "exclusiveMinimum": 0,
+          "title": "Planning Unit Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "shift_id": {
+          "exclusiveMinimum": 0,
+          "title": "Shift Id",
+          "type": "integer"
+        },
+        "staff_level": {
+          "$ref": "#/$defs/StaffLevel"
+        },
+        "missing_count": {
+          "exclusiveMinimum": 0,
+          "title": "Missing Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "planning_unit_id",
+        "date",
+        "shift_id",
+        "staff_level",
+        "missing_count"
+      ],
+      "title": "Gap",
+      "type": "object"
+    },
+    "InputReference": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "const": "input.json",
+          "title": "File",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "Hex SHA-256 of the exact bytes of the input file.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "sha256"
+      ],
+      "title": "InputReference",
+      "type": "object"
+    },
+    "NotAssessed": {
+      "additionalProperties": false,
+      "description": "A rule the input cannot decide, with the exact window and gap; never a pass.\n\nA blocking gap concerns a check promised for the month and prevents acceptance; a non-blocking one\nnames a longer-term or later obligation that this month's input cannot contain.",
+      "properties": {
+        "rule": {
+          "$ref": "#/$defs/Rule"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "blocking": {
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "employee_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Employee Id"
+        }
+      },
+      "required": [
+        "rule",
+        "reason",
+        "blocking",
+        "start",
+        "end"
+      ],
+      "title": "NotAssessed",
+      "type": "object"
+    },
+    "PlanningMonth": {
+      "additionalProperties": false,
+      "properties": {
+        "year": {
+          "maximum": 2200,
+          "minimum": 2000,
+          "title": "Year",
+          "type": "integer"
+        },
+        "month": {
+          "maximum": 12,
+          "minimum": 1,
+          "title": "Month",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "year",
+        "month"
+      ],
+      "title": "PlanningMonth",
+      "type": "object"
+    },
+    "Rule": {
+      "enum": [
+        "input",
+        "staffing",
+        "eligibility",
+        "one_duty_per_day",
+        "availability",
+        "monthly_balance",
+        "work_and_breaks",
+        "work_average",
+        "rest",
+        "consecutive_nights",
+        "night_recovery",
+        "replacement_rest",
+        "annual_free_sundays"
+      ],
+      "title": "Rule",
+      "type": "string"
+    },
+    "RulePolicy": {
+      "additionalProperties": false,
+      "description": "Hard-rule parameters of the ordinary adult baseline; no hospital or AVR exception is selected.\n\nEvery run reports the policy it used. Sources: ArbZG §§3-6 and 11 for work, breaks, rest and\nreplacement rest; BAuA night-work guidance, adopted as project policy, for nights and recovery;\nthe problem statement for the monthly balance of ±7.67 hours.",
+      "properties": {
+        "balance_tolerance_minutes": {
+          "default": 460,
+          "title": "Balance Tolerance Minutes",
+          "type": "integer"
+        },
+        "min_rest_minutes": {
+          "default": 660,
+          "title": "Min Rest Minutes",
+          "type": "integer"
+        },
+        "max_consecutive_nights": {
+          "default": 3,
+          "title": "Max Consecutive Nights",
+          "type": "integer"
+        },
+        "night_recovery_minutes": {
+          "default": 2880,
+          "title": "Night Recovery Minutes",
+          "type": "integer"
+        },
+        "max_daily_work_minutes": {
+          "default": 600,
+          "title": "Max Daily Work Minutes",
+          "type": "integer"
+        },
+        "average_daily_work_minutes": {
+          "default": 480,
+          "title": "Average Daily Work Minutes",
+          "type": "integer"
+        },
+        "short_break_after_minutes": {
+          "default": 360,
+          "title": "Short Break After Minutes",
+          "type": "integer"
+        },
+        "short_break_minutes": {
+          "default": 30,
+          "title": "Short Break Minutes",
+          "type": "integer"
+        },
+        "long_break_after_minutes": {
+          "default": 540,
+          "title": "Long Break After Minutes",
+          "type": "integer"
+        },
+        "long_break_minutes": {
+          "default": 45,
+          "title": "Long Break Minutes",
+          "type": "integer"
+        },
+        "min_break_part_minutes": {
+          "default": 15,
+          "title": "Min Break Part Minutes",
+          "type": "integer"
+        },
+        "max_uninterrupted_work_minutes": {
+          "default": 360,
+          "title": "Max Uninterrupted Work Minutes",
+          "type": "integer"
+        },
+        "sunday_replacement_days": {
+          "default": 13,
+          "title": "Sunday Replacement Days",
+          "type": "integer"
+        },
+        "holiday_replacement_days": {
+          "default": 55,
+          "title": "Holiday Replacement Days",
+          "type": "integer"
+        },
+        "preceding_context_days": {
+          "default": 5,
+          "title": "Preceding Context Days",
+          "type": "integer"
+        },
+        "following_context_days": {
+          "default": 3,
+          "title": "Following Context Days",
+          "type": "integer"
+        }
+      },
+      "title": "RulePolicy",
+      "type": "object"
+    },
+    "RunConfiguration": {
+      "additionalProperties": false,
+      "description": "The effective settings of one solve, recorded for reproduction.",
+      "properties": {
+        "policy": {
+          "$ref": "#/$defs/RulePolicy"
+        },
+        "timeout_seconds": {
+          "description": "The total solver time of all stages.",
+          "title": "Timeout Seconds",
+          "type": "number"
+        },
+        "search_workers": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Search Workers"
+        },
+        "random_seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Random Seed"
+        }
+      },
+      "required": [
+        "policy",
+        "timeout_seconds",
+        "search_workers",
+        "random_seed"
+      ],
+      "title": "RunConfiguration",
+      "type": "object"
+    },
+    "RuntimeVersions": {
+      "additionalProperties": false,
+      "description": "The runtime that solved; the lockfiles and the commit identify the rest of the software.",
+      "properties": {
+        "python": {
+          "title": "Python",
+          "type": "string"
+        },
+        "ortools": {
+          "title": "Ortools",
+          "type": "string"
+        },
+        "pydantic": {
+          "title": "Pydantic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "python",
+        "ortools",
+        "pydantic"
+      ],
+      "title": "RuntimeVersions",
+      "type": "object"
+    },
+    "ScheduleCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/CheckStatus"
+        },
+        "rules": {
+          "description": "The rules evaluated; anything else is listed in `not_assessed`.",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "title": "Rules",
+          "type": "array"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "not_assessed": {
+          "items": {
+            "$ref": "#/$defs/NotAssessed"
+          },
+          "title": "Not Assessed",
+          "type": "array"
+        },
+        "scores": {
+          "$ref": "#/$defs/ScheduleScores"
+        },
+        "wishes": {
+          "description": "Every wish of the input in its order, with what the schedule made of it.",
+          "items": {
+            "$ref": "#/$defs/WishOutcome"
+          },
+          "title": "Wishes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status",
+        "rules",
+        "findings",
+        "not_assessed",
+        "scores",
+        "wishes"
+      ],
+      "title": "ScheduleCheck",
+      "type": "object"
+    },
+    "ScheduleScores": {
+      "additionalProperties": false,
+      "description": "The raw objective tiers, highest priority first; each solver stage reports one of them.",
+      "properties": {
+        "gaps": {
+          "description": "Required slots that no assignment fills, recomputed from the assignments.",
+          "title": "Gaps",
+          "type": "integer"
+        },
+        "six_day_windows": {
+          "title": "Six Day Windows",
+          "type": "integer"
+        },
+        "backward_transitions": {
+          "title": "Backward Transitions",
+          "type": "integer"
+        },
+        "isolated_workdays": {
+          "description": "Month dates with a duty starting on them but on neither neighbouring date; outside the month and its\ntrusted context a date is never free.",
+          "title": "Isolated Workdays",
+          "type": "integer"
+        },
+        "back_to_back_weekends": {
+          "description": "Consecutive weekends with a duty touching their Saturday or Sunday, counted in the month of the later\nSunday, when the earlier weekend's Friday lies within the preceding context days.",
+          "title": "Back To Back Weekends",
+          "type": "integer"
+        },
+        "station_transfers": {
+          "description": "Duties of employees whose origin that date is a station, worked at another station.",
+          "title": "Station Transfers",
+          "type": "integer"
+        },
+        "wish_cost": {
+          "description": "Denied grantable wishes, free and preferred apart per employee: the k-th denial costs k³.",
+          "title": "Wish Cost",
+          "type": "integer"
+        },
+        "balance_deviation_minutes": {
+          "title": "Balance Deviation Minutes",
+          "type": "integer"
+        },
+        "surplus_intermediate_duties": {
+          "title": "Surplus Intermediate Duties",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "gaps",
+        "six_day_windows",
+        "backward_transitions",
+        "isolated_workdays",
+        "back_to_back_weekends",
+        "station_transfers",
+        "wish_cost",
+        "balance_deviation_minutes",
+        "surplus_intermediate_duties"
+      ],
+      "title": "ScheduleScores",
+      "type": "object"
+    },
+    "Solution": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SolutionStatus"
+        },
+        "configuration": {
+          "$ref": "#/$defs/RunConfiguration"
+        },
+        "wall_time_seconds": {
+          "title": "Wall Time Seconds",
+          "type": "number"
+        },
+        "assignments": {
+          "default": [],
+          "description": "Present only with a candidate schedule (OPTIMAL or FEASIBLE), like `gaps`, `stages` and `check`.",
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "title": "Assignments",
+          "type": "array"
+        },
+        "gaps": {
+          "default": [],
+          "description": "The demand the schedule leaves unfilled; the check recomputes it from the assignments.",
+          "items": {
+            "$ref": "#/$defs/Gap"
+          },
+          "title": "Gaps",
+          "type": "array"
+        },
+        "stages": {
+          "default": [],
+          "description": "Every objective tier in solving order. The status is OPTIMAL exactly when every stage is.",
+          "items": {
+            "$ref": "#/$defs/StageReport"
+          },
+          "title": "Stages",
+          "type": "array"
+        },
+        "check": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ScheduleCheck"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "diagnostics": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SolverDiagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status",
+        "configuration",
+        "wall_time_seconds"
+      ],
+      "title": "Solution",
+      "type": "object"
+    },
+    "SolutionStatus": {
+      "description": "What CP-SAT found. OPTIMAL and FEASIBLE yield a candidate schedule; whether it is acceptable is\nthe separate schedule check. INFEASIBLE is proven, UNKNOWN means neither a schedule nor a proof\nwithin the time limit, MODEL_INVALID a modelling error.",
+      "enum": [
+        "optimal",
+        "feasible",
+        "infeasible",
+        "model_invalid",
+        "unknown"
+      ],
+      "title": "SolutionStatus",
+      "type": "string"
+    },
+    "SolverDiagnostic": {
+      "additionalProperties": false,
+      "description": "Something the model build or solve noticed, such as a demand no candidate can cover.\n\nDiagnostics explain a solver result; whether a schedule holds the rules is the schedule check.",
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/DiagnosticSeverity"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "SolverDiagnostic",
+      "type": "object"
+    },
+    "StaffLevel": {
+      "description": "Reduced staffing level used by demand and solver logic.\n\nThis is mapped from TimeOffice source data such as Berufe/Qualis.\nThe solver should depend on this enum, not on raw TimeOffice IDs.",
+      "enum": [
+        "professional",
+        "assistant",
+        "trainee",
+        "mfa"
+      ],
+      "title": "StaffLevel",
+      "type": "string"
+    },
+    "StageReport": {
+      "additionalProperties": false,
+      "description": "One objective tier's stage: the tier's value in the returned schedule and the bound CP-SAT proved.\n\n`value` equals the tier's field in the independent schedule check. OPTIMAL proves the value is the\nbest possible after every higher tier; FEASIBLE means the stage's time ended first. `best_bound` is\nNone when the stage found no schedule of its own and kept the previous one.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "optimal",
+            "feasible"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "integer"
+        },
+        "best_bound": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Best Bound"
+        }
+      },
+      "required": [
+        "name",
+        "status",
+        "value",
+        "best_bound"
+      ],
+      "title": "StageReport",
+      "type": "object"
+    },
+    "WishOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/WishType"
+        },
+        "shift_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shift Id"
+        },
+        "employee_id": {
+          "exclusiveMinimum": 0,
+          "title": "Employee Id",
+          "type": "integer"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/WishStatus"
+        }
+      },
+      "required": [
+        "type",
+        "employee_id",
+        "date",
+        "status"
+      ],
+      "title": "WishOutcome",
+      "type": "object"
+    },
+    "WishStatus": {
+      "description": "GRANTED: the schedule fulfils the wish. DENIED: it does not, and it costs.\nNOT_GRANTABLE: the inputs of its own date rule it out, so it costs nothing: for a preferred day or\nshift, binding availability, eligibility or the shift's own work pattern leave no duty to start; for\na free day, a trusted context duty touches the date. Rules across days, such as the rest after a\ncontext night, only deny a wish, since only a solve could tell whether they rule it out.",
+      "enum": [
+        "granted",
+        "denied",
+        "not_grantable"
+      ],
+      "title": "WishStatus",
+      "type": "string"
+    },
+    "WishType": {
+      "enum": [
+        "free_day",
+        "free_shift",
+        "preferred_day",
+        "preferred_shift"
+      ],
+      "title": "WishType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "result.json: the solution of the paired input, with its effective configuration and schedule check.",
+  "properties": {
+    "format_version": {
+      "const": 3,
+      "title": "Format Version",
+      "type": "integer"
+    },
+    "planning_month": {
+      "$ref": "#/$defs/PlanningMonth"
+    },
+    "input": {
+      "$ref": "#/$defs/InputReference"
+    },
+    "solution": {
+      "$ref": "#/$defs/Solution"
+    },
+    "versions": {
+      "$ref": "#/$defs/RuntimeVersions"
+    }
+  },
+  "required": [
+    "format_version",
+    "planning_month",
+    "input",
+    "solution",
+    "versions"
+  ],
+  "title": "ScheduleResult",
+  "type": "object"
+}

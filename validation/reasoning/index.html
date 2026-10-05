@@ -1,0 +1,1621 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://combirwth.github.io/StaffScheduling/validation/reasoning/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../examples/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Reasoning and requirements - Staff Scheduling</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#reasoning-and-requirements" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Staff Scheduling" class="md-header__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Staff Scheduling
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Reasoning and requirements
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Staff Scheduling" class="md-nav__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Staff Scheduling
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Try it
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Try it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use the app
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Use the app
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/selection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Select and inspect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure monthly inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generate schedules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review, import and export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/publication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publish and clear
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand the system
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand the system
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/solver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/timeoffice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TimeOffice adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Develop
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Develop
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/checks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checks and tooling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validate
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validate
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reasoning and requirements
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reasoning and requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#problem-and-agreed-planning-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem and agreed planning scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requirements-sources-and-assumptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements, sources and assumptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hard-rules-and-soft-priorities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hard rules and soft priorities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-modeled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not modeled
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modeling-choices-and-alternatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modeling choices and alternatives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#objective-units-and-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objective units and trade-offs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fair-wish-satisfaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fair wish satisfaction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#independent-acceptance-and-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Independent acceptance and evaluation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limits-and-future-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known limits and future work
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples and reproduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#problem-and-agreed-planning-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem and agreed planning scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requirements-sources-and-assumptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements, sources and assumptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hard-rules-and-soft-priorities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hard rules and soft priorities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-modeled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not modeled
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modeling-choices-and-alternatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modeling choices and alternatives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#objective-units-and-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objective units and trade-offs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fair-wish-satisfaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fair wish satisfaction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#independent-acceptance-and-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Independent acceptance and evaluation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limits-and-future-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known limits and future work
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="reasoning-and-requirements">Reasoning and requirements<a class="headerlink" href="#reasoning-and-requirements" title="Permanent link">&para;</a></h1>
+<p>For reviewers assessing why the scheduling model and its evaluation fit the task. The <a href="../../architecture/solver/">solver reference</a> describes how the rules are implemented; <a href="../#solver-and-schedule-check">evidence and limitations</a> records what has been run. Nothing here is a legal-compliance assessment.</p>
+<h2 id="problem-and-agreed-planning-scope">Problem and agreed planning scope<a class="headerlink" href="#problem-and-agreed-planning-scope" title="Permanent link">&para;</a></h2>
+<p>The assignment asks for monthly hospital rosters that meet minimum staffing by qualification and shift, keep approved absences and free days, stay within ±7.67 hours of each employee's monthly target, and respect working-time law and occupational-science findings. This project plans stations 77, 78, 79, 83, 85, 88 and 337 of the TimeOffice test database with jumper pools 68 and 408 for January to June 2026: one run per full month with all seven stations selected. The population is adult; the examples are wish-free by data and have no special capabilities (such as rounds or night-watch roles). Qualifications are Fachkraft, Hilfskraft, Azubi and MFA; they never substitute for each other. The problem statement's individual facts about named employees in its November 2024 scenario (health, caregiving, night-duty, leadership and preference notes) are deliberately not modeled: they describe other people and another month, and the 2026 examples use the test database's employees instead.</p>
+<h2 id="requirements-sources-and-assumptions">Requirements, sources and assumptions<a class="headerlink" href="#requirements-sources-and-assumptions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Source</th>
+<th>Assumption made</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Minimum staffing per station, shift, qualification</td>
+<td>Chair's minimum-staffing table, all seven station keys</td>
+<td>NRW holidays use the weekend row; professional demand follows the CSV, with the <a href="../examples/#input-data-and-boundary-context">documented adaptations</a> for other levels</td>
+</tr>
+<tr>
+<td>Monthly balance ±7.67 h</td>
+<td>Problem statement</td>
+<td>460 whole minutes; credits are verified TimeOffice absence credits, counted once</td>
+</tr>
+<tr>
+<td>Daily work, breaks, rest</td>
+<td><a href="https://www.gesetze-im-internet.de/arbzg/">ArbZG</a> §§3–5</td>
+<td>Ordinary adult baseline: no hospital rest reduction and no collective/church (AVR) exception applied</td>
+</tr>
+<tr>
+<td>Work average for duties up to 10 h</td>
+<td>ArbZG §3, §6(2)</td>
+<td>Every month is its own compensation period: work ≤ 8 h × Werktage, for night and other workers alike</td>
+</tr>
+<tr>
+<td>Sunday and holiday replacement rest</td>
+<td>ArbZG §11(3)</td>
+<td>A duty-free Werktag of the same month within two weeks (Sunday) or eight weeks (holiday)</td>
+</tr>
+<tr>
+<td>Night blocks and recovery</td>
+<td>BAuA night- and shift-work guidance</td>
+<td>Adopted as project policy: at most three nights in a row, 48 hours after the final night</td>
+</tr>
+<tr>
+<td>Forward rotation, no isolated workdays</td>
+<td><a href="https://www.baua.de/DE/Angebote/Publikationen/Praxis/Flexibel-arbeiten.pdf?__blob=publicationFile&amp;v=12">BAuA practical guide</a>, p. 24</td>
+<td>Health events: backward steps, single workdays between free days and six-day runs are minimized</td>
+</tr>
+<tr>
+<td>No employee works every weekend</td>
+<td>Project policy</td>
+<td>Health event: each pair of consecutive worked weekends; soft, since weekend demand often forces it</td>
+</tr>
+<tr>
+<td>Employee wishes, jumper pool included</td>
+<td>Course goal; the reference team's fair-preference model</td>
+<td>Wishes never bind; one strike per wish, convex cost per employee; committed examples hold no wishes</td>
+</tr>
+</tbody>
+</table>
+<p>AVR applicability, its annexes and any employer agreement are unconfirmed, so they supply no exception. The BAuA numbers are recommendations made binding for this project, not standalone statutory limits.</p>
+<h2 id="hard-rules-and-soft-priorities">Hard rules and soft priorities<a class="headerlink" href="#hard-rules-and-soft-priorities" title="Permanent link">&para;</a></h2>
+<p>Hard rules are what a schedule must satisfy to be usable: staffing (or a declared gap), eligibility by dated membership and qualification, one duty per day, availability, monthly balance, work and breaks, work average, rest, consecutive nights, night recovery and replacement rest. Soft priorities rank schedules that satisfy them, highest first:</p>
+<ol>
+<li><strong>Gaps.</strong> Staffing is the only hard rule that may be relaxed, and only by a gap: an unfilled required slot reported next to the assignments, so the hospital can request guest staff instead of receiving no schedule at all. Every other rule stays hard, so an honest <code>infeasible</code> remains possible. As the top tier, a schedule without gaps always wins where one exists.</li>
+<li><strong>Health events.</strong> Health beats preference: no wish is granted at the cost of a six-day run, a backward shift step, an isolated workday or a second worked weekend in a row. Each event is one unit; the tier has no weights.</li>
+<li><strong>Station transfers.</strong> Working at another station is allowed in general: a station member may work at another station through a replacement membership (Ersatz), and the jumper pool exists for it. A station member's duty at another station is counted and minimized, so the jumper pool is preferred and an organisational transfer is never made merely to grant a wish. Jumper pool duties never count.</li>
+<li><strong>Wishes</strong>, fairly. A wish beats balance minutes inside the hard ±460-minute band.</li>
+<li><strong>Monthly balance deviation</strong>, in minutes.</li>
+<li><strong>Additional intermediate duties</strong>, as a reward.</li>
+</ol>
+<p>Earlier legacy objectives (assignment-count balancing, overtime-only penalties, weighted wish scores) were removed because they were arbitrary or duplicated a hard rule.</p>
+<h2 id="not-modeled">Not modeled<a class="headerlink" href="#not-modeled" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>A preferred block length.</strong> The reference solver rewarded runs of exactly three workdays. No source supports one block length, so that objective is dropped; isolated workdays and the night limits shape the blocks instead.</li>
+<li><strong>Free days next to weekends.</strong> A comfort preference without a source in the problem statement. With isolated workdays penalized, free days already tend to cluster.</li>
+<li><strong>Spreading intermediate duties over the week.</strong> The problem statement's preference (a weekday intermediate duty versus an extra early or late person) is ambiguous, and as a hard rule it could make months unsolvable while being met by no intermediate duty at all. The lowest tier still rewards extra intermediate duties where they fit, but with no weekday or weekend order and no even spread.</li>
+<li><strong>Shorter night runs.</strong> The hard maximum of three nights plus 48 hours of recovery already applies the BAuA recommendation, so a second preference for one or two nights would duplicate it. Runs of one, two and three nights are not weighed against each other; the isolated-workday event leans toward two or three.</li>
+<li><strong>Weekend pairs across some month starts.</strong> A pair of worked weekends counts only when the earlier weekend's Friday lies within the five preceding context days, so months starting Thursday to Sunday count no pair ending with their first weekend. Extending the context would need more prepared data.</li>
+<li><strong>Isolated workdays at a month edge without context.</strong> A date outside the month is never assumed free, so without trusted context the month's first or last date is never an isolated workday. Without following context this applies to every last date.</li>
+</ul>
+<h2 id="modeling-choices-and-alternatives">Modeling choices and alternatives<a class="headerlink" href="#modeling-choices-and-alternatives" title="Permanent link">&para;</a></h2>
+<p>Rules use actual duty times instead of shift-code pairs: a late shift ending at 21:00 followed by an early shift at 05:55 fails the eleven-hour rest because of the 8 h 55 min gap, not because of its codes. Breaks come from the evidenced work segments of each shift, because a paid-time deduction cannot show where a break lies. Month boundaries are explicit trusted context with a declared coverage instead of assuming free days at the month's edges. The tiers are solved as lexicographic stages, one CP-SAT solve per tier that fixes the value reached before the next tier is optimized. A single weighted objective with dominance weights was used before; with gaps and wishes its weights would exceed 2⁵³, the limit of exact objective values, for real months (<code>docs/adr/0010-lexicographic-staged-objective.md</code>). Averaging and replacement rest are decided within each month: this is stricter than the law's six-month and eight-week periods, but it makes every month's check complete on its own and keeps months from claiming the same replacement day. In-month fixed duties are not supported, because no plan reconciliation is part of the scope.</p>
+<h2 id="objective-units-and-trade-offs">Objective units and trade-offs<a class="headerlink" href="#objective-units-and-trade-offs" title="Permanent link">&para;</a></h2>
+<p>Gaps are counts of missing employee-shifts, health events and station transfers are counts, the wish cost is a fairness cost of denied wishes, the balance is minutes and the intermediate reward is a count of duties. The stages make the order strict without converting units: one gap more is never traded for any number of health improvements, one health event never for any station transfer, one station transfer never for any wish, one unit of wish cost never for any balance improvement, and one minute of balance never for any number of extra intermediate duties. Consequently an extra intermediate duty is planned only when it does not worsen anyone's balance, and a wish can make an employee work against their balance only inside the hard band. The automated solver tests check every adjacent pair with schedules that differ at the boundary.</p>
+<h2 id="fair-wish-satisfaction">Fair wish satisfaction<a class="headerlink" href="#fair-wish-satisfaction" title="Permanent link">&para;</a></h2>
+<p>The wish tier adopts the fairness approach the reference team chose from the literature: free wishes (free day, free shift) and preferred wishes (preferred day, preferred shift) are scored separately per employee, so a granted preferred day cannot offset a denied free day, and the k-th denied wish of an employee's group costs k³. The convex cost makes two denials for one employee (1 + 8) more expensive than one denial each for two employees (1 + 1), so unavoidable denials are spread. It is encoded as the reference does, with ordered strike indicators per group.</p>
+<p>Three defects of the reference implementation are fixed:</p>
+<ul>
+<li>Day wishes counted three strikes and shift wishes one: a wish weight, contrary to the course requirement of no wish weights. Every wish is now one strike.</li>
+<li>Duties were matched to wishes by start date only, so a night starting the evening before did not break a free day. A free day is now broken by any duty touching the date, consistent with the free day of binding availability.</li>
+<li>The configurable objective weights never reached the solver, and the wish term was drowned by a 100-per-minute overtime term. The staged order makes the priority explicit instead.</li>
+</ul>
+<p>A wish is one employee and one date at any station; a jumper pool employee's wish counts at every station they serve. A wish that no schedule could grant (conflicting availability, no station membership, the shift's own pattern, or a trusted context night on a free day) is listed as not grantable and excluded from the cost, so the solver never compensates a denial the planner did not cause. Native TimeOffice wish rows are not read; wishes come from the project's own table. First maximizing the number of granted wishes and only then their fairness, or minimizing the largest number of denials per employee, are possible alternatives; see <a href="../">limitations</a>.</p>
+<h2 id="independent-acceptance-and-evaluation">Independent acceptance and evaluation<a class="headerlink" href="#independent-acceptance-and-evaluation" title="Permanent link">&para;</a></h2>
+<p><code>check_schedule</code> evaluates every hard rule from the actual assignments, dataset and context, not from solver variables; solver and check implement each rule separately and share only the rule parameters and duty times. It reports findings, not-assessed obligations with their exact windows, the raw scores and the outcome of every wish. A schedule is accepted only if no rule is violated and every promised check had its input. Missing preceding context blocks acceptance; the boundary to an unplanned next month and the annual free Sundays are listed as not assessed and limit the claim. It recomputes every gap from the assignments: a shortfall not declared exactly as a gap is a staffing violation. Each solver stage's value equals the score recomputed by the check, which cross-validates both. The prepared months are evaluated with live runs; see <a href="../#solver-and-schedule-check">evidence</a>.</p>
+<h2 id="known-limits-and-future-work">Known limits and future work<a class="headerlink" href="#known-limits-and-future-work" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Annual free Sundays need the whole year and are not assessed.</li>
+<li>Month-local averaging and replacement rest can reject a schedule that a longer legal period would allow.</li>
+<li>Backward shift steps look back at most five days before the month.</li>
+<li>Time-limited stages return feasible schedules with a weak proven bound; the schedule itself is checked. Each stage but the last gets half of the time left, the seven-station examples use 1,800 seconds per month, with unproven gap optima (<a href="../examples/#results">results</a>).</li>
+<li>Minors, other employment regimes and employer-specific agreements would need their own rule sources.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.indexes", "navigation.sections", "navigation.top", "navigation.tracking", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

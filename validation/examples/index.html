@@ -1,0 +1,1849 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://combirwth.github.io/StaffScheduling/validation/examples/">
+      
+      
+        <link rel="prev" href="../reasoning/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Examples and reproduction - Staff Scheduling</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#examples-and-reproduction" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Staff Scheduling" class="md-header__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Staff Scheduling
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Examples and reproduction
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Staff Scheduling" class="md-nav__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Staff Scheduling
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Try it
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Try it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use the app
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Use the app
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/selection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Select and inspect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure monthly inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generate schedules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review, import and export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/publication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publish and clear
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand the system
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand the system
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/solver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/timeoffice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TimeOffice adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Develop
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Develop
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/checks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checks and tooling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validate
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validate
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reasoning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reasoning and requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples and reproduction
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples and reproduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#example-scope-and-file-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example scope and file inventory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-data-and-boundary-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input data and boundary context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce-the-timeoffice-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce the TimeOffice inputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bundle-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bundle files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generate-the-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate the examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gaps-by-station-and-qualification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gaps by station and qualification
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce-without-timeoffice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce without TimeOffice
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validate-monthly-and-sequence-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validate monthly and sequence results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interpret-objectives-and-solver-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpret objectives and solver settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#example-scope-and-file-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example scope and file inventory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-data-and-boundary-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input data and boundary context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce-the-timeoffice-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce the TimeOffice inputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bundle-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bundle files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generate-the-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate the examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gaps-by-station-and-qualification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gaps by station and qualification
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce-without-timeoffice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce without TimeOffice
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validate-monthly-and-sequence-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validate monthly and sequence results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interpret-objectives-and-solver-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpret objectives and solver settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="examples-and-reproduction">Examples and reproduction<a class="headerlink" href="#examples-and-reproduction" title="Permanent link">&para;</a></h1>
+<p>For readers trying to inspect or reproduce the example schedules in <code>plaene/</code>. They were generated from the prepared TimeOffice inputs below and can be checked and solved again without TimeOffice. All six months are committed (<code>plaene/2026-01</code> to <code>plaene/2026-06</code>), each accepted by the schedule check.</p>
+<p>Return to the <a href="../../">documentation overview</a>.</p>
+<h2 id="example-scope-and-file-inventory">Example scope and file inventory<a class="headerlink" href="#example-scope-and-file-inventory" title="Permanent link">&para;</a></h2>
+<p>Stations <code>PE 77</code>, <code>PE 78</code>, <code>PE 79</code>, <code>PE 83</code>, <code>PE 85</code>, <code>PE 88</code> and <code>PE 337</code> of the TimeOffice test database with jumper pools <code>PE 408</code> and <code>PE 68</code>, planned together for each month from January to June 2026: 42 station months. The pools receive no schedule of their own; their employees work at eligible stations. The units and their keys are listed in the <a href="../../architecture/timeoffice/#prepared-units">adapter reference</a>.</p>
+<p>Each month is a folder <code>plaene/2026-MM/</code> with the six <a href="#bundle-files">bundle files</a>: the requested example schedules without preferences ("ohne Präferenzen"). <code>plaene/backup/</code> holds an older dataset of an earlier project state (stations 77 and 78, another format). It is not an input of these months and not checked by the tests below.</p>
+<h2 id="input-data-and-boundary-context">Input data and boundary context<a class="headerlink" href="#input-data-and-boundary-context" title="Permanent link">&para;</a></h2>
+<p>The employees are the units' existing test-database employees, all of them adults; the test database holds no real persons. Their contracts, home memberships and native targets are used unchanged. In scope every month: 96 employees (77 station staff, 19 jumper pool), by employee profession 76 professionals, 13 assistants, 1 MFA and 6 trainees. A duty counts as the qualification of the dated station membership, which can differ from the employee record. Everything else is prepared by the tracked SQL in <code>api/tests/timeoffice_preparation/</code>; <a href="#reproduce-the-timeoffice-inputs">reproduce the inputs</a> below.</p>
+<ul>
+<li><strong>Eligibility.</strong> Station staff are members of their station. Pool 408 serves all seven stations; pool 68 serves 78, 83, 85, 88 and 337. Their staff have the pool as home and replacement memberships at these stations from 2025-12-01 to 2026-07-31. Rotating trainees, whose home is a school unit and who are station members for part of a month only, are excluded from planning (<code>KeinEPlan</code>).</li>
+<li><strong>Targets.</strong> Native targets are kept. Missing ones are derived by the native rule: weekly hours (38.5 when the contract states none) ÷ 5 for each Monday–Friday that is not an NRW public holiday.</li>
+<li><strong>Absences.</strong> Each professional of stations 77 and 79 and pool 408, and each assistant and the MFA of <code>PE 77</code>, has one Monday–Friday vacation week (<code>U</code>), credited with the weekly hours ÷ 5 per day in TimeOffice's daily accounts. Pool 408's vacations fall in June. No additional vacations were added for the other stations or pool 68.</li>
+<li><strong>Demand.</strong> Fachkraft demand follows the chair's minimum-staffing CSV at all stations; NRW public holidays use its weekend row. At the additional stations, trainee demand also follows the CSV. At 77 it remains one early trainee on weekdays; 79 has none. Only pool 408's trainee can serve all seven stations. Assistant demand is adapted to the staff: 78 and 85 one early duty Monday–Friday, 337 none, 77 early 2 and late 2 on weekdays (early 2, late 1 on weekends/holidays), and 79 one early every day. MFA demand is one early duty on weekdays at 77 and none at the other stations, where no MFA is eligible. Qualifications stay separate.</li>
+<li><strong>Capacity and gaps.</strong> Stations 83, 85, 88 and 337 have a Fachkraft shortfall before the pools are allocated; 88 requires 14 professional duties on weekdays and 13 on weekends/public holidays for five home professionals, and 337 three for one. Both pools together cannot cover all professional and trainee demand. Home-station staff can only serve their own station, so surplus staff at 77/78/79 cannot fill another station's gaps. The hard monthly balance also requires surplus duties. The sole MFA's vacation week, 2026-02-09..13, leaves five unavoidable gaps. Further gaps can follow from rest rules and the previous month's last duties. The solver's gap count is feasible unless its gap stage is <code>optimal</code>; an unproven count must not be read as the minimum required guest staffing. See the measured <a href="#results">results</a>.</li>
+<li><strong>Boundary context.</strong> Empty trusted context plans cover 2025-12-18 to 2025-12-31 and 2026-07-01 to 2026-07-07: January starts and June ends next to known free days. From February, the <a href="#generate-the-examples">generation</a> takes the last five days of the accepted previous month as trusted context.</li>
+<li><strong>Availability.</strong> One employee is unavailable on 2026-06-08..12, where native duties remain in the June target plan; two employees may work only early (2026-03-10) or early and intermediate shifts (2026-04-14).</li>
+<li><strong>Not included.</strong> Special capabilities, replacement memberships of station staff and history before 2025-12-18. Annual free Sundays need the whole year and cannot be assessed from this data.</li>
+</ul>
+<h2 id="reproduce-the-timeoffice-inputs">Reproduce the TimeOffice inputs<a class="headerlink" href="#reproduce-the-timeoffice-inputs" title="Permanent link">&para;</a></h2>
+<p>With the <a href="../../getting-started/installation/#database-configuration">database configuration</a> for the authorized test database and Docker:</p>
+<div class="highlight"><pre><span></span><code>just<span class="w"> </span>test-timeoffice<span class="w">                                   </span><span class="c1"># verify: every file converged, every check ok</span>
+<span class="nv">TIMEOFFICE_PREPARATION</span><span class="o">=</span>apply<span class="w"> </span>just<span class="w"> </span>test-timeoffice<span class="w">      </span><span class="c1"># prepare a copy that lacks the inputs, then verify again</span>
+</code></pre></div>
+<p>The verification runs each preparation file in one transaction, fails on any read-back other than <code>ok</code> = 1 or any write that would change a row, and rolls back. Apply commits the files in order; each is committed only when its read-back is ok, and a failing file stops the run with the later files unapplied. Then open <strong>Mitarbeiter</strong> for all seven stations and each month: the inspection must be complete. There is no reverse script; on a shared database, record what a first apply writes before running it.</p>
+<h2 id="bundle-files">Bundle files<a class="headerlink" href="#bundle-files" title="Permanent link">&para;</a></h2>
+<p>A monthly bundle is one folder <code>YYYY-MM/</code> with six files, as downloaded from <strong>Prüfen</strong>. JSON is the complete reproduction format; the CSV tables are the readable submission format and are derived from the JSON pair, never read back.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input.json</code></td>
+<td><code>format_version</code> (3), <code>timezone</code> (<code>Europe/Berlin</code>), the month's <code>calendar</code> (date, ISO weekday Monday=1, NRW public holiday name) and the canonical <code>dataset</code>: stations and jumper pools, shifts with work segments and paid minutes, dated demand, employees, dated memberships, binding availability, wishes, monthly accounts with dated credits and the trusted context with its coverage</td>
+</tr>
+<tr>
+<td><code>result.json</code></td>
+<td><code>format_version</code>, <code>planning_month</code>, <code>input</code> (<code>file</code> and hex <code>sha256</code> of the exact <code>input.json</code> bytes), the <code>solution</code> (CP-SAT status, effective configuration with rule policy, total timeout, workers and seed, wall time, assignments, gaps, every objective stage with value, status and bound, diagnostics and the independent <code>check</code> with scores and wish outcomes) and the solving <code>versions</code> of Python, OR-Tools and Pydantic</td>
+</tr>
+<tr>
+<td><code>schedule.csv</code></td>
+<td>One row per duty, sorted by date, station, start and employee</td>
+</tr>
+<tr>
+<td><code>employees.csv</code></td>
+<td>One row per participating employee, also without duties, sorted by ID</td>
+</tr>
+<tr>
+<td><code>besetzung.csv</code></td>
+<td>One row per station, date, shift and qualification that is required or staffed: the required, assigned and missing counts, sorted by station, date, shift and qualification</td>
+</tr>
+<tr>
+<td><code>gaps.csv</code></td>
+<td>The rows of <code>besetzung.csv</code> with missing slots; only the header when there are none</td>
+</tr>
+</tbody>
+</table>
+<p>The JSON Schemas are generated from the Pydantic models: <a href="../schema/input.schema.json">input.schema.json</a> and <a href="../schema/result.schema.json">result.schema.json</a>. Parsing rejects unknown fields, other format versions and a calendar that is not the month's NRW calendar. Derived values (month start/end, credited totals, health events, wish counts) are left out of the files and recomputed. There is no TimeOffice plan, credential or SQL row; IDs are the canonical positive numbers.</p>
+<p><code>schedule.csv</code> columns: <code>employee_id</code>, <code>employee_name</code>, <code>date</code>, <code>weekday</code> (ISO numbering, 1 = Monday to 7 = Sunday), <code>is_public_holiday</code>, <code>planning_unit_id</code> and <code>planning_unit_name</code> (the station where the duty is worked), <code>shift_id</code>, <code>shift_code</code>, <code>shift_type</code>, <code>start_at</code> and <code>end_at</code> (ISO 8601 with Europe/Berlin offset; a night ends on the next date and a duty belongs to its start date), <code>net_work_minutes</code> (paid), <code>staff_level</code> (the <a href="../../glossary/#schedules">credited qualification</a>) and <code>qualifikation</code> (its German name: <code>Fachkraft</code>, <code>Hilfskraft</code>, <code>Azubi</code> or <code>MFA</code>), and <code>origin_unit_id</code>, <code>origin_unit_name</code>, <code>origin_unit_type</code> (the employee's home station or jumper pool on that date; <code>station</code> for the regular team, <code>jumper_pool</code> for the Springerpool).</p>
+<p><code>employees.csv</code> columns: <code>employee_id</code>, <code>employee_name</code>, <code>staff_level</code> (employee level), <code>home_unit_id</code>, <code>home_unit_name</code> and <code>home_unit_type</code> (<code>station</code> or <code>jumper_pool</code>: the employee's home station or jumper pool on the first date of the month that has one), <code>planning_month</code> (<code>YYYY-MM</code>), <code>target_minutes</code>, <code>credited_minutes</code>, <code>generated_minutes</code>, <code>balance_minutes</code> (generated + credited − target), and <code>memberships</code>, <code>hard_availability</code>, <code>credit_details</code>: complete JSON arrays copied from the input, in quoted cells. <code>memberships</code> lists every dated membership with its qualification, <code>is_home</code> and <code>is_replacement</code> (a jumper pool employee's Ersatz membership at a station); <code>hard_availability</code> every binding absence or restriction of the month (<code>date</code>, <code>availability_type</code>, <code>reason</code>, the allowed <code>shift_ids</code> of <code>available_only</code>, <code>native_absence</code> for a TimeOffice absence); <code>credit_details</code> every credit (<code>date</code>, <code>minutes</code>, <code>kind</code> <code>approved_absence</code> or <code>trusted_work</code>, <code>source</code>).</p>
+<p><code>besetzung.csv</code> and <code>gaps.csv</code> columns: <code>planning_unit_id</code>, <code>planning_unit_name</code>, <code>date</code>, <code>shift_id</code>, <code>shift_code</code>, <code>staff_level</code>, <code>qualifikation</code>, <code>required_count</code> (the demand; 0 for a staffed shift without demand, often an intermediate shift), <code>assigned_count</code> (duties credited as this qualification; it may exceed the demand) and <code>missing_count</code> (required − assigned, at least 0). Every duty counts in exactly one row. Gaps are never duties; they name the slots for which guest staff is needed.</p>
+<p>Wish outcomes stay in <code>result.json</code> (<code>solution.check.wishes</code>, each wish with <code>status</code> <code>granted</code>, <code>denied</code> or <code>not_grantable</code>); they are not a CSV table.</p>
+<p>CSV conventions: UTF-8, comma, one header row, standard-library quoting, <code>\n</code> line ends, <code>true</code>/<code>false</code> booleans, integer minutes, full ISO dates. An empty cell only appears in the origin columns, for a duty of an employee without membership that day, which the check reports as an eligibility finding.</p>
+<h2 id="generate-the-examples">Generate the examples<a class="headerlink" href="#generate-the-examples" title="Permanent link">&para;</a></h2>
+<p>With the prepared inputs, the database configuration and Docker, from the repository root:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">PLAENE_GENERATION</span><span class="o">=</span>write<span class="w"> </span>just<span class="w"> </span>test-timeoffice<span class="w"> </span>tests/test_examples.py
+</code></pre></div>
+<p>The command generates January to June in order, each month read from TimeOffice for stations 77, 78, 79, 83, 85, 88 and 337 like a generation in the webapp and solved for 1,800 seconds with the default solver settings. TimeOffice is only read; nothing is written back. The inputs are used as read, wishes included; the examples are without preferences because the prepared inputs hold no wishes. From February, the month's trusted context is the last five days of the accepted previous month, in place of TimeOffice context plans, which exist only before January and after June. A month is written only when its check is accepted; otherwise the run stops with the month's status and blocking items. An existing month folder for these seven stations is kept and serves as the next month's context; a folder for another selection is rejected, so a run continues after the last written month; delete a month's folder and the later ones to generate them again. The run ends with the validation below.</p>
+<h2 id="results">Results<a class="headerlink" href="#results" title="Permanent link">&para;</a></h2>
+<p>Generated on 2026-10-05 with the seven-station generation settings committed in <code>f3c6262</code>, 1,800 seconds per month, default solver settings, in the API image (Linux arm64 container on macOS). Every month includes 96 employees, is wish-free, and is <strong>accepted</strong> with 0 findings. No station-origin employee transfers. Health events count six-day windows, backward transitions, isolated workdays and back-to-back worked weekends; balance is the sum of absolute monthly balances.</p>
+<table>
+<thead>
+<tr>
+<th>Month</th>
+<th style="text-align: right;">Duties</th>
+<th style="text-align: right;">Jumper pool duties</th>
+<th style="text-align: right;">Gap slots</th>
+<th style="text-align: right;">Gap bound</th>
+<th style="text-align: right;">Health events</th>
+<th style="text-align: right;">Balance minutes</th>
+<th style="text-align: right;">Surplus intermediate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jan</td>
+<td style="text-align: right;">1849</td>
+<td style="text-align: right;">326</td>
+<td style="text-align: right;">484</td>
+<td style="text-align: right;">461</td>
+<td style="text-align: right;">290</td>
+<td style="text-align: right;">16434</td>
+<td style="text-align: right;">152</td>
+</tr>
+<tr>
+<td>Feb</td>
+<td style="text-align: right;">1744</td>
+<td style="text-align: right;">309</td>
+<td style="text-align: right;">411</td>
+<td style="text-align: right;">403</td>
+<td style="text-align: right;">317</td>
+<td style="text-align: right;">14198</td>
+<td style="text-align: right;">136</td>
+</tr>
+<tr>
+<td>Mar</td>
+<td style="text-align: right;">1916</td>
+<td style="text-align: right;">346</td>
+<td style="text-align: right;">461</td>
+<td style="text-align: right;">445</td>
+<td style="text-align: right;">525</td>
+<td style="text-align: right;">20740</td>
+<td style="text-align: right;">143</td>
+</tr>
+<tr>
+<td>Apr</td>
+<td style="text-align: right;">1794</td>
+<td style="text-align: right;">310</td>
+<td style="text-align: right;">479</td>
+<td style="text-align: right;">455</td>
+<td style="text-align: right;">257</td>
+<td style="text-align: right;">10561</td>
+<td style="text-align: right;">182</td>
+</tr>
+<tr>
+<td>May</td>
+<td style="text-align: right;">1614</td>
+<td style="text-align: right;">278</td>
+<td style="text-align: right;">588</td>
+<td style="text-align: right;">548</td>
+<td style="text-align: right;">417</td>
+<td style="text-align: right;">17619</td>
+<td style="text-align: right;">131</td>
+</tr>
+<tr>
+<td>Jun</td>
+<td style="text-align: right;">1831</td>
+<td style="text-align: right;">299</td>
+<td style="text-align: right;">477</td>
+<td style="text-align: right;">456</td>
+<td style="text-align: right;">452</td>
+<td style="text-align: right;">14876</td>
+<td style="text-align: right;">116</td>
+</tr>
+</tbody>
+</table>
+<p>Every gap stage is <code>feasible</code>, with the shown proven lower bound. Neither gap counts nor health, balance and surplus scores are proven optimal. A longer January gate improved gaps from 512 at 900 seconds to 484 at 1,800 seconds (bound 461), health from 425 to 290, and balance from 24,409 to 16,434 minutes. The seven-station model therefore uses 1,800 seconds instead of the earlier two-station limit of 300 seconds. The values below are the observed unfilled slots, not a proof of the minimum guest staffing needed. Readiness estimates from hours are approximate: shift lengths and the permitted monthly account deviation affect the attainable number of duties.</p>
+<h3 id="gaps-by-station-and-qualification">Gaps by station and qualification<a class="headerlink" href="#gaps-by-station-and-qualification" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Station</th>
+<th>Qualification</th>
+<th style="text-align: right;">Jan</th>
+<th style="text-align: right;">Feb</th>
+<th style="text-align: right;">Mar</th>
+<th style="text-align: right;">Apr</th>
+<th style="text-align: right;">May</th>
+<th style="text-align: right;">Jun</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">77</td>
+<td>Azubi</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">17</td>
+</tr>
+<tr>
+<td style="text-align: right;">77</td>
+<td>MFA</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td style="text-align: right;">78</td>
+<td>Azubi</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">58</td>
+</tr>
+<tr>
+<td style="text-align: right;">78</td>
+<td>Hilfskraft</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td style="text-align: right;">83</td>
+<td>Azubi</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">56</td>
+</tr>
+<tr>
+<td style="text-align: right;">83</td>
+<td>Fachkraft</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">64</td>
+</tr>
+<tr>
+<td style="text-align: right;">85</td>
+<td>Azubi</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">53</td>
+</tr>
+<tr>
+<td style="text-align: right;">85</td>
+<td>Fachkraft</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td style="text-align: right;">88</td>
+<td>Fachkraft</td>
+<td style="text-align: right;">143</td>
+<td style="text-align: right;">116</td>
+<td style="text-align: right;">132</td>
+<td style="text-align: right;">148</td>
+<td style="text-align: right;">222</td>
+<td style="text-align: right;">152</td>
+</tr>
+<tr>
+<td style="text-align: right;">337</td>
+<td>Azubi</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">46</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">53</td>
+</tr>
+<tr>
+<td style="text-align: right;">337</td>
+<td>Fachkraft</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">22</td>
+</tr>
+</tbody>
+</table>
+<p>Station 79 has no gaps in any month. Stations 77 and 78 retain trainee gaps; 77's February MFA gaps are its vacation week, and its March MFA gaps on March 2–3 follow the February 28 night duty: the 48-hour recovery ends at 06:10 on March 3, after the early shift's 05:55 start. Station 78 also has two assistant gaps on February 2–3. Stations 83, 85, 88 and 337 retain Fachkraft gaps, largest at 88, as well as trainee gaps where demand exists. Pool 408's trainee is shared across all stations; pool 68 adds no trainee. The <a href="#input-data-and-boundary-context">input data</a> explains the demand adaptations and structural shortfalls; every missing date and shift is in <code>gaps.csv</code>.</p>
+<h2 id="reproduce-without-timeoffice">Reproduce without TimeOffice<a class="headerlink" href="#reproduce-without-timeoffice" title="Permanent link">&para;</a></h2>
+<p>From the repository root, with the <a href="../../getting-started/installation/#optional-native-developer-setup">native tools</a> installed:</p>
+<div class="highlight"><pre><span></span><code>just<span class="w"> </span><span class="nb">test</span><span class="w"> </span>-m<span class="w"> </span>reproduction<span class="w"> </span>tests/test_examples.py
+</code></pre></div>
+<p>The reproduction tests solve every committed <code>input.json</code> again with the time limit, search workers and seed recorded in its <code>result.json</code>, and pass when the new schedule is accepted by the schedule check. A rerun can find another equally valid schedule; byte-identical results are not expected. Each month takes up to its recorded 1,800 seconds, about three hours for all six, so they are not part of <code>just test</code>; <code>-k 2026-03</code> selects one month. The months were generated without a fixed seed and with CP-SAT's default number of workers, so a rerun on another machine searches differently; what is reproduced is an accepted schedule, not the same objective values.</p>
+<p>Each month's <code>input.json</code> carries its own trusted context, so every month solves on its own.</p>
+<p><code>just test</code> compares the published schemas with the models. A stale schema file is rewritten from its model and the test fails once, so a model change shows up as a schema diff to review and commit.</p>
+<h2 id="validate-monthly-and-sequence-results">Validate monthly and sequence results<a class="headerlink" href="#validate-monthly-and-sequence-results" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>just<span class="w"> </span><span class="nb">test</span><span class="w"> </span>tests/test_examples.py
+</code></pre></div>
+<p>The test validates the committed months <code>plaene/2026-01</code> to <code>plaene/2026-06</code> and fails with the list of every problem. It accepts them only if:</p>
+<ul>
+<li>exactly these six <code>YYYY-MM</code> folders are present (other folders such as <code>backup/</code> are ignored), each with six nonempty files, and each folder holds the bundle of its own month;</li>
+<li>every pair is a valid bundle as for an import (format, digest, month, references, found schedule, current rule settings, stored check equal to a re-check);</li>
+<li><code>result.json</code>, <code>schedule.csv</code>, <code>employees.csv</code>, <code>besetzung.csv</code> and <code>gaps.csv</code> equal the rendering of the pair, so the tables contain exactly the canonical duties and every participant's account, memberships, availability and credits;</li>
+<li>the check is <strong>accepted</strong>: no finding and no blocking missing input; a month may contain declared gaps. A duty without an evidenced origin is an eligibility finding. Rejected or incomplete results are reported as <em>diagnostic result, not an example</em>;</li>
+<li>no input holds wishes, so the schedules are without preferences;</li>
+<li>every month plans the same seven stations and two jumper pools, with duties at every station;</li>
+<li>consecutive months agree: the trusted context duties of a month on the other month's dates equal that month's schedule (both directions), and the availability of the first date of the later month equals the earlier month's context availability.</li>
+</ul>
+<p>Non-blocking open items stay visible in each result's check: the following month's start (checked by the next month with this schedule as context) and annual free Sundays, which need the whole year and are never reported as passed. The committed months pass. Tests with small two-month bundles show that the validator accepts a consistent sequence and reports each kind of problem.</p>
+<h2 id="interpret-objectives-and-solver-settings">Interpret objectives and solver settings<a class="headerlink" href="#interpret-objectives-and-solver-settings" title="Permanent link">&para;</a></h2>
+<p>The check's <code>scores</code> are the objective tiers, highest first: <code>gaps</code> (unfilled required slots), health events (<code>six_day_windows</code> + <code>backward_transitions</code> + <code>isolated_workdays</code> + <code>back_to_back_weekends</code>), <code>station_transfers</code> (duties of station-origin employees at another station), <code>wish_cost</code> (per employee, free and preferred apart, the k-th denied grantable wish costs k³), <code>balance_deviation_minutes</code> (sum of absolute account balances) and <code>surplus_intermediate_duties</code>. <code>solution.stages</code> lists the same tiers in solving order: each stage's <code>value</code> equals its score, <code>status</code> is <code>optimal</code> or <code>feasible</code> and <code>best_bound</code> is CP-SAT's proven bound for that stage, or <code>null</code> when the stage found no schedule in its time and kept the previous one. The solution status is <code>optimal</code> only when every stage is. <code>configuration.timeout_seconds</code> is the total limit of all stages, and <code>configuration.policy</code> records every rule parameter; see the <a href="../../architecture/solver/">solver reference</a>. Bundles of earlier format versions are not read.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.indexes", "navigation.sections", "navigation.top", "navigation.tracking", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

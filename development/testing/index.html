@@ -1,0 +1,1816 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://combirwth.github.io/StaffScheduling/development/testing/">
+      
+      
+        <link rel="prev" href="../checks/">
+      
+      
+        <link rel="next" href="../documentation/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Testing - Staff Scheduling</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#testing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Staff Scheduling" class="md-header__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Staff Scheduling
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Testing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Staff Scheduling" class="md-nav__button md-logo" aria-label="Staff Scheduling" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Staff Scheduling
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CombiRWTH/StaffScheduling/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CombiRWTH/StaffScheduling
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Try it
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Try it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use the app
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Use the app
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/selection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Select and inspect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure monthly inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generate schedules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review, import and export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/publication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publish and clear
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand the system
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand the system
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/solver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/timeoffice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TimeOffice adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Develop
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Develop
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../checks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checks and tooling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unit-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit responsibilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#service-and-adapter-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service and adapter integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Service and adapter integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adapter-fixture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adapter fixture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-service-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API service tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#staff-admin-browser-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Staff-admin browser flows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Staff-admin browser flows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#browser-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Browser API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flows
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-timeoffice-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live TimeOffice verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linux-and-clean-checkout-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux and clean-checkout checks
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../validation/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validate
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validate
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/reasoning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reasoning and requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples and reproduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unit-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit responsibilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#service-and-adapter-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service and adapter integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Service and adapter integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adapter-fixture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adapter fixture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-service-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API service tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#staff-admin-browser-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Staff-admin browser flows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Staff-admin browser flows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#browser-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Browser API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flows
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#live-timeoffice-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live TimeOffice verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linux-and-clean-checkout-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux and clean-checkout checks
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h1>
+<p>Run commands from the repository root after the <a href="../../getting-started/installation/#optional-native-developer-setup">native tool installation</a>. <code>just run</code> and the CI image job need Docker. <a href="../../validation/">Current limitations</a> records failing gates and open evidence.</p>
+<h2 id="unit-responsibilities">Unit responsibilities<a class="headerlink" href="#unit-responsibilities" title="Permanent link">&para;</a></h2>
+<p><code>just test</code> runs the offline API suite, including tests marked <code>integration</code>. Two markers are excluded by default:</p>
+<table>
+<thead>
+<tr>
+<th>Marker</th>
+<th>Tests</th>
+<th>Run with</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>timeoffice</code></td>
+<td>Need the authorized external test database</td>
+<td><code>just test-timeoffice</code></td>
+</tr>
+<tr>
+<td><code>reproduction</code></td>
+<td>Solve the committed example inputs again; take minutes</td>
+<td><code>just test -m reproduction</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>test_schedule_check.py</code> owns every hard rule and objective score through <code>check_schedule</code>. It tests each rule at its discriminating boundary:</p>
+<ul>
+<li>Qualification: credited versus employee qualification, MFA demand, a jumper pool employee at two stations.</li>
+<li>Availability: touched and following-date entries, narrowing allowed-shift restrictions.</li>
+<li>Time: the ±460-minute band, exactly 11 hours of rest, three versus four nights across the month start, exactly 48 hours of recovery, daylight-saving times.</li>
+<li>Work: break and daily-work limits (against the solver's own diagnostics), the monthly average, replacement rest days, a Saturday night as Sunday work.</li>
+<li>Input: context counted once, malformed assignments, a shortfall accepted only as its declared gap.</li>
+<li>Wishes: every type at its granted/denied boundary, four not-grantable causes, the cubic cost per employee and group.</li>
+<li>Health: station transfers for station members only, isolated workdays at both month edges, back-to-back weekends with a Friday night and preceding context.</li>
+</ul>
+<p><code>test_solver.py</code> owns production solves through <code>SolverService</code> (integration). Every solve asserts that each stage value equals its checked score. It also checks that every objective tier is a score field. The cases cover:</p>
+<ul>
+<li>An accepted month with every stage optimal.</li>
+<li>Time limits: each stage but the last gets half of the remaining time. A later stage without time keeps the previous schedule as feasible.</li>
+<li>Context ruling out a fourth night, and the October clock-change night that breaks the break rule.</li>
+<li>Unmet demand returned as exactly its gaps. An intermediate gap never offsets a surplus elsewhere.</li>
+<li>A non-staffing conflict stays infeasible. A month is refused without every account and solved with them.</li>
+<li>A jumper pool employee needed at two stations gets one duty and one gap.</li>
+<li>Fairness spreads two unavoidable denials 1 + 1 against the balance. An ungrantable wish costs nothing.</li>
+</ul>
+<p>The objective order is tested at one-step boundaries:</p>
+<table>
+<thead>
+<tr>
+<th>Higher priority</th>
+<th>Outweighs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gaps</td>
+<td>Health</td>
+</tr>
+<tr>
+<td>Health</td>
+<td>A station transfer, balance</td>
+</tr>
+<tr>
+<td>A station transfer</td>
+<td>A wish</td>
+</tr>
+<tr>
+<td>Health, one isolated workday or back-to-back weekend fewer</td>
+<td>A wish</td>
+</tr>
+<tr>
+<td>Wishes</td>
+<td>Balance</td>
+</tr>
+<tr>
+<td>Balance</td>
+<td>Extra intermediate duties</td>
+</tr>
+</tbody>
+</table>
+<p><code>scheduling.py</code> builds the small canonical inputs for both files. A new hard rule or objective adds its examples to both files; see <a href="../../architecture/solver/#adding-or-changing-a-hard-rule">changing the solver</a>.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Owns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_settings.py</code></td>
+<td>Secret loading</td>
+</tr>
+<tr>
+<td><code>test_inspection_rules.py</code></td>
+<td>Adding only the jumper pools that station members call home</td>
+</tr>
+<tr>
+<td><code>test_monthly_configuration.py</code></td>
+<td>The NRW calendar and weekly-pattern expansion</td>
+</tr>
+<tr>
+<td><code>test_generation.py</code></td>
+<td>The generation job: immediate acceptance, busy rejection, lock release after failures, sanitized errors</td>
+</tr>
+<tr>
+<td><code>test_foundation.py</code></td>
+<td>Liveness without credentials, database error sanitization and TLS, driver/settings validation, diagnostic cleanup and read-only queries</td>
+</tr>
+</tbody>
+</table>
+<h2 id="service-and-adapter-integration">Service and adapter integration<a class="headerlink" href="#service-and-adapter-integration" title="Permanent link">&para;</a></h2>
+<p>Compose healthchecks gate <code>docker compose up --wait</code> on API liveness and on the Next <code>/api/health</code> handler. That handler makes a real request to the API. The CI image job validates the Compose file, builds both images without credentials and checks the API image's ODBC driver.</p>
+<p>Editing a live bind mount reloads FastAPI and Next without a rebuild. Host <code>.venv</code>, <code>node_modules</code>, <code>.next</code>, local environment files and secrets stay out of image build contexts. Container dependency and build volumes mask the host directories.</p>
+<h3 id="adapter-fixture">Adapter fixture<a class="headerlink" href="#adapter-fixture" title="Permanent link">&para;</a></h3>
+<p><code>api/tests/inspection_fixture.py</code> substitutes SQL query results. Production queries, inspection validation and HTTP routes stay in use; production never imports the fixture. It supplies:</p>
+<ul>
+<li>Fictional employees, stations and complete monthly declarations.</li>
+<li>Trusted context plans for the last 14 days of every month, with one trusted night on December 31.</li>
+<li>Deliberate failure months and failing write IDs.</li>
+<li>In-memory project tables and roster that apply the adapter's parameters and roll back failed transactions.</li>
+</ul>
+<p>The fixture recognizes the adapter's statements by their text. It tests the adapter's decisions, not the SQL. SQL Server behaviour is covered by the <a href="../../validation/#publication-and-clear">live checks</a>.</p>
+<h3 id="api-service-tests">API service tests<a class="headerlink" href="#api-service-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Owns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_employee_inspection.py</code></td>
+<td>Source completeness, identity, memberships, jumper pool eligibility, accounts, TimeOffice code translation, HTTP validation</td>
+</tr>
+<tr>
+<td><code>test_monthly_configuration.py</code></td>
+<td>Scoped availability, wish and demand writes; native absences survive; validation before writing; pattern preview; HTTP <code>422</code></td>
+</tr>
+<tr>
+<td><code>test_generation.py</code></td>
+<td>Generation input from <code>TimeOfficeService.read_generation_input</code>, and the generation HTTP contract</td>
+</tr>
+<tr>
+<td><code>test_review.py</code></td>
+<td>Schedule tables, bundle files and round trip, every import rejection, <code>besetzung.csv</code> and <code>gaps.csv</code>, published schemas, the review/download/import HTTP contract</td>
+</tr>
+<tr>
+<td><code>test_examples.py</code></td>
+<td>The example validator and the committed months in <code>plaene/</code></td>
+</tr>
+<tr>
+<td><code>test_publication.py</code></td>
+<td>Publication and clear through <code>TimeOfficeService</code> and over HTTP</td>
+</tr>
+</tbody>
+</table>
+<p>Generation input ignores polluted roster rows and keeps approved absences. The fixture applies the roster query's own absence filter, so a query that read worked shifts would fail. Worked duties come only from trusted context plans; a context duty that differs from its shift fails. Only the selected station and its jumper pool are units, and only the month's project wishes are input. A station without saved staffing is refused. Shift segments, breaks and paid minutes come from the target-time segments. Over HTTP, one real solve reaches <code>completed</code> with an <code>accepted</code> check. The test also checks <code>404</code> before any job and after a restart, <code>422</code>/<code>409</code> without a job and <code>423</code> while busy.</p>
+<p>A stale published schema is rewritten and fails the review test once.</p>
+<p>The example validator accepts a consistent two-month sequence of both stations. It rejects changed files, context that differs from the neighbouring month, a rejected month, missing or extra stations and misplaced folders. The <code>reproduction</code> tests in <code>test_examples.py</code> solve every committed input again. The example generation is a <code>timeoffice</code> test that runs only with <code>PLAENE_GENERATION=write</code>; see <a href="../../validation/examples/">examples and reproduction</a>.</p>
+<p>Publication writes one row per segment into the destination station's target plan, with the membership profession and the <code>Info</code> marker. A jumper pool night goes into the other station's plan, dated on its start. Numbering continues after a kept native wish. Absences, wishes, duties entered in TimeOffice and other-plan duties are kept. A second write waits for the first. Invalid schedules are rejected before any deletion. A failed insert, collision or differing read-back (<code>read_back</code>) rolls the deletion back; a failed commit reports stage <code>commit</code>. Over HTTP it publishes only with the reviewed <code>received_at</code> and stations. It maps <code>conflict</code>, <code>concurrent</code>, <code>503</code>, <code>not_accepted</code> and <code>changed</code>; an empty schedule raises <code>InvalidSelection</code> (<code>422</code>). <code>test_foundation.py</code> checks that deadlocks and duplicate keys become a sanitized <code>TimeOfficeConflict</code>. A foreign-key violation stays a query failure.</p>
+<h2 id="staff-admin-browser-flows">Staff-admin browser flows<a class="headerlink" href="#staff-admin-browser-flows" title="Permanent link">&para;</a></h2>
+<p>Selection and inspection, monthly configuration, generation, review with import/export, and publication/clear are automated.</p>
+<div class="highlight"><pre><span></span><code>just<span class="w"> </span>install
+just<span class="w"> </span>test-browser
+</code></pre></div>
+<ul>
+<li>The locked <code>@playwright/test</code> runner uses Chromium, installed by <code>just install</code>.</li>
+<li>Linux hosts also need <code>pnpm --dir webapp exec playwright install --with-deps chromium</code>.</li>
+<li>Tests need the native tools and free loopback ports 18080 and 18081.</li>
+<li>The runner starts its own API and Next servers and refuses to reuse an existing process.</li>
+<li>No other <code>next dev</code> may run for <code>webapp/</code>; Next.js allows one development server per project directory.</li>
+<li>No database credentials or Docker are needed.</li>
+<li><code>just check</code> runs the flows as an independent gate. CI runs them in a separate job.</li>
+</ul>
+<p>Failure traces are kept under the ignored <code>webapp/test-results/</code>. Inspect one with <code>pnpm --dir webapp exec playwright show-trace &lt;path&gt;</code>.</p>
+<h3 id="browser-api">Browser API<a class="headerlink" href="#browser-api" title="Permanent link">&para;</a></h3>
+<p><code>api/tests/browser_server.py</code> overrides the adapter dependency in the test process with the <a href="#adapter-fixture">adapter fixture</a>. Found schedules go to the same in-memory review as in production. Staffing is seeded for Station North in June to August:</p>
+<table>
+<thead>
+<tr>
+<th>Month</th>
+<th>Generation result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>June</td>
+<td>Real solve; one shift stays a gap</td>
+</tr>
+<tr>
+<td>July</td>
+<td>Substituted solver crash, after two seconds</td>
+</tr>
+<tr>
+<td>August</td>
+<td>Real solve with unreachable accounts (two professionals needed, one available), after two seconds</td>
+</tr>
+</tbody>
+</table>
+<p>Deliberate failures are fixed in the fixture:</p>
+<ul>
+<li>Saves for "Example Jumper Three" (availability) and "Example Station South" (demand) fail.</li>
+<li>Every roster write at Station South fails.</li>
+<li>June at Station South has no trusted context, so its schedule is incompletely checked and offers no publication.</li>
+</ul>
+<h3 id="flows">Flows<a class="headerlink" href="#flows" title="Permanent link">&para;</a></h3>
+<p>All flows live in <code>webapp/tests/browser/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Spec</th>
+<th>Covers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>selection.spec.ts</code></td>
+<td>Station/month selection, employee table, hours and credits, filters, empty/incomplete states, URL selection, navigation and mobile navigation</td>
+</tr>
+<tr>
+<td><code>configuration.spec.ts</code></td>
+<td><strong>Verfügbarkeit</strong> entries and wishes, <strong>Mindestbesetzung</strong> demand, weekly pattern, per-cell change marks, invalid counts, deliberate save failures</td>
+</tr>
+<tr>
+<td><code>generation.spec.ts</code></td>
+<td>Refused starts, a real June solve, the busy message, completed, infeasible and failed jobs with German messages</td>
+</tr>
+<tr>
+<td><code>review.spec.ts</code></td>
+<td>Review summary, gaps, wishes, schedule and accounts, the six downloads, import, and two crafted imports through the real validation</td>
+</tr>
+<tr>
+<td><code>publication.spec.ts</code></td>
+<td>Publication and clear confirmations, a replaced schedule, a failed write that changes nothing, a schedule without trusted context</td>
+</tr>
+</tbody>
+</table>
+<p>Some details matter when changing the webapp:</p>
+<ul>
+<li>Accessible text is the selector contract. Change marks use "Geändert, gespeichert: <em>n</em>"; transfers use <em>Einsatz außerhalb der Herkunft</em>.</li>
+<li>A missing or invalid month redirects to January of the current year.</li>
+<li>The sidebar links the overview plus exactly the five implemented areas.</li>
+<li>The solver's English messages appear only in <strong>Technische Details</strong>.</li>
+<li>The API tests own every import rejection except a changed input with the old result.</li>
+<li>Crafted imports must pass the real validation, whose re-check reproduces the stored check exactly. A home change to the jumper pool on June 16 marks only later duties as transfers.</li>
+<li>An accepted schedule without duties cannot be produced from the fictional data. No browser flow exercises the webapp's message for it.</li>
+</ul>
+<h2 id="live-timeoffice-verification">Live TimeOffice verification<a class="headerlink" href="#live-timeoffice-verification" title="Permanent link">&para;</a></h2>
+<p>With services running, <code>just connectivity</code> checks configuration, ODBC, DNS, login and <code>SELECT 1</code> only. It never runs application queries. It needs the connection settings, password and network prerequisites in <a href="../../getting-started/installation/#database-configuration">installation</a>. The current test server needs <code>DB_TRUST_SERVER_CERTIFICATE=true</code> for its self-signed certificate.</p>
+<p><code>just test-timeoffice</code> runs only the <code>timeoffice</code> tests. They run in the API image with its ODBC driver, <code>.env</code> and password secret. The working tree's tests are mounted read-only.</p>
+<p><code>test_timeoffice_preparation.py</code> owns the <a href="../../architecture/timeoffice/#prepared-units">prepared units</a>:</p>
+<ul>
+<li>It runs each file of <code>api/tests/timeoffice_preparation/</code> in order in one transaction, then rolls back.</li>
+<li>It fails unless every read-back <code>ok</code> is 1 and no write changes a row.</li>
+<li><code>readiness.sql</code> must report every check <code>ok</code>.</li>
+<li>The configured units, the adapter's mappings and the NRW holidays are passed as temporary tables, so the test checks <code>facts.py</code> itself.</li>
+<li><code>TIMEOFFICE_PREPARATION=apply</code> commits each file instead and stops at the first failing one.</li>
+</ul>
+<p>Live publication checks run by hand, one writer at a time, on the prepared targets:</p>
+<ol>
+<li>Record the target plans' rows by kind and checksums of all other roster rows.</li>
+<li>Publish and clear through the API or the webapp.</li>
+<li>Compare after every step.</li>
+<li>Finish with the targets empty again.</li>
+</ol>
+<p><a href="../../validation/#publication-and-clear">Current limitations</a> lists the executed run.</p>
+<h2 id="linux-and-clean-checkout-checks">Linux and clean-checkout checks<a class="headerlink" href="#linux-and-clean-checkout-checks" title="Permanent link">&para;</a></h2>
+<p>The foundation ran in Docker Desktop Linux arm64 containers on macOS, including ODBC Driver 18, HTTP connectivity and reload. A Linux amd64 API image passed build, import and ODBC checks.</p>
+<p>To repeat the verification on a Linux host:</p>
+<ol>
+<li>Frozen-install the native tools.</li>
+<li>Run <code>just check</code> and keep every failing result.</li>
+<li>Run <code>just connectivity</code> separately with authorized configuration.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.indexes", "navigation.sections", "navigation.top", "navigation.tracking", "toc.follow", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
