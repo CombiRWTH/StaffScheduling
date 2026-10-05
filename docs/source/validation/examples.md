@@ -6,22 +6,22 @@ Return to the [documentation overview](../index.md).
 
 ## Example scope and file inventory
 
-Stations `PE 77` and `PE 79` of the TimeOffice test database and their jumper pool `PE 408`, planned together for each month from January to June 2026: twelve station months. The units and their keys are listed in the [adapter reference](../architecture/timeoffice.md#prepared-units).
+Stations `PE 77`, `PE 78`, `PE 79`, `PE 83`, `PE 85`, `PE 88` and `PE 337` of the TimeOffice test database with jumper pools `PE 408` and `PE 68`, planned together for each month from January to June 2026: 42 station months. The pools receive no schedule of their own; their employees work at eligible stations. The units and their keys are listed in the [adapter reference](../architecture/timeoffice.md#prepared-units).
 
 Each month is a folder `plaene/2026-MM/` with the six [bundle files](#bundle-files): the requested example schedules without preferences ("ohne Präferenzen"). `plaene/backup/` holds an older dataset of an earlier project state (stations 77 and 78, another format). It is not an input of these months and not checked by the tests below.
 
 ## Input data and boundary context
 
-The employees are the units' existing test-database employees, all of them adults; the test database holds no real persons. Their contracts, home memberships and native targets are used unchanged. In scope every month: 53 employees (46 station staff, 7 jumper pool), by profession 40 professionals, 8 assistants, 1 MFA and 4 trainees. Everything else is prepared by the tracked SQL in `api/tests/timeoffice_preparation/`; [reproduce the inputs](#reproduce-the-timeoffice-inputs) below.
+The employees are the units' existing test-database employees, all of them adults; the test database holds no real persons. Their contracts, home memberships and native targets are used unchanged. In scope every month: 96 employees (77 station staff, 19 jumper pool), by employee profession 76 professionals, 13 assistants, 1 MFA and 6 trainees. A duty counts as the qualification of the dated station membership, which can differ from the employee record. Everything else is prepared by the tracked SQL in `api/tests/timeoffice_preparation/`; [reproduce the inputs](#reproduce-the-timeoffice-inputs) below.
 
-- **Eligibility.** Station staff are members of their station. The jumper pool staff have the jumper pool as home and replacement memberships at both stations from 2025-12-01 to 2026-07-31. Rotating trainees, whose home is a school unit and who are station members for part of a month only, are excluded from planning (`KeinEPlan`).
+- **Eligibility.** Station staff are members of their station. Pool 408 serves all seven stations; pool 68 serves 78, 83, 85, 88 and 337. Their staff have the pool as home and replacement memberships at these stations from 2025-12-01 to 2026-07-31. Rotating trainees, whose home is a school unit and who are station members for part of a month only, are excluded from planning (`KeinEPlan`).
 - **Targets.** Native targets are kept. Missing ones are derived by the native rule: weekly hours (38.5 when the contract states none) ÷ 5 for each Monday–Friday that is not an NRW public holiday.
-- **Absences.** Each professional of both stations and the jumper pool, and each assistant and the MFA of `PE 77`, has one Monday–Friday vacation week (`U`), credited with the weekly hours ÷ 5 per day in TimeOffice's daily accounts. The jumper pool's vacations fall in June.
-- **Demand.** Professionals follow the chair's minimum-staffing table for keys 77 and 79 (its weekday and weekend/holiday rows; NRW holidays take the weekend row). The table's other levels exceed the real staff, so they are sized near it, so that the jumper pool visibly jumps and gaps stay small: at `PE 77` assistants early 2 and late 2 on weekdays (early 2, late 1 on weekends and holidays), one trainee and one MFA early on weekdays; at `PE 79` one assistant early every day and no trainee or MFA demand. Qualifications stay separate.
-- **Capacity.** Per qualification and month, available hours (target − credits) of the home staff against demand hours are 1.37–1.65 for professionals at `PE 77`, 1.03–1.26 at `PE 79`, and 0.64–1.12 for assistants; the trainee demand at `PE 77` relies on the jumper pool's trainee alone. Every shortfall is smaller than the jumper pool's hours of that qualification. The one deliberate gap is the MFA's vacation week, 2026-02-09..13: no other MFA exists, so its early demand stays unfilled for five days. This is an hours and headcount check only; it does not show that a schedule satisfying every rule exists. The generated months show further gaps where a month's end constrains the next month's start: March has early-shift gaps at `PE 77` for the MFA and a trainee on 2026-03-02 and 03-03, because February, solved without knowing March, ends with night duties of the only MFA and of trainees on 2026-02-28, and the 48-hour recovery after a night run lasts until 06:10 on 2026-03-03, after the early shift's 05:55 start. The gap stage is optimal, so no March schedule avoids them given that context.
+- **Absences.** Each professional of stations 77 and 79 and pool 408, and each assistant and the MFA of `PE 77`, has one Monday–Friday vacation week (`U`), credited with the weekly hours ÷ 5 per day in TimeOffice's daily accounts. Pool 408's vacations fall in June. No additional vacations were added for the other stations or pool 68.
+- **Demand.** Fachkraft demand follows the chair's minimum-staffing CSV at all stations; NRW public holidays use its weekend row. At the additional stations, trainee demand also follows the CSV. At 77 it remains one early trainee on weekdays; 79 has none. Only pool 408's trainee can serve all seven stations. Assistant demand is adapted to the staff: 78 and 85 one early duty Monday–Friday, 337 none, 77 early 2 and late 2 on weekdays (early 2, late 1 on weekends/holidays), and 79 one early every day. MFA demand is one early duty on weekdays at 77 and none at the other stations, where no MFA is eligible. Qualifications stay separate.
+- **Capacity and gaps.** Stations 83, 85, 88 and 337 have a Fachkraft shortfall before the pools are allocated; 88 requires 14 professional duties daily for five home professionals, and 337 three for one. Both pools together cannot cover all professional and trainee demand. Home-station staff can only serve their own station, so surplus staff at 77/78/79 cannot fill another station's gaps. The hard monthly balance also requires surplus duties. The sole MFA's vacation week, 2026-02-09..13, leaves five unavoidable gaps. Further gaps can follow from rest rules and the previous month's last duties. The solver's gap count is feasible unless its gap stage is `optimal`; an unproven count must not be read as the minimum required guest staffing. See the measured [results](#results).
 - **Boundary context.** Empty trusted context plans cover 2025-12-18 to 2025-12-31 and 2026-07-01 to 2026-07-07: January starts and June ends next to known free days. From February, the [generation](#generate-the-examples) takes the last five days of the accepted previous month as trusted context.
 - **Availability.** One employee is unavailable on 2026-06-08..12, where native duties remain in the June target plan; two employees may work only early (2026-03-10) or early and intermediate shifts (2026-04-14).
-- **Not included.** Stations 78, 83, 85, 88 and 337 and jumper pool 68: the [preparation](../architecture/timeoffice.md#prepared-units) now covers them too, but these months were generated before. Also special capabilities, replacement memberships of station staff and history before 2025-12-18. Annual free Sundays need the whole year and cannot be assessed from this data.
+- **Not included.** Special capabilities, replacement memberships of station staff and history before 2025-12-18. Annual free Sundays need the whole year and cannot be assessed from this data.
 
 ## Reproduce the TimeOffice inputs
 
@@ -32,7 +32,7 @@ just test-timeoffice                                   # verify: every file conv
 TIMEOFFICE_PREPARATION=apply just test-timeoffice      # prepare a copy that lacks the inputs, then verify again
 ```
 
-The verification runs each preparation file in one transaction, fails on any read-back other than `ok` = 1 or any write that would change a row, and rolls back. Apply commits the files in order; each is committed only when its read-back is ok, and a failing file stops the run with the later files unapplied. Then open **Mitarbeiter** for both stations and each month: the inspection must be complete. There is no reverse script; on a shared database, record what a first apply writes before running it.
+The verification runs each preparation file in one transaction, fails on any read-back other than `ok` = 1 or any write that would change a row, and rolls back. Apply commits the files in order; each is committed only when its read-back is ok, and a failing file stops the run with the later files unapplied. Then open **Mitarbeiter** for all seven stations and each month: the inspection must be complete. There is no reverse script; on a shared database, record what a first apply writes before running it.
 
 ## Bundle files
 
@@ -67,24 +67,40 @@ With the prepared inputs, the database configuration and Docker, from the reposi
 PLAENE_GENERATION=write just test-timeoffice tests/test_examples.py
 ```
 
-The command generates January to June in order, each month read from TimeOffice for stations 77 and 79 like a generation in the webapp and solved for 300 seconds with the default solver settings. TimeOffice is only read; nothing is written back. The inputs are used as read, wishes included; the examples are without preferences because the prepared inputs hold no wishes. From February, the month's trusted context is the last five days of the accepted previous month, in place of TimeOffice context plans, which exist only before January and after June. A month is written only when its check is accepted; otherwise the run stops with the month's status and blocking items. An existing month folder is kept and serves as the next month's context, so a run continues after the last written month; delete a month's folder and the later ones to generate them again. The run ends with the validation below.
+The command generates January to June in order, each month read from TimeOffice for stations 77, 78, 79, 83, 85, 88 and 337 like a generation in the webapp and solved for 1,800 seconds with the default solver settings. TimeOffice is only read; nothing is written back. The inputs are used as read, wishes included; the examples are without preferences because the prepared inputs hold no wishes. From February, the month's trusted context is the last five days of the accepted previous month, in place of TimeOffice context plans, which exist only before January and after June. A month is written only when its check is accepted; otherwise the run stops with the month's status and blocking items. An existing month folder for these seven stations is kept and serves as the next month's context; a folder for another selection is rejected, so a run continues after the last written month; delete a month's folder and the later ones to generate them again. The run ends with the validation below.
 
 ## Results
 
-The months, generated on 2026-10-02 at revision `4b6b2fa` (the generation code; the inputs come from the prepared test database), 300 seconds per month, default solver settings, in the API image (Linux arm64 container on macOS). Health events count six-day windows, backward transitions, isolated workdays and back-to-back worked weekends; the balance is the sum of absolute monthly balances. Every month's check is `accepted` with 0 findings, its gap stage is optimal and no station-origin employee transfers.
+Generated on 2026-10-05 with the seven-station generation settings committed in `f3c6262`, 1,800 seconds per month, default solver settings, in the API image (Linux arm64 container on macOS). Every month includes 96 employees, is wish-free, and is **accepted** with 0 findings. No station-origin employee transfers. Health events count six-day windows, backward transitions, isolated workdays and back-to-back worked weekends; balance is the sum of absolute monthly balances.
 
-| Month | Duties | Jumper pool duties | Gap slots | Health events | Balance minutes | Surplus intermediate |
-| ----- | -----: | -----------------: | --------: | ------------: | --------------: | -------------------: |
-| Jan   |   1042 |                157 |         0 |            34 |             497 |                  219 |
-| Feb   |    951 |                145 |         5 |            72 |            4928 |                  138 |
-| Mar   |   1051 |                160 |         4 |           128 |            5414 |                  121 |
-| Apr   |    991 |                148 |         0 |            64 |            4953 |                  158 |
-| May   |    928 |                138 |         0 |            49 |            1461 |                  198 |
-| Jun   |   1022 |                132 |         0 |            64 |            3384 |                  189 |
+| Month | Duties | Jumper pool duties | Gap slots | Gap bound | Health events | Balance minutes | Surplus intermediate |
+| ----- | -----: | -----------------: | --------: | --------: | ------------: | --------------: | -------------------: |
+| Jan   |   1849 |                326 |       484 |       461 |           290 |           16434 |                  152 |
+| Feb   |   1744 |                309 |       411 |       403 |           317 |           14198 |                  136 |
+| Mar   |   1916 |                346 |       461 |       445 |           525 |           20740 |                  143 |
+| Apr   |   1794 |                310 |       479 |       455 |           257 |           10561 |                  182 |
+| May   |   1614 |                278 |       588 |       548 |           417 |           17619 |                  131 |
+| Jun   |   1831 |                299 |       477 |       456 |           452 |           14876 |                  116 |
 
-On 2026-10-05 the committed months were carried to format 3 without solving again: only the format version and the input digest changed, and `besetzung.csv` and the `qualifikation` column were rendered from the unchanged pair.
+Every gap stage is `feasible`, with the shown proven lower bound. Neither gap counts nor health, balance and surplus scores are proven optimal. A longer January gate improved gaps from 512 at 900 seconds to 484 at 1,800 seconds (bound 461), health from 425 to 290, and balance from 24,409 to 16,434 minutes. The seven-station model therefore uses 1,800 seconds instead of the earlier two-station limit of 300 seconds. The values below are the observed unfilled slots, not a proof of the minimum guest staffing needed. Readiness estimates from hours are approximate: shift lengths and the permitted monthly account deviation affect the attainable number of duties.
 
-February's gaps are the MFA's vacation week and March's follow from February's last nights ([input data](#input-data-and-boundary-context)). The later stages stop at the time limit as `feasible`, so their values are not proven minimal: March's 128 health events include 73 back-to-back worked weekends.
+### Gaps by station and qualification
+
+| Station | Qualification | Jan | Feb | Mar | Apr | May | Jun |
+| ------: | ------------- | --: | --: | --: | --: | --: | --: |
+|      77 | Azubi         |  21 |  19 |  21 |  17 |  18 |  17 |
+|      77 | MFA           |   0 |   5 |   2 |   0 |   0 |   0 |
+|      78 | Azubi         |  60 |  51 |  58 |  57 |  61 |  58 |
+|      78 | Hilfskraft    |   0 |   2 |   0 |   0 |   0 |   0 |
+|      83 | Azubi         |  55 |  52 |  56 |  57 |  59 |  56 |
+|      83 | Fachkraft     |  67 |  51 |  54 |  69 |  90 |  64 |
+|      85 | Azubi         |  54 |  53 |  58 |  56 |  57 |  53 |
+|      85 | Fachkraft     |   4 |   0 |   1 |   1 |  12 |   2 |
+|      88 | Fachkraft     | 143 | 116 | 132 | 148 | 222 | 152 |
+|     337 | Azubi         |  55 |  46 |  52 |  50 |  51 |  53 |
+|     337 | Fachkraft     |  25 |  16 |  27 |  24 |  18 |  22 |
+
+Station 79 has no gaps in any month. Stations 77 and 78 retain trainee gaps; 77's February MFA gaps are its vacation week, and its March MFA gaps on March 2–3 follow the February 28 night duty: the 48-hour recovery ends at 06:10 on March 3, after the early shift's 05:55 start. Station 78 also has two assistant gaps on February 2–3. Stations 83, 85, 88 and 337 retain Fachkraft gaps, largest at 88, as well as trainee gaps where demand exists. Pool 408's trainee is shared across all stations; pool 68 adds no trainee. The [input data](#input-data-and-boundary-context) explains the demand adaptations and structural shortfalls; every missing date and shift is in `gaps.csv`.
 
 ## Reproduce without TimeOffice
 
@@ -94,7 +110,7 @@ From the repository root, with the [native tools](../getting-started/installatio
 just test -m reproduction tests/test_examples.py
 ```
 
-The reproduction tests solve every committed `input.json` again with the time limit, search workers and seed recorded in its `result.json`, and pass when the new schedule is accepted by the schedule check. A rerun can find another equally valid schedule; byte-identical results are not expected. Each month takes its recorded 300 seconds, about half an hour for all six, so they are not part of `just test`; `-k 2026-03` selects one month. The months were generated without a fixed seed and with CP-SAT's default number of workers, so a rerun on another machine searches differently; what is reproduced is an accepted schedule, not the same objective values.
+The reproduction tests solve every committed `input.json` again with the time limit, search workers and seed recorded in its `result.json`, and pass when the new schedule is accepted by the schedule check. A rerun can find another equally valid schedule; byte-identical results are not expected. Each month takes up to its recorded 1,800 seconds, about three hours for all six, so they are not part of `just test`; `-k 2026-03` selects one month. The months were generated without a fixed seed and with CP-SAT's default number of workers, so a rerun on another machine searches differently; what is reproduced is an accepted schedule, not the same objective values.
 
 Each month's `input.json` carries its own trusted context, so every month solves on its own.
 
@@ -113,7 +129,7 @@ The test validates the committed months `plaene/2026-01` to `plaene/2026-06` and
 - `result.json`, `schedule.csv`, `employees.csv`, `besetzung.csv` and `gaps.csv` equal the rendering of the pair, so the tables contain exactly the canonical duties and every participant's account, memberships, availability and credits;
 - the check is **accepted**: no finding and no blocking missing input; a month may contain declared gaps. A duty without an evidenced origin is an eligibility finding. Rejected or incomplete results are reported as _diagnostic result, not an example_;
 - no input holds wishes, so the schedules are without preferences;
-- every month plans the same two stations and jumper pools, with duties at both stations;
+- every month plans the same seven stations and two jumper pools, with duties at every station;
 - consecutive months agree: the trusted context duties of a month on the other month's dates equal that month's schedule (both directions), and the availability of the first date of the later month equals the earlier month's context availability.
 
 Non-blocking open items stay visible in each result's check: the following month's start (checked by the next month with this schedule as context) and annual free Sundays, which need the whole year and are never reported as passed. The committed months pass. Tests with small two-month bundles show that the validator accepts a consistent sequence and reports each kind of problem.
