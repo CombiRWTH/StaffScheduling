@@ -130,7 +130,13 @@ TIMEOFFICE_FACTS = TimeOfficeFacts(
     planning_unit_type_by_id=MappingProxyType(
         {
             77: PlanningUnitType.STATION,  # PE 77
+            78: PlanningUnitType.STATION,  # PE 78
             79: PlanningUnitType.STATION,  # PE 79
+            83: PlanningUnitType.STATION,  # PE 83
+            85: PlanningUnitType.STATION,  # PE 85
+            88: PlanningUnitType.STATION,  # PE 88
+            337: PlanningUnitType.STATION,  # PE 337
+            68: PlanningUnitType.JUMPER_POOL,  # PE 68
             408: PlanningUnitType.JUMPER_POOL,  # PE 408
         }
     ),

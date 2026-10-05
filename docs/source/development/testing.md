@@ -156,7 +156,7 @@ With services running, `just connectivity` checks configuration, ODBC, DNS, logi
 - It runs each file of `api/tests/timeoffice_preparation/` in order in one transaction, then rolls back.
 - It fails unless every read-back `ok` is 1 and no write changes a row.
 - `readiness.sql` must report every check `ok`.
-- The adapter's mappings and the NRW holidays are passed as temporary tables, so the test checks `facts.py` itself.
+- The configured units, the adapter's mappings and the NRW holidays are passed as temporary tables, so the test checks `facts.py` itself.
 - `TIMEOFFICE_PREPARATION=apply` commits each file instead and stops at the first failing one.
 
 Live publication checks run by hand, one writer at a time, on the prepared targets:

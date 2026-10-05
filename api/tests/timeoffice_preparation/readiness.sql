@@ -1,9 +1,10 @@
--- Read-only readiness of stations 77, 79 and jumper pool 408 for every month 2026-01 to 2026-06, following the
+-- Read-only readiness of the configured units for every month 2026-01 to 2026-06, following the
 -- adapter's checklist for supporting another unit: target plans, memberships with mapped professions and one home
 -- per date, names, valid targets, mapped absences with their credits, saved demand and context plans. Every row
 -- carries `ok` = 1 when met. The last two statements report daily headcount and hours against demand.
 -- The adapter's mappings and the NRW holidays come from temporary tables that the test fills from facts.py and the
--- calendar: #profession_level(code, lvl), #absence_code(code), #credited_absence(account, code), #holiday(d).
+-- calendar: #unit(unit, kind), #profession_level(code, lvl), #absence_code(code), #credited_absence(account, code),
+-- #holiday(d).
 
 -- 1 + 2 Units and exactly one status-20 monthly full-month target plan per station and month
 WITH months AS (
@@ -14,7 +15,7 @@ SELECT u.Prim AS unit, mo.m AS month, u.RefPlanungsIntervalle AS interval_,
     CASE WHEN u.RefPlanungsIntervalle = 1 AND (SELECT COUNT(*) FROM TPlan p WHERE p.RefPlanungseinheiten = u.Prim
         AND p.RefStati = 20 AND p.RefPlanungsIntervalle = 1 AND CONVERT(date, p.VonDat) = mo.m
         AND CONVERT(date, p.BisDat) = EOMONTH(mo.m)) = 1 THEN 1 ELSE 0 END AS ok
-FROM TPlanungseinheiten u CROSS JOIN months mo WHERE u.Prim IN (77, 79)
+FROM TPlanungseinheiten u CROSS JOIN months mo WHERE u.Prim IN (SELECT unit FROM #unit WHERE kind = 'station')
 ORDER BY unit, month
 GO
 -- 3 + 4 + 5 Per month: members, unmapped professions (membership or employee), missing names, missing/invalid targets
@@ -23,7 +24,7 @@ WITH months AS (
 mapped(code, lvl) AS (SELECT code, lvl FROM #profession_level),
 scope AS (
     SELECT mo.m, pep.RefPersonal, pep.RefBerufe FROM months mo JOIN TPlanungseinheitenPersonal pep
-        ON pep.RefPlanungseinheiten IN (77, 79, 408) AND ISNULL(pep.KeinEPlan, 0) = 0
+        ON pep.RefPlanungseinheiten IN (SELECT unit FROM #unit) AND ISNULL(pep.KeinEPlan, 0) = 0
         AND CONVERT(date, pep.VonDat) <= EOMONTH(mo.m) AND (pep.BisDat IS NULL OR CONVERT(date, pep.BisDat) >= mo.m)),
 flags AS (
     SELECT s.m, s.RefPersonal,
@@ -48,7 +49,7 @@ WITH days AS (
     SELECT CAST('20260101' AS date) AS d UNION ALL SELECT DATEADD(day, 1, d) FROM days WHERE d < '20260630'),
 active AS (
     SELECT dy.d, pep.RefPersonal, pep.IstHeimat, pep.RefPlanungseinheiten FROM days dy JOIN TPlanungseinheitenPersonal pep
-        ON pep.RefPlanungseinheiten IN (77, 79, 408) AND ISNULL(pep.KeinEPlan, 0) = 0
+        ON pep.RefPlanungseinheiten IN (SELECT unit FROM #unit) AND ISNULL(pep.KeinEPlan, 0) = 0
         AND CONVERT(date, pep.VonDat) <= dy.d AND (pep.BisDat IS NULL OR CONVERT(date, pep.BisDat) >= dy.d)),
 homes AS (
     SELECT d, RefPersonal, COUNT(DISTINCT CASE WHEN IstHeimat = 1 THEN RefPlanungseinheiten END) AS n FROM active GROUP BY d, RefPersonal)
@@ -57,24 +58,32 @@ SELECT FORMAT(d, 'yyyy-MM') AS month, COUNT(*) AS employee_days, SUM(CASE WHEN n
 FROM homes GROUP BY FORMAT(d, 'yyyy-MM') ORDER BY month
 OPTION (MAXRECURSION 400)
 GO
--- 3 Jumper pool: every 408 member has a planned Ersatz membership at each station covering the month
+-- 3 Jumper pools: every member has a planned Ersatz membership covering the month at each station their pool serves
 WITH months AS (
     SELECT CAST('20260101' AS date) AS m UNION ALL SELECT DATEADD(month, 1, m) FROM months WHERE m < '20260601'),
-covered AS (
-    SELECT mo.m, h.RefPersonal, COUNT(DISTINCT e.RefPlanungseinheiten) AS stations
-    FROM months mo JOIN TPlanungseinheitenPersonal h ON h.RefPlanungseinheiten = 408 AND h.IstHeimat = 1
-        AND CONVERT(date, h.VonDat) <= EOMONTH(mo.m) AND (h.BisDat IS NULL OR CONVERT(date, h.BisDat) >= mo.m)
-    LEFT JOIN TPlanungseinheitenPersonal e ON e.RefPersonal = h.RefPersonal AND e.RefPlanungseinheiten IN (77, 79)
-        AND e.IstVonErsatz = 1 AND ISNULL(e.KeinEPlan, 0) = 0 AND CONVERT(date, e.VonDat) <= mo.m
-        AND (e.BisDat IS NULL OR CONVERT(date, e.BisDat) >= EOMONTH(mo.m))
-    GROUP BY mo.m, h.RefPersonal)
-SELECT m AS month, COUNT(*) AS jumper_pool_members, SUM(CASE WHEN stations = 2 THEN 1 ELSE 0 END) AS with_ersatz,
-    CASE WHEN SUM(CASE WHEN stations = 2 THEN 1 ELSE 0 END) = COUNT(*) THEN 1 ELSE 0 END AS ok
-FROM covered GROUP BY m ORDER BY m
+members AS (
+    SELECT mo.m, h.RefPlanungseinheiten AS pool, h.RefPersonal
+    FROM months mo JOIN TPlanungseinheitenPersonal h ON h.RefPlanungseinheiten IN (SELECT unit FROM #unit WHERE kind = 'jumper_pool')
+        AND h.IstHeimat = 1 AND ISNULL(h.KeinEPlan, 0) = 0
+        AND CONVERT(date, h.VonDat) <= EOMONTH(mo.m) AND (h.BisDat IS NULL OR CONVERT(date, h.BisDat) >= mo.m)),
+covers AS (
+    SELECT mb.m, mb.pool, mb.RefPersonal, e.RefPlanungseinheiten AS station
+    FROM members mb JOIN TPlanungseinheitenPersonal e ON e.RefPersonal = mb.RefPersonal AND e.RefPlanungseinheiten IN (SELECT unit FROM #unit WHERE kind = 'station')
+        AND e.IstVonErsatz = 1 AND ISNULL(e.KeinEPlan, 0) = 0 AND CONVERT(date, e.VonDat) <= mb.m
+        AND (e.BisDat IS NULL OR CONVERT(date, e.BisDat) >= EOMONTH(mb.m))),
+served AS (SELECT m, pool, COUNT(DISTINCT station) AS stations FROM covers GROUP BY m, pool),
+per_member AS (
+    SELECT mb.m, mb.pool, mb.RefPersonal, COUNT(DISTINCT c.station) AS stations
+    FROM members mb LEFT JOIN covers c ON c.m = mb.m AND c.RefPersonal = mb.RefPersonal GROUP BY mb.m, mb.pool, mb.RefPersonal)
+SELECT p.m AS month, p.pool, COUNT(*) AS jumper_pool_members, ISNULL(s.stations, 0) AS stations_served,
+    SUM(CASE WHEN p.stations = s.stations THEN 1 ELSE 0 END) AS with_ersatz,
+    CASE WHEN ISNULL(s.stations, 0) > 0 AND SUM(CASE WHEN p.stations = s.stations THEN 1 ELSE 0 END) = COUNT(*) THEN 1 ELSE 0 END AS ok
+FROM per_member p LEFT JOIN served s ON s.m = p.m AND s.pool = p.pool
+GROUP BY p.m, p.pool, s.stations ORDER BY month, p.pool
 GO
 -- 6 Absence codes (mapped or ignored), unbooked credited Mon-Fri non-holiday absences, orphan credits; in scope, Jan-Jun
 WITH emps AS (
-    SELECT DISTINCT RefPersonal FROM TPlanungseinheitenPersonal pep WHERE pep.RefPlanungseinheiten IN (77, 79, 408)
+    SELECT DISTINCT RefPersonal FROM TPlanungseinheitenPersonal pep WHERE pep.RefPlanungseinheiten IN (SELECT unit FROM #unit)
         AND ISNULL(pep.KeinEPlan, 0) = 0 AND CONVERT(date, pep.VonDat) <= '20260630' AND (pep.BisDat IS NULL OR CONVERT(date, pep.BisDat) >= '20260101')),
 known(code) AS (SELECT code FROM #absence_code),
 credit_code(account, code) AS (SELECT account, code FROM #credited_absence),
@@ -110,7 +119,7 @@ SELECT u.unit, mo.m AS month,
     (SELECT COUNT(*) FROM dbo.StaffSchedulingDemand d WHERE d.planning_unit_id = u.unit AND d.demand_date BETWEEN mo.m AND EOMONTH(mo.m)) AS rows_,
     CASE WHEN (SELECT COUNT(*) FROM dbo.StaffSchedulingDemandMonth dm WHERE dm.planning_unit_id = u.unit AND dm.planning_month = mo.m) = 1
         THEN 1 ELSE 0 END AS ok
-FROM (VALUES (77), (79)) u(unit) CROSS JOIN months mo ORDER BY u.unit, mo.m
+FROM (SELECT unit FROM #unit WHERE kind = 'station') u CROSS JOIN months mo ORDER BY u.unit, mo.m
 GO
 -- Context: the dates the adapter reads around the months (5 before, 3 after: 2025-12-27..31, 2026-07-01..03) lie in a
 -- status-30 plan of every station (05-context-plans.sql creates 2025-12-18..31 and 2026-07-01..07), with no duty inside Jan-Jun
@@ -119,29 +128,29 @@ WITH days AS (
 covered AS (
     SELECT u.unit, dy.d, CASE WHEN EXISTS (SELECT 1 FROM TPlan p WHERE p.RefPlanungseinheiten = u.unit AND p.RefStati = 30
         AND CONVERT(date, p.VonDat) <= dy.d AND CONVERT(date, p.BisDat) >= dy.d) THEN 1 ELSE 0 END AS c
-    FROM (VALUES (77), (79)) u(unit) CROSS JOIN days dy WHERE dy.d < '20260101' OR dy.d > '20260630'),
+    FROM (SELECT unit FROM #unit WHERE kind = 'station') u CROSS JOIN days dy WHERE dy.d < '20260101' OR dy.d > '20260630'),
 inside AS (
     SELECT p.RefPlanungseinheiten AS unit, COUNT(k.RefPlan) AS n FROM TPlan p
     LEFT JOIN TPlanPersonalKommtGeht k ON k.RefPlan = p.Prim AND CONVERT(date, k.Datum) BETWEEN '20260101' AND '20260630'
-    WHERE p.RefPlanungseinheiten IN (77, 79) AND p.RefStati = 30 GROUP BY p.RefPlanungseinheiten)
+    WHERE p.RefPlanungseinheiten IN (SELECT unit FROM #unit WHERE kind = 'station') AND p.RefStati = 30 GROUP BY p.RefPlanungseinheiten)
 SELECT c.unit, SUM(c.c) AS covered_days, MAX(ISNULL(i.n, 0)) AS duties_inside,
     CASE WHEN SUM(c.c) = 8 AND MAX(ISNULL(i.n, 0)) = 0 THEN 1 ELSE 0 END AS ok
 FROM covered c LEFT JOIN inside i ON i.unit = c.unit GROUP BY c.unit
 OPTION (MAXRECURSION 400)
 GO
 -- Informational: daily headcount. Per month and level, the days on which the people able to work that date (home
--- staff of both stations plus the jumper pool, without a blocking roster absence or project availability) are fewer
--- than the day's demand slots of both stations. One person fills at most one slot a day, so each such day has an
--- unavoidable gap of at least the shortfall. Stations are combined because the jumper pool serves both in one run.
+-- staff of all stations plus the jumper pools, without a blocking roster absence or project availability) are fewer
+-- than the day's demand slots of all stations. One person fills at most one slot a day, so each such day has an
+-- unavoidable gap of at least the shortfall. Stations are combined because the jumper pools serve them in one run.
 WITH days AS (
     SELECT CAST('20260101' AS date) AS d UNION ALL SELECT DATEADD(day, 1, d) FROM days WHERE d < '20260630'),
 mapped(code, lvl) AS (SELECT code, lvl FROM #profession_level),
 need AS (
     SELECT d.demand_date AS d, d.staff_level AS lvl, SUM(d.required_count) AS slots FROM dbo.StaffSchedulingDemand d
-    WHERE d.planning_unit_id IN (77, 79) AND d.demand_date BETWEEN '20260101' AND '20260630' GROUP BY d.demand_date, d.staff_level),
+    WHERE d.planning_unit_id IN (SELECT unit FROM #unit WHERE kind = 'station') AND d.demand_date BETWEEN '20260101' AND '20260630' GROUP BY d.demand_date, d.staff_level),
 people AS (
     SELECT dy.d, mm.lvl, COUNT(DISTINCT pep.RefPersonal) AS heads
-    FROM days dy JOIN TPlanungseinheitenPersonal pep ON pep.RefPlanungseinheiten IN (77, 79, 408) AND pep.IstHeimat = 1
+    FROM days dy JOIN TPlanungseinheitenPersonal pep ON pep.RefPlanungseinheiten IN (SELECT unit FROM #unit) AND pep.IstHeimat = 1
         AND ISNULL(pep.KeinEPlan, 0) = 0 AND CONVERT(date, pep.VonDat) <= dy.d AND (pep.BisDat IS NULL OR CONVERT(date, pep.BisDat) >= dy.d)
     JOIN TBerufe b ON b.Prim = pep.RefBerufe JOIN mapped mm ON mm.code = LTRIM(RTRIM(b.KurzBez))
     WHERE NOT EXISTS (SELECT 1 FROM TPlanPersonalKommtGeht k LEFT JOIN TDienste ga ON ga.Prim = k.RefgAbw
@@ -160,7 +169,7 @@ GROUP BY FORMAT(n.d, 'yyyy-MM'), n.lvl ORDER BY month, level
 OPTION (MAXRECURSION 400)
 GO
 -- Informational: demand hours vs. available hours (targets minus credits) per station month and level, home staff,
--- with the jumper pool listed as its own unit. Paid hours per shift come from TDiensteSollzeiten, as the adapter reads.
+-- with each jumper pool listed as its own unit. Paid hours per shift come from TDiensteSollzeiten, as the adapter reads.
 WITH months AS (
     SELECT CAST('20260101' AS date) AS m UNION ALL SELECT DATEADD(month, 1, m) FROM months WHERE m < '20260601'),
 mapped(code, lvl) AS (SELECT code, lvl FROM #profession_level),
@@ -171,7 +180,7 @@ need AS (
     SELECT d.planning_unit_id AS unit, DATEFROMPARTS(YEAR(d.demand_date), MONTH(d.demand_date), 1) AS m, d.staff_level AS lvl,
         SUM(d.required_count) AS slots, SUM(d.required_count * pd.hours) AS hours
     FROM dbo.StaffSchedulingDemand d JOIN paid pd ON pd.shift_id = d.shift_id
-    WHERE d.planning_unit_id IN (77, 79) AND d.demand_date BETWEEN '20260101' AND '20260630'
+    WHERE d.planning_unit_id IN (SELECT unit FROM #unit WHERE kind = 'station') AND d.demand_date BETWEEN '20260101' AND '20260630'
     GROUP BY d.planning_unit_id, DATEFROMPARTS(YEAR(d.demand_date), MONTH(d.demand_date), 1), d.staff_level),
 credit AS (
     SELECT t.RefPersonal, DATEFROMPARTS(YEAR(t.Datum), MONTH(t.Datum), 1) AS m, SUM(t.Wert) AS h FROM TPersonalKontenJeTag t
@@ -179,7 +188,7 @@ credit AS (
     GROUP BY t.RefPersonal, DATEFROMPARTS(YEAR(t.Datum), MONTH(t.Datum), 1)),
 have AS (
     SELECT pep.RefPlanungseinheiten AS unit, mo.m, mm.lvl, COUNT(*) AS staff, SUM(a.Wert2 - ISNULL(c.h, 0)) AS hours
-    FROM months mo JOIN TPlanungseinheitenPersonal pep ON pep.RefPlanungseinheiten IN (77, 79, 408) AND pep.IstHeimat = 1
+    FROM months mo JOIN TPlanungseinheitenPersonal pep ON pep.RefPlanungseinheiten IN (SELECT unit FROM #unit) AND pep.IstHeimat = 1
         AND ISNULL(pep.KeinEPlan, 0) = 0 AND CONVERT(date, pep.VonDat) <= mo.m
         AND (pep.BisDat IS NULL OR CONVERT(date, pep.BisDat) >= EOMONTH(mo.m))
     JOIN TBerufe b ON b.Prim = pep.RefBerufe JOIN mapped mm ON mm.code = LTRIM(RTRIM(b.KurzBez))

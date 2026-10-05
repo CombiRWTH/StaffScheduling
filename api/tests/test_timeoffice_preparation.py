@@ -1,4 +1,4 @@
-"""The prepared inputs of stations 77 and 79 and jumper pool 408 in the TimeOffice test database.
+"""The prepared inputs of the units configured in `facts.py` in the TimeOffice test database.
 
 The units keep their existing employees; every other input comes from the SQL files in `timeoffice_preparation/`,
 applied in name order. `just test-timeoffice` runs each file in one transaction, fails unless every read-back `ok`
@@ -71,6 +71,11 @@ def test_prepared_units_are_ready(engine: Engine) -> None:
     days = (date(2026, 1, 1) + timedelta(days=offset) for offset in range(181))
     absence_codes = (*facts.availability_type_by_absence_code, *facts.ignored_availability_absence_codes)
     with engine.connect() as connection:
+        connection.execute(text("CREATE TABLE #unit (unit int, kind nvarchar(16) COLLATE DATABASE_DEFAULT)"))
+        connection.execute(
+            text("INSERT INTO #unit VALUES (:unit, :kind)"),
+            [{"unit": unit, "kind": kind.value} for unit, kind in facts.planning_unit_type_by_id.items()],
+        )
         connection.execute(
             text(
                 "CREATE TABLE #profession_level"

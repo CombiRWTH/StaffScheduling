@@ -111,38 +111,45 @@ Deployment type, readiness times and other source detail are not written. Read-b
 
 ## Prepared units
 
-`facts.py` configures three existing units of the test database for January–June 2026:
+`facts.py` configures nine existing units of the test database for January–June 2026:
 
-| Unit (`KurzBez`) | `Prim` | Role                                                                  |
-| ---------------- | ------ | --------------------------------------------------------------------- |
-| `PE 77`          | 77     | Station                                                               |
-| `PE 79`          | 79     | Station                                                               |
-| `PE 408`         | 408    | Jumper pool for both stations (no demand group, its staff homed here) |
+| Unit (`KurzBez`)                                               | `Prim`                      | Role                                                                                                                                         |
+| -------------------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PE 77`, `PE 78`, `PE 79`, `PE 83`, `PE 85`, `PE 88`, `PE 337` | 77, 78, 79, 83, 85, 88, 337 | Stations                                                                                                                                     |
+| `PE 408`                                                       | 408                         | Jumper pool for all seven stations (no demand group, its staff homed here)                                                                   |
+| `PE 68`                                                        | 68                          | Jumper pool for 78, 83, 85, 88 and 337 (no demand in the minimum-staffing table, its staff homed here, their substitute source in 2023–2025) |
 
-Employees, contracts, home memberships and monthly target plans are native. The SQL files in `api/tests/timeoffice_preparation/`, applied in name order, prepare every other input the [checklist](#supporting-another-unit) needs:
+Employees, contracts, home memberships and absences are native, as are the target plans of 77, 78 and 79. Preparation adds only what the [checklist](#supporting-another-unit) or generation needs, plus the small demonstration set of 77, 79 and 408 (vacation weeks, availability). The SQL files in `api/tests/timeoffice_preparation/`, applied in name order:
 
-| File                               | Prepares                                                                                                                                                          |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `01-replacement-memberships.sql`   | Replacement memberships of the 7 jumper pool employees at both stations, 2025-12-01 to 2026-07-31                                                                 |
-| `02-exclude-rotating-trainees.sql` | `KeinEPlan` on 15 station memberships of rotating trainees (home in a school unit, members for part of a month)                                                   |
-| `03-monthly-targets.sql`           | 151 missing account-1 targets, derived like the native ones: NRW working days × weekly hours ÷ 5                                                                  |
-| `04-vacations-and-credits.sql`     | One Monday–Friday vacation week (`U`) per professional and per assistant and MFA of 77, with its daily vacation credit; jumper pool absences sit in its June plan |
-| `05-context-plans.sql`             | Empty trusted context plans (status 30, day interval 4) for 2025-12-18..31 and 2026-07-01..07, so the context is known to be free                                 |
-| `06-demand.sql`                    | Dated demand of all twelve station months (see [examples](../validation/examples.md#input-data-and-boundary-context))                                             |
-| `07-availability-and-wishes.sql`   | 7 project availability rows and 32 demonstration wishes                                                                                                           |
-| `readiness.sql`                    | Read-only checklist per unit and month; every row carries `ok`                                                                                                    |
+| File                               | Prepares                                                                                                                                                                                                                                              |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `01-replacement-memberships.sql`   | Replacement memberships of the jumper pool staff at the stations they serve, 2025-12-01 to 2026-07-31: 408's 7 at all seven stations, 68's 12 at the other five                                                                                       |
+| `02-exclude-rotating-trainees.sql` | `KeinEPlan` on 60 station memberships of rotating trainees (home in a school unit, members for part of a month)                                                                                                                                       |
+| `03-plans.sql`                     | The 22 missing target plans of 83, 85, 88 and 337 (status 20, interval 1, exact month bounds), and empty trusted context plans (status 30, day interval 4) of every station for 2025-12-18..31 and 2026-07-01..07, so the context is known to be free |
+| `04-monthly-targets.sql`           | 355 missing account-1 targets, derived like the native ones: NRW working days × weekly hours ÷ 5                                                                                                                                                      |
+| `05-vacations-and-credits.sql`     | One Monday–Friday vacation week (`U`) per professional of 77, 79 and 408 and per assistant and MFA of 77, with its daily vacation credit; 408's absences sit in its June plan. The other units keep their native absences (none in these months)      |
+| `06-demand.sql`                    | Dated demand of all 42 station months (see below)                                                                                                                                                                                                     |
+| `07-availability.sql`              | 7 project availability rows; removes every wish of the planned employees, so the examples are generated without wishes                                                                                                                                |
+| `readiness.sql`                    | Read-only checklist per unit and month; every row carries `ok`                                                                                                                                                                                        |
 
-Each file ends with a read-back of its rows and converges, so a second run changes nothing. All insert missing rows. `02` sets `KeinEPlan` where it differs. Demand, availability and wishes also update differing rows and delete other rows in their scope. Native targets are never changed, so `03`'s read-back only checks that each employee-month has a valid target. No file writes `TPersonal` or another unit's rows.
+Each file ends with a read-back of its rows and converges, so a second run changes nothing. All insert missing rows. `02` sets `KeinEPlan` where it differs. Demand and availability also update differing rows and delete other rows in their scope. Native targets and plans are never changed, so `04`'s read-back only checks that each employee-month has a valid target. No file writes `TPersonal` or another unit's rows.
+
+Demand follows the chair's minimum-staffing table, with NRW holidays on the weekend row:
+
+- Professionals are as listed. 83, 88 and 337 need more than their home staff and both jumper pools can cover, so their schedules have gaps.
+- Trainees are as listed at the five other stations, 77 F1 Monday to Friday, none at 79. Rotating trainees are excluded, so 408's trainee is the only one and most trainee slots are gaps.
+- Assistants are sized near the real staff: 77 F2+S2 on weekdays and F2+S1 at the weekend, 79 F1 daily, 78 and 85 F1 Monday to Friday, none at 337.
+- MFA only where an MFA can work: 77 F1 Monday to Friday, none at the other stations.
 
 `just test-timeoffice` runs every file in one transaction and rolls back. It fails unless every `ok` is 1 and no write changes a row. `TIMEOFFICE_PREPARATION=apply` commits each file instead (see [live verification](../development/testing.md#live-timeoffice-verification)).
 
 Native facts the preparation relies on:
 
-- Each station month has one target plan (status 20, interval 1, exact month bounds). The adapter neither creates nor changes plans.
-- The jumper pool has its own plan of that form but is never selectable.
+- Each station month has one target plan (status 20, interval 1, exact month bounds). The adapter neither creates nor changes plans; `03-plans.sql` creates the missing ones in the preparation.
+- A jumper pool is never selectable and needs no target plan; a prepared absence needs one.
 - Month-shaped context plans would collide with native plans on the unique index `TPlan(RefPlanungseinheiten, VonDat, RefPlanungsIntervalle)`, so the prepared ones use the day interval. A context plan is complete for every date it spans.
 - An absence row sets `RefgAbw` and `RefDienstAbw` to the absence code and `Minuten` to 0. The roster key allows one row set per employee, date and row status across all plans, absences included.
-- Generation must select both stations together. The jumper pool's monthly balance is hard, so a one-station run would give the jumper pool its whole target there. Publishing the second station would then conflict.
+- Generation must select all stations together. A jumper pool's monthly balance is hard, so a run with only some of its stations would give the jumper pool its whole target there. Publishing the other stations would then conflict.
 
 ## Supporting another unit
 
@@ -165,4 +172,5 @@ One unmapped profession, missing target or orphan credit rejects the whole selec
 - **Context duties must match a reference shift exactly.** Variant shifts sharing a code (another `F` or `S` row of `TDienste`) stop generation instead of being guessed.
 - **Duties outside the configured stations are not seen.** Generation ignores in-month duties in other units or plans; publication then refuses the conflict. Employee 791 has native duties in the June target plan of `PE 77` on 2026-06-08..12; project availability blocks those dates. Rest against another unit's duty at the month edge is not checked.
 - **No Sunday history is read.** The annual minimum of employment-free Sundays is not assessed.
+- **The membership profession decides the level.** Four `PE 78` employees have a professional profession on their membership but a trainee or assistant one in `TPersonal`. 2939, 4100 and 4073 became professionals on finishing their training (2023 and 2024), so the employee record is out of date. 6977 has no earlier history, so its level is unverified. They are planned as professionals; **Mitarbeiter** shows the `TPersonal` level.
 - **Some mappings are assumptions.** In `facts.py`, profession `-` as trainee, Servicekraft as professional, Praktikant as assistant and the absence codes `AZV`, `K`, `TB` and `SO` as unavailable are unverified and marked there.
