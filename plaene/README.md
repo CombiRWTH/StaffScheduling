@@ -11,7 +11,7 @@ Each month folder holds one run that planned both stations together, one monthly
 
 - `schedule.csv`: one row per duty.
 - `employees.csv`: one row per employee in planning, also without duties.
-- `besetzung.csv`: one row per station, date, shift and qualification with minimum staffing: required, assigned and missing counts.
+- `besetzung.csv`: one row per station, date, shift and qualification that is required or staffed: required, assigned and missing counts.
 - `gaps.csv`: the rows of `besetzung.csv` with missing slots; only the header when there are none.
 - `input.json` and `result.json`: the complete input and solution, which the tests check and solve again.
 

@@ -26,12 +26,13 @@ from app.domain import (
     PlanningMonth,
     ScheduleContext,
     SchedulingDataset,
+    Wish,
+    WishType,
 )
 from app.settings import Settings, get_settings
 from app.solver.bundle import (
-    COVERAGE_FILE,
     EMPLOYEES_FILE,
-    GAPS_FILE,
+    FILE_NAMES,
     INPUT_FILE,
     RESULT_FILE,
     SCHEDULE_FILE,
@@ -55,8 +56,9 @@ def check_examples(directory: Path, months: Sequence[PlanningMonth], stations: i
     """The problems of the folders `YYYY-MM` of `months` as hand-in examples; empty when they pass.
 
     Each folder must hold a complete bundle that reads like an import, renders back to its own files and
-    is accepted by the schedule check. All months plan the same `stations` stations and jumper pools,
-    every station has duties every month, and consecutive months agree on their shared context.
+    is accepted by the schedule check. No input holds wishes. All months plan the same `stations` stations
+    and jumper pools, every station has duties every month, and consecutive months agree on their shared
+    context.
     """
     labels = [month.label for month in months]
     problems = [
@@ -69,6 +71,10 @@ def check_examples(directory: Path, months: Sequence[PlanningMonth], stations: i
     for bundle in loaded:
         data, first = bundle.input.dataset, loaded[0].input.dataset
         label = data.planning_month.label
+        if data.wishes:
+            problems.append(
+                f"{label}: the input holds {len(data.wishes)} wishes; the examples are without preferences."
+            )
         if data.planning_units != first.planning_units:
             problems.append(f"{label}: plans other stations or jumper pools than {first.planning_month.label}.")
         if len(data.station_ids) != stations:
@@ -83,8 +89,7 @@ def check_examples(directory: Path, months: Sequence[PlanningMonth], stations: i
 
 def _check_folder(folder: Path, month: PlanningMonth, problems: list[str]) -> ScheduleBundle | None:
     label = month.label
-    files = (INPUT_FILE, RESULT_FILE, SCHEDULE_FILE, EMPLOYEES_FILE, COVERAGE_FILE, GAPS_FILE)
-    if missing := [name for name in files if not (folder / name).is_file() or not (folder / name).stat().st_size]:
+    if missing := [name for name in FILE_NAMES if not (folder / name).is_file() or not (folder / name).stat().st_size]:
         problems.append(f"{label}: missing or empty {', '.join(missing)}.")
         return None
     try:
@@ -97,7 +102,8 @@ def _check_folder(folder: Path, month: PlanningMonth, problems: list[str]) -> Sc
         return None
     problems.extend(
         f"{label}: {name} differs from the rendering of the pair."
-        for name in files[1:]
+        for name in FILE_NAMES
+        if name != INPUT_FILE
         if (folder / name).read_bytes() != bundle.files[name]
     )
     if (check := bundle.check).status != CheckStatus.ACCEPTED:
@@ -227,6 +233,7 @@ def two_stations(
     demand: tuple[DemandRequirement, ...] = (),
     context: tuple[Assignment, ...] = (),
     availability: tuple[Availability, ...] = (),
+    wishes: tuple[Wish, ...] = (),
 ) -> SchedulingDataset:
     """North and South: a North employee, a jumper pool employee for North and a South employee."""
     return dataset(
@@ -234,6 +241,7 @@ def two_stations(
         accounts=tuple(account(employee_id, target, month=month) for employee_id, target in targets.items()),
         demand=demand,
         availability=availability,
+        wishes=wishes,
         month=month,
         context_duties=context,
         covered_days_before=5,
@@ -253,9 +261,13 @@ def january(duties: tuple[Assignment, ...] = JANUARY_DUTIES) -> ScheduleBundle:
     return bundle_of(data, duties)
 
 
-def february(context: tuple[Assignment, ...] = JANUARY_DUTIES, availability: tuple[Availability, ...] = ()):
+def february(
+    context: tuple[Assignment, ...] = JANUARY_DUTIES,
+    availability: tuple[Availability, ...] = (),
+    wishes: tuple[Wish, ...] = (),
+):
     """February with January 27-31 as trusted context."""
-    data = two_stations(FEBRUARY, {1: 420, 2: 0, 4: 420}, context=context, availability=availability)
+    data = two_stations(FEBRUARY, {1: 420, 2: 0, 4: 420}, context=context, availability=availability, wishes=wishes)
     return bundle_of(data, FEBRUARY_DUTIES)
 
 
@@ -268,15 +280,18 @@ def test_examples_accept_a_complete_consistent_sequence(tmp_path: Path) -> None:
 
 def test_examples_reject_drift_and_inconsistent_context(tmp_path: Path) -> None:
     write_folder(tmp_path, january())
-    # February trusts only two of January's duties and holds an absence on its first date that January lacks.
+    # February trusts only two of January's duties, holds an absence on its first date that January lacks
+    # and a wish.
     absent = away(1, FEBRUARY.start)
-    february_folder = write_folder(tmp_path, february(JANUARY_DUTIES[:2], (absent,)))
+    wish = Wish(employee_id=1, date=date(2026, 2, 2), type=WishType.FREE_DAY)
+    february_folder = write_folder(tmp_path, february(JANUARY_DUTIES[:2], (absent,), (wish,)))
     (tmp_path / "2026-03").mkdir()
     (february_folder / SCHEDULE_FILE).write_bytes(b"employee_id\n")
 
     assert check_examples(tmp_path, (JANUARY, FEBRUARY), stations=2) == [
         "Folder outside 2026-01 to 2026-02: 2026-03.",
         "2026-02: schedule.csv differs from the rendering of the pair.",
+        "2026-02: the input holds 1 wishes; the examples are without preferences.",
         "2026-01 to 2026-02: the context duties on 2026-01 dates differ from its schedule.",
         "2026-01 to 2026-02: the availability of 2026-02-01 differs between the two inputs.",
     ]

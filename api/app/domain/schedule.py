@@ -1,4 +1,4 @@
-"""The readable tables of a month's schedule: one row per duty, per employee, per staffing need and per covered demand.
+"""The readable tables of a month's schedule: one row per duty, per employee and per staffed or required qualification.
 
 Review and the CSV files show the same rows, so a reviewed schedule and its downloads cannot differ.
 """
@@ -15,7 +15,7 @@ from app.domain.core import SchedulingBaseModel
 from app.domain.dataset import SchedulingDataset
 from app.domain.demand import DemandKey
 from app.domain.duty import PLANNING_TIMEZONE, duty_times
-from app.domain.employee import StaffLevel
+from app.domain.employee import Qualifikation, StaffLevel
 from app.domain.monthly_work_account import WorkCredit
 from app.domain.planning_unit import PlanningUnitMembership, PlanningUnitType, home_unit_id
 from app.domain.shift import ShiftType
@@ -44,7 +44,7 @@ class DutyRow(SchedulingBaseModel):
     """Paid minutes booked on the monthly account."""
     staff_level: StaffLevel
     """The qualification credited towards demand."""
-    qualifikation: str
+    qualifikation: Qualifikation
     """The German name of `staff_level`, as the minimum staffing names it."""
     origin_unit_id: int | None
     """The employee's home station or jumper pool on the date; empty only when the employee has no
@@ -80,20 +80,8 @@ class EmployeeRow(SchedulingBaseModel):
     credit_details: tuple[WorkCredit, ...]
 
 
-class StaffingRow(SchedulingBaseModel):
-    """Required against assigned staff of one station, date, shift and qualification."""
-
-    planning_unit_id: int
-    date: Date
-    shift_id: int
-    staff_level: StaffLevel
-    required_count: int
-    """Zero where nobody is required but someone is assigned."""
-    assigned_count: int
-
-
 class CoverageRow(SchedulingBaseModel):
-    """How far the duties cover the demand of one station, date, shift and qualification; a gap if slots are missing."""
+    """Required against assigned staff of one station, date, shift and qualification; a gap if slots are missing."""
 
     planning_unit_id: int
     planning_unit_name: str
@@ -101,10 +89,10 @@ class CoverageRow(SchedulingBaseModel):
     shift_id: int
     shift_code: str
     staff_level: StaffLevel
-    qualifikation: str
+    qualifikation: Qualifikation
     """The German name of `staff_level`."""
     required_count: int
-    """Positive: only demanded qualifications have a row."""
+    """Zero where nobody is required but someone is assigned."""
     assigned_count: int
     """Duties credited as this qualification; may exceed the demand."""
     missing_count: int
@@ -114,8 +102,8 @@ class CoverageRow(SchedulingBaseModel):
 class ScheduleTables(SchedulingBaseModel):
     duties: tuple[DutyRow, ...]
     employees: tuple[EmployeeRow, ...]
-    staffing: tuple[StaffingRow, ...]
     coverage: tuple[CoverageRow, ...]
+    """Every station, date, shift and qualification that is required or assigned."""
     gaps: tuple[CoverageRow, ...]
     """The coverage rows with missing slots."""
 
@@ -124,7 +112,7 @@ def schedule_tables(dataset: SchedulingDataset, assignments: Iterable[Assignment
     """The tables of the month's assignments.
 
     Every assignment must reference the dataset, which a schedule check without input findings proves.
-    Duties are sorted by date, station, start and employee; employees, staffing, coverage and gaps by their IDs.
+    Duties are sorted by date, station, start and employee; employees, coverage and gaps by their IDs.
     """
     employees = {row.employee_id: row for row in dataset.employees}
     units = {row.planning_unit_id: row for row in dataset.planning_units}
@@ -196,37 +184,26 @@ def schedule_tables(dataset: SchedulingDataset, assignments: Iterable[Assignment
     for row in dataset.demand_requirements:
         required[row.demand_key] += row.required_count
     assigned = Counter(row.demand_key for row in assignments)
-    staffing = tuple(
-        StaffingRow(
-            planning_unit_id=unit_id,
-            date=day,
-            shift_id=shift_id,
-            staff_level=level,
-            required_count=required[(unit_id, day, shift_id, level)],
-            assigned_count=assigned[(unit_id, day, shift_id, level)],
+    coverage: list[CoverageRow] = []
+    for key in sorted({*required, *assigned}):
+        unit_id, day, shift_id, level = key
+        coverage.append(
+            CoverageRow(
+                planning_unit_id=unit_id,
+                planning_unit_name=units[unit_id].display_name,
+                date=day,
+                shift_id=shift_id,
+                shift_code=shifts[shift_id].code,
+                staff_level=level,
+                qualifikation=level.label,
+                required_count=required[key],
+                assigned_count=assigned[key],
+                missing_count=max(required[key] - assigned[key], 0),
+            )
         )
-        for unit_id, day, shift_id, level in sorted({*required, *assigned})
-    )
-    coverage = tuple(
-        CoverageRow(
-            planning_unit_id=row.planning_unit_id,
-            planning_unit_name=units[row.planning_unit_id].display_name,
-            date=row.date,
-            shift_id=row.shift_id,
-            shift_code=shifts[row.shift_id].code,
-            staff_level=row.staff_level,
-            qualifikation=row.staff_level.label,
-            required_count=row.required_count,
-            assigned_count=row.assigned_count,
-            missing_count=max(row.required_count - row.assigned_count, 0),
-        )
-        for row in staffing
-        if row.required_count
-    )
     return ScheduleTables(
         duties=tuple(duties),
         employees=tuple(rows),
-        staffing=staffing,
-        coverage=coverage,
+        coverage=tuple(coverage),
         gaps=tuple(row for row in coverage if row.missing_count),
     )

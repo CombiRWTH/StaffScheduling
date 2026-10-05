@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   CHECK_STATUS,
   RULES,
-  STAFF_LEVEL_LABELS,
   missingInputs,
   formatDate,
   OBJECTIVE_LABELS,
@@ -105,7 +104,7 @@ export function ReviewSummary({ review, actions }: { review: ScheduleReview; act
             <BulletList
               items={tables.gaps.map(
                 (row) =>
-                  `${formatDate(row.date)} · ${row.planning_unit_name} · ${row.shift_code} · ${STAFF_LEVEL_LABELS[row.staff_level]}: ${row.missing_count} ${row.missing_count === 1 ? "fehlt" : "fehlen"} (benötigt ${row.required_count})`,
+                  `${formatDate(row.date)} · ${row.planning_unit_name} · ${row.shift_code} · ${row.qualifikation}: ${row.missing_count} ${row.missing_count === 1 ? "fehlt" : "fehlen"} (benötigt ${row.required_count})`,
               )}
             />
           </section>

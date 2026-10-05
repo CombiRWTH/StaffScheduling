@@ -16,7 +16,7 @@ from enum import StrEnum
 from functools import cached_property
 from hashlib import sha256
 from importlib.metadata import version
-from typing import Any, Final, Literal, Self
+from typing import Any, Final, Literal, Self, get_args
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
 
@@ -44,6 +44,8 @@ EMPLOYEES_FILE: Final = "employees.csv"
 COVERAGE_FILE: Final = "besetzung.csv"
 GAPS_FILE: Final = "gaps.csv"
 type FileName = Literal["input.json", "result.json", "schedule.csv", "employees.csv", "besetzung.csv", "gaps.csv"]
+FILE_NAMES: Final[tuple[FileName, ...]] = get_args(FileName.__value__)
+"""Every file of a bundle, in the order of `ScheduleBundle.files`."""
 
 
 class ScheduleInput(SchedulingBaseModel):

@@ -1,6 +1,8 @@
 // Request and response types of the canonical FastAPI planning endpoints.
 
 export type StaffLevel = "professional" | "assistant" | "trainee" | "mfa";
+/** The German name of a staff level, as the backend states it on duty and coverage rows. */
+type Qualifikation = "Fachkraft" | "Hilfskraft" | "Azubi" | "MFA";
 
 interface PlanningMonth {
   year: number;
@@ -290,6 +292,7 @@ export interface DutyRow {
   end_at: string;
   net_work_minutes: number;
   staff_level: StaffLevel;
+  qualifikation: Qualifikation;
   origin_unit_id: number | null;
   origin_unit_name: string | null;
   origin_unit_type: PlanningUnit["type"] | null;
@@ -314,23 +317,18 @@ interface EmployeeRow {
   credit_details: WorkCredit[];
 }
 
-interface StaffingRow {
-  planning_unit_id: number;
-  date: string;
-  shift_id: number;
-  staff_level: StaffLevel;
-  required_count: number;
-  assigned_count: number;
-}
-
-/** Unfilled required slots of one station, date, shift and qualification, as the review and `gaps.csv` show them. */
-interface GapRow {
+/**
+ * Required against assigned staff of one station, date, shift and qualification, as the review, `besetzung.csv` and,
+ * for rows with missing slots, `gaps.csv` show them. `required_count` is zero where nobody is required.
+ */
+interface CoverageRow {
   planning_unit_id: number;
   planning_unit_name: string;
   date: string;
   shift_id: number;
   shift_code: string;
   staff_level: StaffLevel;
+  qualifikation: Qualifikation;
   required_count: number;
   assigned_count: number;
   missing_count: number;
@@ -354,7 +352,7 @@ export interface ScheduleReview {
   calendar: CalendarDay[];
   /** Always a found schedule: it has its stages and check. */
   solution: Solution & { check: ScheduleCheck; configuration: RunConfiguration };
-  tables: { duties: DutyRow[]; employees: EmployeeRow[]; staffing: StaffingRow[]; gaps: GapRow[] };
+  tables: { duties: DutyRow[]; employees: EmployeeRow[]; coverage: CoverageRow[]; gaps: CoverageRow[] };
 }
 
 /** Why the backend refused an uploaded pair of files. */

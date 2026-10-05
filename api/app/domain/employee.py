@@ -1,9 +1,11 @@
 from enum import StrEnum
-from typing import Final
+from typing import Final, Literal
 
 from app.domain.core import NonEmptyStr, PositiveId, SchedulingBaseModel
 
 EmployeeId = PositiveId
+type Qualifikation = Literal["Fachkraft", "Hilfskraft", "Azubi", "MFA"]
+"""The German name of a staff level."""
 
 
 class StaffLevel(StrEnum):
@@ -19,12 +21,12 @@ class StaffLevel(StrEnum):
     MFA = "mfa"  # Medizinische Fachangestellte
 
     @property
-    def label(self) -> str:
+    def label(self) -> Qualifikation:
         """The German name the chair's minimum staffing uses: Fachkraft, Hilfskraft, Azubi or MFA."""
         return _LABELS[self]
 
 
-_LABELS: Final = {
+_LABELS: Final[dict[StaffLevel, Qualifikation]] = {
     StaffLevel.PROFESSIONAL: "Fachkraft",
     StaffLevel.ASSISTANT: "Hilfskraft",
     StaffLevel.TRAINEE: "Azubi",

@@ -123,7 +123,7 @@ def test_tables_label_duties_with_real_times_origin_and_every_employee() -> None
         (3, 0, 0),
     ]
     # Demand is shown against the assigned staff, also where nobody was required.
-    assert [(row.date.day, row.shift_id, row.required_count, row.assigned_count) for row in tables.staffing] == [
+    assert [(row.date.day, row.shift_id, row.required_count, row.assigned_count) for row in tables.coverage] == [
         (30, EARLY.shift_id, 1, 1),
         (31, NIGHT.shift_id, 0, 1),
     ]
@@ -265,9 +265,9 @@ def test_bundle_files_carry_every_field_and_read_back() -> None:
     assert json.loads(employees[0]["credit_details"]) == []
 
 
-def test_coverage_counts_each_demanded_qualification_and_gaps_are_its_missing_rows() -> None:
+def test_coverage_counts_each_staffed_or_required_qualification_and_gaps_are_its_missing_rows() -> None:
     # North needs a Fachkraft and a Hilfskraft for the early of January 30; only the Fachkraft is assigned.
-    # The jumper pool employee's night of January 31 meets no demand, so it is a duty without coverage row.
+    # The jumper pool employee's night of January 31 meets no demand; its row requires nobody.
     data = dataset(
         memberships=(*member(1), *member(2, home=JUMPER_POOL, replacements=(NORTH,)), *member(3, ASSISTANT)),
         accounts=(account(1, 420), account(2, 555), account(3, 0)),
@@ -299,6 +299,17 @@ def test_coverage_counts_each_demanded_qualification_and_gaps_are_its_missing_ro
             "staff_level": "professional",
             "qualifikation": "Fachkraft",
             "required_count": "1",
+            "assigned_count": "1",
+            "missing_count": "0",
+        },
+        {
+            **early,
+            "date": "2026-01-31",
+            "shift_id": str(NIGHT.shift_id),
+            "shift_code": "N",
+            "staff_level": "professional",
+            "qualifikation": "Fachkraft",
+            "required_count": "0",
             "assigned_count": "1",
             "missing_count": "0",
         },

@@ -5,7 +5,7 @@ import { Maximize, Minimize, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { AVAILABILITY_LABELS, SHIFT_TYPE_LABELS, STAFF_LEVEL_LABELS, WEEKDAYS } from "@/lib/labels";
+import { AVAILABILITY_LABELS, SHIFT_TYPE_LABELS, WEEKDAYS } from "@/lib/labels";
 import type { Availability, DutyRow, ScheduleReview, ShiftType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -71,7 +71,7 @@ function dutyTitle(duty: DutyRow) {
   return [
     duty.planning_unit_name,
     `${SHIFT_TYPE_LABELS[duty.shift_type]} ${duty.shift_code} ${clock(duty.start_at)}–${clock(duty.end_at)}`,
-    STAFF_LEVEL_LABELS[duty.staff_level],
+    duty.qualifikation,
     duty.origin_unit_name ? `Herkunft ${duty.origin_unit_name}` : "Herkunft unbekannt",
   ].join(" · ");
 }
@@ -148,7 +148,7 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
     string,
     { required: number; assigned: number; credited: number; missing: number; levels: string[]; gaps: string[] }
   >();
-  for (const row of tables.staffing) {
+  for (const row of tables.coverage) {
     const at = staffingKey(row.planning_unit_id, row.shift_id, row.date);
     const cell = staffing.get(at) ?? {
       required: 0,
@@ -160,16 +160,15 @@ export function ScheduleGrid({ review }: { review: ScheduleReview }) {
     };
     cell.required += row.required_count;
     cell.assigned += row.assigned_count;
-    cell.credited += Math.min(row.assigned_count, row.required_count);
-    const missing = Math.max(0, row.required_count - row.assigned_count);
-    cell.missing += missing;
-    if (missing) cell.gaps.push(`${missing} ${STAFF_LEVEL_LABELS[row.staff_level]}`);
-    cell.levels.push(`${STAFF_LEVEL_LABELS[row.staff_level]} ${row.assigned_count}/${row.required_count}`);
+    cell.credited += row.required_count - row.missing_count;
+    cell.missing += row.missing_count;
+    if (row.missing_count) cell.gaps.push(`${row.missing_count} ${row.qualifikation}`);
+    cell.levels.push(`${row.qualifikation} ${row.assigned_count}/${row.required_count}`);
     staffing.set(at, cell);
   }
   const staffedShifts = (stationId: number) =>
     review.shifts.filter((shift) =>
-      tables.staffing.some((row) => row.planning_unit_id === stationId && row.shift_id === shift.shift_id),
+      tables.coverage.some((row) => row.planning_unit_id === stationId && row.shift_id === shift.shift_id),
     );
   const weekend = (day: (typeof calendar)[number]) => day.weekday >= 6 || day.public_holiday !== null;
 
