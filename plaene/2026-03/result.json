@@ -1,12 +1,12 @@
 {
-  "format_version": 2,
+  "format_version": 3,
   "planning_month": {
     "year": 2026,
     "month": 3
   },
   "input": {
     "file": "input.json",
-    "sha256": "65cb5d310b7e2dc05fe80c58dd5faff49d40bbd88a6092d388a41e7e6a64cc38"
+    "sha256": "f316df5fd4dc4e6602e202c8f721deb831ea46f4e50d58fc720dacf526610ea2"
   },
   "solution": {
     "status": "feasible",

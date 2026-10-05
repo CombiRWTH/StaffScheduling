@@ -1,22 +1,22 @@
 # Evidence and current limitations
 
-This checkout provides checked monthly generation, review, validated import, portable downloads and scoped publication to TimeOffice for stations `PE 77` and `PE 79` with jumper pool `PE 408`. The example schedules in `plaene/` cover January to June 2026 without wishes; the set with wishes is not generated yet. These limits describe current code and executed checks; they are not promises inferred from visible controls.
+This checkout provides checked monthly generation, review, validated import, portable downloads and scoped publication to TimeOffice for stations `PE 77` and `PE 79` with jumper pool `PE 408`. The example schedules in `plaene/` cover January to June 2026 without wishes. These limits describe current code and executed checks; they are not promises inferred from visible controls.
 
 ## What this section proves
 
 For evaluators and anyone deciding whether to rely on a result. The table lists what was executed and what it showed; [reasoning and requirements](reasoning.md) explains the policy choices, and [examples and reproduction](examples.md) the committed schedules and how to check them without TimeOffice.
 
-| Area           | Check (2026-10-02)                                                                                                                 | Result                                                                                                                                                             |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Startup        | Image-built Compose startup, Next server to API connectivity, unavailable database and API states, Linux arm64 containers on macOS | Pass; a Linux amd64 API build includes ODBC Driver 18                                                                                                              |
-| Connectivity   | Read-only database diagnostic against the test server, with the explicit `DB_TRUST_SERVER_CERTIFICATE` opt-in                      | Every stage passes                                                                                                                                                 |
-| Prepared input | `just test-timeoffice`                                                                                                             | Both tests pass: no preparation write changes a row and every readiness check is met                                                                               |
-| Selection      | `GET /planning/options`, `GET /employees` and the **Mitarbeiter** page for both stations, January to June                          | `PE 77`, `PE 79`; 53 employees with jumper pool 408 every month                                                                                                    |
-| Generation     | `POST /generation`, January, both stations, 300 s, through the Compose API                                                         | `feasible`, check `accepted`, 0 findings, 0 gaps                                                                                                                   |
-| Examples       | Example generation, January to June without wishes, 300 s per month, each month's context from the previous accepted month         | Every month `accepted` with 0 findings; gaps 0, 5, 4, 0, 0, 0 ([results](examples.md#results))                                                                     |
-| Bundles        | Every committed month read as an import and checked as a sequence (`check_examples`)                                               | No problem: digests, references, re-check, CSV renderings and month-to-month context agree                                                                         |
-| Publication    | Publish, replace, refuse on conflict, clear and restore on example units of the test database that have since been removed         | Every count and checksum outside the published rows unchanged; the starting state restored                                                                         |
-| Offline gates  | `just check`: formatting, linting, types, API tests, 24 browser flows with fictional SQL results, production build, docs           | Pass at revision `fcc086e`; the API tests pass at later revisions, where the complete set without wishes passes and the set with wishes is skipped until committed |
+| Area           | Check (2026-10-02)                                                                                                                 | Result                                                                                                |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Startup        | Image-built Compose startup, Next server to API connectivity, unavailable database and API states, Linux arm64 containers on macOS | Pass; a Linux amd64 API build includes ODBC Driver 18                                                 |
+| Connectivity   | Read-only database diagnostic against the test server, with the explicit `DB_TRUST_SERVER_CERTIFICATE` opt-in                      | Every stage passes                                                                                    |
+| Prepared input | `just test-timeoffice`                                                                                                             | Both tests pass: no preparation write changes a row and every readiness check is met                  |
+| Selection      | `GET /planning/options`, `GET /employees` and the **Mitarbeiter** page for both stations, January to June                          | `PE 77`, `PE 79`; 53 employees with jumper pool 408 every month                                       |
+| Generation     | `POST /generation`, January, both stations, 300 s, through the Compose API                                                         | `feasible`, check `accepted`, 0 findings, 0 gaps                                                      |
+| Examples       | Example generation, January to June without wishes, 300 s per month, each month's context from the previous accepted month         | Every month `accepted` with 0 findings; gaps 0, 5, 4, 0, 0, 0 ([results](examples.md#results))        |
+| Bundles        | Every committed month read as an import and checked as a sequence (`check_examples`)                                               | No problem: digests, references, re-check, CSV renderings and month-to-month context agree            |
+| Publication    | Publish, replace, refuse on conflict, clear and restore on example units of the test database that have since been removed         | Every count and checksum outside the published rows unchanged; the starting state restored            |
+| Offline gates  | `just check`: formatting, linting, types, API tests, 24 browser flows with fictional SQL results, production build, docs           | Pass at revision `fcc086e`; the API tests pass at later revisions, including the six committed months |
 
 ## Webapp integration
 
@@ -28,7 +28,7 @@ The webapp is a plain Next.js App Router project: month and station selection wi
 
 ## Review, import and export
 
-**Prüfen** reviews the latest generated or imported schedule. `ScheduleBundle` validates imports and renders the five portable files, and the example tests validate and re-solve bundle folders without TimeOffice ([bundle files](examples.md#bundle-files)). Findings and the API's import details are in English, while the webapp names import problems in German.
+**Prüfen** reviews the latest generated or imported schedule. `ScheduleBundle` validates imports and renders the six portable files, and the example tests validate and re-solve bundle folders without TimeOffice ([bundle files](examples.md#bundle-files)). Findings and the API's import details are in English, while the webapp names import problems in German.
 
 ## Publication and clear
 

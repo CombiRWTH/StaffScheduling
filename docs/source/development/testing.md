@@ -71,20 +71,20 @@ The fixture recognizes the adapter's statements by their text. It tests the adap
 
 ### API service tests
 
-| File                            | Owns                                                                                                                                          |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `test_employee_inspection.py`   | Source completeness, identity, memberships, jumper pool eligibility, accounts, TimeOffice code translation, HTTP validation                   |
-| `test_monthly_configuration.py` | Scoped availability, wish and demand writes; native absences survive; validation before writing; pattern preview; HTTP `422`                  |
-| `test_generation.py`            | Generation input from `TimeOfficeService.read_generation_input`, and the generation HTTP contract                                             |
-| `test_review.py`                | Schedule tables, bundle files and round trip, every import rejection, `gaps.csv`, published schemas, the review/download/import HTTP contract |
-| `test_examples.py`              | The example validator and both committed sets in `plaene/`                                                                                    |
-| `test_publication.py`           | Publication and clear through `TimeOfficeService` and over HTTP                                                                               |
+| File                            | Owns                                                                                                                                                              |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `test_employee_inspection.py`   | Source completeness, identity, memberships, jumper pool eligibility, accounts, TimeOffice code translation, HTTP validation                                       |
+| `test_monthly_configuration.py` | Scoped availability, wish and demand writes; native absences survive; validation before writing; pattern preview; HTTP `422`                                      |
+| `test_generation.py`            | Generation input from `TimeOfficeService.read_generation_input`, and the generation HTTP contract                                                                 |
+| `test_review.py`                | Schedule tables, bundle files and round trip, every import rejection, `besetzung.csv` and `gaps.csv`, published schemas, the review/download/import HTTP contract |
+| `test_examples.py`              | The example validator and the committed months in `plaene/`                                                                                                       |
+| `test_publication.py`           | Publication and clear through `TimeOfficeService` and over HTTP                                                                                                   |
 
 Generation input ignores polluted roster rows and keeps approved absences. The fixture applies the roster query's own absence filter, so a query that read worked shifts would fail. Worked duties come only from trusted context plans; a context duty that differs from its shift fails. Only the selected station and its jumper pool are units, and only the month's project wishes are input. A station without saved staffing is refused. Shift segments, breaks and paid minutes come from the target-time segments. Over HTTP, one real solve reaches `completed` with an `accepted` check. The test also checks `404` before any job and after a restart, `422`/`409` without a job and `423` while busy.
 
 A stale published schema is rewritten and fails the review test once.
 
-The example validator accepts a consistent two-month sequence of both stations. It rejects changed files, context that differs from the neighbouring month, a rejected month, missing or extra stations and misplaced folders. The `reproduction` tests in `test_examples.py` solve every committed input again. The set generation is a `timeoffice` test that runs only with `PLAENE_GENERATION=write`; see [examples and reproduction](../validation/examples.md).
+The example validator accepts a consistent two-month sequence of both stations. It rejects changed files, context that differs from the neighbouring month, a rejected month, missing or extra stations and misplaced folders. The `reproduction` tests in `test_examples.py` solve every committed input again. The example generation is a `timeoffice` test that runs only with `PLAENE_GENERATION=write`; see [examples and reproduction](../validation/examples.md).
 
 Publication writes one row per segment into the destination station's target plan, with the membership profession and the `Info` marker. A jumper pool night goes into the other station's plan, dated on its start. Numbering continues after a kept native wish. Absences, wishes, duties entered in TimeOffice and other-plan duties are kept. A second write waits for the first. Invalid schedules are rejected before any deletion. A failed insert, collision or differing read-back (`read_back`) rolls the deletion back; a failed commit reports stage `commit`. Over HTTP it publishes only with the reviewed `received_at` and stations. It maps `conflict`, `concurrent`, `503`, `not_accepted` and `changed`; an empty schedule raises `InvalidSelection` (`422`). `test_foundation.py` checks that deadlocks and duplicate keys become a sanitized `TimeOfficeConflict`. A foreign-key violation stays a query failure.
 

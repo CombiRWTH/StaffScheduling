@@ -1,1 +1,1 @@
-planning_unit_id,planning_unit_name,date,shift_id,shift_code,staff_level,required_count,assigned_count,missing_count
+planning_unit_id,planning_unit_name,date,shift_id,shift_code,staff_level,qualifikation,required_count,assigned_count,missing_count

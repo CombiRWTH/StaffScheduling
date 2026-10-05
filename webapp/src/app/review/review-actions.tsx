@@ -73,7 +73,7 @@ function ConfirmedAction({
   );
 }
 
-/** The schedule's five portable files, readable and checkable without TimeOffice; a diagnosis unless accepted. */
+/** The schedule's six portable files, readable and checkable without TimeOffice; a diagnosis unless accepted. */
 function DownloadMenu({ files, accepted }: { files: readonly string[]; accepted: boolean }) {
   return (
     <Popover>

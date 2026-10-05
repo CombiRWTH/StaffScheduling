@@ -76,7 +76,7 @@ _Monatskonten_ is collapsed and titled with the number of employees. It lists ev
 1. Select **Importieren** and choose an `input.json` and its `result.json`.
 2. Select **Dateien importieren**.
 
-The backend validates the pair before it replaces the schedule under review. Both files must be format version 2 without unknown fields. `result.json` must also:
+The backend validates the pair before it replaces the schedule under review. Both files must be format version 3 without unknown fields. `result.json` must also:
 
 - name the SHA-256 digest of exactly this `input.json` and its month;
 - contain a found schedule whose assignments and gaps reference the input's employees, stations and shifts within the month;
@@ -87,4 +87,4 @@ A rejected pair shows the reason in the panel: invalid files, files that do not 
 
 ## Download JSON and CSV files
 
-**Herunterladen** lists the five files of the schedule under review: `input.json`, `result.json`, `schedule.csv`, `employees.csv` and `gaps.csv`. [Examples and reproduction](../validation/examples.md#bundle-files) describes their fields. The files need no saved schedule library. You can read, re-solve and check them without TimeOffice. For a schedule that is not accepted, the list states that the files are a diagnosis, not a usable schedule.
+**Herunterladen** lists the six files of the schedule under review: `input.json`, `result.json`, `schedule.csv`, `employees.csv`, `besetzung.csv` and `gaps.csv`. [Examples and reproduction](../validation/examples.md#bundle-files) describes their fields. The files need no saved schedule library. You can read, re-solve and check them without TimeOffice. For a schedule that is not accepted, the list states that the files are a diagnosis, not a usable schedule.

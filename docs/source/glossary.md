@@ -110,6 +110,10 @@ _Avoid_: role, employee level (when the membership differs)
 Duties around a planning month from approved context plans, with the dates they cover completely; they constrain the month's boundary rules but never count towards its demand or accounts.
 _Avoid_: history, previous plan, fixed assignments
 
+**Coverage** (Besetzung):
+How far the duties of a station, date and shift meet its staffing demand per qualification: required, assigned and missing counts; a duty counts as its credited qualification.
+_Avoid_: staffing level, fill rate
+
 **Gap** (Lücke):
 An unfilled required slot of a station, date, shift and qualification; reported separately from the assignments so guest staff can be requested, and never published as a duty.
 _Avoid_: shortage draft, placeholder, hidden employee, optimality gap
@@ -135,7 +139,7 @@ The latest generated or validly imported schedule that the review shows and offe
 _Avoid_: saved schedule, library entry
 
 **Portable bundle**:
-The five files of one monthly run: `input.json`, `result.json` paired to it by the SHA-256 digest of its bytes, and the derived `schedule.csv`, `employees.csv` and `gaps.csv`; readable and checkable without TimeOffice.
+The six files of one monthly run: `input.json`, `result.json` paired to it by the SHA-256 digest of its bytes, and the derived `schedule.csv`, `employees.csv`, `besetzung.csv` and `gaps.csv`; readable and checkable without TimeOffice.
 _Avoid_: case, export folder, legacy JSON
 
 **Origin** (Herkunft):

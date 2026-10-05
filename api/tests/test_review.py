@@ -20,8 +20,8 @@ from app.api.review import get_review
 from app.domain import (
     Assignment,
     CheckStatus,
+    CoverageRow,
     Gap,
-    GapRow,
     PlanningMonth,
     PlanningUnitMembership,
     PublicationRequest,
@@ -33,6 +33,7 @@ from app.domain import (
 from app.main import app
 from app.settings import Settings
 from app.solver.bundle import (
+    COVERAGE_FILE,
     EMPLOYEES_FILE,
     GAPS_FILE,
     INPUT_FILE,
@@ -215,6 +216,7 @@ def test_bundle_files_carry_every_field_and_read_back() -> None:
         "end_at",
         "net_work_minutes",
         "staff_level",
+        "qualifikation",
         "origin_unit_id",
         "origin_unit_name",
         "origin_unit_type",
@@ -234,6 +236,7 @@ def test_bundle_files_carry_every_field_and_read_back() -> None:
         "end_at": "2026-02-01T06:10:00+01:00",
         "net_work_minutes": "555",
         "staff_level": "professional",
+        "qualifikation": "Fachkraft",
         "origin_unit_id": str(JUMPER_POOL),
         "origin_unit_name": "Jumper pool",
         "origin_unit_type": "jumper_pool",
@@ -260,6 +263,47 @@ def test_bundle_files_carry_every_field_and_read_back() -> None:
     ]
     assert json.loads(jumper["hard_availability"]) == []
     assert json.loads(employees[0]["credit_details"]) == []
+
+
+def test_coverage_counts_each_demanded_qualification_and_gaps_are_its_missing_rows() -> None:
+    # North needs a Fachkraft and a Hilfskraft for the early of January 30; only the Fachkraft is assigned.
+    # The jumper pool employee's night of January 31 meets no demand, so it is a duty without coverage row.
+    data = dataset(
+        memberships=(*member(1), *member(2, home=JUMPER_POOL, replacements=(NORTH,)), *member(3, ASSISTANT)),
+        accounts=(account(1, 420), account(2, 555), account(3, 0)),
+        demand=(need(jan(30), EARLY), need(jan(30), EARLY, level=ASSISTANT)),
+        levels={3: ASSISTANT},
+    )
+    missing = Gap(planning_unit_id=NORTH, date=jan(30), shift_id=EARLY.shift_id, staff_level=ASSISTANT, missing_count=1)
+    files = bundle_of(data, JANUARY_DUTIES, (missing,)).files
+
+    coverage = csv_rows(files[COVERAGE_FILE])
+    early = {
+        "planning_unit_id": str(NORTH),
+        "planning_unit_name": "North",
+        "date": "2026-01-30",
+        "shift_id": str(EARLY.shift_id),
+        "shift_code": "F",
+    }
+    assert coverage == [
+        {
+            **early,
+            "staff_level": "assistant",
+            "qualifikation": "Hilfskraft",
+            "required_count": "1",
+            "assigned_count": "0",
+            "missing_count": "1",
+        },
+        {
+            **early,
+            "staff_level": "professional",
+            "qualifikation": "Fachkraft",
+            "required_count": "1",
+            "assigned_count": "1",
+            "missing_count": "0",
+        },
+    ]
+    assert csv_rows(files[GAPS_FILE]) == coverage[:1]
 
 
 def _set(path: str, value: Any) -> Callable[[dict[str, Any]], None]:
@@ -300,6 +344,7 @@ def test_gaps_round_trip_and_an_undeclared_gap_is_no_bundle() -> None:
             "shift_id": str(EARLY.shift_id),
             "shift_code": "F",
             "staff_level": "professional",
+            "qualifikation": "Fachkraft",
             "required_count": "1",
             "assigned_count": "0",
             "missing_count": "1",
@@ -318,7 +363,7 @@ def test_gaps_round_trip_and_an_undeclared_gap_is_no_bundle() -> None:
     assert review.publishable(request) == (duty(2, jan(31), NIGHT),)
     # Without gaps the header stays.
     assert bundle_of(january(), JANUARY_DUTIES).files[GAPS_FILE].decode().splitlines() == [
-        ",".join(GapRow.model_fields)
+        ",".join(CoverageRow.model_fields)
     ]
     # A result that hides the gap carries a stale check, so it is no bundle.
     hidden = json.loads(files[RESULT_FILE])
@@ -423,6 +468,7 @@ def test_http_review_downloads_and_imports_only_valid_pairs(
         (SCHEDULE_FILE, csv_type),
         (EMPLOYEES_FILE, csv_type),
         (GAPS_FILE, csv_type),
+        (COVERAGE_FILE, csv_type),
     ):
         response = http.get(f"/review/files/{name}")
         assert response.status_code == 200

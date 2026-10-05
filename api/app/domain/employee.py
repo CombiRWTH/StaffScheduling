@@ -1,4 +1,5 @@
 from enum import StrEnum
+from typing import Final
 
 from app.domain.core import NonEmptyStr, PositiveId, SchedulingBaseModel
 
@@ -12,10 +13,23 @@ class StaffLevel(StrEnum):
     The solver should depend on this enum, not on raw TimeOffice IDs.
     """
 
-    PROFESSIONAL = "professional"  # Fachkraft
-    ASSISTANT = "assistant"  # Hilfskraft
-    TRAINEE = "trainee"  # Azubi
+    PROFESSIONAL = "professional"
+    ASSISTANT = "assistant"
+    TRAINEE = "trainee"
     MFA = "mfa"  # Medizinische Fachangestellte
+
+    @property
+    def label(self) -> str:
+        """The German name the chair's minimum staffing uses: Fachkraft, Hilfskraft, Azubi or MFA."""
+        return _LABELS[self]
+
+
+_LABELS: Final = {
+    StaffLevel.PROFESSIONAL: "Fachkraft",
+    StaffLevel.ASSISTANT: "Hilfskraft",
+    StaffLevel.TRAINEE: "Azubi",
+    StaffLevel.MFA: "MFA",
+}
 
 
 class Employee(SchedulingBaseModel):

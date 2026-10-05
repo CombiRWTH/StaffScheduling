@@ -8,23 +8,23 @@ The FastAPI application is `api/app/main.py`. With Compose running, open <http:/
 
 Consult OpenAPI for exact bodies and responses.
 
-| Route                                | Methods     | Current behavior                                                                    |
-| ------------------------------------ | ----------- | ----------------------------------------------------------------------------------- |
-| `/status`                            | GET         | Process liveness without a TimeOffice query                                         |
-| `/planning/options`                  | GET         | Named stations with unique full-month targets                                       |
-| `/employees`                         | GET         | Complete canonical combined month/station/jumper pool inspection                    |
-| `/planning/employees`                | GET         | The selection's employees by ID and name, without monthly accounts                  |
-| `/availability`                      | GET         | One employee's month: native absences, availability, wishes and shifts              |
-| `/availability/{employee_id}/{date}` | PUT, DELETE | Replace or delete that employee's availability on that date                         |
-| `/wishes/{employee_id}/{date}`       | PUT, DELETE | Replace or delete that employee's wish on that date                                 |
-| `/demand`                            | GET, PUT    | Read or replace the dated staffing demand of one station month                      |
-| `/demand/pattern`                    | POST        | Expand a weekly pattern into the month's dated demand; saves nothing                |
-| `/generation`                        | POST, GET   | Start a full-month generation; read the latest job                                  |
-| `/review`                            | GET         | The schedule under review with its check and readable tables                        |
-| `/review/import`                     | POST        | Validate an uploaded `input`/`result` pair and review it                            |
-| `/review/files/{name}`               | GET         | Download `input.json`, `result.json`, `schedule.csv`, `employees.csv` or `gaps.csv` |
-| `/publication`                       | POST        | Publish the accepted schedule under review to its stations' targets                 |
-| `/publication`                       | DELETE      | Remove the published duties of the named stations' month                            |
+| Route                                | Methods     | Current behavior                                                                                     |
+| ------------------------------------ | ----------- | ---------------------------------------------------------------------------------------------------- |
+| `/status`                            | GET         | Process liveness without a TimeOffice query                                                          |
+| `/planning/options`                  | GET         | Named stations with unique full-month targets                                                        |
+| `/employees`                         | GET         | Complete canonical combined month/station/jumper pool inspection                                     |
+| `/planning/employees`                | GET         | The selection's employees by ID and name, without monthly accounts                                   |
+| `/availability`                      | GET         | One employee's month: native absences, availability, wishes and shifts                               |
+| `/availability/{employee_id}/{date}` | PUT, DELETE | Replace or delete that employee's availability on that date                                          |
+| `/wishes/{employee_id}/{date}`       | PUT, DELETE | Replace or delete that employee's wish on that date                                                  |
+| `/demand`                            | GET, PUT    | Read or replace the dated staffing demand of one station month                                       |
+| `/demand/pattern`                    | POST        | Expand a weekly pattern into the month's dated demand; saves nothing                                 |
+| `/generation`                        | POST, GET   | Start a full-month generation; read the latest job                                                   |
+| `/review`                            | GET         | The schedule under review with its check and readable tables                                         |
+| `/review/import`                     | POST        | Validate an uploaded `input`/`result` pair and review it                                             |
+| `/review/files/{name}`               | GET         | Download `input.json`, `result.json`, `schedule.csv`, `employees.csv`, `besetzung.csv` or `gaps.csv` |
+| `/publication`                       | POST        | Publish the accepted schedule under review to its stations' targets                                  |
+| `/publication`                       | DELETE      | Remove the published duties of the named stations' month                                             |
 
 Next's `GET /api/health` calls API `/status` server-side: it is healthy only for a valid liveness response, otherwise `503`. Database availability is separate. Direct TimeOffice failures return `503` with sanitized `detail`, `integration: timeoffice` and the failed `stage`. See the [read-only diagnostic](../getting-started/installation.md#database-configuration).
 

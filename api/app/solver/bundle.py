@@ -1,4 +1,5 @@
-"""The portable bundle of one monthly run: input.json, result.json, schedule.csv, employees.csv and gaps.csv.
+"""The portable bundle of one monthly run: input.json, result.json and the tables schedule.csv, employees.csv,
+besetzung.csv and gaps.csv.
 
 The files are readable, solvable and checkable without TimeOffice. A result names the SHA-256 of the
 exact input.json bytes it was solved from, so a pair can be verified with the standard library. Every
@@ -32,22 +33,23 @@ from app.domain import (
     month_calendar,
     schedule_tables,
 )
-from app.domain.schedule import DutyRow, EmployeeRow, GapRow
+from app.domain.schedule import CoverageRow, DutyRow, EmployeeRow
 from app.solver.models import Solution
 
-FORMAT_VERSION = 2
+FORMAT_VERSION = 3
 INPUT_FILE: Final = "input.json"
 RESULT_FILE: Final = "result.json"
 SCHEDULE_FILE: Final = "schedule.csv"
 EMPLOYEES_FILE: Final = "employees.csv"
+COVERAGE_FILE: Final = "besetzung.csv"
 GAPS_FILE: Final = "gaps.csv"
-type FileName = Literal["input.json", "result.json", "schedule.csv", "employees.csv", "gaps.csv"]
+type FileName = Literal["input.json", "result.json", "schedule.csv", "employees.csv", "besetzung.csv", "gaps.csv"]
 
 
 class ScheduleInput(SchedulingBaseModel):
     """input.json: everything one full-month run reads, wishes included; no TimeOffice plan or credential."""
 
-    format_version: Literal[2]
+    format_version: Literal[3]
     timezone: Literal["Europe/Berlin"]
     calendar: tuple[CalendarDay, ...]
     """Every date of the month with its ISO weekday and NRW public holiday; must equal the application's."""
@@ -86,7 +88,7 @@ class RuntimeVersions(SchedulingBaseModel):
 class ScheduleResult(SchedulingBaseModel):
     """result.json: the solution of the paired input, with its effective configuration and schedule check."""
 
-    format_version: Literal[2]
+    format_version: Literal[3]
     planning_month: PlanningMonth
     input: InputReference
     solution: Solution
@@ -170,13 +172,14 @@ class ScheduleBundle:
 
     @cached_property
     def files(self) -> dict[FileName, bytes]:
-        """All five files; input.json keeps its digested bytes, gaps.csv has its header also without gaps."""
+        """All six files; input.json keeps its digested bytes, a table without rows has its header."""
         return {
             INPUT_FILE: self.input_json,
             RESULT_FILE: to_json(self.result),
             SCHEDULE_FILE: _csv(DutyRow, self.tables.duties),
             EMPLOYEES_FILE: _csv(EmployeeRow, self.tables.employees),
-            GAPS_FILE: _csv(GapRow, self.tables.gaps),
+            COVERAGE_FILE: _csv(CoverageRow, self.tables.coverage),
+            GAPS_FILE: _csv(CoverageRow, self.tables.gaps),
         }
 
 

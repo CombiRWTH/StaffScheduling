@@ -118,14 +118,17 @@ test("a generated schedule is reviewed with its check, staffing and accounts, an
   const schedule = await download(page, "schedule.csv");
   expect(schedule.split("\n")[0]).toBe(
     "employee_id,employee_name,date,weekday,is_public_holiday,planning_unit_id,planning_unit_name,shift_id," +
-      "shift_code,shift_type,start_at,end_at,net_work_minutes,staff_level,origin_unit_id,origin_unit_name," +
+      "shift_code,shift_type,start_at,end_at,net_work_minutes,staff_level,qualifikation,origin_unit_id,origin_unit_name," +
       "origin_unit_type",
   );
-  const gapRows = (await download(page, "gaps.csv")).trim().split("\n");
-  expect(gapRows).toEqual([
-    "planning_unit_id,planning_unit_name,date,shift_id,shift_code,staff_level,required_count,assigned_count,missing_count",
-    "101,Example Station North,2026-06-05,1113,F,professional,2,1,1",
-  ]);
+  const coverageHeader =
+    "planning_unit_id,planning_unit_name,date,shift_id,shift_code,staff_level,qualifikation,required_count," +
+    "assigned_count,missing_count";
+  const gap = "101,Example Station North,2026-06-05,1113,F,professional,Fachkraft,2,1,1";
+  expect((await download(page, "gaps.csv")).trim().split("\n")).toEqual([coverageHeader, gap]);
+  const coverage = (await download(page, "besetzung.csv")).trim().split("\n");
+  expect(coverage[0]).toBe(coverageHeader);
+  expect(coverage).toContain(gap);
   const employees = await download(page, "employees.csv");
   expect(employees.trim().split("\n")).toHaveLength(4);
   const result = JSON.parse(await download(page, "result.json"));

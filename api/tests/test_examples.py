@@ -1,11 +1,10 @@
 """The hand-in examples: accepted monthly bundles of stations 77 and 79, January to June 2026.
 
-`plaene/` holds them in two sets: the chair's schedules without wishes, and the same months with the
-prepared demonstration wishes in `plaene/mit-wuenschen/`. `check_examples` validates monthly bundle
-folders; both committed sets must pass it. The `reproduction` tests solve every committed input again
-without TimeOffice and take minutes, so they run only on request:
-`just test -m reproduction tests/test_examples.py`. The sets are generated from the prepared TimeOffice
-inputs, read-only: `PLAENE_GENERATION=write just test-timeoffice tests/test_examples.py`.
+`plaene/` holds the chair's schedules without preferences: the prepared inputs hold no wishes, so the
+plans have none. `check_examples` validates monthly bundle folders; the committed months must pass it.
+The `reproduction` tests solve every committed input again without TimeOffice and take minutes, so they
+run only on request: `just test -m reproduction tests/test_examples.py`. The months are generated from
+the prepared TimeOffice inputs, read-only: `PLAENE_GENERATION=write just test-timeoffice tests/test_examples.py`.
 """
 
 import os
@@ -30,6 +29,7 @@ from app.domain import (
 )
 from app.settings import Settings, get_settings
 from app.solver.bundle import (
+    COVERAGE_FILE,
     EMPLOYEES_FILE,
     GAPS_FILE,
     INPUT_FILE,
@@ -44,18 +44,11 @@ from app.solver.service import SolverService
 from app.timeoffice import TimeOfficeService, create_db_engine
 
 PLAENE = Path(__file__).parents[2] / "plaene"
-SETS = {"ohne-wuensche": PLAENE, "mit-wuenschen": PLAENE / "mit-wuenschen"}
-"""Folder of each set; `plaene/backup/` is an older dataset and no part of them."""
+"""The month folders; `plaene/backup/` is an older dataset and no part of them."""
 HAND_IN_MONTHS = tuple(PlanningMonth(year=2026, month=month) for month in range(1, 7))
 HAND_IN_UNITS = (77, 79)
 HAND_IN_STATIONS = 2
 GENERATION_SECONDS = 300
-
-
-def committed(directory: Path) -> None:
-    """Temporary until the set with wishes is committed: then delete this skip, so that a missing set fails."""
-    if not (directory / HAND_IN_MONTHS[-1].label).is_dir():
-        pytest.skip("this set is not committed yet")
 
 
 def check_examples(directory: Path, months: Sequence[PlanningMonth], stations: int) -> list[str]:
@@ -90,7 +83,7 @@ def check_examples(directory: Path, months: Sequence[PlanningMonth], stations: i
 
 def _check_folder(folder: Path, month: PlanningMonth, problems: list[str]) -> ScheduleBundle | None:
     label = month.label
-    files = (INPUT_FILE, RESULT_FILE, SCHEDULE_FILE, EMPLOYEES_FILE, GAPS_FILE)
+    files = (INPUT_FILE, RESULT_FILE, SCHEDULE_FILE, EMPLOYEES_FILE, COVERAGE_FILE, GAPS_FILE)
     if missing := [name for name in files if not (folder / name).is_file() or not (folder / name).stat().st_size]:
         problems.append(f"{label}: missing or empty {', '.join(missing)}.")
         return None
@@ -104,7 +97,7 @@ def _check_folder(folder: Path, month: PlanningMonth, problems: list[str]) -> Sc
         return None
     problems.extend(
         f"{label}: {name} differs from the rendering of the pair."
-        for name in (RESULT_FILE, SCHEDULE_FILE, EMPLOYEES_FILE, GAPS_FILE)
+        for name in files[1:]
         if (folder / name).read_bytes() != bundle.files[name]
     )
     if (check := bundle.check).status != CheckStatus.ACCEPTED:
@@ -148,19 +141,15 @@ def _rows(rows: Iterable[BaseModel]) -> set[str]:
     return {row.model_dump_json() for row in rows}
 
 
-@pytest.mark.parametrize("directory", SETS.values(), ids=SETS)
-def test_committed_examples_are_accepted_hand_in_bundles(directory: Path) -> None:
-    committed(directory)
-    assert check_examples(directory, HAND_IN_MONTHS, HAND_IN_STATIONS) == []
+def test_committed_examples_are_accepted_hand_in_bundles() -> None:
+    assert check_examples(PLAENE, HAND_IN_MONTHS, HAND_IN_STATIONS) == []
 
 
 @pytest.mark.reproduction
-@pytest.mark.parametrize("directory", SETS.values(), ids=SETS)
 @pytest.mark.parametrize("month", HAND_IN_MONTHS, ids=lambda month: month.label)
-def test_committed_inputs_solve_again_to_accepted_schedules(directory: Path, month: PlanningMonth) -> None:
+def test_committed_inputs_solve_again_to_accepted_schedules(month: PlanningMonth) -> None:
     """Byte-identical results are not expected; an equally valid schedule is."""
-    committed(directory)
-    folder = directory / month.label
+    folder = PLAENE / month.label
     input_json = (folder / INPUT_FILE).read_bytes()
     example = ScheduleBundle.read(input_json, (folder / RESULT_FILE).read_bytes())
     recorded = example.result.solution.configuration
@@ -173,8 +162,7 @@ def test_committed_inputs_solve_again_to_accepted_schedules(directory: Path, mon
 
 @pytest.mark.timeoffice
 @pytest.mark.skipif(os.environ.get("PLAENE_GENERATION") != "write", reason="writes plaene/; PLAENE_GENERATION=write")
-@pytest.mark.parametrize("name", SETS)
-def test_generate_hand_in_examples(name: str) -> None:
+def test_generate_hand_in_examples() -> None:
     """Generate January to June in order from the prepared inputs and write each accepted month's folder.
 
     TimeOffice is only read. Its context plans lie before January and after June, so each later month
@@ -182,8 +170,7 @@ def test_generate_hand_in_examples(name: str) -> None:
     and serves as that context, so a run resumes after its last written month; delete a folder to
     generate it again.
     """
-    directory = SETS[name]
-    directory.mkdir(exist_ok=True)
+    directory = PLAENE
     settings = get_settings()
     source, solver = TimeOfficeService(create_db_engine(settings)), SolverService(settings)
     previous: ScheduleBundle | None = None
@@ -193,7 +180,7 @@ def test_generate_hand_in_examples(name: str) -> None:
             previous = ScheduleBundle.read((folder / INPUT_FILE).read_bytes(), (folder / RESULT_FILE).read_bytes())
             continue
         data = source.read_generation_input(planning_unit_ids=HAND_IN_UNITS, planning_month=month)
-        schedule_input = ScheduleInput.of(hand_in_dataset(data, previous, wishes=name == "mit-wuenschen"))
+        schedule_input = ScheduleInput.of(hand_in_dataset(data, previous))
         solution = solver.solve(schedule_input.dataset, GENERATION_SECONDS)
         bundle = ScheduleBundle.solved(schedule_input, to_json(schedule_input), solution)
         check = bundle.check
@@ -206,8 +193,8 @@ def test_generate_hand_in_examples(name: str) -> None:
     assert check_examples(directory, HAND_IN_MONTHS, HAND_IN_STATIONS) == []
 
 
-def hand_in_dataset(data: SchedulingDataset, previous: ScheduleBundle | None, *, wishes: bool) -> SchedulingDataset:
-    """`data` with the accepted `previous` month's last days as preceding context; without wishes unless kept."""
+def hand_in_dataset(data: SchedulingDataset, previous: ScheduleBundle | None) -> SchedulingDataset:
+    """`data` with the accepted `previous` month's last days as preceding context."""
     context = data.context
     if previous is not None:
         assert context.covered_from == data.planning_month.start, "TimeOffice has context before the month"
@@ -222,9 +209,7 @@ def hand_in_dataset(data: SchedulingDataset, previous: ScheduleBundle | None, *,
             duties=(*preceding, *context.duties),
             availability=context.availability,
         )
-    return SchedulingDataset.model_validate(
-        {**data.model_dump(round_trip=True), "context": context, "wishes": data.wishes if wishes else ()}
-    )
+    return SchedulingDataset.model_validate({**data.model_dump(round_trip=True), "context": context})
 
 
 def write_folder(directory: Path, bundle: ScheduleBundle) -> Path:

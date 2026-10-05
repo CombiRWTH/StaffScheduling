@@ -766,7 +766,7 @@
   "description": "result.json: the solution of the paired input, with its effective configuration and schedule check.",
   "properties": {
     "format_version": {
-      "const": 2,
+      "const": 3,
       "title": "Format Version",
       "type": "integer"
     },

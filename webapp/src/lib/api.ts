@@ -218,7 +218,7 @@ export async function getReview(): Promise<ScheduleReview | null> {
 }
 
 const IMPORT_PROBLEMS: Record<BundleProblem, string> = {
-  malformed: "Dateien ungültig. input.json und result.json im Format Version 2 wählen.",
+  malformed: "Dateien ungültig. input.json und result.json im Format Version 3 wählen.",
   mismatch: "Dateien passen nicht zusammen. result.json gehört zu einer anderen input.json oder einem anderen Monat.",
   no_schedule: "result.json enthält keinen Dienstplan.",
   references:
@@ -297,7 +297,14 @@ export function clearPublication(month: string, stationIds: number[]) {
 }
 
 /** The downloadable files of the schedule under review. */
-export const REVIEW_FILES = ["input.json", "result.json", "schedule.csv", "employees.csv", "gaps.csv"] as const;
+export const REVIEW_FILES = [
+  "input.json",
+  "result.json",
+  "schedule.csv",
+  "employees.csv",
+  "besetzung.csv",
+  "gaps.csv",
+] as const;
 export type ReviewFile = (typeof REVIEW_FILES)[number];
 
 /** One file of the schedule under review as the API's attachment response, or `null` without a review. */

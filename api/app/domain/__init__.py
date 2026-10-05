@@ -42,14 +42,14 @@ from app.domain.planning_month import PlanningMonth
 from app.domain.planning_unit import PlanningUnit, PlanningUnitId, PlanningUnitMembership, PlanningUnitType
 from app.domain.publication import PublicationProblem, PublicationRejected, PublicationRequest, PublicationResult
 from app.domain.rules import POLICY, RulePolicy
-from app.domain.schedule import DutyRow, EmployeeRow, GapRow, ScheduleTables, StaffingRow, schedule_tables
+from app.domain.schedule import CoverageRow, DutyRow, EmployeeRow, ScheduleTables, StaffingRow, schedule_tables
 from app.domain.shift import Shift, ShiftId, ShiftOption, ShiftType, WorkSegment
 from app.domain.wish import FREE_WISHES, Wish, WishEntry, WishType
 
 __all__ = [
+    "CoverageRow",
     "DutyRow",
     "EmployeeRow",
-    "GapRow",
     "ScheduleTables",
     "StaffingRow",
     "schedule_tables",
