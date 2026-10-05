@@ -23,7 +23,7 @@ Check the employee page for completeness first. Generation reads the same facts 
 
 1. Choose the month and one or more stations in the header.
 2. Open **Dienstplan erstellen**. The start card is headed with the month and stations it will plan, always the whole month. It lists the inputs it uses (**Berücksichtigt**) and does not use (**Nicht berücksichtigt**).
-3. Next to **Starten**, enter the **Maximale Laufzeit** in seconds (30–3600, default 30; the field shows the unit _s_). This is the solver's total search limit, shared by its stages (gaps, health, station transfers, wishes, monthly accounts, intermediate duties). Reading the data and preparing the model come on top. A real month of both stations needs about 300 seconds. At 60 seconds the top stage can stop with many unfilled slots.
+3. Next to **Starten**, enter the **Maximale Laufzeit** in seconds (30–3600, default 30; the field shows the unit _s_). This is the solver's total search limit, shared by its stages (gaps, health, station transfers, wishes, monthly accounts, intermediate duties). Reading the data and preparing the model come on top. The seven-station examples use 1,800 seconds per month and still do not prove the minimum gap count ([results](../validation/examples.md#results)). Short limits can leave additional unfilled slots.
 4. Select **Starten**.
 
 The backend first reads and checks all inputs. If something is missing, a message appears under the start row and no job starts:

@@ -83,7 +83,7 @@ Replacement rest and the work average are decided within the month, so they neve
 | `SOLVER_RANDOM_SEED`         | unset   | Optional search seed                         |
 | `SOLVER_LOG_SEARCH_PROGRESS` | `false` | Enable solver progress logs                  |
 
-`POST /generation` passes the requested `timeout_seconds` as the total search limit of all stages; the other settings apply unchanged and are reported in `configuration`. Each stage but the last gets half of the time left, so the top tiers need more total time than one weighted solve did: the example months use 300 seconds. A fixed seed alone does not make parallel search reproducible. Set settings in root `.env` for Compose and recreate the API after changes.
+`POST /generation` passes the requested `timeout_seconds` as the total search limit of all stages; the other settings apply unchanged and are reported in `configuration`. Each stage but the last gets half of the time left, so the top tiers need more total time than one weighted solve did: the seven-station example months use 1,800 seconds, with feasible gap stages ([measured results](../validation/examples.md#results)). A fixed seed alone does not make parallel search reproducible. Set settings in root `.env` for Compose and recreate the API after changes.
 
 ## Model structure
 

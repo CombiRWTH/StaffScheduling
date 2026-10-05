@@ -132,7 +132,7 @@ All flows live in `webapp/tests/browser/`.
 | `selection.spec.ts`     | Station/month selection, employee table, hours and credits, filters, empty/incomplete states, URL selection, navigation and mobile navigation      |
 | `configuration.spec.ts` | **Verfügbarkeit** entries and wishes, **Mindestbesetzung** demand, weekly pattern, per-cell change marks, invalid counts, deliberate save failures |
 | `generation.spec.ts`    | Refused starts, a real June solve, the busy message, completed, infeasible and failed jobs with German messages                                    |
-| `review.spec.ts`        | Review summary, gaps, wishes, schedule and accounts, the five downloads, import, and two crafted imports through the real validation               |
+| `review.spec.ts`        | Review summary, gaps, wishes, schedule and accounts, the six downloads, import, and two crafted imports through the real validation                |
 | `publication.spec.ts`   | Publication and clear confirmations, a replaced schedule, a failed write that changes nothing, a schedule without trusted context                  |
 
 Some details matter when changing the webapp:
