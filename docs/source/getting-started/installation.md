@@ -9,7 +9,7 @@ Follow the [quickstart](quickstart.md) for the shortest path. This guide covers 
 | Start API and webapp                  | Docker Engine with Compose, just, repository files, database password, free ports 3000 and 8000        |
 | Use TimeOffice-backed planning        | Network/VPN access to the configured SQL Server, authorized database user and compatible planning data |
 | Clone or contribute                   | Git; a source archive is enough for running the app                                                    |
-| Native API tools and Git hooks        | uv 0.12.21 and Python from `api/.python-version`                                                       |
+| Native API tools and Git hooks        | uv 0.12.21 or newer and Python from `api/.python-version`                                              |
 | Native webapp tools and Prettier hook | Node from `webapp/package.json` and its pinned pnpm version                                            |
 | Build/view documentation locally      | uv and the pinned Python                                                                               |
 
@@ -124,7 +124,7 @@ Use the laptop's address in the browser. Its VPN/firewall must allow both the SQ
 
 Services still start through `just run`. Native environments support IDEs, dependency maintenance, checks and Git hooks.
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) 0.12.21 and Node as declared in `webapp/package.json`. Then:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) 0.12.21 or newer and Node as declared in `webapp/package.json`. Then:
 
 ```sh
 uv python install "$(cat api/.python-version)"

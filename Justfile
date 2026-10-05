@@ -20,7 +20,7 @@ precheck:
     docker compose version >/dev/null 2>&1 || echo "Warning: Docker with Compose not found; just run needs it." >&2
     python=$(<api/.python-version)
     check_version "{{just_executable()}}" "$(sed -n '/just-version:/{s/.*"\(.*\)"/\1/p;q;}' .github/workflows/ci.yml)"
-    check_version uv "$(sed -n 's/^required-version = "==\(.*\)"/\1/p' api/pyproject.toml)"
+    check_version uv "$(sed -n 's/^required-version = ">=\(.*\)"/\1/p' api/pyproject.toml)"
     check_version "python${python%.*}" "$python"
     check_version node "$(sed -n 's/.*"node": "\(.*\)".*/\1/p' webapp/package.json)"
     check_version pnpm "$(sed -n 's/.*"packageManager": "pnpm@\(.*\)".*/\1/p' webapp/package.json)"

@@ -35,16 +35,16 @@ Checks never rewrite source or refresh locks. `just test-timeoffice` rolls back 
 
 ## Runtime and upgrade policy
 
-| Tool                    | Pin                                                                                 |
-| ----------------------- | ----------------------------------------------------------------------------------- |
-| Python                  | `api/.python-version`: 3.14.7; Docker uses the matching Bookworm image.             |
-| Node                    | `webapp/package.json` engines: 26.10.0; CI reads this field.                        |
-| uv                      | 0.12.21, enforced by `required-version` and matched by Docker, hooks and workflows. |
-| pnpm                    | `webapp/package.json` `packageManager`: 12.8.1.                                     |
-| just                    | 1.58.0, tested; `just precheck` warns about other versions.                         |
-| Ruff / Pyright / pytest | API manifest and lock: 0.16.10 / 1.1.414 / 9.1.1.                                   |
-| Prettier / React Doctor | Webapp manifest and lock: 3.9.9 / 0.9.14.                                           |
-| TypeScript / ESLint     | 6.0.3 / 9.39.5, see the exceptions below.                                           |
+| Tool                    | Pin                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| Python                  | `api/.python-version`: 3.14.7; Docker uses the matching Bookworm image.         |
+| Node                    | `webapp/package.json` engines: 26.10.0; CI reads this field.                    |
+| uv                      | 0.12.21 in Docker, hooks and workflows; `required-version` accepts it or newer. |
+| pnpm                    | `webapp/package.json` `packageManager`: 12.8.1.                                 |
+| just                    | 1.58.0, tested; `just precheck` warns about other versions.                     |
+| Ruff / Pyright / pytest | API manifest and lock: 0.16.10 / 1.1.414 / 9.1.1.                               |
+| Prettier / React Doctor | Webapp manifest and lock: 3.9.9 / 0.9.14.                                       |
+| TypeScript / ESLint     | 6.0.3 / 9.39.5, see the exceptions below.                                       |
 
 Service manifests and locks are authoritative. Every Dockerfile and workflow that uses a changed pin must agree with it.
 
